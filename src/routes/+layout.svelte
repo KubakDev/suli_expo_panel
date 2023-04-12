@@ -1,53 +1,44 @@
-<script>
-	import Header from './Header.svelte';
-	import './styles.css';
+<script lang="ts">
+	import { Navbar, NavBrand, NavHamburger, NavUl, NavLi } from 'flowbite-svelte';
+	import './styles.scss';
+	import { page } from '$app/stores';
+	import type { PageData } from './$types';
+	import { goto } from '$app/navigation';
+	export let data: PageData;
+	let activeUrl: string;
+
+	$: if ($page.url) {
+		page.subscribe(value => {
+			console.log(value);
+
+		});
+		console.log(data);
+		console.log($page.url.pathname);
+		activeUrl = $page.url.pathname;
+	}
 </script>
 
 <div class="app">
-	<Header />
-
 	<main>
+		<Navbar let:hidden let:toggle>
+			<NavBrand>
+				<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+					SuliExpo
+				</span>
+			</NavBrand>
+			<NavHamburger on:click={toggle} />
+			<NavUl {hidden}>
+				{#each data.pages as page}
+					<NavLi
+						class="cursor-pointer"
+						on:click={() => {
+							goto(page.url);
+						}}
+						active={activeUrl == page.url}>{page.title}</NavLi
+					>
+				{/each}
+			</NavUl>
+		</Navbar>
 		<slot />
 	</main>
-
-	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	</footer>
 </div>
-
-<style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
-
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
-	}
-</style>
