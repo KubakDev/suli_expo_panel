@@ -10,12 +10,12 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import news from '../../stores/news';
+	import news from '../../../stores/news';
 	import CreateNews from '$lib/components/news/createNews.svelte';
-	import { newsCollection, showDeleteModal, paginationData } from '../../stores/news';
-	import BsTrash from 'svelte-icons-pack/bs/BsTrash';
-	import FiEdit from 'svelte-icons-pack/fi/FiEdit';
-	import loading from '../../stores/loading';
+	import { newsCollection, showDeleteModal, paginationData } from '../../../stores/news';
+	// import BsTrash from 'svelte-icons-pack/bs/BsTrash';
+	// import FiEdit from 'svelte-icons-pack/fi/FiEdit';
+	import loading from '../../../stores/loading';
 	import Pagination from '$lib/components/reusables/pagination.svelte';
 
 	$: deleteModal = $showDeleteModal;

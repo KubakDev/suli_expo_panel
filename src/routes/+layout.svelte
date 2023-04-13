@@ -8,9 +8,8 @@
 	let activeUrl: string;
 
 	$: if ($page.url) {
-		page.subscribe(value => {
+		page.subscribe((value) => {
 			console.log(value);
-
 		});
 		console.log(data);
 		console.log($page.url.pathname);
@@ -39,6 +38,8 @@
 				{/each}
 			</NavUl>
 		</Navbar>
-		<slot />
+		<div class="">
+			<slot />
+		</div>
 	</main>
 </div>
