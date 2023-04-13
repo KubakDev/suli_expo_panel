@@ -10,7 +10,7 @@
 </svelte:head>
 
 <section>
-	<MainCard  />
+	<MainCard />
 	<h1>
 		<span class="welcome">
 			<picture>
@@ -25,7 +25,6 @@
 	<h2>
 		try editing <strong>src/routes/+page.svelte</strong>
 	</h2>
-
 </section>
 
 <style>

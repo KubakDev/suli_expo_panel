@@ -140,32 +140,43 @@
 		}
 	});
 
-	function rotate(event: any, d: any) {
-		const seatGroup = d3.select(event.subject);
+	function rotate(event: any, prevSeatGroupb: d3.Selection<SVGGElement, any, any, any>) {
+		const currentSeatGroup = d3.select(event.subject);
 		const mouseX = event.x;
 		const mouseY = event.y;
 
-		const bbox = seatGroup.node().getBBox();
-		const centerX = bbox.x + bbox.width / 2;
-		const centerY = bbox.y + bbox.height / 2;
-
-		const dx = mouseX - centerX;
-		const dy = mouseY - centerY;
-
-		const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-
-		const currentRotation = parseFloat(seatGroup.attr('data-rotation') || '0');
-		const deltaAngle = angle - currentRotation;
-
-		const newRotation = currentRotation + deltaAngle;
-
-		const transform = seatGroup.attr('transform');
+		const transform = currentSeatGroup.attr('transform');
 		const translateRegex = /translate\(([\d.]+),\s*([\d.]+)\)/;
 		const translateMatch = transform.match(translateRegex);
 		const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
 		const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
 
-		seatGroup
+		const bbox = currentSeatGroup.node().getBBox();
+		const centerX = translateX + bbox.width / 2;
+		const centerY = translateY + bbox.height / 2;
+
+		const dx = mouseX - centerX;
+		const dy = mouseY - centerY;
+		console.log('centerY', centerY);
+		console.log('centerX', centerX);
+		const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+		const degrees = (Math.atan2(dy, dx) * 180) / Math.PI;
+		console.log('degrees', degrees);
+		console.log('dx', dx);
+		console.log('dy', dy);
+		// the angle is in radians, so we need to convert it to degrees
+
+		console.log('Math.atan2(dy, dx) ', Math.atan2(dy, dx));
+
+		const currentRotation = parseFloat(currentSeatGroup.attr('data-rotation') || '0');
+		console.log('currentRotation', currentRotation);
+		console.log('angle', angle);
+		const deltaAngle = angle - currentRotation;
+		console.log('deltaAngle', deltaAngle);
+
+		const newRotation = currentRotation + deltaAngle;
+
+		currentSeatGroup
 			.attr('data-rotation', newRotation)
 			.attr(
 				'transform',

@@ -11,6 +11,8 @@
 	import HorizontalCardImg from '$lib/images/cards/horizontalCard.png';
 	import { onMount } from 'svelte';
 	import { supabase } from '../../../supabase';
+	import { DefaultNavigationHeader, DefaultSectionHeader } from 'kubak-svelte-component';
+	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
 
 	export let data;
 	console.log(data.news);
@@ -48,7 +50,7 @@
 	}
 	onMount(async () => {
 		await getUI();
-        console.log('news ui news ui')
+		console.log('news ui news ui');
 		component = CardComponent;
 	});
 	async function changeCardType(cardType: 'HorizontalCard' | 'MainCard') {
@@ -75,17 +77,23 @@
 		console.log(response);
 		loading = false;
 	}
+	let allCards = [];
+	const images = import.meta.glob('$lib/images/cards/*.{jpg,jpeg,png,gif}');
+	Object.keys(images).forEach((key) => {
+		const fileName = key.split('/').pop();
+		// Do something with the file name
+		console.log(fileName.split('.').shift());
+		allCards.push(fileName.split('.').shift());
+	});
 </script>
 
 <div class="flex justify-between">
 	<div class="w-full p-10">
 		<div class=" bg-[#292e36]" style="height: 1100px;width:100%;">
-			<div class="w-full flex justify-center">
-				<div class="text-white text-center mt-10 py-3 border-y-2 border-[#e1b168] w-60">
-					<h1 class="text-4xl">NEWS</h1>
-				</div>
+			<!-- <DefaultNavigationHeader /> -->
+			<div class="text-white flex justify-center pt-8">
+				<DefaultSectionHeader title="NEWS" />
 			</div>
-
 			<div class="grid grid-cols-3">
 				{#each data.news as news}
 					<div class="p-10">
@@ -152,25 +160,20 @@
 								/></svg
 							>
 						</svelte:fragment>
-						<div style="height: 200px; width: 100%;">
-							<div class="flex justify-around">
-								<!-- svelte-ignore a11y-click-events-have-key-events -->
-								<div
-									class="cursor-pointer h-32 w-32 py-1 bg-[#f2f3f7] rounded-sm flex flex-col items-center justify-center"
-									on:click={() => changeCardType('MainCard')}
-								>
-									<img src={MainCardImg} alt="image" class="h-24 w-24" />
-									<p>main card</p>
-								</div>
-								<!-- svelte-ignore a11y-click-events-have-key-events -->
-								<div
-									class="cursor-pointer h-32 w-32 py-1 bg-[#f2f3f7] rounded-sm flex flex-col items-center justify-center"
-									on:click={() => changeCardType('HorizontalCard')}
-								>
-									<img src={HorizontalCardImg} alt="image" class="h-24 w-24 object-contain" />
-
-									<p>horizontal card</p>
-								</div>
+						<div style="height: auto; width: 100%;">
+							<div class="grid grid-cols-2">
+								{#each allCards as card}
+									<!-- svelte-ignore a11y-click-events-have-key-events -->
+									<div
+										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-[#f2f3f7] rounded-md flex flex-col items-center justify-center"
+										on:click={() => changeCardType('MainCard')}
+									>
+										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
+										<DynamicImage src="$lib/images/cards/mainCard.png" />
+										<p>main card</p>
+									</div>
+									<!-- svelte-ignore a11y-click-events-have-key-events -->
+								{/each}
 							</div>
 						</div>
 					</SidebarDropdownWrapper>

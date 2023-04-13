@@ -8,13 +8,24 @@ import fetchData from "$lib/utils/fetchData";
 export let newsCollection = {
   showModal: writable(false),
   news: writable([]),
-  paginationData: writable(),
+  paginationData: writable({}),
   deleteModal: writable(false),
-  getNews: async () => {
+  getNews: async (from: number, to: number) => {
     changeLoadingStatus(true)
-    fetchData({ collectionName: "news", from: 0, to: 5 }).then(response => {
+    fetchData({ collectionName: "news", from: from, to: to }).then(response => {
       console.log(response)
-      newsCollection.paginationData.set(response.count)
+      let numPages = Math.ceil(response.count! / (to - from))
+      let pages = []
+      console.log(pages)
+      for (let i = 1; i <= numPages; i++) {
+        pages.push(
+          i,
+        );
+      }
+      console.log(pages)
+
+      let currentPage = Math.ceil(from / (to - from)) + 1
+      newsCollection.paginationData.set({ count: response.count, pages: pages, currentPage: currentPage })
       newsCollection.news.set(response.data as [])
       newsCollection.toggleModal(false)
       changeLoadingStatus(false)
@@ -31,7 +42,7 @@ export let newsCollection = {
     changeLoadingStatus(true)
     let { data, error } = await supabase.from("news").insert(newItem);
     if (!error) {
-      newsCollection.getNews()
+      newsCollection.getNews(0, 5)
     }
     changeLoadingStatus(false)
   },
@@ -39,13 +50,14 @@ export let newsCollection = {
     changeLoadingStatus(true)
     console.log("here")
     await supabase.from('news').delete().eq('id', id)
-    await newsCollection.getNews()
+    await newsCollection.getNews(0, 5)
     newsCollection.toggleDeleteModal(false)
     changeLoadingStatus(false)
   }
 }
-newsCollection.getNews()
+newsCollection.getNews(0, 5)
 export let showModal = newsCollection.showModal
 export let showDeleteModal = newsCollection.deleteModal
 export let paginationData = newsCollection.paginationData;
-export default newsCollection.news;  
+export default newsCollection.news;
+

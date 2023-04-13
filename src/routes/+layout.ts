@@ -6,11 +6,11 @@ export const load = (async () => {
   },
   {
     "title": "news",
-    "url": "/news",
+    "url": "/panel/news",
   },
   {
     "title": "exhibition",
-    "url": "/exhibition",
+    "url": "/panel/exhibition",
 
   },
   {
