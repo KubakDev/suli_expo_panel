@@ -45,9 +45,8 @@
 		"d3": "^7.8.4",
 		"flowbite": "^1.6.4",
 		"flowbite-svelte": "^0.34.9",
-		"flowbite-svelte-blocks": "^0.3.6",
 		"ionicons": "^7.1.0",
-		"kubak-svelte-component": "file:../kubak_svelte_component",
+		"kubak-svelte-component": "github:KubakDev/kubak_svelte_component",
 		"sass": "^1.61.0"
 	}
 }

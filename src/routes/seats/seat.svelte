@@ -107,16 +107,78 @@
 			const target = d3.select(event.subject);
 
 			const currentRotation = parseInt(seatGroup.attr('data-rotation') || '0');
-			const halfCurrentWidth = parseInt(seatGroup.select('rect').attr('width')) / 2;
-			const halfCurrentHeight = parseInt(seatGroup.select('rect').attr('height')) / 2;
+			console.log('currentRotation:', currentRotation);
+
+			const rectElement = seatGroup.select('rect').node() as SVGRectElement;
+			const bbox = rectElement.getBBox();
+			console.log('bbox:', bbox);
+
+			const corners = [
+				{ x: bbox.x, y: bbox.y },
+				{ x: bbox.x + bbox.width, y: bbox.y },
+				{ x: bbox.x, y: bbox.y + bbox.height },
+				{ x: bbox.x + bbox.width, y: bbox.y + bbox.height }
+			];
+
+			const rotatedCorners = corners.map((corner) => {
+				const rotatedCorner = {
+					x: corner.x - bbox.x - bbox.width / 2,
+					y: corner.y - bbox.y - bbox.height / 2
+				};
+
+				const sinA = Math.sin((currentRotation * Math.PI) / 180);
+				const cosA = Math.cos((currentRotation * Math.PI) / 180);
+
+				const rotatedX = rotatedCorner.x * cosA - rotatedCorner.y * sinA;
+				const rotatedY = rotatedCorner.x * sinA + rotatedCorner.y * cosA;
+
+				return {
+					x: rotatedX + bbox.x + bbox.width / 2,
+					y: rotatedY + bbox.y + bbox.height / 2
+				};
+			});
+
+			console.log('rotatedCorners:', rotatedCorners);
+
+			const maxX = Math.max(...rotatedCorners.map((corner) => corner.x));
+			const minX = Math.min(...rotatedCorners.map((corner) => corner.x));
+			const maxY = Math.max(...rotatedCorners.map((corner) => corner.y));
+			const minY = Math.min(...rotatedCorners.map((corner) => corner.y));
+
+			const halfCurrentWidth = (maxX - minX) / 2;
+			const halfCurrentHeight = (maxY - minY) / 2;
+
+			console.log('halfCurrentWidth:', halfCurrentWidth);
+			console.log('halfCurrentHeight:', halfCurrentHeight);
+
+			const centerX =
+				event.x -
+				halfCurrentWidth * Math.cos((currentRotation * Math.PI) / 180) +
+				halfCurrentHeight * Math.sin((currentRotation * Math.PI) / 180);
+			console.log('centerX:', centerX);
+
+			const centerY =
+				event.y -
+				halfCurrentWidth * Math.sin((currentRotation * Math.PI) / 180) -
+				halfCurrentHeight * Math.cos((currentRotation * Math.PI) / 180);
+			console.log('centerY:', centerY);
+
+			// Temporarily hide the rotated element during the drag operation
+			seatGroup.select('rect').style('opacity', 0);
+
 			seatGroup.attr(
 				'transform',
-				`translate(${event.x - halfCurrentWidth},${
-					event.y - halfCurrentHeight
-				}) rotate(${currentRotation},${seatWidth / 2},${seatHeight / 2})`
+				`translate(${centerX},${centerY}) rotate(${currentRotation},${seatWidth / 2},${
+					seatHeight / 2
+				})`
 			);
-			// seatGroup.attr('transform', `translate(${event.x},${event.y}) `);
+
+			// Show the rotated element again after the drag is complete
+			d3.timeout(() => {
+				seatGroup.select('rect').style('opacity', 1);
+			}, 0);
 		}
+		``;
 
 		function drawLine(x1: number, y1: number, x2: number, y2: number) {
 			lines
@@ -152,27 +214,16 @@
 		const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
 
 		const bbox = currentSeatGroup.node().getBBox();
-		const centerX = translateX + bbox.width / 2;
-		const centerY = translateY + bbox.height / 2;
+		const centerX = bbox.width / 2;
+		const centerY = bbox.height / 2;
 
-		const dx = mouseX - centerX;
-		const dy = mouseY - centerY;
-		console.log('centerY', centerY);
-		console.log('centerX', centerX);
+		const dx = mouseX - (translateX + centerX);
+		const dy = mouseY - (translateY + centerY);
+
 		const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-		const degrees = (Math.atan2(dy, dx) * 180) / Math.PI;
-		console.log('degrees', degrees);
-		console.log('dx', dx);
-		console.log('dy', dy);
-		// the angle is in radians, so we need to convert it to degrees
-
-		console.log('Math.atan2(dy, dx) ', Math.atan2(dy, dx));
 
 		const currentRotation = parseFloat(currentSeatGroup.attr('data-rotation') || '0');
-		console.log('currentRotation', currentRotation);
-		console.log('angle', angle);
 		const deltaAngle = angle - currentRotation;
-		console.log('deltaAngle', deltaAngle);
 
 		const newRotation = currentRotation + deltaAngle;
 
@@ -252,7 +303,7 @@
 </script>
 
 <svelte:window on:keydown={onEscKey} />
-<div class="flex">
+<div class="h-screen flex" style="height: calc(100vh - 100px);">
 	<div class="flex flex-col space-y-2 p-4">
 		{#each [{ id: 'seat-a', class: 'seat seat-a', content: 'A' }, { id: 'seat-b', class: 'seat seat-b', content: 'B' }, { id: 'seat-c', class: 'seat seat-c', content: 'C' }] as seat}
 			<div class="seat-design p-2 bg-gray-200 rounded cursor-move">
@@ -284,6 +335,9 @@
 </div>
 
 <style>
+	.h-screen {
+		height: 100vh;
+	}
 	.cursor-move {
 		cursor: move;
 	}
