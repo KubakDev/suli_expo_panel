@@ -7,20 +7,18 @@
 		Button,
 		Spinner
 	} from 'flowbite-svelte';
-	import MainCardImg from '$lib/images/cards/mainCard.png';
-	import HorizontalCardImg from '$lib/images/cards/horizontalCard.png';
 	import { onMount } from 'svelte';
 	import { supabase } from '../../../supabase';
 	import { DefaultNavigationHeader, DefaultSectionHeader } from 'kubak-svelte-component';
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
-
+	import { FlatCard } from 'kubak-svelte-component';
 	export let data;
 	console.log(data.news);
 	let currentRowId: number;
 	let CardComponent: any;
 	let loading = false;
 	$: component = CardComponent;
-	let selectedCard: 'HorizontalCard' | 'MainCard' = 'MainCard';
+	let selectedCard: string = 'MainCard';
 	const enum CardType {
 		Home = 'home',
 		News = 'news'
@@ -38,9 +36,10 @@
 			)
 		`
 			)
-			.eq('page', CardType.Home);
+			.eq('page', CardType.News);
 		console.log(response);
 		const cardIndex = response.data.findIndex((item: any) => item.component_type.type === 'card');
+		console.log(cardIndex);
 		currentRowId = response.data[cardIndex].id;
 		let card: 'HorizontalCard' | 'MainCard' = response.data[cardIndex].component.title;
 
@@ -53,8 +52,10 @@
 		console.log('news ui news ui');
 		component = CardComponent;
 	});
-	async function changeCardType(cardType: 'HorizontalCard' | 'MainCard') {
+	async function changeCardType(cardType: any) {
 		console.log(cardType);
+		//change cardType to pascalCase
+		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
 		CardComponent = module[cardType];
@@ -63,33 +64,34 @@
 	async function publish() {
 		loading = true;
 		const { data } = await supabase
-			.from('components')
+			.from('component')
 			.select('id')
 			.eq('title', selectedCard)
 			.single();
-		// console.log(data?.id, selectedCard);
+		console.log(data, selectedCard, currentRowId);
 		const response = await supabase
-			.from('pageBuilder')
+			.from('page_builder')
 			.update({
 				componentId: data?.id
 			})
-			.eq('id', currentRowId);
+			.eq('id', 2);
 		console.log(response);
 		loading = false;
 	}
-	let allCards = [];
+	let allCards: string[] = [];
 	const images = import.meta.glob('$lib/images/cards/*.{jpg,jpeg,png,gif}');
 	Object.keys(images).forEach((key) => {
-		const fileName = key.split('/').pop();
+		const fileName: string = key.split('/').pop()!;
 		// Do something with the file name
 		console.log(fileName.split('.').shift());
-		allCards.push(fileName.split('.').shift());
+		allCards.push(fileName.split('.').shift()!);
 	});
 </script>
 
 <div class="flex justify-between">
 	<div class="w-full p-10">
-		<div class=" bg-[#292e36]" style="height: 1100px;width:100%;">
+		<FlatCard data={{ date: '33', description: ';kglkgkl', title: 'Card' }} />
+		<div class=" bg-[#747577]" style="min-height: 1100px;width:100%;">
 			<!-- <DefaultNavigationHeader /> -->
 			<div class="text-white flex justify-center pt-8">
 				<DefaultSectionHeader title="NEWS" />
@@ -166,11 +168,14 @@
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 									<div
 										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-[#f2f3f7] rounded-md flex flex-col items-center justify-center"
-										on:click={() => changeCardType('MainCard')}
+										on:click={() => changeCardType(card)}
 									>
 										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
-										<DynamicImage src="$lib/images/cards/mainCard.png" />
-										<p>main card</p>
+										<DynamicImage
+											src="../../src/lib/images/cards/{card}.png"
+											size={{ height: 100, width: 100 }}
+										/>
+										<p>{card}</p>
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 								{/each}
@@ -180,6 +185,7 @@
 				</SidebarGroup>
 			</SidebarWrapper>
 		</Sidebar>
+
 		<div>
 			<Button class="w-52" on:click={() => publish()}>
 				{#if loading}

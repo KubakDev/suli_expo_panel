@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Sidebar, SidebarGroup, SidebarItem, SidebarWrapper } from 'flowbite-svelte';
-	import '../styles.scss';
+	// import '../styles.scss';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -22,16 +22,16 @@
 	}
 	async function loadIcon(iconUrl: string) {
 		console.log(iconUrl);
-		let iconImport = await import(`${iconUrl}`);
-		const { default: icon } = iconImport;
-		IconComponent = icon;
+		// let iconImport = await import(`${iconUrl}`);
+		// const { default: icon } = iconImport;
+		// IconComponent = icon;
 		console.log(IconComponent);
 	}
 	// loadIcon('svelte-icons-pack/bs/BsTrash');
 </script>
 
-<div class=" flex h-full w-full">
-	<div class="flex items-center">
+<div class=" flex h-full w-full text-white">
+	<div class="">
 		<Sidebar>
 			<SidebarWrapper style="min-height: calc(100vh - 75px);">
 				<SidebarGroup>

@@ -8,9 +8,12 @@ const config = {
     colors: {
       danger: '#cf250d',
       hoverBox: '#e0dddd',
-      info: '#c27803'
+      info: '#c27803',
+      test: "#292e36"
+
     },
-    extend: {},
+    extend: {
+    },
   },
 
   plugins: [
