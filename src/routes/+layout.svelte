@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Navbar, NavBrand, NavHamburger, NavUl, NavLi } from 'flowbite-svelte';
 	import './styles.scss';
+	import '../app.postcss';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';

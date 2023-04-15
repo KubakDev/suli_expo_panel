@@ -43,8 +43,8 @@
 		currentRowId = response.data[cardIndex].id;
 		let card: 'HorizontalCard' | 'MainCard' = response.data[cardIndex].component.title;
 
-		const module = await import('kubak-svelte-component');
-		CardComponent = module[card];
+		// const module = await import('kubak-svelte-component');
+		// CardComponent = module[card];
 		console.log(CardComponent);
 	}
 	onMount(async () => {
@@ -58,7 +58,7 @@
 		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
-		CardComponent = module[cardType];
+		// CardComponent = module[cardType];
 		console.log(CardComponent);
 	}
 	async function publish() {
@@ -173,7 +173,7 @@
 										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
 										<DynamicImage
 											src="../../src/lib/images/cards/{card}.png"
-											size={{ height: 100, width: 100 }}
+											size={'w-[10px] h-[10px]'}
 										/>
 										<p>{card}</p>
 									</div>
