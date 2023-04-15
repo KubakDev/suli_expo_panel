@@ -17,6 +17,12 @@ export const load = (async () => {
         "url": "/web_builder/web",
         "icon": 'svelte-icons-pack/bs/BsTrash'
 
-    }]
+    },
+    {
+        "title": "theme color",
+        "url": "/web_builder/theme_color",
+
+    },
+    ]
     return { sideBarPage };
 });

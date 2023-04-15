@@ -90,10 +90,9 @@
 
 <div class="flex justify-between">
 	<div class="w-full p-10">
-		<FlatCard data={{ date: '33', description: ';kglkgkl', title: 'Card' }} />
 		<div class=" bg-[#747577]" style="min-height: 1100px;width:100%;">
 			<!-- <DefaultNavigationHeader /> -->
-			<div class="text-white flex justify-center pt-8">
+			<div class=" flex justify-center pt-8">
 				<DefaultSectionHeader title="NEWS" />
 			</div>
 			<div class="grid grid-cols-3">
@@ -173,7 +172,7 @@
 										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
 										<DynamicImage
 											src="../../src/lib/images/cards/{card}.png"
-											size={'w-[10px] h-[10px]'}
+											className={`w-[${10}px] h-[${10}px]`}
 										/>
 										<p>{card}</p>
 									</div>

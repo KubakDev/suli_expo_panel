@@ -14,7 +14,7 @@
 	let IconComponent: any = null;
 	$: if ($page.url) {
 		page.subscribe((value) => {
-			console.log(value);
+			// console.log(value);
 		});
 		console.log(data);
 		console.log($page.url);

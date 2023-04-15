@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	export let src: string;
-	export let size: string | null;
+	export let className: string | null;
 
 	let loaded = false;
 	let failed = false;
@@ -23,7 +23,7 @@
 	});
 </script>
 
-<div class={size}>
+<div class={className}>
 	{#if loaded}
 		<img {src} alt="Document" />
 	{:else if failed}

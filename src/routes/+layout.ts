@@ -6,11 +6,11 @@ export const load = (async () => {
   },
   {
     "title": "news",
-    "url": "/panel/news",
+    "url": "/news",
   },
   {
     "title": "exhibition",
-    "url": "/panel/exhibition",
+    "url": "/exhibition",
 
   },
   {
@@ -25,5 +25,11 @@ export const load = (async () => {
     "url": "/seats",
 
   },]
-  return { pages };
+  let primaryColor = "#bb222f";
+  let colorTheme = [{
+    name: "--primary-color", color: "#bb222f"
+  }, {
+    name: "--secondary-color", color: "#eeca52"
+  }]
+  return { pages, primaryColor, colorTheme };
 });
