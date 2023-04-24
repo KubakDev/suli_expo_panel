@@ -1,35 +1,21 @@
+// src/routes/+layout.ts
 
-export const load = (async () => {
-  let pages = [{
-    "title": "Home",
-    "url": "/",
-  },
-  {
-    "title": "news",
-    "url": "/news",
-  },
-  {
-    "title": "exhibition",
-    "url": "/exhibition",
+import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit';
+import type { LayoutLoad } from './$types';
 
-  },
-  {
-    "title": "web builder",
-    "url": "/web_builder",
-    "children": [{
-      "title": "Build News",
-      "url": "/web_builder/news",
-    }]
-  }, {
-    "title": "seats",
-    "url": "/seats",
+export const load: LayoutLoad = async ({ fetch, data, depends }) => {
+  depends('supabase:auth');
 
-  },]
-  let primaryColor = "#bb222f";
-  let colorTheme = [{
-    name: "--primary-color", color: "#bb222f"
-  }, {
-    name: "--secondary-color", color: "#eeca52"
-  }]
-  return { pages, primaryColor, colorTheme };
-});
+  const supabase = createSupabaseLoadClient({
+    supabaseUrl: import.meta.env.VITE_PUBLIC_SUPABASE_URL,
+    supabaseKey: import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY,
+    event: { fetch },
+    serverSession: data.session
+  });
+
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  return { supabase, session };
+};

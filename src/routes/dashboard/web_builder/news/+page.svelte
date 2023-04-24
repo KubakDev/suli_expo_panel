@@ -8,7 +8,7 @@
 		Spinner
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { supabase } from '../../../supabase';
+	import { supabase } from '../../../../supabase';
 	import { DefaultNavigationHeader, DefaultSectionHeader } from 'kubak-svelte-component';
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
 	import { FlatCard } from 'kubak-svelte-component';
