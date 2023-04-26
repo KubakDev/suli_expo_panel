@@ -6,16 +6,35 @@
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { supabase } from '../../supabase';
+	import { redirect } from '@sveltejs/kit';
 	export let data: PageData;
 	let activeUrl: string;
 	$: if ($page.url) {
-		page.subscribe((value) => {
-			// console.log(value);
-		});
-		console.log(data.primaryColor);
-		console.log($page.url.pathname);
 		activeUrl = $page.url.pathname;
 	}
+
+	if (typeof window !== 'undefined') {
+		supabase.auth.getSession().then((response) => {
+			console.log(response.data.session);
+			if (!response.data.session) {
+				console.log('sessionnnnnnnnnnn');
+				goto('/');
+			}
+		});
+	}
+	// checkUser();
+	// async function checkUser() {
+	// 	const {
+	// 		data: { session }
+	// 	} = await supabase.auth.getSession();
+	// 	console.log(session);
+	// 	if (!session) {
+	// 		console.log('no session');
+	// 		// goto('/');
+	// 		// throw redirect(303, '/');
+	// 	}
+	// }
 	function getTheme() {
 		let themeArray = [];
 		for (let theme of data.colorTheme) {

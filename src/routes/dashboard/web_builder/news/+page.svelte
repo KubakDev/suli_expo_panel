@@ -13,7 +13,6 @@
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
 	import { FlatCard } from 'kubak-svelte-component';
 	export let data;
-	console.log(data.news);
 	let currentRowId: number;
 	let CardComponent: any;
 	let loading = false;
@@ -37,29 +36,21 @@
 		`
 			)
 			.eq('page', CardType.News);
-		console.log(response);
 		const cardIndex = response.data.findIndex((item: any) => item.component_type.type === 'card');
-		console.log(cardIndex);
+
 		currentRowId = response.data[cardIndex].id;
 		let card: 'HorizontalCard' | 'MainCard' = response.data[cardIndex].component.title;
-
-		// const module = await import('kubak-svelte-component');
-		// CardComponent = module[card];
-		console.log(CardComponent);
 	}
 	onMount(async () => {
 		await getUI();
-		console.log('news ui news ui');
 		component = CardComponent;
 	});
 	async function changeCardType(cardType: any) {
-		console.log(cardType);
 		//change cardType to pascalCase
 		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
 		// CardComponent = module[cardType];
-		console.log(CardComponent);
 	}
 	async function publish() {
 		loading = true;
@@ -68,14 +59,12 @@
 			.select('id')
 			.eq('title', selectedCard)
 			.single();
-		console.log(data, selectedCard, currentRowId);
 		const response = await supabase
 			.from('page_builder')
 			.update({
 				componentId: data?.id
 			})
 			.eq('id', 2);
-		console.log(response);
 		loading = false;
 	}
 	let allCards: string[] = [];
@@ -83,7 +72,6 @@
 	Object.keys(images).forEach((key) => {
 		const fileName: string = key.split('/').pop()!;
 		// Do something with the file name
-		console.log(fileName.split('.').shift());
 		allCards.push(fileName.split('.').shift()!);
 	});
 </script>

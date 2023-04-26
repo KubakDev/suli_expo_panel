@@ -13,17 +13,14 @@ export let newsCollection = {
   getNews: async (from: number, to: number) => {
     changeLoadingStatus(true)
     fetchData({ collectionName: "news", from: from, to: to }).then(response => {
-      console.log(response)
+
       let numPages = Math.ceil(response.count! / (to - from))
       let pages = []
-      console.log(pages)
       for (let i = 1; i <= numPages; i++) {
         pages.push(
           i,
         );
       }
-      console.log(pages)
-
       let currentPage = Math.ceil(from / (to - from)) + 1
       newsCollection.paginationData.set({ count: response.count, pages: pages, currentPage: currentPage })
       newsCollection.news.set(response.data as [])
@@ -48,7 +45,6 @@ export let newsCollection = {
   },
   deleteNews: async (id: number) => {
     changeLoadingStatus(true)
-    console.log("here")
     await supabase.from('news').delete().eq('id', id)
     await newsCollection.getNews(0, 5)
     newsCollection.toggleDeleteModal(false)

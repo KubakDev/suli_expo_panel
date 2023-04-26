@@ -32,17 +32,13 @@
 			});
 	}
 	const handleSubmit = async () => {
-		console.log(colors);
 		for (let color of colors) {
 			newColorPallet[color.name] = color.value;
 		}
-		console.log(newColorPallet);
 		await supabase
 			.from('color_palette')
 			.insert(newColorPallet)
-			.then((res) => {
-				console.log(res);
-			});
+			.then((res) => {});
 		getAllThemes();
 		showModal = false;
 	};

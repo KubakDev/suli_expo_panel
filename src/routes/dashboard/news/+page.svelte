@@ -24,7 +24,6 @@
 	$: newsData = $news ?? [];
 
 	function closeModal() {
-		console.log('close');
 		addNewsModal = false;
 	}
 	function openModal() {

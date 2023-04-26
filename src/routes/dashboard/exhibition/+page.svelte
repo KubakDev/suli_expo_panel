@@ -19,11 +19,9 @@
 	import Pagination from '$lib/components/reusables/pagination.svelte';
 
 	$: deleteModal = $showDeleteModal;
-	console.log($news);
 	let addNewsModal = false;
 	$: newsData = $news ?? [];
 	function closeModal() {
-		console.log('close');
 		addNewsModal = false;
 	}
 	function openModal() {

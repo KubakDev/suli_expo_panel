@@ -2,7 +2,8 @@
 	import { Button, Input, Label } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { supabase } from '../../../supabase';
-
+	import { goto } from '$app/navigation';
+	import { redirect } from '@sveltejs/kit';
 	const schema = yup.object().shape({
 		email: yup.string().email().required(),
 		password: yup.string().required()
@@ -20,6 +21,7 @@
 		password: false
 	};
 	async function handleSubmit() {
+		// goto('/dashboard/news');
 		let valid = false;
 		await schema
 			.validate(userInfo, { strict: true })
@@ -34,7 +36,6 @@
 				if (err instanceof yup.ValidationError) {
 					let key = err.path as keyof typeof invalidUserInfo;
 					invalidUserInfo[key] = true;
-
 					if (err.path === 'email') {
 						error = 'Email is not valid';
 					} else if (err.path === 'password') {
@@ -42,7 +43,6 @@
 					}
 				} else {
 					error = 'Unknown error';
-					// unknown error
 				}
 				console.log(error);
 			});
@@ -52,11 +52,19 @@
 				email: userInfo.email,
 				password: userInfo.password
 			});
+			throw redirect(301, '/dashboard/news');
+			if (!error) {
+				console.log('success');
+			}
 		}
 	}
 </script>
 
-<form class="flex h-screen justify-center items-center" on:submit|preventDefault={handleSubmit}>
+<form
+	class="flex h-screen justify-center items-center"
+	action="?/login"
+	on:submit|preventDefault={handleSubmit}
+>
 	<div class=" shadow-md rounded-md p-20 bg-[#f7f7f7a7]">
 		<div class=" flex justify-center pb-10">
 			<svg

@@ -5,7 +5,6 @@
 	let pages = [];
 	$: pagesName = pages;
 	$: {
-		console.log(paginationData);
 		pages = [];
 		if (paginationData.pages)
 			for (let page of paginationData.pages) {
