@@ -1,7 +1,113 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import * as d3 from 'd3';
-	import Battery from '$lib/icons/b.svg?component';
+	import SeatDesignSideBar from './seatDesignSideBar.svelte';
+	import EditSideBar from './editSideBar.svelte';
+	import { seatItemStore } from './seatItemStore';
+	let selected: any;
+
+	let seats: d3.Selection<SVGGElement, unknown, null, undefined>;
+	let dragEnded = true;
+	function draggedImage(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
+		const currentRotation = parseInt(seatGroup.attr('data-rotation') || '0');
+		const rectElement = seatGroup.select('image').node() as SVGRectElement;
+		const bbox = rectElement.getBBox();
+
+		const halfCurrentWidth = bbox.width / 2;
+		const halfCurrentHeight = bbox.height / 2;
+
+		const centerX = event.x - halfCurrentWidth;
+		const centerY = event.y - halfCurrentHeight;
+
+		seatGroup.attr(
+			'transform',
+			`translate(${centerX},${centerY}) rotate(${currentRotation},${halfCurrentWidth},${halfCurrentHeight})`
+		);
+
+		// Show the rotated element again after the drag is complete
+	}
+	let isLoaded = false;
+
+	onMount(() => {
+		seats = d3.select(svg).append('g').attr('class', 'seats');
+		isLoaded = true;
+		// lines = d3.select(svg).append('g').attr('class', 'lines');
+		// path = d3.select(svg).append('g').attr('class', 'path');
+
+		// const drag = d3
+		// 	.drag()
+		// 	.subject((event) => event.subject)
+		// 	.on('start', dragstarted)
+		// 	.on('drag', dragged)
+		// 	.on('end', dragended);
+
+		// if (clonedSeat != null) {
+		// 	clonedSeat.node().appendChild(rotationIndicator.node());
+		// }
+	});
+
+	function drawLine(x1: number, y1: number, x2: number, y2: number) {
+		lines
+			.append('line')
+			.attr('x1', x1)
+			.attr('y1', y1)
+			.attr('x2', x2)
+			.attr('y2', y2)
+			.attr('stroke', 'black')
+			.attr('stroke-width', 2);
+	}
+	function resizeImage(
+		event: d3.D3DragEvent<any, any, any>,
+		seatGroup: d3.Selection<SVGGElement, any, any, any>
+	) {
+		const newWidth = Math.max(20, event.x);
+		const newHeight = Math.max(20, event.y);
+		seatGroup.select('image').attr('width', newWidth).attr('height', newHeight);
+
+		seatGroup.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
+	}
+
+	$: {
+		if (selected) {
+			const clonedImage: d3.Selection<SVGGElement, any, any, any> = seats
+				.append('g')
+				.datum(d)
+				.attr('transform', `translate(20,20)`)
+				.attr('data-rotation', '0')
+				.call(d3.drag().on('drag', (event) => draggedImage(event, clonedImage)) as any)
+				.on('click', (event, d) => {});
+			// clonedImage
+			// 	.append('rect')
+			// 	.attr('width', 20)
+			// 	.attr('height', 20)
+			// 	// fill color
+			// 	.attr('fill', `#${Math.floor(Math.random() * 16777215).toString(16)}`)
+			// 	.attr('rx', 1)
+			// 	.attr('ry', 1);
+			clonedImage
+				.append('image')
+				.attr('width', 20)
+				.attr('height', 20)
+				.attr('preserveAspectRatio', 'none')
+				.attr('xlink:href', selected)
+				.attr('transform', `translate(20,20)`);
+
+			clonedImage
+				.append('circle')
+				.attr('class', 'resize-handle')
+				.attr('cx', seatWidth)
+				.attr('cy', seatHeight)
+				.attr('r', 5)
+				.attr('fill', 'green')
+				.call(
+					d3.drag().on('drag', (event) => {
+						resizeImage(event, clonedImage);
+						selectedItem(clonedImage, 'image');
+					}) as any
+				);
+			// fill color
+		}
+	}
 
 	let svg: SVGSVGElement;
 	const seatWidth = 50;
@@ -11,354 +117,202 @@
 	const paths: string[] = [];
 	let path: any;
 	let currentPath: string = '';
-	const clonedSeats = new Set<d3.Selection<SVGGElement, any, any, any>>();
+
+	let radiusInput = '';
+
 	let currentLine: d3.Selection<SVGLineElement, any, any, any> | null = null;
-	let isDrawing = false;
-	onMount(() => {
-		const seats = d3.select(svg).append('g').attr('class', 'seats');
-		lines = d3.select(svg).append('g').attr('class', 'lines');
-		path = d3.select(svg).append('g').attr('class', 'path');
 
-		const seatTypes = [
-			{ id: 'seat-a', class: 'seat seat-a', content: 'A' },
-			{ id: 'seat-b', class: 'seat seat-b', content: 'B' },
-			{ id: 'seat-c', class: 'seat seat-c', content: 'C' }
-		];
-
-		// const drag = d3
-		// 	.drag()
-		// 	.subject((event) => event.subject)
-		// 	.on('start', dragstarted)
-		// 	.on('drag', dragged)
-		// 	.on('end', dragended);
-
-		d3.selectAll('.seat-design')
-			.data(seatTypes)
-			.on('mousedown', (event: any, d: any) => {
-				const clonedSeat: d3.Selection<SVGGElement, any, any, any> = seats
-					.append('g')
-					.datum(d)
-					.attr('transform', `translate(${event.x},${event.y})`)
-					.attr('data-rotation', '0')
-					.call(d3.drag().on('drag', (event) => dragged(event, clonedSeat)) as any);
-
-				clonedSeat
-					.append('rect')
-					.attr('width', seatWidth)
-					.attr('height', seatHeight)
-					// fill color
-					.attr('fill', `#${Math.floor(Math.random() * 16777215).toString(16)}`)
-					.attr('rx', 5)
-					.attr('ry', 5);
-
-				clonedSeat
-					.append('text')
-					.attr('x', seatWidth / 2)
-					.attr('y', seatHeight / 2)
-					.attr('text-anchor', 'middle')
-					.attr('dominant-baseline', 'middle')
-					// cursor: grabbing;
-					.attr('style', 'cursor: grabbing;')
-					.text(d.content);
-
-				// clonedSeat
-				// 	.append('circle')
-				// 	.attr('class', 'rotate-handle')
-				// 	.attr('cx', seatWidth / 2)
-				// 	.attr('cy', 0)
-				// 	.attr('r', 5)
-				// 	.attr('fill', 'red')
-				// 	.call(d3.drag().on('drag', (event) => rotate(event, clonedSeat)) as any);
-
-				clonedSeat
-					.append('circle')
-					.attr('class', 'resize-handle')
-					.attr('cx', seatWidth)
-					.attr('cy', seatHeight)
-					.attr('r', 5)
-					.attr('fill', 'green')
-					.call(d3.drag().on('drag', (event) => resize(event, clonedSeat)) as any);
-
-				clonedSeat
-					.append('circle')
-					.attr('class', 'resize-handle')
-					.attr('cx', 0)
-					.attr('cy', 0)
-					.attr('r', 5)
-					.attr('fill', 'red')
-					.call(
-						d3
-							.drag()
-							.subject(() => clonedSeat.node()!)
-							.container(() => seats.node()!)
-							.on('drag', (event: any) => rotate(event, clonedSeat)) as any
-					);
-				// if (clonedSeat != null) {
-				// 	clonedSeat.node().appendChild(rotationIndicator.node());
-				// }
-			});
-
-		function dragstarted(event: any) {
-			console.log('dragstarted');
-			// d3.select(event.sourceEvent.target).raise();
+	function resetSelectedSeat(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		if (!target.closest('rect')) {
+		} else {
+			const seatGroup = d3.select(target.closest('g')) as d3.Selection<SVGGElement, any, any, any>;
+			if (seatGroup) {
+				selectedItem(seatGroup);
+			}
 		}
-
-		function dragged(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
-			const target = d3.select(event.subject);
-
-			const currentRotation = parseInt(seatGroup.attr('data-rotation') || '0');
-			console.log('currentRotation:', currentRotation);
-
-			const rectElement = seatGroup.select('rect').node() as SVGRectElement;
-			const bbox = rectElement.getBBox();
-			console.log('bbox:', bbox);
-
-			const corners = [
-				{ x: bbox.x, y: bbox.y },
-				{ x: bbox.x + bbox.width, y: bbox.y },
-				{ x: bbox.x, y: bbox.y + bbox.height },
-				{ x: bbox.x + bbox.width, y: bbox.y + bbox.height }
-			];
-
-			const rotatedCorners = corners.map((corner) => {
-				const rotatedCorner = {
-					x: corner.x - bbox.x - bbox.width / 2,
-					y: corner.y - bbox.y - bbox.height / 2
-				};
-
-				const sinA = Math.sin((currentRotation * Math.PI) / 180);
-				const cosA = Math.cos((currentRotation * Math.PI) / 180);
-
-				const rotatedX = rotatedCorner.x * cosA - rotatedCorner.y * sinA;
-				const rotatedY = rotatedCorner.x * sinA + rotatedCorner.y * cosA;
-
-				return {
-					x: rotatedX + bbox.x + bbox.width / 2,
-					y: rotatedY + bbox.y + bbox.height / 2
-				};
-			});
-
-			console.log('rotatedCorners:', rotatedCorners);
-
-			const maxX = Math.max(...rotatedCorners.map((corner) => corner.x));
-			const minX = Math.min(...rotatedCorners.map((corner) => corner.x));
-			const maxY = Math.max(...rotatedCorners.map((corner) => corner.y));
-			const minY = Math.min(...rotatedCorners.map((corner) => corner.y));
-
-			const halfCurrentWidth = (maxX - minX) / 2;
-			const halfCurrentHeight = (maxY - minY) / 2;
-
-			console.log('halfCurrentWidth:', halfCurrentWidth);
-			console.log('halfCurrentHeight:', halfCurrentHeight);
-
-			const centerX =
-				event.x -
-				halfCurrentWidth * Math.cos((currentRotation * Math.PI) / 180) +
-				halfCurrentHeight * Math.sin((currentRotation * Math.PI) / 180);
-			console.log('centerX:', centerX);
-
-			const centerY =
-				event.y -
-				halfCurrentWidth * Math.sin((currentRotation * Math.PI) / 180) -
-				halfCurrentHeight * Math.cos((currentRotation * Math.PI) / 180);
-			console.log('centerY:', centerY);
-
-			// Temporarily hide the rotated element during the drag operation
-			seatGroup.select('rect').style('opacity', 0);
-
-			seatGroup.attr(
-				'transform',
-				`translate(${centerX},${centerY}) rotate(${currentRotation},${seatWidth / 2},${
-					seatHeight / 2
-				})`
-			);
-
-			// Show the rotated element again after the drag is complete
-			d3.timeout(() => {
-				seatGroup.select('rect').style('opacity', 1);
-			}, 0);
-		}
-		``;
-
-		function drawLine(x1: number, y1: number, x2: number, y2: number) {
-			lines
-				.append('line')
-				.attr('x1', x1)
-				.attr('y1', y1)
-				.attr('x2', x2)
-				.attr('y2', y2)
-				.attr('stroke', 'black')
-				.attr('stroke-width', 2);
-		}
-
-		function dragended(event: any, d: any) {
-			// You can add additional logic here when the dragging ends
-			// const target = event.sourceEvent.target as HTMLElement;
-			// if (target.classList.contains('rotate-handle')) {
-			// 	rotate(event.sourceEvent as any, d3.select(event.subject));
-			// } else if (target.classList.contains('resize-handle')) {
-			// 	resize(event.sourceEvent as any, d3.select(event.subject));
-			// }
-		}
-	});
-
-	function rotate(event: any, prevSeatGroupb: d3.Selection<SVGGElement, any, any, any>) {
-		const currentSeatGroup = d3.select(event.subject);
-		const mouseX = event.x;
-		const mouseY = event.y;
-
-		const transform = currentSeatGroup.attr('transform');
-		const translateRegex = /translate\(([\d.]+),\s*([\d.]+)\)/;
-		const translateMatch = transform.match(translateRegex);
-		const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
-		const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
-
-		const bbox = currentSeatGroup.node().getBBox();
-		const centerX = bbox.width / 2;
-		const centerY = bbox.height / 2;
-
-		const dx = mouseX - (translateX + centerX);
-		const dy = mouseY - (translateY + centerY);
-
-		const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-
-		const currentRotation = parseFloat(currentSeatGroup.attr('data-rotation') || '0');
-		const deltaAngle = angle - currentRotation;
-
-		const newRotation = currentRotation + deltaAngle;
-
-		currentSeatGroup
-			.attr('data-rotation', newRotation)
-			.attr(
-				'transform',
-				`translate(${translateX},${translateY}) rotate(${newRotation},${centerX},${centerY})`
-			);
 	}
-
-	function resize(
-		event: d3.D3DragEvent<any, any, any>,
-		seatGroup: d3.Selection<SVGGElement, any, any, any>
-	) {
-		const newWidth = Math.max(20, event.x);
-		const newHeight = Math.max(20, event.y);
-		seatGroup.select('rect').attr('width', newWidth).attr('height', newHeight);
-		seatGroup
-			.select('text')
-			.attr('x', newWidth / 2)
-			.attr('y', newHeight / 2);
-		seatGroup.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
+	let startPoint: any = null;
+	let firstPoint: any = null;
+	let linePreview: any = null;
+	function distanceBetweenPoints(point1: any, point2: any) {
+		const dx = point1.x - point2.x;
+		const dy = point1.y - point2.y;
+		return Math.sqrt(dx * dx + dy * dy);
 	}
 
 	function onMouseDown(event: MouseEvent) {
-		if (!isDrawing) {
-			isDrawing = true;
-			currentPath = `M ${event.offsetX} ${event.offsetY}`; // Start a new path at the mouse down position
+		const currentPoint = { x: event.offsetX, y: event.offsetY };
+		seatItemStore.reset();
+		if (startPoint) {
+			console.log('$$$$$$$$$$$$$$$$$$$$$$$$', distanceBetweenPoints(startPoint, currentPoint));
 		}
-	}
+		if (firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50) {
+			// 10 is the threshold value
+			// Close the shape
+			console.log(firstPoint.x, firstPoint.y);
+			console.log(currentPoint.x, currentPoint.y);
+			const line = `M ${firstPoint.x} ${firstPoint.y} L ${currentPoint.x} ${currentPoint.y}`;
+			paths.push(line);
 
-	function onMouseMove(event: MouseEvent) {
-		if (isDrawing) {
-			currentPath += ` L ${event.offsetX} ${event.offsetY}`; // Add a line segment to the current path for each mouse move event
+			// // Connect the last point to the first point
+			// const connectLine = `M ${currentPoint.x} ${currentPoint.y} L ${firstPoint[1]} ${firstPoint[2]}`;
+			// paths.push(connectLine);
+
 			path
 				.selectAll('path')
-				.data([...paths, currentPath]) // Spread the existing paths and add the current path
+				.data(paths)
 				.join('path')
 				.attr('d', (d: any) => d)
 				.attr('fill', 'none')
 				.attr('stroke', 'black')
+				.attr('stroke-dasharray', '0')
 				.attr('stroke-width', 2);
+
+			// Remove the starting point circle and line preview
+			path.selectAll('circle').remove();
+			if (linePreview) {
+				linePreview.remove();
+				linePreview = null;
+			}
+
+			// Reset the startPoint
+			startPoint = null;
+		} else {
+			if (!startPoint) {
+				startPoint = { x: event.offsetX, y: event.offsetY };
+				firstPoint = { x: event.offsetX, y: event.offsetY };
+				// Add a circle at the starting point
+				path
+					.append('circle')
+					.attr('cx', startPoint.x)
+					.attr('cy', startPoint.y)
+					.attr('r', 3)
+					.attr('fill', 'black');
+			} else {
+				const line = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
+				console.log('line', line);
+				console.log('before  removed', linePreview);
+				paths.push(line); // Add the line to the existing paths
+				path
+					.selectAll('path')
+					.data(paths) // Update with the existing paths
+					.join('path')
+					.attr('d', (d: any) => d)
+					.attr('fill', 'none')
+					.attr('stroke', 'black')
+					.attr('stroke-dasharray', '0')
+					.attr('stroke-width', 2);
+
+				// Remove the starting point circle and line preview
+				path.selectAll('circle').remove();
+				console.log('before  removed', linePreview);
+				linePreview = null;
+				console.log('linePreview removed', linePreview);
+				// Reset the startPoint for the next line segment and set it as the new starting point
+				startPoint = { x: event.offsetX, y: event.offsetY };
+
+				// Add a circle at the new starting point
+				path
+					.append('circle')
+					.attr('cx', startPoint.x)
+					.attr('cy', startPoint.y)
+					.attr('r', 3)
+					.attr('fill', 'black');
+			}
 		}
+
+		resetSelectedSeat(event);
 	}
 
-	function onMouseUp(event: MouseEvent) {
-		if (isDrawing) {
-			currentPath += ` Z`; // Close the path when the mouse button is released
-			paths.push(currentPath); // Add the current path to the paths array
-
-			path
-				.selectAll('path')
-				.data(paths) // Update the data with the paths array
-				.join('path')
-				.attr('d', (d: any) => d)
-				.attr('fill', 'rgba(0, 0, 0, 0.1)') // Set fill color for the closed shape
-				.attr('stroke', 'black')
-				.attr('stroke-width', 2);
-
-			isDrawing = false;
-			currentPath = '';
-		}
+	function onMouseMove(event: MouseEvent) {
+		// if (startPoint) {
+		// 	// Update line preview
+		// 	const previewLine = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
+		// 	console.log('previewLine', previewLine);
+		// 	console.log('linePreview', linePreview);
+		// 	if (!linePreview) {
+		// 		console.log('linePreview', linePreview);
+		// 		console.log('linePreview', linePreview);
+		// 		linePreview = path
+		// 			.append('path')
+		// 			.attr('stroke', 'black')
+		// 			.attr('stroke-width', 2)
+		// 			.attr('stroke-dasharray', '5,5');
+		// 	}
+		// 	console.log('linePreview', 'asdf');
+		// 	linePreview.attr('d', previewLine);
+		// }
 	}
 
 	function onEscKey(event: KeyboardEvent) {
-		console.log('esc');
 		if (event.key === 'Escape') {
-			isDrawing = false;
+			linePreview.remove();
+			linePreview = null;
+			path.selectAll('circle').remove();
 			currentLine = null;
+			startPoint = null;
+			// penSelected = false;
 		}
 	}
 
+	function selectedItem(
+		item: d3.Selection<SVGGElement, any, any, any>,
+		image: string | null = null
+	) {
+		let seatGroup;
+		console.log('image', image);
+		if (image == 'image') {
+			seatGroup = item.select('image');
+		} else {
+			seatGroup = item.select('rect');
+		}
+		const currentSeatGroup = d3.select(item.node());
+		const translateRegex = /translate\((-?[\d.]+),\s*(-?[\d.]+)\)/;
+
+		const transform = currentSeatGroup.attr('transform');
+		const translateMatch = transform.match(translateRegex);
+		const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
+		const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
+	}
+
 	// window.addEventListener('keydown', onEscKey);
+	function numberBinding(node: any, value: any) {
+		node.value = value;
+		node.addEventListener('input', () => {
+			value = parseFloat(node.value) || 0;
+			node.dispatchEvent(new CustomEvent('numberinput', { detail: value }));
+		});
+
+		return {
+			update(newValue: any) {
+				if (newValue !== value) {
+					node.value = newValue;
+					value = newValue;
+				}
+			},
+			destroy() {
+				node.removeEventListener('input', numberBinding);
+			}
+		};
+	}
 
 	// Remove the event listener when the component is destroyed
 </script>
 
 <svelte:window on:keydown={onEscKey} />
-<div class="h-screen flex" style="height: calc(100vh - 100px);">
-	<div class="flex flex-col space-y-2 p-4">
-		{#each [{ id: 'seat-a', class: 'seat seat-a', content: 'A' }, { id: 'seat-b', class: 'seat seat-b', content: 'B' }, { id: 'seat-c', class: 'seat seat-c', content: 'C' }] as seat}
-			<div class="seat-design p-2 bg-gray-200 rounded cursor-move">
-				<svg
-					class={seat.class}
-					xmlns="http://www.w3.org/2000/svg"
-					width={seatWidth}
-					height={seatHeight}
-				>
-					<rect width="100%" height="100%" rx="5" ry="5" />
-					<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm">
-						{seat.content}
-					</text>
-				</svg>
-			</div>
-		{/each}
+{#if isLoaded}
+	<div class="h-screen flex" style="height: calc(100vh - 100px);">
+		<SeatDesignSideBar placeHolder={'.svgPlaceholder'} />
+		<div class="flex-1 relative">
+			<svg
+				on:mousedown={onMouseDown}
+				on:mousemove={onMouseMove}
+				bind:this={svg}
+				class={'w-full h-full border svgPlaceholder '}
+				xmlns="http://www.w3.org/2000/svg"
+			/>
+		</div>
+		<EditSideBar placeHolder={'.svgPlaceholder'} />
 	</div>
-	<div class="flex-1 relative">
-		<svg
-			on:mousedown={onMouseDown}
-			on:mousemove={onMouseMove}
-			on:mouseup={onMouseUp}
-			on:mouseleave={onMouseUp}
-			bind:this={svg}
-			class="w-full h-full border"
-			xmlns="http://www.w3.org/2000/svg"
-		/>
-	</div>
-</div>
-
-<style>
-	.h-screen {
-		height: 100vh;
-	}
-	.cursor-move {
-		cursor: move;
-	}
-	.seat {
-		user-select: none;
-		fill: none;
-		stroke: currentColor;
-	}
-	.seat-a {
-		color: #1f2937;
-	}
-	.seat-b {
-		color: #3b82f6;
-	}
-	.seat-c {
-		color: #9333ea;
-	}
-	.rotate-handle {
-		left: -24px;
-		top: -24px;
-		cursor: grab;
-		color: red;
-	}
-</style>
+{/if}

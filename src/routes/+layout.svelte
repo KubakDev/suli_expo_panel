@@ -44,7 +44,7 @@
 				{/each}
 			</NavUl>
 		</Navbar>
-		{#if $page.url.pathname == '/web_builder'}
+		{#if $page.url.pathname.startsWith('/web_builder')}
 			<div class="">
 				<slot />
 			</div>

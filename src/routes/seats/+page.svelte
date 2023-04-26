@@ -15,6 +15,7 @@
 		TableHeadCell
 	} from 'flowbite-svelte';
 	import SeatGround from './seat.svelte';
+	import SeatGround2 from './seatV2.svelte';
 	import news from '../../stores/news';
 	import CreateNews from '$lib/components/news/createNews.svelte';
 	import { newsCollection, showDeleteModal, paginationData } from '../../stores/news';
@@ -52,5 +53,6 @@
 			</SidebarGroup>
 		</SidebarWrapper>
 	</Sidebar> -->
-	<SeatGround />
+	<SeatGround/>
+	<!-- <SeatGround2/> -->
 </div>
