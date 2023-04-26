@@ -11,10 +11,10 @@
 		TableHeadCell
 	} from 'flowbite-svelte';
 	import CreateNews from '$lib/components/news/createNews.svelte';
-	import { newsCollection, showDeleteModal, paginationData } from '../../stores/news';
-	import news from '../../stores/news';
+	import { newsCollection, showDeleteModal, paginationData } from '../../../stores/news';
+	import news from '../../../stores/news';
 
-	import loading from '../../stores/loading';
+	import loading from '../../../stores/loading';
 	import Pagination from '$lib/components/reusables/pagination.svelte';
 
 	import { goto } from '$app/navigation';
@@ -24,7 +24,6 @@
 	$: newsData = $news ?? [];
 
 	function closeModal() {
-		console.log('close');
 		addNewsModal = false;
 	}
 	function openModal() {
@@ -89,7 +88,7 @@
 		<Button
 			outline
 			on:click={() => {
-				goto('/web_builder/news');
+				goto('/dashboard/web_builder/news');
 			}}>Go to Design Page</Button
 		>
 	</div>

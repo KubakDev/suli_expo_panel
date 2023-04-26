@@ -13,19 +13,13 @@
 	$: activeUrl = '/';
 	let IconComponent: any = null;
 	$: if ($page.url) {
-		page.subscribe((value) => {
-			// console.log(value);
-		});
-		console.log(data);
-		console.log($page.url);
+		page.subscribe((value) => {});
 		activeUrl = $page.url.pathname;
 	}
 	async function loadIcon(iconUrl: string) {
-		console.log(iconUrl);
 		// let iconImport = await import(`${iconUrl}`);
 		// const { default: icon } = iconImport;
 		// IconComponent = icon;
-		console.log(IconComponent);
 	}
 	// loadIcon('svelte-icons-pack/bs/BsTrash');
 </script>
