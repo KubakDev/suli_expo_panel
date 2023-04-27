@@ -20,15 +20,14 @@
 		email: false,
 		password: false
 	};
-	async function handleSubmit() {
-		// goto('/dashboard/news');
+	async function handleSubmit(event: any) {
+		event.preventDefault();
+
 		let valid = false;
 		await schema
 			.validate(userInfo, { strict: true })
 			.then((value) => {
-				console.log(value);
 				valid = true;
-				console.log(valid);
 			})
 			.catch((err) => {
 				let error;
@@ -44,27 +43,20 @@
 				} else {
 					error = 'Unknown error';
 				}
-				console.log(error);
 			});
 		if (valid) {
-			console.log('valid');
-			const { error } = await supabase.auth.signInWithPassword({
-				email: userInfo.email,
-				password: userInfo.password
+			// form submit action event default
+			const formData = new FormData(event.target);
+
+			await fetch('?/signin', {
+				method: 'POST',
+				body: formData
 			});
-			throw redirect(301, '/dashboard/news');
-			if (!error) {
-				console.log('success');
-			}
 		}
 	}
 </script>
 
-<form
-	class="flex h-screen justify-center items-center"
-	action="?/login"
-	on:submit|preventDefault={handleSubmit}
->
+<form class="flex h-screen justify-center items-center" on:submit={handleSubmit}>
 	<div class=" shadow-md rounded-md p-20 bg-[#f7f7f7a7]">
 		<div class=" flex justify-center pb-10">
 			<svg
@@ -102,6 +94,7 @@
 				type="text"
 				id="first_name"
 				placeholder="example@example.com"
+				name="email"
 				bind:value={userInfo.email}
 			/>
 		</div>
@@ -116,6 +109,7 @@
 				id="last_name"
 				placeholder="*********"
 				bind:value={userInfo.password}
+				name="password"
 			/>
 		</div>
 

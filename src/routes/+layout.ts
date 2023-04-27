@@ -2,6 +2,7 @@
 
 import { createSupabaseLoadClient } from '@supabase/auth-helpers-sveltekit';
 import type { LayoutLoad } from './$types';
+import { redirect } from '@sveltejs/kit';
 
 export const load: LayoutLoad = async ({ fetch, data, depends }) => {
   depends('supabase:auth');
@@ -16,6 +17,5 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
   const {
     data: { session }
   } = await supabase.auth.getSession();
-  console.log("layout", session)
   return { supabase, session };
 };

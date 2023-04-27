@@ -1,10 +1,14 @@
 // src/routes/+layout.server.ts
 import { redirect } from '@sveltejs/kit';
+import { page } from '$app/stores';
+
 import type { LayoutServerLoad } from './$types';
-export const load: LayoutServerLoad = async ({ locals: { getSession } }) => {
-  const user = await getSession()
-  console.log("in home", user)
+export const load: LayoutServerLoad = async ({ locals: { getSession }, request }) => {
+  let session = await getSession();
+  const path = new URL(request.url).pathname;
+  if (!session && !path.includes("login")) throw redirect(303, '/login');
+  if (session && !path.includes("dashboard")) throw redirect(303, '/dashboard/news');
   return {
-    session: await getSession()
+    session: session
   };
 };

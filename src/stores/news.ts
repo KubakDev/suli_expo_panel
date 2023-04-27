@@ -37,7 +37,12 @@ export let newsCollection = {
   },
   addNewNews: async (newItem: CreateNews) => {
     changeLoadingStatus(true)
-    let { data, error } = await supabase.from("news").insert(newItem);
+    let { data, error } = await supabase.from("news").insert({
+      title: "newItem.title",
+      card_img: "",
+      short_description: "newItem.short_description",
+      long_description: "newItem.long_description",
+    });
     if (!error) {
       newsCollection.getNews(0, 5)
     }
