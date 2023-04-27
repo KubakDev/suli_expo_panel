@@ -121,6 +121,7 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         d3.timeout(() => {
             seatGroup.select('rect').style('opacity', 1);
         }, 0);
+        selectSeatItem(randomId);
     }
 
     function dragended(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
@@ -149,17 +150,14 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         event: any,
         clonedSeat: d3.Selection<SVGGElement, any, any, any>
     ) {
-        selectSeatItem(randomId);
+       
         const translation = clonedSeat.attr('transform').match(/translate\(([\d.]+),([\d.]+)\)/);
         const translateX = translation ? parseFloat(translation[1]) : 0;
         const translateY = translation ? parseFloat(translation[2]) : 0;
         // Get the bounding box of the clonedSeat
-        const bbox = clonedSeat.node()!.getBBox();
         const boxWidth = parseFloat(clonedSeat.select('rect').attr('width'));
         const boxHeigh = parseFloat(clonedSeat.select('rect').attr('height'));
 
-        const boxX = parseFloat(clonedSeat.select('rect').attr('width'));
-        const boxY = parseFloat(clonedSeat.select('rect').attr('height'));
         // Calculate the center of the clonedSeat
         const centerX = translateX + boxWidth / 2;
         const centerY = translateY + boxHeigh / 2;
@@ -172,22 +170,12 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         if (startAngle === null) {
             startAngle = angle;
         }
-
         // const angleDifference = angle - startAngle;
         const angleDifference = angle - startAngle;
 
         const currentRotation = parseFloat(clonedSeat.attr('data-rotation')) || 0;
         console.log('currentRotation', currentRotation);
         const newRotation = currentRotation + angleDifference;
-
-        // Extract the current translation values
-
-        console.log('translateX', translateX, 'translateY', translateY);
-        console.log(' event.sourceEvent.layerX ', event.sourceEvent.layerX, 'event.sourceEvent.layerY ', event.sourceEvent.layerY);
-        console.log('centerX', centerX, 'centerY', centerY);
-        console.log('dx ', dx, 'dy ', dy);
-        console.log('angle', angle, 'currentRotation', currentRotation, 'newRotation', newRotation);
-        console.log('Math.atan2(dy, dx) ', Math.atan2(dy, dx));
 
         // Update the transform attribute to maintain the position while rotating
         clonedSeat
@@ -198,6 +186,7 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
             );
 
         startAngle = angle;
+        selectSeatItem(randomId);
     }
 
     function selectSeatItem(item: string) {
@@ -214,15 +203,24 @@ const getSeatItemData = (seatItemId: string, d3: any) => {
     const boxWidth = parseFloat(seatItem.select('rect').attr('width'));
     const boxHeigh = parseFloat(seatItem.select('rect').attr('height'));
     const rotation = parseFloat(seatItem.attr('data-rotation')) || 0;
+    const price = parseFloat(seatItem.attr('data-price')) || 0;
     const isSelectable = seatItem.attr('data-isSelectable') ? Boolean(seatItem.attr('data-isSelectable')) : false || false;
-    console.log('isSelectable', isSelectable);
+
+    const transform = seatItem.attr('transform');
+    const translateRegex = /translate\((-?[\d.]+),\s*(-?[\d.]+)\)/;
+    const translateMatch = transform.match(translateRegex);
+    const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
+    const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
+
     const initialItem = {
         id: seatItemId,
-        price: 0,
+        price: price,
         rotation,
         isSelectable: isSelectable,
         width: boxWidth,
         height: boxHeigh,
+        x: translateX,
+        y: translateY,
     };
     return initialItem;
 }

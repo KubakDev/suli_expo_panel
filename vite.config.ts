@@ -18,7 +18,9 @@ const svgOptions: any = {
 
 export default defineConfig({
 	plugins: [
-		sveltekit(),
+		sveltekit(
+
+		),
 		svg({
 			includePaths: ['./src/lib/icons/', './src/assets/icons/'],
 			svgoOptions: {

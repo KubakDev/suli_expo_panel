@@ -9,6 +9,8 @@ const initialItem: {
     rotation: undefined | number,
     width: undefined | number,
     height: undefined | number,
+    x: undefined | number,
+    y: undefined | number,
 }
     = {
     id: null,
@@ -19,6 +21,8 @@ const initialItem: {
     rotation: undefined,
     width: undefined,
     height: undefined,
+    x: undefined,
+    y: undefined,
 };
 
 const createItemStore = () => {

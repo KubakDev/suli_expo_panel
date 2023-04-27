@@ -25,12 +25,12 @@
 		let valid = false;
 		await schema
 			.validate(userInfo, { strict: true })
-			.then((value) => {
+			.then((value: any) => {
 				console.log(value);
 				valid = true;
 				console.log(valid);
 			})
-			.catch((err) => {
+			.catch((err: any) => {
 				let error;
 				invalidUserInfo = { email: false, password: false };
 				if (err instanceof yup.ValidationError) {
