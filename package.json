@@ -34,7 +34,7 @@
 		"flowbite": "^1.6.4",
 		"flowbite-svelte": "^0.34.9",
 		"ionicons": "^7.1.0",
-		"kubak-svelte-component": "git+https://ArmanKubak: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@github.com/KubakDev/kubak_svelte_component.git",
+		"kubak-svelte-component": "file:../kubak_svelte_component",
 		"postcss": "^8.4.21",
 		"postcss-load-config": "^4.0.1",
 		"prettier": "^2.8.0",
@@ -47,5 +47,8 @@
 		"typescript": "^5.0.0",
 		"vite": "^4.2.1"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"yup": "^1.1.1"
+	}
 }

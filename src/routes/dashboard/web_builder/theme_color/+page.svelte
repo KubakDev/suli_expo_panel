@@ -98,15 +98,7 @@
 								disabled
 							/></TableBodyCell
 						>
-						<TableBodyCell
-							><input
-								type="color"
-								id="head"
-								name="head"
-								bind:value={item.foregroundColor}
-								disabled
-							/></TableBodyCell
-						>
+
 						<TableBodyCell>
 							<div class="flex">
 								<!-- svelte-ignore a11y-click-events-have-key-events -->

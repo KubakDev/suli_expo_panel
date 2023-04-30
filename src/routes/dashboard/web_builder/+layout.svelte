@@ -34,7 +34,6 @@
 							<svelte:fragment slot="icon">
 								{#if IconComponent !== null}
 									<!-- {loadIcon('').then((icon) => {
-										console.log(icon);
 									})} -->
 									<!-- <Icon src={IconComponent} size="1.2rem" className="text-danger" /> -->
 								{/if}

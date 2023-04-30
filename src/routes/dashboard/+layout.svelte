@@ -14,19 +14,6 @@
 		activeUrl = $page.url.pathname;
 	}
 
-	if (typeof window !== 'undefined') {
-		supabase.auth.getSession().then((response) => {
-			if (!response.data.session) {
-				// goto('/');
-			}
-		});
-	}
-	supabase.auth.updateUser({
-		email: 'bnar@gmail.com',
-		data: {
-			role: 'admin'
-		}
-	});
 	function getTheme() {
 		let themeArray = [];
 		for (let theme of data.colorTheme) {
@@ -56,7 +43,7 @@
 			</NavUl>
 		</Navbar>
 		{#if $page.url.pathname.includes('/web_builder')}
-			<div class="">
+			<div>
 				<slot />
 			</div>
 		{:else}
