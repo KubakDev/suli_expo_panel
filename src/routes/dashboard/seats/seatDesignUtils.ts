@@ -3,7 +3,7 @@ import { seatItemStore } from "./seatItemStore";
 
 const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
     let svg: SVGSVGElement;
-    console.log(d3.select('svg'))
+
     const randomId = `seat-${Math.floor(Math.random() * 100000)}`;
     const clonedSeat: d3.Selection<SVGGElement, any, any, any> = d3.select(placeHolder)
         .append('g')
@@ -49,8 +49,12 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         event: d3.D3DragEvent<any, any, any>,
         seatGroup: d3.Selection<SVGGElement, any, any, any>
     ) {
+      
+   
+       
         const newWidth = Math.max(20, event.x);
         const newHeight = Math.max(20, event.y);
+        console.log('resize', newWidth, newHeight);
         seatGroup.select('rect').attr('width', newWidth).attr('height', newHeight);
         seatGroup
             .select('text')
@@ -150,7 +154,7 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         event: any,
         clonedSeat: d3.Selection<SVGGElement, any, any, any>
     ) {
-       
+
         const translation = clonedSeat.attr('transform').match(/translate\(([\d.]+),([\d.]+)\)/);
         const translateX = translation ? parseFloat(translation[1]) : 0;
         const translateY = translation ? parseFloat(translation[2]) : 0;
@@ -204,6 +208,8 @@ const getSeatItemData = (seatItemId: string, d3: any) => {
     const boxHeigh = parseFloat(seatItem.select('rect').attr('height'));
     const rotation = parseFloat(seatItem.attr('data-rotation')) || 0;
     const price = parseFloat(seatItem.attr('data-price')) || 0;
+    const radius = parseFloat(seatItem.select('rect').attr('rx'));
+    const fillColor = seatItem.select('rect').attr('fill');
     const isSelectable = seatItem.attr('data-isSelectable') ? Boolean(seatItem.attr('data-isSelectable')) : false || false;
 
     const transform = seatItem.attr('transform');
@@ -211,16 +217,18 @@ const getSeatItemData = (seatItemId: string, d3: any) => {
     const translateMatch = transform.match(translateRegex);
     const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
     const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
-
+    console.log('radius', radius);
     const initialItem = {
         id: seatItemId,
         price: price,
         rotation,
+        radius,
         isSelectable: isSelectable,
         width: boxWidth,
         height: boxHeigh,
         x: translateX,
         y: translateY,
+        fillColor: fillColor
     };
     return initialItem;
 }

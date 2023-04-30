@@ -4,7 +4,13 @@
 	import SeatDesignSideBar from './seatDesignSideBar.svelte';
 	import EditSideBar from './editSideBar.svelte';
 	import { seatItemStore } from './seatItemStore';
+	import { Button, ButtonGroup, Input, InputAddon } from 'flowbite-svelte';
+	import { ArrowPath } from 'svelte-heros-v2';
+	import { Lottie } from 'lottie-svelte';
+    import { Direction } from 'lottie-svelte/iface';
+
 	let selected: any;
+	let selectedAreaSize: number | undefined;
 
 	let seats: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let dragEnded = true;
@@ -144,6 +150,7 @@
 	function onMouseDown(event: MouseEvent) {
 		const currentPoint = { x: event.offsetX, y: event.offsetY };
 		seatItemStore.reset();
+		return;
 		if (startPoint) {
 			console.log('$$$$$$$$$$$$$$$$$$$$$$$$', distanceBetweenPoints(startPoint, currentPoint));
 		}
@@ -297,21 +304,66 @@
 		};
 	}
 
+	enum AreaType {
+		square = 1,
+		rectangle = 0.5625,
+		rectangle2 = 1.25
+	}
+
+	function onAreaSizeClick(areaType: AreaType) {
+		console.log('areaType', areaType);
+		selectedAreaSize = areaType;
+	}
+
 	// Remove the event listener when the component is destroyed
 </script>
 
 <svelte:window on:keydown={onEscKey} />
 {#if isLoaded}
-	<div class="h-screen flex" style="height: calc(100vh - 100px);">
+	<div class="h-screen flex" style="height: calc(100vh - 150px);">
 		<SeatDesignSideBar placeHolder={'.svgPlaceholder'} />
 		<div class="flex-1 relative">
-			<svg
+			{#if selectedAreaSize}
+				<div class=" relative w-full" style={`padding-bottom: calc(${selectedAreaSize} * 100%);`}>
+					<svg
+						on:mousedown={onMouseDown}
+						on:mousemove={onMouseMove}
+						bind:this={svg}
+						class="absolute top-0 left-0 w-full h-full border-gray border svgPlaceholder"
+						xmlns="http://www.w3.org/2000/svg"
+					/>
+				</div>
+			{:else}
+				<div class="w-full h-full flex flex-col justify-center items-center">
+					<Lottie
+						path="./love.json"
+						autoplay={true}
+						loop={false}
+						speed={0.2}
+						direction={Direction.REVERSE}
+					/>
+					<div class="mb-2">Please select the aspect ratio of seats holder first</div>
+					<ButtonGroup>
+						<Button on:click={() => onAreaSizeClick(AreaType.square)} outline color="dark"
+							>Square 1:1</Button
+						>
+						<Button on:click={() => onAreaSizeClick(AreaType.rectangle)} outline color="dark"
+							>Rectangle 16:9</Button
+						>
+						<Button on:click={() => onAreaSizeClick(AreaType.rectangle2)} outline color="dark"
+							>Rectangle 4:5</Button
+						>
+					</ButtonGroup>
+				</div>
+			{/if}
+
+			<!-- <svg
 				on:mousedown={onMouseDown}
 				on:mousemove={onMouseMove}
 				bind:this={svg}
 				class={'w-full h-full border svgPlaceholder '}
 				xmlns="http://www.w3.org/2000/svg"
-			/>
+			/> -->
 		</div>
 		<EditSideBar placeHolder={'.svgPlaceholder'} />
 	</div>

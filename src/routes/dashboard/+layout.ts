@@ -27,7 +27,11 @@ export const load = (async () => {
     "title": "seats",
     "url": "/dashboard/seats",
 
-  },]
+  }, {
+    "title": "seats-ui",
+    "url": "/dashboard/seats_ui",
+
+  }]
   let primaryColor = "#bb222f";
   let colorTheme = [{
     name: "--primary-color", color: "#bb222f"

@@ -11,6 +11,9 @@ const initialItem: {
     height: undefined | number,
     x: undefined | number,
     y: undefined | number,
+    radius: undefined | number,
+    fillColor: undefined | string,
+    strokeWidth: undefined | number,
 }
     = {
     id: null,
@@ -23,6 +26,9 @@ const initialItem: {
     height: undefined,
     x: undefined,
     y: undefined,
+    radius: undefined,
+    fillColor: undefined,
+    strokeWidth: undefined,
 };
 
 const createItemStore = () => {

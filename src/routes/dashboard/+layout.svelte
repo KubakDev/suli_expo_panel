@@ -16,25 +16,17 @@
 
 	if (typeof window !== 'undefined') {
 		supabase.auth.getSession().then((response) => {
-			console.log(response.data.session);
 			if (!response.data.session) {
-				console.log('sessionnnnnnnnnnn');
-				goto('/');
+				// goto('/');
 			}
 		});
 	}
-	// checkUser();
-	// async function checkUser() {
-	// 	const {
-	// 		data: { session }
-	// 	} = await supabase.auth.getSession();
-	// 	console.log(session);
-	// 	if (!session) {
-	// 		console.log('no session');
-	// 		// goto('/');
-	// 		// throw redirect(303, '/');
-	// 	}
-	// }
+	supabase.auth.updateUser({
+		email: 'bnar@gmail.com',
+		data: {
+			role: 'admin'
+		}
+	});
 	function getTheme() {
 		let themeArray = [];
 		for (let theme of data.colorTheme) {
@@ -46,7 +38,7 @@
 
 <div class="app" style={getTheme()}>
 	<main>
-		<Navbar let:hidden let:toggle>
+		<Navbar let:hidden let:toggle style="background-color: #f1f3f4 !important;">
 			<NavBrand>
 				<span class="self-center whitespace-nowrap text-xl font-semibold"> SuliExpo </span>
 			</NavBrand>

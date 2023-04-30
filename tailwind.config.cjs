@@ -12,6 +12,9 @@ const config = {
 
     },
     extend: {
+      height: {
+        '128': '32rem',
+      }
     },
   },
 
