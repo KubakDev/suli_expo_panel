@@ -5,7 +5,6 @@
 	import { seatItemStore } from './seatItemStore';
 	import { getSeatItemData } from './seatDesignUtils';
 	import type { ItemPropertyModel } from '../../../models/itemPropertyModel';
-	import { supabase } from '../../../supabase';
 	import ColorPicker from 'svelte-awesome-color-picker';
 
 	export let placeHolder: string;
@@ -147,14 +146,14 @@
 			shapesModel.push(shape);
 		});
 		console.log('shapesModel ', shapesModel);
-		const { data, error } = await supabase.rpc('insert_seat_layout_and_seats', {
-			layout_data: { name: 'aaa', exhibition: 1 },
-			seats_data: shapesModel
-		});
+		// const { data, error } = await supabase.rpc('insert_seat_layout_and_seats', {
+		// 	layout_data: { name: 'aaa', exhibition: 1 },
+		// 	seats_data: shapesModel
+		// });
 
-		console.log('error', error);
+		// console.log('error', error);
 
-		console.log('onSave', data);
+		// console.log('onSave', data);
 	}
 
 	$: {

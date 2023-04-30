@@ -1,14 +1,16 @@
 <script lang="ts">
 	import * as d3 from 'd3';
 	import { onMount } from 'svelte';
-	import { supabase } from '../../../supabase';
+	import { supabaseStore } from '../../../stores/supabaseStore';
 	let svg: SVGSVGElement;
 	let selectedAreaSize: number | undefined;
 	let seats: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let isLoaded = false;
 
 	onMount(async () => {
-		const seatsData = await supabase.from('seats').select('*').eq('seat_layout',8);
+		const supabase = $supabaseStore;
+		if (!supabase) return;
+		const seatsData = await supabase.from('seats').select('*').eq('seat_layout', 8);
 		console.log(seatsData);
 		seats = d3.select(svg).append('g').attr('class', 'seats');
 		isLoaded = true;

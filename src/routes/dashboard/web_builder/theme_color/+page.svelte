@@ -15,7 +15,6 @@
 		TableHeadCell,
 		Spinner
 	} from 'flowbite-svelte';
-	import { supabase } from '../../../../supabase';
 	import type { ColorTheme } from '../../../../models/colorTheme';
 
 	export let data;
@@ -24,21 +23,21 @@
 	let loading = false;
 	getAllThemes();
 	async function getAllThemes() {
-		await supabase
-			.from('color_palette')
-			.select('*')
-			.then((res) => {
-				colorThemes = res.data as ColorTheme[];
-			});
+		// await supabase
+		// 	.from('color_palette')
+		// 	.select('*')
+		// 	.then((res) => {
+		// 		colorThemes = res.data as ColorTheme[];
+		// 	});
 	}
 	const handleSubmit = async () => {
 		for (let color of colors) {
 			newColorPallet[color.name] = color.value;
 		}
-		await supabase
-			.from('color_palette')
-			.insert(newColorPallet)
-			.then((res) => {});
+		// await supabase
+		// 	.from('color_palette')
+		// 	.insert(newColorPallet)
+		// 	.then((res) => {});
 		getAllThemes();
 		showModal = false;
 	};
@@ -98,15 +97,7 @@
 								disabled
 							/></TableBodyCell
 						>
-						<TableBodyCell
-							><input
-								type="color"
-								id="head"
-								name="head"
-								bind:value={item.foregroundColor}
-								disabled
-							/></TableBodyCell
-						>
+
 						<TableBodyCell>
 							<div class="flex">
 								<!-- svelte-ignore a11y-click-events-have-key-events -->

@@ -8,7 +8,8 @@ const config = {
     colors: {
       danger: '#cf250d',
       hoverBox: '#e0dddd',
-      info: '#c27803'
+      info: '#c27803',
+      backgroundComponent: "#f2f3f7"
 
     },
     extend: {

@@ -1,5 +1,4 @@
 import { redirect } from "@sveltejs/kit";
-import { supabase } from "../../supabase";
 import { goto } from "$app/navigation";
 
 export const load = (async () => {

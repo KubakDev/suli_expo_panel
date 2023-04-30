@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button, Input, Label } from 'flowbite-svelte';
 	import * as yup from 'yup';
-	import { supabase } from '../../../supabase';
 	import { goto } from '$app/navigation';
 	import { redirect } from '@sveltejs/kit';
 	const schema = yup.object().shape({
