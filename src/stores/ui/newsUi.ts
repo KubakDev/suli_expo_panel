@@ -1,18 +1,16 @@
 import { writable } from "svelte/store";
 import { CardType } from "../../models/cardTypeEnum";
 import { supabaseStore } from "../supabaseStore";
+import type { SupabaseAuthClientOptions } from "@supabase/supabase-js/dist/module/lib/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { NewsUiModel } from "../../models/newsUiModel";
 
-let newsUi = writable();
+let newsUiStore = writable<NewsUiModel>();
 
 
-export async function getNewsUi() {
-  let supabase;
-  supabaseStore.subscribe(value => {
-    if (!value) {
-      return
-    }
-    supabase = value
-    const response: any = value
+export async function getNewsUi(supabase: SupabaseClient) {
+  {
+    const response: any = await supabase
       .from('page_builder')
       .select(
         `	id,
@@ -28,25 +26,17 @@ export async function getNewsUi() {
       )
 		`
       )
-      .eq('page', CardType.News).then((res) => {
-        newsUi.set(res.data);
-      });
+      .eq('page', CardType.News).single();
+    const data = response.data as NewsUiModel;
+    newsUiStore.set(data);
     // newsUi.set(response.data);
     // console.log(response)
     // newsUi.subscribe(value => {
     //   console.log(value)
     // });;
-  });
-
+  }
 }
 
-newsUi.subscribe(value => {
-  if (!value) {
-    getNewsUi();
-  }
-});
-// check if newsUi is empty
 
-await getNewsUi()
 
-export default newsUi;
+export default newsUiStore;

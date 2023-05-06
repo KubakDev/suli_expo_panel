@@ -1,16 +1,11 @@
 <script lang="ts">
 	import { Label, Checkbox, A, Button, Input, Fileupload, Textarea } from 'flowbite-svelte';
-	import type { PageData } from './$types';
-	import { NewsDetail, SimpleCard } from 'kubak-svelte-component';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import newsUi from '../../../stores/ui/newsUi';
 	import { supabaseStore } from '../../../stores/supabaseStore';
-	// import { supabase } from '../../../supabase';
-
-	export let data: PageData;
-	$: {
-		console.log($newsUi);
-	}
+	import { NewsDetail, SimpleCard } from 'kubak-svelte-component';
+	import { onMount } from 'svelte';
+	import { getNewsUi } from '../../../stores/ui/newsUi';
+	import newsUiStore from '../../../stores/ui/newsUi';
 	let cardData: {
 		title: string;
 		date: string;
@@ -64,6 +59,12 @@
 			.from('image')
 			.upload(`images/${cardData.img?.name ?? ''}`, cardData.img!);
 	}
+
+	onMount(async () => {
+		const supabase = $supabaseStore;
+		if (!supabase) return;
+		getNewsUi(supabase);
+	});
 </script>
 
 <div
@@ -117,9 +118,11 @@
 	<div class=" h-full p-2">
 		<Tabs>
 			<TabItem open title="News List">
-				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<SimpleCard data={cardData} colors={$newsUi[0].color_palette} />
-				</div>
+				{#if $newsUiStore}
+					<div class=" w-full bg-[#3E4248] rounded-md p-10">
+						<SimpleCard data={cardData} colors={$newsUiStore.color_palette} />
+					</div>
+				{/if}
 			</TabItem>
 			<TabItem title="News Detail">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
