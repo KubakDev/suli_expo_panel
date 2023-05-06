@@ -8,17 +8,19 @@
 	// import { supabase } from '../../../supabase';
 
 	export let data: PageData;
-
+	$: {
+		console.log($newsUi);
+	}
 	let cardData: {
 		title: string;
 		date: string;
 		description: string;
-		img: File | null;
+		img: string;
 	} = {
 		title: '',
 		date: '',
 		description: '',
-		img: null
+		img: ''
 	};
 	let detailData: {
 		title: string;
@@ -56,12 +58,11 @@
 		reader.readAsDataURL(file);
 	}
 	async function submitForm() {
-		console.log('cardData');
-		const { data, error } = await $supabaseStore!.storage
+		const supabase = $supabaseStore;
+		if (!supabase) return;
+		const { data, error } = await supabase.storage
 			.from('image')
-			.upload(`images/${cardData.img!.name}`, cardData.img!);
-		console.log('data', data);
-		// console.log('error', error);
+			.upload(`images/${cardData.img?.name ?? ''}`, cardData.img!);
 	}
 </script>
 
@@ -117,17 +118,14 @@
 		<Tabs>
 			<TabItem open title="News List">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<!-- <SimpleCard data={cardData} colors={$newsUi[0].color_palette} /> -->
+					<SimpleCard data={cardData} colors={$newsUi[0].color_palette} />
 				</div>
 			</TabItem>
 			<TabItem title="News Detail">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<!-- <NewsDetail data={detailData} /> -->
+					<NewsDetail data={detailData} />
 				</div>
 			</TabItem>
 		</Tabs>
-		<!-- <div class=" w-full bg-[#3E4248] rounded-md p-10">
-			<NewsDetail />
-		</div> -->
 	</div>
 </div>
