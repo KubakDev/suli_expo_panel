@@ -6,10 +6,10 @@
 		SidebarDropdownWrapper,
 		Button,
 		Spinner,
-		Label
+		Label,
+		Input
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { DefaultSectionHeader } from 'kubak-svelte-component';
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
 	import colorTheme from '../../../../stores/colorTheme';
 	import type { ColorTheme } from '../../../../models/colorTheme';
@@ -32,15 +32,14 @@
 	];
 	let showCustomColor: boolean = false;
 	let customColors: ColorTheme = {} as ColorTheme;
-
+	let news: [] = [];
 	const enum CardType {
 		Home = 'home',
 		News = 'news'
 	}
 	async function getUI() {
 		const supabase = $supabaseStore;
-		console.log('supabase', supabase)
-		if(!supabase) return;
+		if (!supabase) return;
 		const response: any = await supabase
 			.from('page_builder')
 			.select(
@@ -64,10 +63,22 @@
 		currentRowId = response.data[cardIndex].id;
 		let card = response.data[cardIndex].component.title;
 		const module = await import('kubak-svelte-component');
-		// CardComponent = module[card];
+		CardComponent = module[card];
+	}
+	async function getNews() {
+		const supabase = $supabaseStore;
+		if (!supabase) return;
+		await supabase
+			.from('news')
+			.select('*')
+			.then((res) => {
+				news = res.data as [];
+				console.log(news);
+			});
 	}
 	onMount(async () => {
 		await getUI();
+		await getNews();
 		component = CardComponent;
 	});
 	async function changeCardType(cardType: any) {
@@ -75,42 +86,42 @@
 		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
-		// CardComponent = module[cardType];
+		CardComponent = module[cardType];
 	}
-	// async function publish() {
-	// 	loading = true;
-	// 	let newColorPaletteId = 0;
-	// 	if (Object.keys(customColors).length > 0) {
-	// 		const newColorData = await supabase
-	// 			.from('color_palette')
-	// 			.insert([
-	// 				{
-	// 					name: 'test',
-	// 					primaryColor: customColors.primaryColor,
-	// 					secondaryColor: customColors.secondaryColor,
-	// 					onPrimaryColor: customColors.onPrimaryColor,
-	// 					onSecondaryColor: customColors.onSecondaryColor,
-	// 					backgroundColor: customColors.backgroundColor,
-	// 					onBackgroundColor: customColors.onBackgroundColor
-	// 				}
-	// 			])
-	// 			.select();
-	// 		newColorPaletteId = newColorData?.data![0].id;
-	// 	}
-	// 	const { data } = await supabase
-	// 		.from('component')
-	// 		.select('id')
-	// 		.eq('title', selectedCard)
-	// 		.single();
-	// 	const response = await supabase
-	// 		.from('page_builder')
-	// 		.update({
-	// 			componentId: data?.id,
-	// 			color_palette: newColorPaletteId
-	// 		})
-	// 		.eq('id', 2);
-	// 	loading = false;
-	// }
+	async function publish() {
+		loading = true;
+		let newColorPaletteId = 0;
+		if (Object.keys(customColors).length > 0) {
+			const newColorData = await $supabaseStore!
+				.from('color_palette')
+				.insert([
+					{
+						name: customColors.name,
+						primaryColor: customColors.primaryColor,
+						secondaryColor: customColors.secondaryColor,
+						onPrimaryColor: customColors.onPrimaryColor,
+						onSecondaryColor: customColors.onSecondaryColor,
+						backgroundColor: customColors.backgroundColor,
+						onBackgroundColor: customColors.onBackgroundColor
+					}
+				])
+				.select();
+			newColorPaletteId = newColorData?.data![0].id;
+		}
+		const { data } = await $supabaseStore!
+			.from('component')
+			.select('id')
+			.eq('title', selectedCard)
+			.single();
+		const response = await $supabaseStore!
+			.from('page_builder')
+			.update({
+				componentId: data?.id,
+				color_palette: newColorPaletteId
+			})
+			.eq('id', 2);
+		loading = false;
+	}
 	let allCards: string[] = [];
 	const images = import.meta.glob('$lib/images/cards/*.{jpg,jpeg,png,gif}');
 	Object.keys(images).forEach((key) => {
@@ -145,13 +156,13 @@
 					NEWS
 				</h1>
 			</div>
-			<div class="grid grid-cols-3">
-				{#each data.news as news}
+			<div class="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3">
+				{#each news as newsItem}
 					<div class="p-10">
 						{#if component}
 							<svelte:component
 								this={component}
-								data={news}
+								data={newsItem}
 								colors={Object.keys(customColors).length > 0 ? customColors : selectedColorTheme}
 							/>
 						{:else}
@@ -305,10 +316,17 @@
 								>
 							</div>
 							{#if showCustomColor}
+								<div class="flex items-center justify-between py-2">
+									<Input
+										id="default-input"
+										placeholder="theme name"
+										bind:value={customColors.name}
+									/>
+								</div>
 								<div class="h-96 w-full bg-backgroundComponent py-5">
 									{#if selectedColorTheme}
 										{#each colors as color}
-											<!-- <div class="flex items-center justify-between px-10 py-2">
+											<div class="flex items-center justify-between px-10 py-2">
 												<Label for="brand" class="mb-2">{color}</Label>
 												<input
 													type="color"
@@ -316,7 +334,7 @@
 													name="head"
 													bind:value={customColors[color]}
 												/>
-											</div> -->
+											</div>
 										{/each}
 									{/if}
 								</div>
@@ -327,12 +345,12 @@
 			</SidebarWrapper>
 		</Sidebar>
 		<div>
-			<!-- <Button class="w-52" on:click={() => publish()}>
+			<Button class="w-52" on:click={() => publish()}>
 				{#if loading}
 					<Spinner class="mr-3" size="4" />
 				{/if}
 				Publish</Button
-			> -->
+			>
 		</div>
 	</div>
 </div>

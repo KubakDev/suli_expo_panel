@@ -1,16 +1,23 @@
 import { writable } from "svelte/store";
 import type { ColorTheme } from '../models/colorTheme';
-// import { supabase } from "../supabase";
+import { supabaseStore } from "./supabaseStore"
 
 let colorTheme = writable<ColorTheme[]>([])
 
 export async function getAllThemes() {
-  // await supabase
-  //   .from('color_palette')
-  //   .select('*')
-  //   .then((res) => {
-  //     colorTheme.set(res.data as ColorTheme[]);
-  //   });
+  let supabase;
+  supabaseStore.subscribe(value => {
+    if (!value) {
+      return
+    }
+    supabase = value
+    supabase
+      .from('color_palette')
+      .select('*')
+      .then((res) => {
+        colorTheme.set(res.data as ColorTheme[]);
+      });
+  });
 }
 await getAllThemes()
 export default colorTheme;

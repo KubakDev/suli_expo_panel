@@ -47,11 +47,10 @@
 			// form submit action event default
 			const formData = new FormData(event.target);
 
-			const  test = await fetch('login', {
+			const test = await fetch('login', {
 				method: 'POST',
 				body: formData
 			});
-			console.log(test.body);
 		}
 	}
 </script>

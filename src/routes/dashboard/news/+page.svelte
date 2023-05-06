@@ -37,19 +37,12 @@
 	async function uploadImage() {
 		const supabase = $supabaseStore;
 		if (!supabase) return;
-		console.log(supabase);
 		const file = fileInput?.files[0];
-		console.log(file);
-		supabase.auth.getUser().then((user) => {
-			console.log(user);
-		});
 		selectedImageSrc = URL.createObjectURL(file);
 		const { data, error } = await supabase.storage.from('image').upload(`images/aa`, file, {
 			cacheControl: '3600',
 			upsert: false
 		});
-		console.log(data);
-		console.log(error);
 	}
 </script>
 

@@ -10,8 +10,6 @@ export const POST = async ({ request, locals: { supabase } }) => {
         password
     });
     // subscribe the user to the newsletter
-    console.log(email)
-    console.log(password)
     throw redirect(303, '/dashboard');
 
 }

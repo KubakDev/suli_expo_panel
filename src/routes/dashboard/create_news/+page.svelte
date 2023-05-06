@@ -4,15 +4,23 @@
 	import { NewsDetail, SimpleCard } from 'kubak-svelte-component';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import newsUi from '../../../stores/ui/newsUi';
+	import { supabaseStore } from '../../../stores/supabaseStore';
 	// import { supabase } from '../../../supabase';
 
 	export let data: PageData;
-
-	let cardData = {
+	$: {
+		console.log($newsUi);
+	}
+	let cardData: {
+		title: string;
+		date: string;
+		description: string;
+		img: string;
+	} = {
 		title: '',
 		date: '',
 		description: '',
-		img: 'https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510__340.jpg'
+		img: ''
 	};
 	let detailData: {
 		title: string;
@@ -28,7 +36,7 @@
 		const file = fileInput!.files![0];
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			cardData.img = reader.result as string;
+			cardData.img = file;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -50,12 +58,11 @@
 		reader.readAsDataURL(file);
 	}
 	async function submitForm() {
-		console.log('cardData');
-		// const { data, error } = await supabase.storage
-		// 	.from('image')
-		// 	.upload('images/my-image.png', cardData.img);
-		console.log('data', data);
-		// console.log('error', error);
+		const supabase = $supabaseStore;
+		if (!supabase) return;
+		const { data, error } = await supabase.storage
+			.from('image')
+			.upload(`images/${cardData.img?.name ?? ''}`, cardData.img!);
 	}
 </script>
 
@@ -111,17 +118,14 @@
 		<Tabs>
 			<TabItem open title="News List">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<!-- <SimpleCard data={cardData} colors={$newsUi[0].color_palette} /> -->
+					<SimpleCard data={cardData} colors={$newsUi[0].color_palette} />
 				</div>
 			</TabItem>
 			<TabItem title="News Detail">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<!-- <NewsDetail data={detailData} /> -->
+					<NewsDetail data={detailData} />
 				</div>
 			</TabItem>
 		</Tabs>
-		<!-- <div class=" w-full bg-[#3E4248] rounded-md p-10">
-			<NewsDetail />
-		</div> -->
 	</div>
 </div>
