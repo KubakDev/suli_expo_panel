@@ -6,8 +6,15 @@
 	import { getSeatItemData } from './seatDesignUtils';
 	import type { ItemPropertyModel } from '../../../models/itemPropertyModel';
 	import ColorPicker from 'svelte-awesome-color-picker';
+	import { supabaseStore } from '../../../stores/supabaseStore';
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { seatLayoutStore, type SeatLayoutModel } from './seatLayoutStore';
+	import { showSelectedDesign } from './seatDesignFromExsiting';
 
 	export let placeHolder: string;
+
+	let seatLayoutId: number | undefined;
 	let selectedSeatItem: string;
 	let isSelectable = false;
 	let itemWidth: string | undefined;
@@ -20,6 +27,7 @@
 	let fillColor: any;
 	let strokeColor: any;
 	let strokeWidth: string | undefined;
+	let seatLayoutName: string | undefined;
 
 	let selectedSeatProperty: ItemPropertyModel = {
 		x: 0,
@@ -32,6 +40,15 @@
 	};
 
 	let seatItemId: string | undefined | null;
+
+	onMount(() => {
+		// get seat layout id from url
+		const id = $page.params.id;
+		if (id) {
+			seatLayoutId = parseInt(id);
+		}
+		
+	});
 
 	$: {
 		if (selectedSeatProperty) {
@@ -102,6 +119,8 @@
 	}
 
 	async function onSave() {
+		const supabase = $supabaseStore;
+		if (!supabase) return;
 		let shapesModel: any[] = [];
 		const svgShapes = d3.select(placeHolder).selectAll('g');
 
@@ -123,37 +142,59 @@
 			const translateMatch = transform.match(translateRegex);
 			const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
 			const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
+			// x y as a percentage of the container
+			const xPercentage = (translateX / containerWidth) * 100;
+			const yPercentage = (translateY / containerHeight) * 100;
+			console.log('xPercentage', xPercentage, 'yPercentage', yPercentage);
+			console.log('translateX', translateX, 'translateY', translateY);
+			console.log('containerWidth', containerWidth);
 			const currentRotation = parseFloat(value.attr('data-rotation')) || 0;
 			const fillColor = value.select('rect').attr('fill');
 			const width = parseInt(value.select('rect').attr('width'));
 			const height = parseInt(value.select('rect').attr('height'));
+			const strokeColor = value.select('rect').attr('stroke');
+			const strokeWidth = value.select('rect').attr('stroke-width');
+			let imageUrl = '';
+
+			// if it has image
+			if (value.select('pattern').node() && value.select('image').node()) {
+				imageUrl = value.select('image').attr('href') || '';
+			}
 			// width and height as a percentage of the container
 			const widthPercentage = (width / containerWidth) * 100;
 			const heightPercentage = (height / containerHeight) * 100;
 			const radius = parseInt(value.select('rect').attr('rx'));
 			const price = parseInt(value.attr('data-price')) || 0;
 			const shape = {
-				fillColor: fillColor,
+				fill_color: fillColor,
+				image_url: imageUrl,
 				price: price,
-				x: translateX,
-				y: translateY,
+				x: xPercentage,
+				y: yPercentage,
 				width: widthPercentage,
 				height: heightPercentage,
 				rotation: currentRotation,
+				border_radius: radius,
+				stroke_color: strokeColor,
+				stroke_width: strokeWidth,
 				radius: radius,
-				isSelectable: Boolean(value.attr('data-isSelectable')) || false
+				is_selectable: Boolean(value.attr('data-isSelectable')) || false
 			};
 			shapesModel.push(shape);
 		});
-		console.log('shapesModel ', shapesModel);
-		// const { data, error } = await supabase.rpc('insert_seat_layout_and_seats', {
-		// 	layout_data: { name: 'aaa', exhibition: 1 },
-		// 	seats_data: shapesModel
-		// });
-
-		// console.log('error', error);
-
-		// console.log('onSave', data);
+		const data: SeatLayoutModel = {
+			id: seatLayoutId,
+			name: seatLayoutName!,
+			exhibition: 1,
+			aspect_ratio: undefined,
+			seats: shapesModel
+		};
+		console.log('data', data);
+		if (seatLayoutId) {
+			seatLayoutStore.saveData(data, supabase);
+		} else {
+			seatLayoutStore.saveData(data, supabase);
+		}
 	}
 
 	$: {
@@ -318,6 +359,11 @@
 		let seatItemData = getSeatItemData(seatItemId!, d3);
 		seatItemStore.setItem(seatItemData);
 	}
+
+	function onInputName(value: any) {
+		const name = value.target.value;
+		seatLayoutName = name;
+	}
 </script>
 
 <div class="flex flex-col space-y-2 p-4 w-1/5 justify-between">
@@ -454,7 +500,18 @@
 			</div>
 		</div>
 	</div>
-	<Button gradient color="cyan" on:click={onSave} class="bg-info">Save</Button>
+	<div class="flex flex-col h-32 justify-between">
+		<ButtonGroup class="w-full" size="sm">
+			<Input
+				type="text"
+				size="sm"
+				on:input={onInputName}
+				placeholder="Name"
+				let:props
+			/></ButtonGroup
+		>
+		<Button gradient color="cyan" on:click={onSave} class="bg-info">Save</Button>
+	</div>
 </div>
 
 <style>

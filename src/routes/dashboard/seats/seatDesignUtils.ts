@@ -1,7 +1,10 @@
+import type { ImageModel } from "./model";
 import { seatItemStore } from "./seatItemStore";
+import type { SeatDesignModel } from "./seatLayoutStore";
 
 
-const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
+const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | null = null, seatWidth: number = 20, seatHeight: number = 20, seatX: number = 5, seatY: number = 5, seat: SeatDesignModel | null = null) => {
+    console.log('appendShapeToPlaceHolder', placeHolder);
     let svg: SVGSVGElement;
 
     const randomId = `seat-${Math.floor(Math.random() * 100000)}`;
@@ -10,8 +13,12 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         // add random class
         .attr('id', randomId)
         .datum('')
-        .attr('transform', `translate(20,20)`)
-        .attr('data-rotation', '0')
+        .attr(
+            'transform',
+            `translate(${seatX},${seatY}) rotate(${seat && seat.rotation ? seat.rotation : 0}, ${seatWidth / 2},  ${seatHeight / 2
+            })`
+        )
+        .attr('data-rotation', seat && seat.rotation ? seat.rotation : 0)
         .call(
             d3
                 .drag()
@@ -22,23 +29,33 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         .on('click', (event: any, d: any) => {
             selectSeatItem(randomId);
         });
+    if (image) {
+        createRectWithImageBackground(image, clonedSeat, seatWidth, seatHeight, seat);
+    } else {
+        clonedSeat
+            .append('rect')
+            .attr('width', seatWidth)
+            .attr('height', seatHeight)
+            // fill color
+            .attr('fill', seat?.fill_color || '#000')
+            .attr('stroke', seat?.stroke_color || '#000')
+            .attr('stroke-width', seat?.stroke_width || 0)
+            .attr('rx', seat?.border_radius || 0)
+            .attr('ry', seat?.border_radius || 0).on('click', function () {
+                hideHandlers(d3);
+                showHndlers();
+            });
+    }
 
-    clonedSeat
-        .append('rect')
-        .attr('width', 50)
-        .attr('height', 50)
-        // fill color
-        .attr('fill', `#${Math.floor(Math.random() * 16777215).toString(16)}`)
-        .attr('rx', 5)
-        .attr('ry', 5);
 
-    clonedSeat
+    const resizeHandle = clonedSeat
         .append('circle')
         .attr('class', 'resize-handle')
-        .attr('cx', 50)
-        .attr('cy', 50)
+        .attr('cx', seatWidth)
+        .attr('cy', seatHeight)
         .attr('r', 5)
         .attr('fill', 'green')
+        .style('display', 'none')
         .call(
             d3.drag().on('drag', (event: any) => {
                 resize(event, clonedSeat);
@@ -49,9 +66,7 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
         event: d3.D3DragEvent<any, any, any>,
         seatGroup: d3.Selection<SVGGElement, any, any, any>
     ) {
-      
-   
-       
+
         const newWidth = Math.max(20, event.x);
         const newHeight = Math.max(20, event.y);
         console.log('resize', newWidth, newHeight);
@@ -60,18 +75,23 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
             .select('text')
             .attr('x', newWidth / 2)
             .attr('y', newHeight / 2);
+        if (seatGroup.select('pattern').node() && seatGroup.select('image').node()) {
+            seatGroup.select('pattern').attr('width', newWidth).attr('height', newHeight);
+            seatGroup.select('image').attr('width', newWidth).attr('height', newHeight);
+        }
         seatGroup.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
         seatGroup.select('.rotate-handle').attr('cx', newWidth / 2);
 
         selectSeatItem(randomId);
     }
 
-    clonedSeat
+    const rotateHandle = clonedSeat
         .append('circle')
         .attr('class', 'rotate-handle')
-        .attr('cx', 25)
+        .attr('cx', seatWidth / 2)
         .attr('cy', 0)
         .attr('r', 5)
+        .style('display', 'none')
         .attr('fill', 'red')
         .call(
             d3.drag()
@@ -86,6 +106,8 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
     let dragStarted = false;
 
     function dragstarted(event: any) {
+        hideHandlers(d3);
+        showHndlers();
         initialMouseX = event.x;
         initialMouseY = event.y;
         console.log('start', initialMouseX, initialMouseY);
@@ -196,9 +218,58 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any) => {
     function selectSeatItem(item: string) {
         const seatItemData = getSeatItemData(item, d3);
 
+
         seatItemStore.setItem(seatItemData);
     }
 
+    function createRectWithImageBackground(imageUrl: string, clonedSeat: d3.Selection<SVGGElement, any, any, any>, seatWidth: number, seatHeight: number, seat: SeatDesignModel | null = null) {
+
+        // Create a pattern and set the image as its background
+        // generate random id
+        const randomId = Math.random().toString(36).substring(7);
+        const pattern = clonedSeat
+            .append('pattern')
+            .attr('id', 'image-pattern' + '-' + randomId)
+            .attr('patternUnits', 'userSpaceOnUse') // Change patternUnits to userSpaceOnUse
+            .attr('width', seatWidth) // Set width and height to match the rect's dimensions
+            .attr('height', seatHeight);
+
+        pattern
+            .append('image')
+            .attr('href', imageUrl)
+            .attr('width', seatWidth) // Set width and height to match the pattern's dimensions
+            .attr('height', seatHeight);
+
+        // Append a rect with the image pattern as its fill
+        clonedSeat
+            .append('rect')
+            .attr('width', seatWidth)
+            .attr('height', seatHeight)
+            .attr('fill', `url(#image-pattern-${randomId})`)
+            .attr('rx', seat?.border_radius || 0)
+            .attr('ry', seat?.border_radius || 0).on('click', function () {
+                hideHandlers(d3);
+                showHndlers();
+            });;
+    }
+
+    function showHndlers() {
+        resizeHandle.style('display', 'inherit');
+        rotateHandle.style('display', 'inherit');
+    }
+
+
+}
+
+
+const hideHandlers = (d3: any) => {
+    console.log('hideHandlers');
+    const resizeHandler = d3.selectAll('.resize-handle');
+    const rotateHandler = d3.selectAll('.rotate-handle');
+    // loop through all the resize handles and hide them
+    console.log('resizeHandle', resizeHandler);
+    resizeHandler.style('display', 'none');
+    rotateHandler.style('display', 'none');
 }
 
 const getSeatItemData = (seatItemId: string, d3: any) => {
@@ -234,4 +305,4 @@ const getSeatItemData = (seatItemId: string, d3: any) => {
 }
 
 
-export { appendShapeToPlaceHolder, getSeatItemData };
+export { appendShapeToPlaceHolder, getSeatItemData, hideHandlers };

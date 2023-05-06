@@ -1,17 +1,19 @@
 <script lang="ts">
-	import { onDestroy, onMount } from 'svelte';
+	import {  onMount } from 'svelte';
 	import * as d3 from 'd3';
 	import SeatDesignSideBar from './seatDesignSideBar.svelte';
 	import EditSideBar from './editSideBar.svelte';
 	import { seatItemStore } from './seatItemStore';
-	import { Button, ButtonGroup, Input, InputAddon } from 'flowbite-svelte';
-	import { ArrowPath } from 'svelte-heros-v2';
+	import { Button, ButtonGroup, Fileupload, Input, InputAddon } from 'flowbite-svelte';
 	import { Lottie } from 'lottie-svelte';
-    import { Direction } from 'lottie-svelte/iface';
+	import { Direction } from 'lottie-svelte/iface';
+	import { seatLayoutStore } from './seatLayoutStore';
+	import { showSelectedDesign } from './seatDesignFromExsiting';
 
 	let selected: any;
+	let value: any;
 	let selectedAreaSize: number | undefined;
-
+	let imgSrc: string = '';
 	let seats: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let dragEnded = true;
 	function draggedImage(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
@@ -35,6 +37,14 @@
 	let isLoaded = false;
 
 	onMount(() => {
+		if ($seatLayoutStore) {
+			const seatDesign = $seatLayoutStore;
+			if (seatDesign.id) {
+				selectedAreaSize = seatDesign.aspect_ratio;
+				showSelectedDesign(seatDesign, d3, '.svgPlaceholder');
+			}
+		}
+
 		seats = d3.select(svg).append('g').attr('class', 'seats');
 		isLoaded = true;
 		// lines = d3.select(svg).append('g').attr('class', 'lines');
@@ -149,7 +159,7 @@
 
 	function onMouseDown(event: MouseEvent) {
 		const currentPoint = { x: event.offsetX, y: event.offsetY };
-		seatItemStore.reset();
+		seatItemStore.reset(d3);
 		return;
 		if (startPoint) {
 			console.log('$$$$$$$$$$$$$$$$$$$$$$$$', distanceBetweenPoints(startPoint, currentPoint));
@@ -233,23 +243,24 @@
 	}
 
 	function onMouseMove(event: MouseEvent) {
-		// if (startPoint) {
-		// 	// Update line preview
-		// 	const previewLine = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
-		// 	console.log('previewLine', previewLine);
-		// 	console.log('linePreview', linePreview);
-		// 	if (!linePreview) {
-		// 		console.log('linePreview', linePreview);
-		// 		console.log('linePreview', linePreview);
-		// 		linePreview = path
-		// 			.append('path')
-		// 			.attr('stroke', 'black')
-		// 			.attr('stroke-width', 2)
-		// 			.attr('stroke-dasharray', '5,5');
-		// 	}
-		// 	console.log('linePreview', 'asdf');
-		// 	linePreview.attr('d', previewLine);
-		// }
+		// console.log('onMouseMove: ', event.offsetX, event.offsetY);
+		if (startPoint) {
+			// Update line preview
+			const previewLine = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
+			console.log('previewLine', previewLine);
+			console.log('linePreview', linePreview);
+			if (!linePreview) {
+				console.log('linePreview', linePreview);
+				console.log('linePreview', linePreview);
+				linePreview = path
+					.append('path')
+					.attr('stroke', 'black')
+					.attr('stroke-width', 2)
+					.attr('stroke-dasharray', '5,5');
+			}
+			console.log('linePreview', 'asdf');
+			linePreview.attr('d', previewLine);
+		}
 	}
 
 	function onEscKey(event: KeyboardEvent) {
@@ -313,6 +324,49 @@
 	function onAreaSizeClick(areaType: AreaType) {
 		console.log('areaType', areaType);
 		selectedAreaSize = areaType;
+		seatLayoutStore.setAreaSize(areaType);
+	}
+
+	async function onFileUpload(e: any) {
+		console.log('onFileUpload', e);
+		const file = e.target.files[0] as File;
+		const aspectRatio = await getImageAspectRatio(file);
+
+		const reader = new FileReader();
+		reader.onload = () => {
+			imgSrc = reader.result as string;
+			const container = document.getElementById('container');
+			if (container) {
+				container.style.backgroundImage = `url(${imgSrc})`;
+				container.style.backgroundSize = 'cover';
+				container.style.backgroundPosition = 'center';
+			}
+		};
+		reader.readAsDataURL(file);
+		selectedAreaSize = aspectRatio;
+		seatLayoutStore.setAreaSize(selectedAreaSize);
+		console.log('aspectRatio', aspectRatio);
+	}
+
+	function getImageAspectRatio(file: File): Promise<number> {
+		return new Promise((resolve, reject) => {
+			const reader = new FileReader();
+			reader.onload = (event: any) => {
+				const img = new Image();
+				img.src = event.target.result as string;
+				img.onload = () => {
+					const aspectRatio = img.height / img.width;
+					resolve(aspectRatio);
+				};
+				img.onerror = () => {
+					reject(new Error('Failed to load the image.'));
+				};
+			};
+			reader.onerror = () => {
+				reject(new Error('Failed to read the file.'));
+			};
+			reader.readAsDataURL(file);
+		});
 	}
 
 	// Remove the event listener when the component is destroyed
@@ -324,7 +378,11 @@
 		<SeatDesignSideBar placeHolder={'.svgPlaceholder'} />
 		<div class="flex-1 relative">
 			{#if selectedAreaSize}
-				<div class=" relative w-full" style={`padding-bottom: calc(${selectedAreaSize} * 100%);`}>
+				<div
+					id="container"
+					class=" relative w-full"
+					style={`padding-bottom: calc(${selectedAreaSize} * 100%);`}
+				>
 					<svg
 						on:mousedown={onMouseDown}
 						on:mousemove={onMouseMove}
@@ -354,6 +412,9 @@
 							>Rectangle 4:5</Button
 						>
 					</ButtonGroup>
+					<div>
+						<Fileupload bind:value on:change={onFileUpload} />
+					</div>
 				</div>
 			{/if}
 

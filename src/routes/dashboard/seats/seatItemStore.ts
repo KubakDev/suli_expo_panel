@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { hideHandlers } from './seatDesignUtils';
 
 const initialItem: {
     id: null | string,
@@ -40,7 +41,10 @@ const createItemStore = () => {
             console.log(item)
             set(item)
         },
-        reset: () => set(initialItem),
+        reset: (d3: any) => {
+            hideHandlers(d3);
+            set(initialItem);
+        },
         updateItem: (field: any, value: any) => update((item) => ({ ...item, [field]: value })),
     };
 };

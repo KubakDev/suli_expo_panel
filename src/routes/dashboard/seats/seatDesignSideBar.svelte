@@ -46,14 +46,14 @@
 		// }
 	}
 
-	function onShapeSelected() {
-		appendShapeToPlaceHolder(placeHolder, d3);
+	function onShapeSelected(image: ImageModel | null = null) {
+		appendShapeToPlaceHolder(placeHolder, d3, image?.url);
 	}
 </script>
 
 <div class="flex flex-col space-y-2 p-4">
 	{#each seatTypes as seat}
-		<div on:click={onShapeSelected} class="seat-design p-2 bg-gray-200 rounded cursor-move">
+		<div on:click={() => onShapeSelected(null)} class="seat-design p-2 bg-gray-200 rounded cursor-move">
 			<svg
 				class={seat.class}
 				xmlns="http://www.w3.org/2000/svg"
@@ -67,6 +67,17 @@
 			</svg>
 		</div>
 	{/each}
+
+	<div class="grid grid-cols-2">
+		{#each images as image}
+			<div
+				on:click={() => onShapeSelected(image)}
+				class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move"
+			>
+				<img class="w-full h-full" src={image.url} alt={image.name} />
+			</div>
+		{/each}
+	</div>
 
 	<Label
 		>Select an option

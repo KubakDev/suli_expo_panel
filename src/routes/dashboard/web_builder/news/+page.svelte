@@ -13,6 +13,7 @@
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
 	import colorTheme from '../../../../stores/colorTheme';
 	import type { ColorTheme } from '../../../../models/colorTheme';
+	import { supabaseStore } from '../../../../stores/supabaseStore';
 
 	export let data;
 	let currentRowId: number;
@@ -37,30 +38,33 @@
 		News = 'news'
 	}
 	async function getUI() {
-		// 	const response: any = await supabase
-		// 		.from('page_builder')
-		// 		.select(
-		// 			`
-		// 			id,
-		// 	component_type:componentTypeId(
-		// 		id,
-		// 			type
-		// 		),
-		// 		component:componentId(
-		// 			title
-		// 		),
-		// 		color_palette:color_palette(
-		// 		*
-		//   )
-		// 	`
-		// 		)
-		// 		.eq('page', CardType.News);
-		// 	selectedColorTheme = response.data[0].color_palette;
-		// 	const cardIndex = response.data.findIndex((item: any) => item.component_type.type === 'card');
-		// 	currentRowId = response.data[cardIndex].id;
-		// 	let card = response.data[cardIndex].component.title;
-		// 	const module = await import('kubak-svelte-component');
-		// 	CardComponent = module[card];
+		const supabase = $supabaseStore;
+		console.log('supabase', supabase)
+		if(!supabase) return;
+		const response: any = await supabase
+			.from('page_builder')
+			.select(
+				`
+					id,
+			component_type:componentTypeId(
+				id,
+					type
+				),
+				component:componentId(
+					title
+				),
+				color_palette:color_palette(
+				*
+		  )
+			`
+			)
+			.eq('page', CardType.News);
+		selectedColorTheme = response.data[0].color_palette;
+		const cardIndex = response.data.findIndex((item: any) => item.component_type.type === 'card');
+		currentRowId = response.data[cardIndex].id;
+		let card = response.data[cardIndex].component.title;
+		const module = await import('kubak-svelte-component');
+		// CardComponent = module[card];
 	}
 	onMount(async () => {
 		await getUI();
@@ -134,7 +138,7 @@
 					style={`color:${
 						Object.keys(customColors).length > 0
 							? customColors.onBackgroundColor
-							: selectedColorTheme.onBackgroundColor
+							: selectedColorTheme?.onBackgroundColor
 					}`}
 					class="text-lg font-bold"
 				>

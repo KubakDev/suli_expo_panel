@@ -9,7 +9,7 @@
 	$: ({ supabase, session } = data);
 
 	onMount(() => {
-		supabaseStore.set(supabase);
+		// supabaseStore.set(supabase);
 		supabase.auth.getUser().then((user) => {
 			console.log('£££££££££££');
 			console.log(user);
