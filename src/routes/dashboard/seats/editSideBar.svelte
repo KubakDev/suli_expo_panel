@@ -11,6 +11,9 @@
 	import { page } from '$app/stores';
 	import { seatLayoutStore, type SeatLayoutModel } from './seatLayoutStore';
 	import { showSelectedDesign } from './seatDesignFromExsiting';
+	import html2canvas from 'html2canvas';
+	import type { SupabaseClient } from '@supabase/supabase-js';
+	import { Canvg } from 'canvg';
 
 	export let placeHolder: string;
 
@@ -28,6 +31,7 @@
 	let strokeColor: any;
 	let strokeWidth: string | undefined;
 	let seatLayoutName: string | undefined;
+	let supabase: SupabaseClient<any, 'public', any> | null;
 
 	let selectedSeatProperty: ItemPropertyModel = {
 		x: 0,
@@ -43,11 +47,11 @@
 
 	onMount(() => {
 		// get seat layout id from url
+		supabase = $supabaseStore;
 		const id = $page.params.id;
 		if (id) {
 			seatLayoutId = parseInt(id);
 		}
-		
 	});
 
 	$: {
@@ -125,6 +129,12 @@
 		const svgShapes = d3.select(placeHolder).selectAll('g');
 
 		const container = d3.select('.svgPlaceholder');
+		const uiImageUrl = await convertUiToImage(container);
+		console.log('uiImageUrl', uiImageUrl);
+		if (!uiImageUrl) {
+			alert('Something went wrong, please try again');
+			return;
+		}
 		// get contianer width and height
 		const htmlElemtn = container.node() as HTMLElement;
 		console.log('htmlElemtn', htmlElemtn);
@@ -185,6 +195,7 @@
 		const data: SeatLayoutModel = {
 			id: seatLayoutId,
 			name: seatLayoutName!,
+			image_url: uiImageUrl,
 			exhibition: 1,
 			aspect_ratio: undefined,
 			seats: shapesModel
@@ -363,6 +374,54 @@
 	function onInputName(value: any) {
 		const name = value.target.value;
 		seatLayoutName = name;
+	}
+
+	async function convertUiToImage(): Promise<string | null> {
+		if (!supabase) return null;
+		const svg = document.getElementById('svgContainer');
+		const svgData = new XMLSerializer().serializeToString(svg!);
+		const canvas = document.createElement('canvas');
+		const ramndomName = Math.random().toString(36).substring(7);
+		const randomImageName = `${seatLayoutName}_${ramndomName}`;
+		const canvgInstance = await Canvg.fromString(canvas.getContext('2d')!, svgData);
+		canvgInstance.start();
+		const imageDataUrl = canvas.toDataURL('image/png');
+		console.log('imageDataUrl', imageDataUrl);
+		const imageData = dataURLToBlob(imageDataUrl);
+		console.log('imageData', imageData);
+		const imageFile = new File([imageData],  "xxxd.png", {
+			type: 'image/png'
+		});
+		console.log('imageFile name', imageFile.name);
+		const { data, error } = await supabase.storage
+			.from('image')
+			.upload(`images/${imageFile.name}`, imageFile, {
+				cacheControl: '3600',
+				upsert: false
+			});
+		console.log('data', data);
+
+		if (error) {
+			console.error('Error uploading image:', error.message);
+			return null;
+		} else {
+			console.log('Image uploaded successfully');
+			const imageUrl = data?.path;
+			return imageUrl;
+		}
+	}
+
+	function dataURLToBlob(dataUrl: any) {
+		const byteString = atob(dataUrl.split(',')[1]);
+		const mimeString = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+		const arrayBuffer = new ArrayBuffer(byteString.length);
+		const u8Array = new Uint8Array(arrayBuffer);
+
+		for (let i = 0; i < byteString.length; i++) {
+			u8Array[i] = byteString.charCodeAt(i);
+		}
+
+		return new Blob([arrayBuffer], { type: mimeString });
 	}
 </script>
 

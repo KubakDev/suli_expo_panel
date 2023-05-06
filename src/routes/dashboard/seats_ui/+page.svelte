@@ -17,10 +17,6 @@
 	const placeHolder = '#placeHolderSeatDesign';
 	const a = '#aaaab';
 	let supabase: SupabaseClient<any, 'public', any> | null;
-	$: {
-		supabase = $supabaseStore;
-		getData();
-	}
 
 	async function getData() {
 		if (!supabase) return;
@@ -31,8 +27,9 @@
 		});
 	}
 	onMount(async () => {
+		supabase = $supabaseStore;
 		console.log('supabase', supabase);
-
+		getData();
 		// console.log(seatsData);
 		// seats = d3.select(svg).append('isLoaded = true;
 		// lines = d3.select(svg).append('g').attr('class', 'lines');
@@ -61,51 +58,51 @@
 		const htmlElemtn = container.node() as HTMLElement;
 		console.log('htmlElemtn', htmlElemtn);
 
-		const containerWidth = htmlElemtn.clientWidth;
-		const containerHeight = htmlElemtn.clientHeight;
-		console.log('containerHeight', containerHeight);
-		console.log('containerWidth', containerWidth);
+		// const containerWidth = htmlElemtn.clientWidth;
+		// const containerHeight = htmlElemtn.clientHeight;
+		// console.log('containerHeight', containerHeight);
+		// console.log('containerWidth', containerWidth);
 		// return;
 		// show seat design inside svg
 		let seats = [];
-		for (let i = 0; i < design.seats.length; i++) {
-			const seat = design.seats[i];
-			const seatWidth = (seat.width! / 100) * containerWidth;
-			const seatHeight = (seat.height! / 100) * containerHeight;
+		// for (let i = 0; i < design.seats.length; i++) {
+		// 	const seat = design.seats[i];
+		// 	const seatWidth = (seat.width! / 100) * containerWidth;
+		// 	const seatHeight = (seat.height! / 100) * containerHeight;
 
-			const seatX = (seat.x! / 100) * containerWidth;
-			const seatY = (seat.y! / 100) * containerHeight;
+		// 	const seatX = (seat.x! / 100) * containerWidth;
+		// 	const seatY = (seat.y! / 100) * containerHeight;
 
-			const seatDesign = d3
-				.select(placeHolder)
-				.append('g')
-				// add random class
-				.datum('')
-				.attr(
-					'transform',
-					`translate(${seatX},${seatY}) rotate(${seat.rotation}, ${seatWidth / 2},  ${
-						seatHeight / 2
-					})`
-				)
-				.attr('data-rotation', '0')
-				.on('click', (event: any, d: any) => {});
+		// 	const seatDesign = d3
+		// 		.select(placeHolder)
+		// 		.append('g')
+		// 		// add random class
+		// 		.datum('')
+		// 		.attr(
+		// 			'transform',
+		// 			`translate(${seatX},${seatY}) rotate(${seat.rotation}, ${seatWidth / 2},  ${
+		// 				seatHeight / 2
+		// 			})`
+		// 		)
+		// 		.attr('data-rotation', '0')
+		// 		.on('click', (event: any, d: any) => {});
 
-			if (seat.image_url) {
-				createRectWithImageBackground(seat, seatDesign, seatWidth, seatHeight);
-			} else {
-				seatDesign
-					.append('rect')
-					.attr('width', seatWidth)
-					.attr('height', seatHeight)
-					// fill color
-					.attr('fill', seat.fill_color!)
-					.attr('stroke', seat.stroke_color!)
-					.attr('stroke-width', seat.stroke_width!)
-					.attr('rx', seat.border_radius || 0)
-					.attr('ry', seat.border_radius || 0)
-					.on('click', function () {});
-			}
-		}
+		// 	if (seat.image_url) {
+		// 		createRectWithImageBackground(seat, seatDesign, seatWidth, seatHeight);
+		// 	} else {
+		// 		seatDesign
+		// 			.append('rect')
+		// 			.attr('width', seatWidth)
+		// 			.attr('height', seatHeight)
+		// 			// fill color
+		// 			.attr('fill', seat.fill_color!)
+		// 			.attr('stroke', seat.stroke_color!)
+		// 			.attr('stroke-width', seat.stroke_width!)
+		// 			.attr('rx', seat.border_radius || 0)
+		// 			.attr('ry', seat.border_radius || 0)
+		// 			.on('click', function () {});
+		// 	}
+		// }
 
 		seatLayoutStore.setItem(design);
 		goto('/dashboard/seats');
@@ -147,22 +144,15 @@
 	}
 </script>
 
-<div class="flex justify-between">
-	<div class="px-4">
+<div class="flex justify-center">
+	<div class="px-4 grid grid-cols-3 gap-4">
 		{#if designs}
 			{#each designs as design}
-				<div
-					on:click={showSelectedDesign(design)}
-					class="flex items-center space-x-2 my-2 border py-2 px-4 cursor-pointer"
-				>
-					<Card href="/cards">
+				<div on:click={() => showSelectedDesign(design)}>
+					<Card class="w-52 h-28 hover:shadow-sm duration-300 cursor-pointer">
 						<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-							Noteworthy technology acquisitions 2021
+							{design.name}
 						</h5>
-						<p class="font-normal text-gray-700 dark:text-gray-400 leading-tight">
-							Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse
-							chronological order.
-						</p>
 					</Card>
 				</div>
 			{/each}

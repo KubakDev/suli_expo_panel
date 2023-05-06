@@ -384,6 +384,7 @@
 					style={`padding-bottom: calc(${selectedAreaSize} * 100%);`}
 				>
 					<svg
+					id="svgContainer"
 						on:mousedown={onMouseDown}
 						on:mousemove={onMouseMove}
 						bind:this={svg}

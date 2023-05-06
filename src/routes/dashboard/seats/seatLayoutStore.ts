@@ -20,6 +20,7 @@ export interface SeatDesignModel {
 export interface SeatLayoutModel {
     id: number | undefined,
     name: string,
+    image_url: string | undefined,
     aspect_ratio: number | undefined,
     exhibition: number | undefined,
     seats: SeatDesignModel[],
@@ -41,10 +42,10 @@ const createSeatLayoutStore = () => {
             console.log(localState);
             if (localState && localState.id) {
                 const { data, error } = await supabase.rpc('update_seat_layout_and_seats', {
-                    layout_data: { id:  localState.id, name: layoutData.name, aspect_ratio: localState!.aspect_ratio, exhibition: layoutData.exhibition },
+                    layout_data: { id: localState.id, name: layoutData.name, aspect_ratio: localState!.aspect_ratio, exhibition: layoutData.exhibition },
                     seats_data: layoutData.seats
                 });
-                localState = { id:  localState.id, name: layoutData.name, aspect_ratio: localState!.aspect_ratio, exhibition: layoutData.exhibition, seats: layoutData.seats }
+                localState = { id: localState.id, name: layoutData.name, aspect_ratio: localState!.aspect_ratio, exhibition: layoutData.exhibition, seats: layoutData.seats, image_url: localState.image_url }
                 console.log(data);
             } else {
                 const { data, error } = await supabase.rpc('create_seat_layout_and_seats', {
@@ -52,7 +53,7 @@ const createSeatLayoutStore = () => {
                     seats_data: layoutData.seats
                 });
 
-                localState = { id: data, name: layoutData.name, aspect_ratio: localState!.aspect_ratio, exhibition: layoutData.exhibition, seats: layoutData.seats }
+                localState = { id: data, name: layoutData.name, aspect_ratio: localState!.aspect_ratio, exhibition: layoutData.exhibition, seats: layoutData.seats, image_url: layoutData.image_url }
                 console.log(data);
             }
 
@@ -60,7 +61,7 @@ const createSeatLayoutStore = () => {
         setAreaSize: (size: number) => {
             console.log('aspec ratio', size);
             if (!localState) {
-                localState = { id: undefined, name: '', aspect_ratio: size, exhibition: undefined, seats: [] }
+                localState = { id: undefined, name: '', aspect_ratio: size, exhibition: undefined, seats: [], image_url: undefined }
                 console.log(localState)
             } else {
                 localState.aspect_ratio = size;

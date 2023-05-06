@@ -4,15 +4,21 @@
 	import { NewsDetail, SimpleCard } from 'kubak-svelte-component';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import newsUi from '../../../stores/ui/newsUi';
+	import { supabaseStore } from '../../../stores/supabaseStore';
 	// import { supabase } from '../../../supabase';
 
 	export let data: PageData;
 
-	let cardData = {
+	let cardData: {
+		title: string;
+		date: string;
+		description: string;
+		img: File | null;
+	} = {
 		title: '',
 		date: '',
 		description: '',
-		img: 'https://cdn.pixabay.com/photo/2015/04/19/08/32/marguerite-729510__340.jpg'
+		img: null
 	};
 	let detailData: {
 		title: string;
@@ -28,7 +34,7 @@
 		const file = fileInput!.files![0];
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			cardData.img = reader.result as string;
+			cardData.img = file;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -51,9 +57,9 @@
 	}
 	async function submitForm() {
 		console.log('cardData');
-		// const { data, error } = await supabase.storage
-		// 	.from('image')
-		// 	.upload('images/my-image.png', cardData.img);
+		const { data, error } = await $supabaseStore!.storage
+			.from('image')
+			.upload(`images/${cardData.img!.name}`, cardData.img!);
 		console.log('data', data);
 		// console.log('error', error);
 	}
