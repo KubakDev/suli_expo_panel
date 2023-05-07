@@ -129,7 +129,7 @@
 		const svgShapes = d3.select(placeHolder).selectAll('g');
 
 		const container = d3.select('.svgPlaceholder');
-		const uiImageUrl = await convertUiToImage(container);
+		const uiImageUrl = await convertUiToImage();
 		console.log('uiImageUrl', uiImageUrl);
 		if (!uiImageUrl) {
 			alert('Something went wrong, please try again');
@@ -389,7 +389,7 @@
 		console.log('imageDataUrl', imageDataUrl);
 		const imageData = dataURLToBlob(imageDataUrl);
 		console.log('imageData', imageData);
-		const imageFile = new File([imageData],  "xxxd.png", {
+		const imageFile = new File([imageData],  `${randomImageName}.png`, {
 			type: 'image/png'
 		});
 		console.log('imageFile name', imageFile.name);
