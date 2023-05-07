@@ -2,3 +2,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+.date-time-field {
+	input[type='text'] {
+		padding: 8px;
+		width: 100%;
+		border-radius: 0.5rem;
+		color: rgb(17 24 39);
+		font-size: 0.9rem;
+	}
+}
