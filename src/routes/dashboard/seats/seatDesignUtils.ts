@@ -1,4 +1,3 @@
-import type { ImageModel } from "./model";
 import { seatItemStore } from "./seatItemStore";
 import type { SeatDesignModel } from "./seatLayoutStore";
 

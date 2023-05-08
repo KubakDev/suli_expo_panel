@@ -1,22 +1,38 @@
 <script lang="ts">
 	import { Label, Checkbox, A, Button, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { DateInput } from 'date-picker-svelte';
+	import { RichEditor, html } from 'svelte-rich-text';
+
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { supabaseStore } from '../../../stores/supabaseStore';
 	import { NewsDetail, SimpleCard } from 'kubak-svelte-component';
 	import { onMount } from 'svelte';
 	import { getNewsUi } from '../../../stores/ui/newsUi';
 	import newsUiStore from '../../../stores/ui/newsUi';
+	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
+
+	html.subscribe((value) => {
+		// do something with the html value
+	});
+
+	let CardComponent: any;
+	$: newsCardComponent = CardComponent;
+
 	let cardData: {
 		title: string;
-		date: string;
-		description: string;
-		img: string;
+		thumbnail: string;
+		created_at: Date;
+		imgSource: ImgSourceEnum;
+		short_description: string;
 	} = {
 		title: '',
-		date: '',
-		description: '',
-		img: ''
+		thumbnail: '',
+		created_at: new Date(),
+		imgSource: ImgSourceEnum.remote,
+		short_description: ''
 	};
+	let date = new Date();
+
 	let detailData: {
 		title: string;
 		description: string;
@@ -31,7 +47,8 @@
 		const file = fileInput!.files![0];
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			cardData.img = file;
+			cardData.thumbnail = reader.result as string;
+			cardData.imgSource = ImgSourceEnum.local;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -52,19 +69,55 @@
 		};
 		reader.readAsDataURL(file);
 	}
-	async function submitForm() {
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		const { data, error } = await supabase.storage
-			.from('image')
-			.upload(`images/${cardData.img?.name ?? ''}`, cardData.img!);
+	async function submitForm(e: Event) {
+		e.preventDefault();
+		console.log(cardData);
+		// const supabase = $supabaseStore;
+		// if (!supabase) return;
+		// const { data, error } = await supabase.storage
+		// 	.from('image')
+		// 	.upload(`images/${cardData.thumbnail ?? ''}`, cardData.thumbnail!);
 	}
 
 	onMount(async () => {
+		newsCardComponent = CardComponent;
 		const supabase = $supabaseStore;
 		if (!supabase) return;
-		getNewsUi(supabase);
+		await getNewsUi(supabase);
+		let card = $newsUiStore?.component?.title;
+
+		const module = await import('kubak-svelte-component');
+		CardComponent = module[card];
 	});
+	function handleValueChange(value: any) {
+		console.log(value);
+	}
+
+	let startContent = [
+		{
+			type: 'h1',
+			text: "Rich's favourite rich-text-editor"
+		},
+		{
+			type: 'p',
+			text: 'This rich editor is different than most others.',
+			format: [
+				{
+					start: 20,
+					end: 29,
+					i: true
+				}
+			]
+		}
+	];
+
+	$: {
+		console.log($html);
+	}
+
+	function richText(e: Event) {
+		console.log('mouse down', e);
+	}
 </script>
 
 <div
@@ -91,36 +144,65 @@
 					</Label>
 				</div>
 				<div>
-					<Label for="title" class="mb-2">First name</Label>
-					<Input type="text" id="title" placeholder="John" required bind:value={detailData.title} />
+					<Label class="space-y-2 mb-2">
+						<span>Upload file</span>
+						<DateInput bind:value={cardData.created_at} format="yyyy/MM/dd" />
+					</Label>
 				</div>
 				<div class="col-span-2">
-					<Label for="textarea-id" class="mb-2">Your message</Label>
+					<Label for="textarea-id" class="mb-2">short description</Label>
 					<Textarea
 						id="textarea-id"
-						placeholder="Your message"
+						placeholder="short description"
 						rows="4"
 						name="message"
-						class="h-44"
-						bind:value={detailData.description}
+						bind:value={cardData.short_description}
 					/>
 				</div>
+				<br />
+				<div>
+					<Label for="title" class="mb-2">Title</Label>
+					<Input
+						type="text"
+						id="title"
+						placeholder="News Title"
+						required
+						bind:value={detailData.title}
+					/>
+				</div>
+				<br />
+				<div class="col-span-2">
+					<Label for="textarea-id" class="mb-2">Your message</Label>
+				</div>
+				<br />
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Upload file</span>
 						<Fileupload on:change={addSliderImages} />
 					</Label>
 				</div>
-				<Button type="submit">Submit</Button>
 			</div>
+			<Button type="submit">Submit</Button>
 		</form>
 	</div>
+	<RichEditor content={startContent} on:mousedown={(e) => richText(e)} />
+	{@html $html}
 	<div class=" h-full p-2">
 		<Tabs>
 			<TabItem open title="News List">
 				{#if $newsUiStore}
-					<div class=" w-full bg-[#3E4248] rounded-md p-10">
-						<SimpleCard data={cardData} colors={$newsUiStore.color_palette} />
+					<div class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center">
+						<div class="w-[600px]">
+							{#if newsCardComponent}
+								<svelte:component
+									this={newsCardComponent}
+									data={cardData}
+									colors={$newsUiStore.color_palette}
+								/>
+							{:else}
+								<div />
+							{/if}
+						</div>
 					</div>
 				{/if}
 			</TabItem>

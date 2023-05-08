@@ -9,8 +9,3 @@ export interface SeatItemModel {
     defaultRadius: number;
 }
 
-export interface ImageModel {
-    id: string;
-    url: string;
-    name: string;
-}   

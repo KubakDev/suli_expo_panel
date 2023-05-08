@@ -1,29 +1,34 @@
 <script lang="ts">
-	import { Button, Label, Select } from 'flowbite-svelte';
-	import { Pencil } from 'svelte-heros-v2';
-	import type { ImageModel, SeatItemModel } from './model';
+	import { Button, Dropzone, Input, Label, Modal, Select } from 'flowbite-svelte';
+	import { Pencil, Plus } from 'svelte-heros-v2';
+	import type { SeatItemModel } from './model';
 	import * as d3 from 'd3';
 	import { onMount } from 'svelte';
 	import { appendShapeToPlaceHolder } from './seatDesignUtils';
+	import ErrorAlert from '$lib/components/alert/CustomAlert.svelte';
+	import { alertStore } from '../../../stores/alertStore';
+	import uploadFileStore from '../../../stores/uploadFileStore';
+	import { seatItemStore } from './seatItemStore';
+	import seatImageItemStore, { type SeatImageItemModel } from '../../../stores/seatImageItemStore';
 
 	export let placeHolder: string;
 
+	let uploadImageModal: any = false;
 	let isPenSelected = false;
 	const seatWidth = 50;
 	const seatHeight = 50;
+	let files: any;
+	let itemName: string = '';
+	let selectedImageToUpload: any;
+	let images: SeatImageItemModel[] = [];
+	onMount(() => {
+		seatImageItemStore.getAllSeatItems().then((data) => {});
+	});
 
-	let images: ImageModel[] = [
-		{
-			id: '1',
-			url: 'https://www.easylinedrawing.com/wp-content/uploads/2020/10/flower_drawing.png',
-			name: 'A'
-		},
-		{
-			id: '2',
-			url: 'https://www.southernliving.com/thmb/xFlQn020pc1NJAl4ksr7_o_B5u4=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-598083938-1-22dab883ff2a43d8b2751d9f363f2d5d.jpg',
-			name: 'B'
-		}
-	];
+	$: {
+		console.log($seatImageItemStore);
+		images = $seatImageItemStore;
+	}
 
 	function onSelectedImage(e: any) {
 		console.log(e.detail.value);
@@ -32,8 +37,6 @@
 	const seatTypes: SeatItemModel[] = [
 		{ id: 'seat-a', class: 'seat seat-a', content: 'A', type: 'rect', defaultRadius: 20 }
 	];
-
-	let selectedImage: ImageModel = images[0];
 
 	function onSelectPen() {
 		isPenSelected = !isPenSelected;
@@ -46,14 +49,57 @@
 		// }
 	}
 
-	function onShapeSelected(image: ImageModel | null = null) {
-		appendShapeToPlaceHolder(placeHolder, d3, image?.url);
+	function onShapeSelected(image: SeatImageItemModel | null = null) {
+		appendShapeToPlaceHolder(placeHolder, d3, image?.image_url);
+	}
+
+	function addImages() {
+		// alertStore.addAlert('error', 'Error', 'error');
+		uploadImageModal = true;
+	}
+
+	async function onSubmit() {
+		if (itemName === '') {
+			alertStore.addAlert('error', 'Please enter item name', 'error');
+			return;
+		}
+		const url = await uploadFileStore.uploadFile(files[0]);
+		if (url) {
+			const image: SeatImageItemModel = {
+				image_url: url,
+				name: itemName
+			};
+			seatImageItemStore.uploadSeatItem(image);
+		} else {
+			alertStore.addAlert('error', 'Image Url is empty', 'error');
+		}
+	}
+
+	async function onFileSelected(e: any) {
+		console.log(e);
+		console.log(files[0]);
+		if (files && files.length > 0) {
+			const file = files[0];
+			const reader = new FileReader();
+
+			reader.onload = (e: ProgressEvent<FileReader>) => {
+				if (e.target) {
+					const base64String = e.target.result as string;
+					selectedImageToUpload = base64String;
+				}
+			};
+
+			reader.readAsDataURL(file);
+		}
 	}
 </script>
 
 <div class="flex flex-col space-y-2 p-4">
 	{#each seatTypes as seat}
-		<div on:click={() => onShapeSelected(null)} class="seat-design p-2 bg-gray-200 rounded cursor-move">
+		<div
+			on:click={() => onShapeSelected(null)}
+			class="seat-design p-2 bg-gray-200 rounded cursor-move"
+		>
 			<svg
 				class={seat.class}
 				xmlns="http://www.w3.org/2000/svg"
@@ -68,21 +114,31 @@
 		</div>
 	{/each}
 
-	<div class="grid grid-cols-2">
-		{#each images as image}
-			<div
-				on:click={() => onShapeSelected(image)}
-				class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move"
-			>
-				<img class="w-full h-full" src={image.url} alt={image.name} />
-			</div>
+	<div class="grid grid-cols-2 bg-gray-400 p-1 rounded-md">
+		{#each images as image, index}
+			{#if index === 0}
+				<Button
+					on:click={() => addImages()}
+					class="w-20 h-20 seat-design p-2  rounded cursor-move m-1"
+				>
+					<Plus class="w-full h-full" />
+				</Button>
+				<div
+					on:click={() => onShapeSelected(image)}
+					class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
+				>
+					<img class="w-full h-full" src={image.image_url} alt={image.name} />
+				</div>
+			{:else}
+				<div
+					on:click={() => onShapeSelected(image)}
+					class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
+				>
+					<img class="w-full h-full" src={image.image_url} alt={image.name} />
+				</div>
+			{/if}
 		{/each}
 	</div>
-
-	<Label
-		>Select an option
-		<Select value={selectedImage.url} class="mt-2" items={images} on:change={onSelectedImage} />
-	</Label>
 
 	<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isPenSelected ? 'dark' : 'light'}>
 		<Pencil
@@ -92,6 +148,40 @@
 		/>
 	</Button>
 </div>
+<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
+	<Label class="space-y-2">
+		<span>Name</span>
+		<Input bind:value={itemName} type="email" name="Name" placeholder="Stairs" required />
+	</Label>
+	<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Upload Image</h3>
+	<Dropzone id="dropzone" on:change={onFileSelected} bind:files>
+		{#if !selectedImageToUpload}
+			<svg
+				aria-hidden="true"
+				class="mb-3 w-10 h-10 text-gray-400"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+				xmlns="http://www.w3.org/2000/svg"
+				><path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+				/></svg
+			>
+			<p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+				<span class="font-semibold">Click to upload</span> or drag and drop
+			</p>
+			<p class="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+		{:else}
+			<div class="w-full h-full">
+				<img src={selectedImageToUpload} class="w-full h-full object-cover rounded-md" />
+			</div>
+		{/if}
+	</Dropzone>
+	<Button on:click={onSubmit} class="w-full1">Submit</Button>
+</Modal>
 
 <style>
 	.custom-cursor {
