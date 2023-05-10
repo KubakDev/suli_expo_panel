@@ -1,7 +1,16 @@
 @import '@fontsource/fira-mono';
 @tailwind base;
 @tailwind components;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	all: unset;
+}
 @tailwind utilities;
+
 .date-time-field {
 	input[type='text'] {
 		padding: 8px;
@@ -10,4 +19,13 @@
 		color: rgb(17 24 39);
 		font-size: 0.9rem;
 	}
+}
+.tox-statusbar {
+	display: none !important;
+}
+.tinymce-wrapper {
+	height: 100% !important;
+}
+.tox-tinymce {
+	height: 100% !important;
 }
