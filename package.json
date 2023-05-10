@@ -57,9 +57,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@tinymce/tinymce-svelte": "^1.0.1",
 		"canvg": "^4.0.1",
 		"date-picker-svelte": "^2.4.3",
 		"html2canvas": "^1.4.1",
+		"svelte-rich-text": "^0.0.9",
 		"swiper": "^9.2.4",
 		"yup": "^1.1.1"
 	}
