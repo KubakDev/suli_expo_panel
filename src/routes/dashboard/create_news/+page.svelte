@@ -187,7 +187,7 @@
 	</div>
 	<RichEditor content={startContent} on:mousedown={(e) => richText(e)} />
 	{@html $html}
-	<div class=" h-full p-2">
+	<div class=" p-2 h-screen-1/2">
 		<Tabs>
 			<TabItem open title="News List">
 				{#if $newsUiStore}

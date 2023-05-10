@@ -15,6 +15,10 @@ const config = {
     extend: {
       height: {
         '128': '32rem',
+        'screen-1/2': '50vh',
+        'screen-1/3': '33.333333vh',
+        'screen-2/3': '66.666667vh',
+        'screen-1/4': '25vh',
       }
     },
   },

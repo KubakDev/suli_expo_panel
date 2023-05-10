@@ -107,8 +107,6 @@
 					const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
 					const centerX = width / 2;
 					const centerY = height / 2;
-					console.log('translateX listner', translateX);
-					console.log('translateY listner', translateY);
 					value.select('.resize-handle').attr('cx', width).attr('cy', height);
 					const rotation = selectedSeatProperty.rotation;
 					value
@@ -130,23 +128,18 @@
 
 		const container = d3.select('.svgPlaceholder');
 		const uiImageUrl = await convertUiToImage();
-		console.log('uiImageUrl', uiImageUrl);
 		if (!uiImageUrl) {
 			alert('Something went wrong, please try again');
 			return;
 		}
 		// get contianer width and height
 		const htmlElemtn = container.node() as HTMLElement;
-		console.log('htmlElemtn', htmlElemtn);
 
 		const containerWidth = htmlElemtn.clientWidth;
 		const containerHeight = htmlElemtn.clientHeight;
-		console.log('containerWidth', containerWidth, 'containerHeight', containerHeight);
-
 		// convert all svg shapes to shapes model
 		svgShapes.each(function (d, i) {
 			const value = d3.select(this);
-			console.log('each value ', value);
 			const transform = value.attr('transform');
 			const translateRegex = /translate\(([\d.]+),\s*([\d.]+)\)/;
 			const translateMatch = transform.match(translateRegex);
@@ -155,9 +148,6 @@
 			// x y as a percentage of the container
 			const xPercentage = (translateX / containerWidth) * 100;
 			const yPercentage = (translateY / containerHeight) * 100;
-			console.log('xPercentage', xPercentage, 'yPercentage', yPercentage);
-			console.log('translateX', translateX, 'translateY', translateY);
-			console.log('containerWidth', containerWidth);
 			const currentRotation = parseFloat(value.attr('data-rotation')) || 0;
 			const fillColor = value.select('rect').attr('fill');
 			const width = parseInt(value.select('rect').attr('width'));
@@ -200,7 +190,6 @@
 			aspect_ratio: undefined,
 			seats: shapesModel
 		};
-		console.log('data', data);
 		if (seatLayoutId) {
 			seatLayoutStore.saveData(data, supabase);
 		} else {
@@ -218,7 +207,6 @@
 		itemPrice = $seatItemStore.price != null ? $seatItemStore.price.toString() : undefined;
 		itemRotation = $seatItemStore.rotation != null ? $seatItemStore.rotation.toString() : undefined;
 		itemRadius = $seatItemStore.radius != null ? $seatItemStore.radius.toString() : undefined;
-		console.log(' $seatItemStore.fillColor ', $seatItemStore.fillColor);
 		strokeWidth =
 			$seatItemStore.strokeWidth != null ? $seatItemStore.strokeWidth.toString() : undefined;
 		fillColor = $seatItemStore.fillColor;
@@ -228,7 +216,6 @@
 		const seatItem = d3.select(`#${seatItemId}`);
 		seatItem.attr('data-isSelectable', value.target.checked);
 		const seatItemData = getSeatItemData(seatItemId!, d3);
-		console.log('seatItemData', seatItemData);
 		seatItemStore.setItem(seatItemData);
 	}
 
@@ -237,7 +224,6 @@
 		seatItem.select('rect').attr('width', value.target.value);
 
 		const seatItemData = getSeatItemData(seatItemId!, d3);
-		console.log('seatItemData', seatItemData);
 		seatItemStore.setItem(seatItemData);
 		changeRotationPostion(seatItemData.width, seatItemData.height);
 	}
@@ -246,7 +232,6 @@
 		seatItem.select('rect').attr('height', value.target.value);
 
 		const seatItemData = getSeatItemData(seatItemId!, d3);
-		console.log('seatItemData', seatItemData);
 		seatItemStore.setItem(seatItemData);
 		changeRotationPostion(seatItemData.width, seatItemData.height);
 	}
@@ -281,7 +266,6 @@
 		const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
 		const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
 		let seatItemData = getSeatItemData(seatItemId!, d3);
-		console.log('seatItemData', seatItemData);
 		seatItem.attr(
 			'transform',
 			`translate(${positionX},${translateY}) rotate(${seatItemData.rotation},${
@@ -301,7 +285,6 @@
 		const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
 		const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
 		let seatItemData = getSeatItemData(seatItemId!, d3);
-		console.log('seatItemData', seatItemData);
 		seatItem.attr(
 			'transform',
 			`translate(${translateX},${positionY}) rotate(${seatItemData.rotation},${
@@ -316,7 +299,6 @@
 		const radius = value.target.value;
 		if (parseInt(radius) < 0) {
 			itemRadius = '0';
-			console.log('radius', radius);
 			return;
 		}
 		const seatItem = d3.select(`#${seatItemId}`);
@@ -340,11 +322,9 @@
 
 	function onFillColorSelected(value: any) {
 		if (value.detail && value.detail.hex) {
-			console.log('value', value.hex);
 			const color = value.detail.hex;
 			const seatItem = d3.select(`#${seatItemId}`);
 			seatItem.select('rect').attr('fill', color);
-			console.log('value', value);
 			let seatItemData = getSeatItemData(seatItemId!, d3);
 			seatItemStore.setItem(seatItemData);
 		}
@@ -352,11 +332,9 @@
 
 	function onStrokeColorSelected(value: any) {
 		if (value.detail && value.detail.hex) {
-			console.log('value', value.hex);
 			const color = value.detail.hex;
 			const seatItem = d3.select(`#${seatItemId}`);
 			seatItem.select('rect').attr('stroke', color);
-			console.log('value', value);
 			let seatItemData = getSeatItemData(seatItemId!, d3);
 			seatItemStore.setItem(seatItemData);
 		}
@@ -366,7 +344,6 @@
 		const strokeWidth = value.target.value;
 		const seatItem = d3.select(`#${seatItemId}`);
 		seatItem.select('rect').attr('stroke-width', strokeWidth);
-		console.log('value', value);
 		let seatItemData = getSeatItemData(seatItemId!, d3);
 		seatItemStore.setItem(seatItemData);
 	}
@@ -386,26 +363,21 @@
 		const canvgInstance = await Canvg.fromString(canvas.getContext('2d')!, svgData);
 		canvgInstance.start();
 		const imageDataUrl = canvas.toDataURL('image/png');
-		console.log('imageDataUrl', imageDataUrl);
 		const imageData = dataURLToBlob(imageDataUrl);
-		console.log('imageData', imageData);
 		const imageFile = new File([imageData],  `${randomImageName}.png`, {
 			type: 'image/png'
 		});
-		console.log('imageFile name', imageFile.name);
 		const { data, error } = await supabase.storage
 			.from('image')
 			.upload(`images/${imageFile.name}`, imageFile, {
 				cacheControl: '3600',
 				upsert: false
 			});
-		console.log('data', data);
 
 		if (error) {
 			console.error('Error uploading image:', error.message);
 			return null;
 		} else {
-			console.log('Image uploaded successfully');
 			const imageUrl = data?.path;
 			return imageUrl;
 		}

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button, Dropzone, Input, Label, Modal, Select } from 'flowbite-svelte';
-	import { Pencil, Plus } from 'svelte-heros-v2';
+	import { Button, Dropzone, Input, Label, Modal, Select, Spinner } from 'flowbite-svelte';
+	import { Pencil, Plus, Signal } from 'svelte-heros-v2';
 	import type { SeatItemModel } from './model';
 	import * as d3 from 'd3';
 	import { onMount } from 'svelte';
@@ -12,7 +12,7 @@
 	import seatImageItemStore, { type SeatImageItemModel } from '../../../stores/seatImageItemStore';
 
 	export let placeHolder: string;
-
+	let submittedImage = 'no';
 	let uploadImageModal: any = false;
 	let isPenSelected = false;
 	const seatWidth = 50;
@@ -63,13 +63,24 @@
 			alertStore.addAlert('error', 'Please enter item name', 'error');
 			return;
 		}
+		submittedImage = 'loading';
 		const url = await uploadFileStore.uploadFile(files[0]);
+		console.log(url);
 		if (url) {
 			const image: SeatImageItemModel = {
 				image_url: url,
 				name: itemName
 			};
-			seatImageItemStore.uploadSeatItem(image);
+
+			await seatImageItemStore.uploadSeatItem(image);
+			submittedImage = 'submitted';
+			submittedImage = 'no';
+			selectedImageToUpload = null;
+			files = null;
+			itemName = '';
+			uploadImageModal = false;
+			seatImageItemStore.getAllSeatItems();
+
 		} else {
 			alertStore.addAlert('error', 'Image Url is empty', 'error');
 		}
@@ -115,28 +126,17 @@
 	{/each}
 
 	<div class="grid grid-cols-2 bg-gray-400 p-1 rounded-md">
+		<Button on:click={() => addImages()} class="w-20 h-20 seat-design p-2  rounded cursor-move m-1">
+			<Plus class="w-full h-full" />
+		</Button>
 		{#each images as image, index}
-			{#if index === 0}
-				<Button
-					on:click={() => addImages()}
-					class="w-20 h-20 seat-design p-2  rounded cursor-move m-1"
-				>
-					<Plus class="w-full h-full" />
-				</Button>
+			
 				<div
 					on:click={() => onShapeSelected(image)}
 					class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
 				>
 					<img class="w-full h-full" src={image.image_url} alt={image.name} />
 				</div>
-			{:else}
-				<div
-					on:click={() => onShapeSelected(image)}
-					class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
-				>
-					<img class="w-full h-full" src={image.image_url} alt={image.name} />
-				</div>
-			{/if}
 		{/each}
 	</div>
 
@@ -180,7 +180,13 @@
 			</div>
 		{/if}
 	</Dropzone>
-	<Button on:click={onSubmit} class="w-full1">Submit</Button>
+	{#if submittedImage == 'no'}
+		<Button on:click={onSubmit} class="w-full1">Submit</Button>
+	{:else if submittedImage == 'submitted'}
+		<Signal />
+	{:else}
+		<Spinner />
+	{/if}
 </Modal>
 
 <style>

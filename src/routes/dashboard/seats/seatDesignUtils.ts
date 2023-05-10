@@ -3,7 +3,6 @@ import type { SeatDesignModel } from "./seatLayoutStore";
 
 
 const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | null = null, seatWidth: number = 20, seatHeight: number = 20, seatX: number = 5, seatY: number = 5, seat: SeatDesignModel | null = null) => {
-    console.log('appendShapeToPlaceHolder', placeHolder);
     let svg: SVGSVGElement;
 
     const randomId = `seat-${Math.floor(Math.random() * 100000)}`;
@@ -68,7 +67,6 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | 
 
         const newWidth = Math.max(20, event.x);
         const newHeight = Math.max(20, event.y);
-        console.log('resize', newWidth, newHeight);
         seatGroup.select('rect').attr('width', newWidth).attr('height', newHeight);
         seatGroup
             .select('text')
@@ -109,13 +107,10 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | 
         showHndlers();
         initialMouseX = event.x;
         initialMouseY = event.y;
-        console.log('start', initialMouseX, initialMouseY);
         dragStarted = true;
     }
 
     function dragged(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
-        console.log(event.x, event.y);
-        // selectedItem(seatGroup);
         const currentRotation = parseInt(seatGroup.attr('data-rotation') || '0');
         const rectElement = seatGroup.select('rect').node() as SVGRectElement;
         const bbox = rectElement.getBBox();
@@ -152,21 +147,11 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | 
     function dragended(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
         initialMouseX = 0;
         initialMouseY = 0;
-        console.log('end', initialMouseX, initialMouseY);
         const transform = seatGroup.attr('transform');
         const translateRegex = /translate\((-?[\d.]+),\s*(-?[\d.]+)\)/;
         const translateMatch = transform.match(translateRegex);
         const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
         const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
-
-        console.log('dragended translateX', translateX, 'dragended translateY', translateY);
-        // You can add additional logic here when the dragging ends
-        // const target = event.sourceEvent.target as HTMLElement;
-        // if (target.classList.contains('rotate-handle')) {
-        // 	rotate(event.sourceEvent as any, d3.select(event.subject));
-        // } else if (target.classList.contains('resize-handle')) {
-        // 	resize(event.sourceEvent as any, d3.select(event.subject));
-        // }
     }
 
     let startAngle: number | null = null;
@@ -175,6 +160,9 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | 
         event: any,
         clonedSeat: d3.Selection<SVGGElement, any, any, any>
     ) {
+        // check if shift key is pressed
+       
+        const isShiftKey = event.sourceEvent.shiftKey;
 
         const translation = clonedSeat.attr('transform').match(/translate\(([\d.]+),([\d.]+)\)/);
         const translateX = translation ? parseFloat(translation[1]) : 0;
@@ -199,7 +187,6 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | 
         const angleDifference = angle - startAngle;
 
         const currentRotation = parseFloat(clonedSeat.attr('data-rotation')) || 0;
-        console.log('currentRotation', currentRotation);
         const newRotation = currentRotation + angleDifference;
 
         // Update the transform attribute to maintain the position while rotating
@@ -262,11 +249,9 @@ const appendShapeToPlaceHolder = (placeHolder: string, d3: any, image: string | 
 
 
 const hideHandlers = (d3: any) => {
-    console.log('hideHandlers');
     const resizeHandler = d3.selectAll('.resize-handle');
     const rotateHandler = d3.selectAll('.rotate-handle');
     // loop through all the resize handles and hide them
-    console.log('resizeHandle', resizeHandler);
     resizeHandler.style('display', 'none');
     rotateHandler.style('display', 'none');
 }
@@ -280,14 +265,12 @@ const getSeatItemData = (seatItemId: string, d3: any) => {
     const price = parseFloat(seatItem.attr('data-price')) || 0;
     const radius = parseFloat(seatItem.select('rect').attr('rx'));
     const fillColor = seatItem.select('rect').attr('fill');
-    const isSelectable = seatItem.attr('data-isSelectable') ? Boolean(seatItem.attr('data-isSelectable')) : false || false;
-
+    const isSelectable = seatItem.attr('data-isSelectable') === 'true' ? true : false || false;
     const transform = seatItem.attr('transform');
     const translateRegex = /translate\((-?[\d.]+),\s*(-?[\d.]+)\)/;
     const translateMatch = transform.match(translateRegex);
     const translateX = translateMatch ? parseFloat(translateMatch[1]) : 0;
     const translateY = translateMatch ? parseFloat(translateMatch[2]) : 0;
-    console.log('radius', radius);
     const initialItem = {
         id: seatItemId,
         price: price,

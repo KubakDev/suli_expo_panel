@@ -1,5 +1,5 @@
 <script lang="ts">
-	import {  onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
 	import SeatDesignSideBar from './seatDesignSideBar.svelte';
 	import EditSideBar from './editSideBar.svelte';
@@ -130,7 +130,7 @@
 	const seatHeight = 50;
 	let lines: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let d = '';
-	const paths: string[] = [];
+	let paths: string[] = [];
 	let path: any;
 	let currentPath: string = '';
 
@@ -160,15 +160,11 @@
 	function onMouseDown(event: MouseEvent) {
 		const currentPoint = { x: event.offsetX, y: event.offsetY };
 		seatItemStore.reset(d3);
-		return;
-		if (startPoint) {
-			console.log('$$$$$$$$$$$$$$$$$$$$$$$$', distanceBetweenPoints(startPoint, currentPoint));
-		}
+
 		if (firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50) {
 			// 10 is the threshold value
 			// Close the shape
-			console.log(firstPoint.x, firstPoint.y);
-			console.log(currentPoint.x, currentPoint.y);
+			console.log('firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50');
 			const line = `M ${firstPoint.x} ${firstPoint.y} L ${currentPoint.x} ${currentPoint.y}`;
 			paths.push(line);
 
@@ -197,19 +193,49 @@
 			startPoint = null;
 		} else {
 			if (!startPoint) {
+				paths = [];
 				startPoint = { x: event.offsetX, y: event.offsetY };
 				firstPoint = { x: event.offsetX, y: event.offsetY };
+
+				path = d3.select(svg).append('g').attr('transform', `translate(${5},${5}) `);
+
+				path
+					.append('circle')
+					.attr('class', 'resize-handle')
+					.attr('cx', 0)
+					.attr('cy', 0)
+					.attr('r', 5)
+					.attr('fill', 'green')
+					.call(
+						d3.drag().on('drag', (event: any) => {
+							resize(event, path);
+						}) as any
+					);
+
+				// path
+				// 	.append('rect')
+				// 	.attr('width', seatWidth)
+				// 	.attr('height', seatHeight)
+				// 	// fill color
+				// 	.attr('fill', '#000')
+				// 	.attr('stroke', '#000')
+				// 	.attr('stroke-width', 0)
+				// 	.attr('rx', 0)
+				// 	.attr('ry', 0)
+				// 	.on('click', function () {});
+
 				// Add a circle at the starting point
 				path
 					.append('circle')
-					.attr('cx', startPoint.x)
-					.attr('cy', startPoint.y)
+					.attr('class', 'point-circle')
+					.attr('cx', 5)
+					.attr('cy', 5)
 					.attr('r', 3)
 					.attr('fill', 'black');
+				console.log('first point', startPoint);
 			} else {
 				const line = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
-				console.log('line', line);
-				console.log('before  removed', linePreview);
+				console.log('the else ', line);
 				paths.push(line); // Add the line to the existing paths
 				path
 					.selectAll('path')
@@ -222,16 +248,14 @@
 					.attr('stroke-width', 2);
 
 				// Remove the starting point circle and line preview
-				path.selectAll('circle').remove();
-				console.log('before  removed', linePreview);
+				path.selectAll('.point-circle').remove();
 				linePreview = null;
-				console.log('linePreview removed', linePreview);
-				// Reset the startPoint for the next line segment and set it as the new starting point
 				startPoint = { x: event.offsetX, y: event.offsetY };
 
 				// Add a circle at the new starting point
 				path
 					.append('circle')
+					.attr('class', 'point-circle')
 					.attr('cx', startPoint.x)
 					.attr('cy', startPoint.y)
 					.attr('r', 3)
@@ -247,18 +271,13 @@
 		if (startPoint) {
 			// Update line preview
 			const previewLine = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
-			console.log('previewLine', previewLine);
-			console.log('linePreview', linePreview);
 			if (!linePreview) {
-				console.log('linePreview', linePreview);
-				console.log('linePreview', linePreview);
 				linePreview = path
 					.append('path')
 					.attr('stroke', 'black')
 					.attr('stroke-width', 2)
 					.attr('stroke-dasharray', '5,5');
 			}
-			console.log('linePreview', 'asdf');
 			linePreview.attr('d', previewLine);
 		}
 	}
@@ -267,7 +286,8 @@
 		if (event.key === 'Escape') {
 			linePreview.remove();
 			linePreview = null;
-			path.selectAll('circle').remove();
+			path.selectAll('.point-circle').remove();
+			path = null;
 			currentLine = null;
 			startPoint = null;
 			// penSelected = false;
@@ -369,7 +389,27 @@
 		});
 	}
 
-	// Remove the event listener when the component is destroyed
+	function resize(
+		event: d3.D3DragEvent<any, any, any>,
+		seatGroup: d3.Selection<SVGGElement, any, any, any>
+	) {
+		const newWidth = Math.max(20, event.x);
+		const newHeight = Math.max(20, event.y);
+		console.log('resize', newWidth, newHeight);
+		seatGroup.attr('width', newWidth).attr('height', newHeight);
+		seatGroup
+			.select('text')
+			.attr('x', newWidth / 2)
+			.attr('y', newHeight / 2);
+		if (seatGroup.select('pattern').node() && seatGroup.select('image').node()) {
+			seatGroup.select('pattern').attr('width', newWidth).attr('height', newHeight);
+			seatGroup.select('image').attr('width', newWidth).attr('height', newHeight);
+		}
+		seatGroup.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
+		seatGroup.select('.rotate-handle').attr('cx', newWidth / 2);
+
+		// selectSeatItem(randomId);
+	}
 </script>
 
 <svelte:window on:keydown={onEscKey} />
@@ -384,7 +424,7 @@
 					style={`padding-bottom: calc(${selectedAreaSize} * 100%);`}
 				>
 					<svg
-					id="svgContainer"
+						id="svgContainer"
 						on:mousedown={onMouseDown}
 						on:mousemove={onMouseMove}
 						bind:this={svg}
