@@ -37,7 +37,7 @@
 		"gsap": "^3.11.5",
 		"ionicons": "^7.1.0",
 		"konva": "^9.0.0",
-		"kubak-svelte-component": "git+ssh://git@github.com/KubakDev/kubak_svelte_component.git",
+		"kubak-svelte-component": "git+https://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@github.com/KubakDev/kubak_svelte_component.git",
 		"lottie-svelte": "^1.3.5",
 		"postcss": "^8.4.21",
 		"postcss-load-config": "^4.0.1",
