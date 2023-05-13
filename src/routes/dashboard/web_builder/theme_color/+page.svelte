@@ -15,12 +15,16 @@
 		Spinner
 	} from 'flowbite-svelte';
 	import type { ColorTheme } from '../../../../models/colorTheme';
+	import { onMount } from 'svelte';
 
 	export let data;
 
+	onMount(async () => {
+		await getAllThemes();
+	});
+
 	let colorThemes: ColorTheme[] = [];
 	let loading = false;
-	getAllThemes();
 	async function getAllThemes() {
 		// await supabase
 		// 	.from('color_palette')

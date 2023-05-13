@@ -4,11 +4,13 @@
 	import SeatDesignSideBar from './seatDesignSideBar.svelte';
 	import EditSideBar from './editSideBar.svelte';
 	import { seatItemStore } from './seatItemStore';
-	import { Button, ButtonGroup, Fileupload, Input, InputAddon } from 'flowbite-svelte';
+	import { Button, ButtonGroup, Fileupload, Input, InputAddon, P } from 'flowbite-svelte';
 	import { Lottie } from 'lottie-svelte';
 	import { Direction } from 'lottie-svelte/iface';
 	import { seatLayoutStore } from './seatLayoutStore';
 	import { showSelectedDesign } from './seatDesignFromExsiting';
+	import { createRandomString } from '$lib/utils/createRandom';
+	import Panzoom from '@panzoom/panzoom';
 
 	let selected: any;
 	let value: any;
@@ -16,6 +18,8 @@
 	let imgSrc: string = '';
 	let seats: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let dragEnded = true;
+	let svg: any;
+
 	function draggedImage(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
 		const currentRotation = parseInt(seatGroup.attr('data-rotation') || '0');
 		const rectElement = seatGroup.select('image').node() as SVGRectElement;
@@ -125,13 +129,13 @@
 		}
 	}
 
-	let svg: SVGSVGElement;
+	let currentSelectedG;
 	const seatWidth = 50;
 	const seatHeight = 50;
 	let lines: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let d = '';
 	let paths: string[] = [];
-	let path: any;
+	let group: any;
 	let currentPath: string = '';
 
 	let radiusInput = '';
@@ -172,7 +176,7 @@
 			// const connectLine = `M ${currentPoint.x} ${currentPoint.y} L ${firstPoint[1]} ${firstPoint[2]}`;
 			// paths.push(connectLine);
 
-			path
+			group
 				.selectAll('path')
 				.data(paths)
 				.join('path')
@@ -183,7 +187,7 @@
 				.attr('stroke-width', 2);
 
 			// Remove the starting point circle and line preview
-			path.selectAll('circle').remove();
+			group.selectAll('circle').remove();
 			if (linePreview) {
 				linePreview.remove();
 				linePreview = null;
@@ -197,20 +201,24 @@
 				startPoint = { x: event.offsetX, y: event.offsetY };
 				firstPoint = { x: event.offsetX, y: event.offsetY };
 
-				path = d3.select(svg).append('g').attr('transform', `translate(${5},${5}) `);
+				const randomNmaeText = createRandomString();
 
-				path
-					.append('circle')
-					.attr('class', 'resize-handle')
-					.attr('cx', 0)
-					.attr('cy', 0)
-					.attr('r', 5)
-					.attr('fill', 'green')
-					.call(
-						d3.drag().on('drag', (event: any) => {
-							resize(event, path);
-						}) as any
-					);
+				group = d3.select(svg).append('g').attr('id', randomNmaeText);
+				// .attr('transform', `translate(${5},${5}) `);
+				console.log('path path ', group);
+
+				// seatGroup
+				// 	.select('text')
+				// 	.attr('x', newWidth / 2)
+				// 	.attr('y', newHeight / 2);
+				// if (seatGroup.select('pattern').node() && seatGroup.select('image').node()) {
+				// 	seatGroup.select('pattern').attr('width', newWidth).attr('height', newHeight);
+				// 	seatGroup.select('image').attr('width', newWidth).attr('height', newHeight);
+				// }
+				// seatGroup.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
+				// seatGroup.select('.rotate-handle').attr('cx', newWidth / 2);
+
+				// selectSeatItem(randomId);
 
 				// path
 				// 	.append('rect')
@@ -225,19 +233,19 @@
 				// 	.on('click', function () {});
 
 				// Add a circle at the starting point
-				path
-					.append('circle')
-					.attr('class', 'point-circle')
-					.attr('cx', 5)
-					.attr('cy', 5)
-					.attr('r', 3)
-					.attr('fill', 'black');
+				// group
+				// 	.append('circle')
+				// 	.attr('class', 'point-circle')
+				// 	.attr('cx', 5)
+				// 	.attr('cy', 5)
+				// 	.attr('r', 3)
+				// 	.attr('fill', 'black');
 				console.log('first point', startPoint);
 			} else {
 				const line = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
 				console.log('the else ', line);
 				paths.push(line); // Add the line to the existing paths
-				path
+				group
 					.selectAll('path')
 					.data(paths) // Update with the existing paths
 					.join('path')
@@ -248,12 +256,12 @@
 					.attr('stroke-width', 2);
 
 				// Remove the starting point circle and line preview
-				path.selectAll('.point-circle').remove();
+				group.selectAll('.point-circle').remove();
 				linePreview = null;
 				startPoint = { x: event.offsetX, y: event.offsetY };
 
 				// Add a circle at the new starting point
-				path
+				group
 					.append('circle')
 					.attr('class', 'point-circle')
 					.attr('cx', startPoint.x)
@@ -272,7 +280,7 @@
 			// Update line preview
 			const previewLine = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
 			if (!linePreview) {
-				linePreview = path
+				linePreview = group
 					.append('path')
 					.attr('stroke', 'black')
 					.attr('stroke-width', 2)
@@ -284,10 +292,92 @@
 
 	function onEscKey(event: KeyboardEvent) {
 		if (event.key === 'Escape') {
+			// width of the group
+			// height of the group
+			// x of the group
+			// y of the group
 			linePreview.remove();
 			linePreview = null;
-			path.selectAll('.point-circle').remove();
-			path = null;
+			const groupWidth = group.node().getBoundingClientRect().width;
+			const groupHeight = group.node().getBoundingClientRect().height;
+			const groupX = group.node().getBoundingClientRect().x;
+			const groupY = group.node().getBoundingClientRect().y;
+			console.log('groupWidth ', groupWidth);
+			console.log('groupHeight ', groupHeight);
+			console.log('groupX ', groupX);
+			console.log('groupY ', groupY);
+
+			// get group postion relative to svg
+			const groupXX = group.node().getBoundingClientRect().x - svg.getBoundingClientRect().x;
+			const groupYY = group.node().getBoundingClientRect().y - svg.getBoundingClientRect().y;
+
+			// get all path and subtract the group position
+
+			// get all path and subtract the group position
+			const paths = group.selectAll('path').nodes();
+			console.log('paths ', paths);
+
+			paths.forEach((path: any) => {
+				// get d attribute
+				const d = path.getAttribute('d');
+				// seperate the d attribute
+				const dArray = d.split(' ');
+				// get the x and y of the first point
+				const x = dArray[1];
+				const y = dArray[2];
+
+				// get destination x and y
+				const destX = dArray[4];
+				const destY = dArray[5];
+				// get the new x and y
+				const newX = x - groupXX;
+				const newY = y - groupYY;
+
+				// get the new destination x and y
+				const newDestX = destX - groupXX;
+				const newDestY = destY - groupYY;
+
+				// update the d attribute
+				path.setAttribute('d', `M ${newX} ${newY} L ${newDestX} ${newDestY}`);
+			});
+
+			group.attr('transform', `translate(${groupXX},${groupYY}) `);
+
+			console.log('groupX ', groupXX);
+			console.log('groupY ', groupYY);
+
+			// random string with number
+			const randomString = Math.random().toString(36).substring(7);
+			const rectId = createRandomString();
+			group
+				.append('rect')
+				.attr('id', rectId)
+				.attr('width', groupWidth)
+				.attr('height', groupHeight)
+				.attr('fill', 'none')
+				.attr('stroke', 'black')
+				.attr('stroke-width', 2);
+
+			// Add a circle at the starting point
+
+			const groupId = group.attr('id');
+
+			group
+				.append('circle')
+				.attr('class', 'resize-handle')
+				.attr('cx', groupWidth)
+				.attr('cy', groupHeight)
+				.attr('r', 5)
+				.attr('fill', 'green')
+				.attr('style', 'display:inherit')
+				.call(
+					d3.drag().on('drag', (event: any) => {
+						resize(event, groupId);
+					}) as any
+				);
+
+			group.selectAll('.point-circle').remove();
+			group = null;
 			currentLine = null;
 			startPoint = null;
 			// penSelected = false;
@@ -341,10 +431,60 @@
 		rectangle2 = 1.25
 	}
 
+	// function onMouseWeel(event: any) {
+	// 	const svgSelection: any = d3.select('#svgContainer');
+	// 	console.log('svgSelection ', svgSelection);
+	// 	const y = event.deltaY;
+	// 	console.log('y ', y);
+	// 	svgSelection.attr('transform', `scale(${y})`);
+
+	// 	const zoom = d3
+	// 		.zoom()
+	// 		.scaleExtent([0.5, 20]) // This controls the minimum and maximum zoom levels
+	// 		.on('zoom', (event) => {
+	// 			svg.attr('transform', event.transform);
+	// 		});
+
+	// 	if (event.ctrlKey) {
+	// 		event.preventDefault(); // Prevent browser's default zoom on Ctrl+Scroll
+	// 		const point = d3.pointer(event, svgSelection.node());
+	// 		const incomingZoom = event.deltaY > 0 ? 0.9 : 1.1;
+	// 		const newScale = { k: svgSelection.property('__zoom').k * incomingZoom };
+	// 		const transform = d3.zoomIdentity
+	// 			.translate(point[0], point[1])
+	// 			.scale(newScale.k)
+	// 			.translate(-point[0], -point[1]);
+	// 		svgSelection.call(zoom.transform, transform);
+	// 	}
+	// 	// weel event
+	// }
+
 	function onAreaSizeClick(areaType: AreaType) {
 		console.log('areaType', areaType);
 		selectedAreaSize = areaType;
 		seatLayoutStore.setAreaSize(areaType);
+
+		// for example
+
+		// advanced usage
+		setTimeout(() => {
+			const elem = document.getElementById('container');
+			console.log('elem ', elem);
+			const panzoom = Panzoom(elem!, {
+				maxScale: 5,
+				disablePan:false,
+				
+			});
+
+			panzoom.pan(10, 10);
+			panzoom.zoom(1, { animate: true });
+			elem!.parentElement!.addEventListener('wheel', (event) => {
+				console.log('event ', event);
+				panzoom.zoomWithWheel(event);
+			});
+		}, 100);
+
+		// select the svg area
 	}
 
 	async function onFileUpload(e: any) {
@@ -389,26 +529,54 @@
 		});
 	}
 
-	function resize(
-		event: d3.D3DragEvent<any, any, any>,
-		seatGroup: d3.Selection<SVGGElement, any, any, any>
-	) {
+	function resize(event: any, groupId: string) {
 		const newWidth = Math.max(20, event.x);
 		const newHeight = Math.max(20, event.y);
-		console.log('resize', newWidth, newHeight);
-		seatGroup.attr('width', newWidth).attr('height', newHeight);
-		seatGroup
-			.select('text')
-			.attr('x', newWidth / 2)
-			.attr('y', newHeight / 2);
-		if (seatGroup.select('pattern').node() && seatGroup.select('image').node()) {
-			seatGroup.select('pattern').attr('width', newWidth).attr('height', newHeight);
-			seatGroup.select('image').attr('width', newWidth).attr('height', newHeight);
-		}
-		seatGroup.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
-		seatGroup.select('.rotate-handle').attr('cx', newWidth / 2);
 
-		// selectSeatItem(randomId);
+		const group = d3.select(svg).select(`#${groupId}`);
+		const rect = group.select('rect');
+		const rectWidth = rect.attr('width');
+		const rectHeight = rect.attr('height');
+
+		// calculate the percentage change in width and height
+		console.log('newWidth', newWidth);
+		console.log('newHeight', newHeight);
+		console.log('rectWidth', rectWidth);
+		console.log('rectHeight', rectHeight);
+		const percChangeWidth = newWidth / parseFloat(rectWidth);
+		const percChangeHeight = newHeight / parseFloat(rectHeight);
+
+		// ... the rest of your function ...
+		const paths = group.selectAll('path');
+		paths.each(function (d, i) {
+			const path = d3.select(this);
+			const pathD = path.attr('d');
+			const pathDArray = pathD.split(' ');
+
+			const x = pathDArray[1];
+			const y = pathDArray[2];
+
+			// new x and y
+			console.log('x', x);
+			console.log('y', y);
+			console.log('percChangeWidth', percChangeWidth);
+			console.log('percChangeHeight', percChangeHeight);
+			const newX = parseFloat(x) * percChangeWidth;
+			const newY = parseFloat(y) * percChangeHeight;
+
+			// get destination x and y
+			const destX = pathDArray[4];
+			const destY = pathDArray[5];
+
+			const newDestX = parseFloat(destX) * percChangeWidth;
+			const newDestY = parseFloat(destY) * percChangeHeight;
+
+			const newPathD = `M ${newX} ${newY} L ${newDestX} ${newDestY}`;
+
+			path.attr('d', newPathD);
+		});
+		rect.attr('width', newWidth).attr('height', newHeight);
+		group.select('.resize-handle').attr('cx', newWidth).attr('cy', newHeight);
 	}
 </script>
 
@@ -420,7 +588,7 @@
 			{#if selectedAreaSize}
 				<div
 					id="container"
-					class=" relative w-full"
+					class=" relative w-full overflow-scroll border-black border-4"
 					style={`padding-bottom: calc(${selectedAreaSize} * 100%);`}
 				>
 					<svg
@@ -428,7 +596,7 @@
 						on:mousedown={onMouseDown}
 						on:mousemove={onMouseMove}
 						bind:this={svg}
-						class="absolute top-0 left-0 w-full h-full border-gray border svgPlaceholder"
+						class="absolute top-0 left-0 w-full h-full border-gray border-4 svgPlaceholder"
 						xmlns="http://www.w3.org/2000/svg"
 					/>
 				</div>

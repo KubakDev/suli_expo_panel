@@ -3,5 +3,6 @@ import { writable, type Writable } from "svelte/store";
 
 export let supabaseStore: Writable<SupabaseClient | null> = writable(null);
 export function setSupabaseStore(supabase: any) {
+    console.log("setSupabaseStore", supabase);
     supabaseStore.set(supabase);
 }

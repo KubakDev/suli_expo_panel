@@ -38,7 +38,46 @@
 	});
 	let value = '';
 	let conf = {
+		file_picker_callback: (cb, value, meta) => {
+			console.log(cb);
+			console.log(value);
+			console.log(meta);
+			const input = document.createElement('input');
+			input.setAttribute('type', 'file');
+			input.setAttribute('accept', 'image/*');
+
+			input.addEventListener('change', (e) => {
+				const file = e.target.files[0];
+				console.log(file);
+				const reader = new FileReader();
+				reader.addEventListener('load', () => {
+					const id = 'blobid' + new Date().getTime();
+					const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+					const base64 = reader.result.split(',')[1];
+					const blobInfo = blobCache.create(id, file, base64);
+					blobCache.add(blobInfo);
+
+					cb(blobInfo.blobUri(), { title: file.name });
+				});
+				reader.readAsDataURL(file);
+			});
+			input.click();
+		},
 		a11y_advanced_options: true,
+		plugins: [
+			'autolink',
+			'autoresize',
+			'codesample',
+			'link',
+			'lists',
+			'media',
+			'powerpaste',
+			'table',
+			'image',
+			'quickbars',
+			'codesample',
+			'help'
+		],
 		toolbar:
 			'image undo redo newdocument  bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat'
 	};

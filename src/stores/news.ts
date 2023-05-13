@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import type { CreateNews } from "../models/news";
 import { changeLoadingStatus } from "./loading";
 import fetchData from "$lib/utils/fetchData";
