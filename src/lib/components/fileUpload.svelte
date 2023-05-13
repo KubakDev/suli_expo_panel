@@ -1,29 +1,48 @@
 <script lang="ts">
-	import { Badge, Dropzone } from 'flowbite-svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { Dropzone } from 'flowbite-svelte';
+	import { afterUpdate, createEventDispatcher } from 'svelte';
 	import { XMark } from 'svelte-heros-v2';
+	import { ImgSourceEnum } from '../../models/imgSourceEnum';
+	import { onMount } from 'svelte';
 
+	export let data: { images?: [] } = {};
+
+	let images: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] = data.images ?? [];
+	afterUpdate(() => {
+		if (images.length === 0) {
+			images = data.images ?? [];
+		}
+	});
 	const dispatch = createEventDispatcher();
-	let images: string[] = [];
+	let imageFiles: File[] = [];
 	function addImage(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		for (let file of fileInput!.files!) {
+			imageFiles = [...imageFiles, file];
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				images = [...images, reader.result as string];
+				images = [
+					...images,
+					{
+						id: images.length,
+						imgurl: reader.result as string,
+						imgSource: ImgSourceEnum.local
+					}
+				];
+				console.log(images);
 			};
-
 			reader.readAsDataURL(file);
 		}
 	}
 	function deleteImage(index: number) {
 		const updatedImages = [...images];
 		updatedImages.splice(index, 1);
-
+		imageFiles.splice(index, 1);
 		images = updatedImages;
 	}
 	$: {
 		dispatch('imageChanges', images);
+		dispatch('imageFilesChanges', imageFiles);
 	}
 </script>
 
@@ -60,7 +79,13 @@
 			>
 				<XMark class="text-xs h-5 w-5 text-white" />
 			</span>
-			<img src={image} alt="" class="rounded-lg object-cover h-full w-full" />
+			<img
+				src={image.imgSource == ImgSourceEnum.remote
+					? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`
+					: image.imgurl}
+				alt=""
+				class="rounded-lg object-cover h-full w-full"
+			/>
 		</div>
 	{/each}
 </div>

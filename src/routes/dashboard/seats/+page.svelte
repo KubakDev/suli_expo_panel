@@ -16,7 +16,6 @@
 	} from 'flowbite-svelte';
 	import SeatGround from './seat.svelte';
 	import SeatGround2 from './seatV2.svelte';
-	import CreateNews from '$lib/components/news/createNews.svelte';
 	// import BsTrash from 'svelte-icons-pack/bs/BsTrash';
 	// import FiEdit from 'svelte-icons-pack/fi/FiEdit';
 	import Pagination from '$lib/components/reusables/pagination.svelte';
@@ -50,6 +49,6 @@
 			</SidebarGroup>
 		</SidebarWrapper>
 	</Sidebar> -->
-	<SeatGround/>
+	<SeatGround />
 	<!-- <SeatGround2/> -->
 </div>

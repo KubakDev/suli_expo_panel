@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { newsCollection } from '../../../../stores/news';
 	import {
 		Label,
 		Input,
