@@ -47,7 +47,7 @@
 			});
 		if (valid) {
 			const formData = new FormData(event.target);
-			await fetch('login', {
+			const response = await fetch('post', {
 				method: 'POST',
 				body: formData
 			});

@@ -7,11 +7,14 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { redirect } from '@sveltejs/kit';
+	import { onMount } from 'svelte';
 	export let data: PageData;
 	let activeUrl: string;
-	$: if ($page.url) {
+
+	onMount(() => {
+		console.log($page.url);
 		activeUrl = $page.url.pathname;
-	}
+	});
 
 	function getTheme() {
 		let themeArray = [];
@@ -19,6 +22,11 @@
 			themeArray.push(`${theme.name}:${theme.color}`);
 		}
 		return themeArray.join(';');
+	}
+
+	function updateActiveUrl(url: string) {
+		activeUrl = url;
+		console.log(activeUrl);
 	}
 </script>
 
@@ -31,13 +39,15 @@
 			<NavHamburger on:click={toggle} />
 			<NavUl {hidden}>
 				{#each data.pages as page}
-					<NavLi
-						class="cursor-pointer"
-						on:click={() => {
-							goto(page.url);
-						}}
-						active={activeUrl == page.url}>{page.title}</NavLi
-					>
+						<NavLi
+							class="cursor-pointer"
+							on:click={() => {
+								updateActiveUrl(page.url);
+								goto(page.url);
+								console.log(page.url);
+							}}
+							active={activeUrl == page.url}>{page.title}</NavLi
+						>
 				{/each}
 			</NavUl>
 		</Navbar>

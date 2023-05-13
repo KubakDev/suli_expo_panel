@@ -7,7 +7,7 @@
 	import { Button, ButtonGroup, Fileupload, Input, InputAddon, P } from 'flowbite-svelte';
 	import { Lottie } from 'lottie-svelte';
 	import { Direction } from 'lottie-svelte/iface';
-	import { seatLayoutStore } from './seatLayoutStore';
+	import { seatLayoutStore, type SeatDesignModel, type SeatLayoutModel } from './seatLayoutStore';
 	import { showSelectedDesign } from './seatDesignFromExsiting';
 	import { createRandomString } from '$lib/utils/createRandom';
 	import Panzoom from '@panzoom/panzoom';
@@ -19,6 +19,7 @@
 	let seats: d3.Selection<SVGGElement, unknown, null, undefined>;
 	let dragEnded = true;
 	let svg: any;
+	let seatLayoutModel: SeatLayoutModel | undefined;
 
 	function draggedImage(event: any, seatGroup: d3.Selection<SVGGElement, any, any, any>) {
 		const currentRotation = parseInt(seatGroup.attr('data-rotation') || '0');
@@ -42,10 +43,10 @@
 
 	onMount(() => {
 		if ($seatLayoutStore) {
-			const seatDesign = $seatLayoutStore;
-			if (seatDesign.id) {
-				selectedAreaSize = seatDesign.aspect_ratio;
-				showSelectedDesign(seatDesign, d3, '.svgPlaceholder');
+			seatLayoutModel = $seatLayoutStore;
+			if (seatLayoutModel.id) {
+				selectedAreaSize = seatLayoutModel.aspect_ratio;
+				showSelectedDesign(seatLayoutModel, d3, '.svgPlaceholder');
 			}
 		}
 
@@ -472,8 +473,7 @@
 			console.log('elem ', elem);
 			const panzoom = Panzoom(elem!, {
 				maxScale: 5,
-				disablePan:false,
-				
+				disablePan: false
 			});
 
 			panzoom.pan(10, 10);
@@ -635,6 +635,6 @@
 				xmlns="http://www.w3.org/2000/svg"
 			/> -->
 		</div>
-		<EditSideBar placeHolder={'.svgPlaceholder'} />
+		<EditSideBar placeHolder={'.svgPlaceholder'} {seatLayoutModel} />
 	</div>
 {/if}

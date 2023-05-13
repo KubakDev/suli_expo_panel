@@ -9,13 +9,14 @@
 	import { supabaseStore } from '../../../stores/supabaseStore';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { seatLayoutStore, type SeatLayoutModel } from './seatLayoutStore';
+	import { seatLayoutStore, type SeatLayoutModel, type SeatDesignModel } from './seatLayoutStore';
 	import { showSelectedDesign } from './seatDesignFromExsiting';
 	import html2canvas from 'html2canvas';
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { Canvg } from 'canvg';
 
 	export let placeHolder: string;
+	export let seatLayoutModel: SeatLayoutModel | undefined;
 
 	let seatLayoutId: number | undefined;
 	let selectedSeatItem: string;
@@ -51,6 +52,9 @@
 		const id = $page.params.id;
 		if (id) {
 			seatLayoutId = parseInt(id);
+		}
+		if(seatLayoutModel) {
+			seatLayoutName = seatLayoutModel.name;
 		}
 	});
 
@@ -364,7 +368,7 @@
 		canvgInstance.start();
 		const imageDataUrl = canvas.toDataURL('image/png');
 		const imageData = dataURLToBlob(imageDataUrl);
-		const imageFile = new File([imageData],  `${randomImageName}.png`, {
+		const imageFile = new File([imageData], `${randomImageName}.png`, {
 			type: 'image/png'
 		});
 		const { data, error } = await supabase.storage
@@ -537,6 +541,7 @@
 				type="text"
 				size="sm"
 				on:input={onInputName}
+				bind:value={seatLayoutName}
 				placeholder="Name"
 				let:props
 			/></ButtonGroup
