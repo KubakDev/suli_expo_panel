@@ -15,6 +15,7 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
     serverSession: data.session
   });
   supabaseStore.set(supabase);
+
   const {
     data: { session }
   } = await supabase.auth.getSession();

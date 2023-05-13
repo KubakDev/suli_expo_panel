@@ -63,7 +63,7 @@
 		currentRowId = response.data[cardIndex].id;
 		let card = response.data[cardIndex].component.title;
 		const module = await import('kubak-svelte-component');
-		CardComponent = module[card];
+		CardComponent = module[card as keyof typeof module];
 	}
 	async function getNews() {
 		const supabase = $supabaseStore;
@@ -86,7 +86,7 @@
 		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
-		CardComponent = module[cardType];
+		CardComponent = module[cardType as keyof typeof module];
 	}
 	async function publish() {
 		loading = true;

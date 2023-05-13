@@ -11,8 +11,7 @@
 		TableHeadCell
 	} from 'flowbite-svelte';
 	import news from '../../../stores/news';
-	import CreateNews from '$lib/components/news/createNews.svelte';
-	import { newsCollection, showDeleteModal, paginationData } from '../../../stores/news';
+	import { showDeleteModal, paginationData } from '../../../stores/news';
 	// import BsTrash from 'svelte-icons-pack/bs/BsTrash';
 	// import FiEdit from 'svelte-icons-pack/fi/FiEdit';
 	import loading from '../../../stores/loading';
@@ -25,11 +24,11 @@
 		addNewsModal = false;
 	}
 	function openModal() {
-		newsCollection.toggleModal(true);
+		// newsCollection.toggleModal(true);
 	}
 	let selectedItem = { id: 0 };
 	function deleteItem() {
-		newsCollection.deleteNews(selectedItem.id);
+		// newsCollection.deleteNews(selectedItem.id);
 	}
 </script>
 
@@ -77,7 +76,6 @@
 	<div class="py-10 flex justify-center w-full">
 		<!-- <Pagination paginationData={$paginationData} /> -->
 	</div>
-	<CreateNews on:hide={closeModal} />
 	<Modal bind:open={deleteModal} size="xs" backdropClose={false}>
 		<div class="text-center">
 			<svg

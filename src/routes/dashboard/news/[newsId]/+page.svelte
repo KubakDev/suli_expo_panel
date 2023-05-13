@@ -1,19 +1,14 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Helper, Spinner } from 'flowbite-svelte';
+	import { Label, Button, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { DateInput } from 'date-picker-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { supabaseStore } from '../../../stores/supabaseStore';
 	import { NewsDetail } from 'kubak-svelte-component';
 	import { onMount } from 'svelte';
-	import { getNewsUi } from '../../../stores/ui/newsUi';
-	import newsUiStore from '../../../stores/ui/newsUi';
-	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
+	import { getNewsUi } from '../../../../stores/ui/newsUi';
+	import newsUiStore from '../../../../stores/ui/newsUi';
+	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import Editor from '@tinymce/tinymce-svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
-	import * as yup from 'yup';
-	import loading from '../../../stores/loading';
-	import { changeLoadingStatus } from '../../../stores/loading';
-	import { goto } from '$app/navigation';
 
 	export let data;
 	let CardComponent: any;
@@ -21,21 +16,6 @@
 	let sliderImagesFile: File[] = [];
 	$: newsCardComponent = CardComponent;
 
-	let invalidateFields: {
-		title: boolean;
-		short_description: boolean;
-		thumbnail: boolean;
-	} = {
-		title: false,
-		short_description: false,
-		thumbnail: false
-	};
-
-	const schema = yup.object().shape({
-		title: yup.string().required(),
-		short_description: yup.string().required(),
-		thumbnail: yup.string().required()
-	});
 	let value = '';
 	let conf = {
 		a11y_advanced_options: true,
@@ -46,6 +26,7 @@
 		title: string;
 		thumbnail: string;
 		created_at: Date;
+
 		imgSource: ImgSourceEnum;
 		short_description: string;
 	} = {
@@ -65,6 +46,36 @@
 		long_description: '',
 		images: []
 	};
+	getNewsDetail();
+	function getNewsDetail() {
+		data.supabase
+			.from('news')
+			.select('*')
+			.eq('id', +data.newsId)
+			.single()
+			.then((res) => {
+				console.log(res);
+				cardData = {
+					title: res.data?.title,
+					thumbnail: res.data?.thumbnail,
+					created_at: new Date(res.data?.created_at),
+					imgSource: ImgSourceEnum.local,
+					short_description: res.data?.short_description
+				};
+				detailData = {
+					title: res.data?.title,
+					long_description: res.data?.long_description,
+					images: res.data?.images.split(',').map((imgurl: string, index: number) => {
+						return {
+							imgurl,
+							id: index,
+							imgSource: ImgSourceEnum.remote
+						};
+					})
+				};
+				value = res.data?.long_description;
+			});
+	}
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput!.files![0];
@@ -82,66 +93,36 @@
 		return random;
 	}
 	async function submitForm(e: Event) {
-		let valid = false;
-		invalidateFields = {
-			title: false,
-			short_description: false,
-			thumbnail: false
-		};
 		e.preventDefault();
-		await schema
-			.validate({
-				title: cardData.title,
-				short_description: cardData.short_description,
-				thumbnail: cardData.thumbnail
-			})
-			.then((value) => {
-				changeLoadingStatus(true);
-				console.log(value);
-				valid = true;
-			})
-			.catch((err) => {
-				invalidateFields = {
-					...invalidateFields,
-					[err.path]: true
-				};
-				console.log(invalidateFields);
-			});
-		if (valid) {
-			if (!data.supabase) return;
-			const fileName = `${getRandomTextNumber()}.${thumbnailFile?.name.split('.').pop()}`;
-			const response = await data.supabase.storage
-				.from('image')
-				.upload(`images/${fileName}`, thumbnailFile!);
-			if (response) {
-				let detailImages = [];
-				for (let file of sliderImagesFile) {
-					let SliderFileName = `${getRandomTextNumber()}.${file?.name.split('.').pop()}`;
-					const response = await data.supabase.storage
-						.from('image')
-						.upload(`images/${SliderFileName}`, file!);
-					if (response.data) {
-						detailImages.push(response.data.path);
-					}
+		const fileName = `${getRandomTextNumber()}.${thumbnailFile?.name.split('.').pop()}`;
+		const responseData = await data.supabase.storage
+			.from('image')
+			.upload(`images/${fileName}`, thumbnailFile!);
+		if (responseData) {
+			let detailImages = [];
+			for (let file of sliderImagesFile) {
+				let SliderFileName = `${getRandomTextNumber()}.${file?.name.split('.').pop()}`;
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`images/${SliderFileName}`, file!);
+				if (response.data) {
+					detailImages.push(response.data.path);
 				}
-				await data.supabase.from('news').insert({
-					title: cardData.title,
-					thumbnail: cardData?.thumbnail,
-					created_at: cardData.created_at,
-					short_description: cardData.short_description,
-					long_description: detailData.long_description,
-					images: detailImages.toString()
-				});
-				changeLoadingStatus(false);
-				goto('/dashboard/news');
 			}
+			await data.supabase.from('news').insert({
+				title: cardData.title,
+				thumbnail: cardData?.thumbnail,
+				created_at: new Date(),
+				short_description: cardData.short_description,
+				long_description: detailData.long_description,
+				images: detailImages.toString()
+			});
 		}
 	}
 	onMount(async () => {
 		newsCardComponent = CardComponent;
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		await getNewsUi(supabase);
+
+		await getNewsUi(data.supabase);
 		let card = $newsUiStore?.component?.title;
 		const module = await import('kubak-svelte-component');
 
@@ -151,15 +132,20 @@
 		detailData.long_description = value;
 	}
 	function getImages(e: { detail: [] }) {
+		console.log(e.detail);
 		let updatedData = detailData;
 		for (let image of e.detail) {
-			const newImage = image;
+			const newImage = {
+				imgurl: image as string,
+				id: detailData.images.length
+			};
 			updatedData = {
 				...detailData,
 				images: [...detailData.images, newImage]
 			};
 		}
 		detailData = updatedData;
+		console.log(detailData.images);
 	}
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -174,40 +160,15 @@
 		<form class="py-10">
 			<h1 class="text-xl font-bold mb-8">News Card Data</h1>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
+			<div class="grid gap-4 md:grid-cols-3">
 				<div>
-					<Label for="first_name" class="mb-2" color={invalidateFields.title ? 'red' : undefined}
-						>Card Title</Label
-					>
-					<Input
-						type="text"
-						id="first_name"
-						placeholder="The Story"
-						bind:value={cardData.title}
-						color={invalidateFields.title ? 'red' : 'base'}
-					/>
-					{#if invalidateFields.title}
-						<Helper class="mt-2" color="red">
-							<span class="font-medium">title is required!</span>
-						</Helper>
-					{/if}
+					<Label for="first_name" class="mb-2">Card Title</Label>
+					<Input type="text" id="first_name" placeholder="The Story" bind:value={cardData.title} />
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label
-							for="first_name"
-							class="mb-2"
-							color={invalidateFields.thumbnail ? 'red' : undefined}>upload Card Image</Label
-						>
-						<Fileupload
-							on:change={handleFileUpload}
-							color={invalidateFields.thumbnail ? 'red' : 'base'}
-						/>
-						{#if invalidateFields.thumbnail}
-							<Helper class="mt-2" color="red">
-								<span class="font-medium">thumbnail is required!</span>
-							</Helper>
-						{/if}
+						<span>upload Card Image</span>
+						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
@@ -225,11 +186,6 @@
 						name="message"
 						bind:value={cardData.short_description}
 					/>
-					{#if invalidateFields.short_description}
-						<Helper class="mt-2" color="red"
-							><span class="font-medium">short description is required!</span>
-						</Helper>
-					{/if}
 				</div>
 				<!-- create a separate line -->
 				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
@@ -247,15 +203,13 @@
 				<br />
 			</div>
 			<div class="">
-				<FileUploadComponent on:imageChanges={getImages} on:imageFilesChanges={getAllImageFile} />
+				<FileUploadComponent
+					on:imageChanges={getImages}
+					on:imageFilesChanges={getAllImageFile}
+					data={{ images: detailData.images }}
+				/>
 			</div>
-			<div class="w-full flex justify-end mt-2">
-				<Button on:click={submitForm} class="my-2 "
-					>{#if $loading}
-						<Spinner class="mr-3" size="4" />
-					{/if}Submit</Button
-				>
-			</div>
+			<Button on:click={submitForm} class="my-2">Submit</Button>
 		</form>
 	</div>
 
@@ -280,6 +234,7 @@
 			</TabItem>
 			<TabItem title="News Detail">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
+					<h1>{detailData.images.length}</h1>
 					<NewsDetail data={detailData} />
 				</div>
 			</TabItem>

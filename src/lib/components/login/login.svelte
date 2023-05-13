@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Button, Input, Label } from 'flowbite-svelte';
+	import { Button, Input, Label, Spinner } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { goto } from '$app/navigation';
-	import { redirect } from '@sveltejs/kit';
+
+	let loading = false;
 	const schema = yup.object().shape({
 		email: yup.string().email().required(),
 		password: yup.string().required()
@@ -20,6 +21,7 @@
 		password: false
 	};
 	async function handleSubmit(event: any) {
+		loading = true;
 		event.preventDefault();
 
 		let valid = false;
@@ -44,14 +46,14 @@
 				}
 			});
 		if (valid) {
-			// form submit action event default
 			const formData = new FormData(event.target);
-
-			const test = await fetch('login', {
+			await fetch('login', {
 				method: 'POST',
 				body: formData
 			});
 		}
+		loading = false;
+		goto('/dashboard/news');
 	}
 </script>
 
@@ -112,7 +114,11 @@
 			/>
 		</div>
 
-		<Button type="submit" class="w-full mt-10">Submit</Button>
+		<Button type="submit" class="w-full mt-10">
+			{#if loading}
+				<Spinner class="mr-3" size="4" />
+			{/if}Submit</Button
+		>
 
 		<p class="text-sm mt-2 text-end cursor-pointer text-[#1e429f] hover:text-black">
 			Forgot Password?
