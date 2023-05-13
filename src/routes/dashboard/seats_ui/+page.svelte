@@ -1,22 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { supabaseStore } from '../../../stores/supabaseStore';
 	import {
 		seatLayoutStore,
 		type SeatDesignModel,
 		type SeatLayoutModel
 	} from '../seats/seatLayoutStore';
-	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { goto } from '$app/navigation';
 	import * as d3 from 'd3';
 	import { Card } from 'flowbite-svelte';
+	import type { PageData } from './$types';
+	export let data: PageData;
+
+	$: ({ supabase, session } = data);
 	let svg: SVGSVGElement;
 	let selectedAreaSize: number | undefined;
-	let isLoaded = false;
 	let designs: SeatLayoutModel[] | undefined;
 	const placeHolder = '#placeHolderSeatDesign';
 	const a = '#aaaab';
-	let supabase: SupabaseClient<any, 'public', any> | null;
+	// let supabase: SupabaseClient<any, 'public', any> | null;
 
 	async function getData() {
 		if (!supabase) return;
@@ -27,8 +28,7 @@
 		});
 	}
 	onMount(async () => {
-		supabase = $supabaseStore;
-		console.log('supabase', supabase);
+	
 		getData();
 		// console.log(seatsData);
 		// seats = d3.select(svg).append('isLoaded = true;

@@ -1,6 +1,8 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import type { CreateNews } from "../models/news";
 import { changeLoadingStatus } from "./loading";
+import fetchData from "$lib/utils/fetchData";
+import { supabaseStore } from "./supabaseStore";
 
 
 export let newsCollection = {
@@ -9,23 +11,21 @@ export let newsCollection = {
   paginationData: writable({}),
   deleteModal: writable(false),
   getNews: async (from: number, to: number) => {
-    changeLoadingStatus(true)
-    // fetchData({ collectionName: "news", from: from, to: to }).then(response => {
-
-    //   let numPages = Math.ceil(response.count! / (to - from))
-    //   let pages = []
-    //   for (let i = 1; i <= numPages; i++) {
-    //     pages.push(
-    //       i,
-    //     );
-    //   }
-    //   let currentPage = Math.ceil(from / (to - from)) + 1
-    //   newsCollection.paginationData.set({ count: response.count, pages: pages, currentPage: currentPage })
-    //   newsCollection.news.set(response.data as [])
-    //   newsCollection.toggleModal(false)
-    //   changeLoadingStatus(false)
-    // })
-
+    changeLoadingStatus(true);
+    fetchData({ collectionName: "news", from: from, to: to }).then(response => {
+      // let numPages = Math.ceil(response.count! / (to - from))
+      // let pages = []
+      // for (let i = 1; i <= numPages; i++) {
+      //   pages.push(
+      //     i,
+      //   );
+      // }
+      // let currentPage = Math.ceil(from / (to - from)) + 1
+      // newsCollection.paginationData.set({ count: response.count, pages: pages, currentPage: currentPage })
+      // newsCollection.news.set(response.data as [])
+      // newsCollection.toggleModal(false)
+      // changeLoadingStatus(false)
+    })
   },
   toggleModal: (cond: boolean) => {
     newsCollection.showModal.set(cond)

@@ -37,7 +37,7 @@
 		"gsap": "^3.11.5",
 		"ionicons": "^7.1.0",
 		"konva": "^9.0.0",
-		"kubak-svelte-component": "file:../kubak_svelte_component",
+		"kubak-svelte-component": "git+ssh://git@github.com/KubakDev/kubak_svelte_component.git",
 		"lottie-svelte": "^1.3.5",
 		"postcss": "^8.4.21",
 		"postcss-load-config": "^4.0.1",
@@ -57,12 +57,14 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@panzoom/panzoom": "^4.5.1",
 		"@tinymce/tinymce-svelte": "^1.0.1",
 		"canvg": "^4.0.1",
 		"date-picker-svelte": "^2.4.3",
 		"html2canvas": "^1.4.1",
 		"svelte-rich-text": "^0.0.9",
 		"swiper": "^9.2.4",
-		"yup": "^1.1.1"
+		"yup": "^1.1.1",
+		"zoomist": "^1.1.1"
 	}
 }

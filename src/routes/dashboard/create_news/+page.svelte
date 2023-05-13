@@ -46,23 +46,22 @@
 				});
 				reader.readAsDataURL(file);
 			});
-
 			input.click();
 		},
 		a11y_advanced_options: true,
 		plugins: [
-			// 'autolink',
-			// 'autoresize',
-			// 'codesample',
-			// 'link',
-			// 'lists',
-			// 'media',
-			// 'powerpaste',
-			// 'table',
-			// 'image',
-			// 'quickbars',
-			// 'codesample',
-			// 'help'
+			'autolink',
+			'autoresize',
+			'codesample',
+			'link',
+			'lists',
+			'media',
+			'powerpaste',
+			'table',
+			'image',
+			'quickbars',
+			'codesample',
+			'help'
 		],
 		toolbar:
 			'image undo redo newdocument  bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat'

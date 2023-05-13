@@ -19,5 +19,4 @@ export async function getAllThemes() {
       });
   });
 }
-await getAllThemes()
 export default colorTheme;
