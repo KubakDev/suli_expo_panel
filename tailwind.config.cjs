@@ -7,10 +7,11 @@ const config = {
 
   theme: {
     colors: {
+      primary: "FFD630",
       danger: '#cf250d',
       hoverBox: '#e0dddd',
       info: '#c27803',
-      backgroundComponent: "#f2f3f7"
+      backgroundComponent: "#f2f3f7",
 
     },
     extend: {
@@ -23,10 +24,8 @@ const config = {
       }
     },
   },
+  plugins: [require('flowbite/plugin')],
 
-  plugins: [
-    require('flowbite/plugin')
-  ],
   darkMode: 'class',
 
 };

@@ -1,11 +1,9 @@
 <script lang="ts">
 	import './styles.scss';
-	import '../app.postcss';
 	import type { PageData } from './$types';
-
+	import "../app.css";
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
-	import { setSupabaseStore, supabaseStore } from '../stores/supabaseStore';
 	import CustomAlert from '$lib/components/alert/CustomAlert.svelte';
 	import { alertStore } from '../stores/alertStore';
 	export let data: PageData;

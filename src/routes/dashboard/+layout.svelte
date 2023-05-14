@@ -2,11 +2,9 @@
 	import { Navbar, NavBrand, NavHamburger, NavUl, NavLi } from 'flowbite-svelte';
 
 	import '../styles.scss';
-	import '../../app.postcss';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
-	import { redirect } from '@sveltejs/kit';
 	import { onMount } from 'svelte';
 	export let data: PageData;
 	let activeUrl: string;

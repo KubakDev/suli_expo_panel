@@ -1,6 +1,5 @@
 @import '@fontsource/fira-mono';
-@tailwind base;
-@tailwind components;
+
 h1,
 h2,
 h3,
@@ -9,7 +8,6 @@ h5,
 h6 {
 	all: unset;
 }
-@tailwind utilities;
 
 .date-time-field {
 	input[type='text'] {
