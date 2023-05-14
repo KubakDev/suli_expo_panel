@@ -465,24 +465,24 @@
 		selectedAreaSize = areaType;
 		seatLayoutStore.setAreaSize(areaType);
 
-		// for example
+		// // for example
 
-		// advanced usage
-		setTimeout(() => {
-			const elem = document.getElementById('container');
-			console.log('elem ', elem);
-			const panzoom = Panzoom(elem!, {
-				maxScale: 5,
-				disablePan: false
-			});
+		// // advanced usage
+		// setTimeout(() => {
+		// 	const elem = document.getElementById('container');
+		// 	console.log('elem ', elem);
+		// 	const panzoom = Panzoom(elem!, {
+		// 		maxScale: 5,
+		// 		disablePan: false
+		// 	});
 
-			panzoom.pan(10, 10);
-			panzoom.zoom(1, { animate: true });
-			elem!.parentElement!.addEventListener('wheel', (event) => {
-				console.log('event ', event);
-				panzoom.zoomWithWheel(event);
-			});
-		}, 100);
+		// 	panzoom.pan(10, 10);
+		// 	panzoom.zoom(1, { animate: true });
+		// 	elem!.parentElement!.addEventListener('wheel', (event) => {
+		// 		console.log('event ', event);
+		// 		panzoom.zoomWithWheel(event);
+		// 	});
+		// }, 100);
 
 		// select the svg area
 	}
