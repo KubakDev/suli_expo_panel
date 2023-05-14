@@ -39,16 +39,12 @@
 	let value = '';
 	let conf = {
 		file_picker_callback: (cb, value, meta) => {
-			console.log(cb);
-			console.log(value);
-			console.log(meta);
 			const input = document.createElement('input');
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
 
 			input.addEventListener('change', (e) => {
 				const file = e.target.files[0];
-				console.log(file);
 				const reader = new FileReader();
 				reader.addEventListener('load', () => {
 					const id = 'blobid' + new Date().getTime();
@@ -136,7 +132,6 @@
 			})
 			.then((value) => {
 				changeLoadingStatus(true);
-				console.log(value);
 				valid = true;
 			})
 			.catch((err) => {
@@ -144,7 +139,6 @@
 					...invalidateFields,
 					[err.path]: true
 				};
-				console.log(invalidateFields);
 			});
 		if (valid) {
 			if (!data.supabase) return;
@@ -191,11 +185,15 @@
 	}
 	function getImages(e: { detail: [] }) {
 		let updatedData = detailData;
+		updatedData = {
+			...updatedData,
+			images: []
+		};
 		for (let image of e.detail) {
 			const newImage = image;
 			updatedData = {
-				...detailData,
-				images: [...detailData.images, newImage]
+				...updatedData,
+				images: [...updatedData.images, newImage]
 			};
 		}
 		detailData = updatedData;

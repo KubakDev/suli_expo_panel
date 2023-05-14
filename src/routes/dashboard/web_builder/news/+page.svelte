@@ -14,6 +14,8 @@
 	import colorTheme from '../../../../stores/colorTheme';
 	import type { ColorTheme } from '../../../../models/colorTheme';
 	import { supabaseStore } from '../../../../stores/supabaseStore';
+	import { addNewToast } from '../../../../stores/toastStore';
+	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
 
 	export let data;
 	let currentRowId: number;
@@ -73,7 +75,6 @@
 			.select('*')
 			.then((res) => {
 				news = res.data as [];
-				console.log(news);
 			});
 	}
 	onMount(async () => {
@@ -120,6 +121,19 @@
 				color_palette: newColorPaletteId
 			})
 			.eq('id', 2);
+		if (response.error) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'an error occured while publishing the page',
+				title: 'Error'
+			});
+		} else {
+			addNewToast({
+				type: ToastTypeEnum.SUCCESS,
+				message: 'page published successfully',
+				title: 'Success'
+			});
+		}
 		loading = false;
 	}
 	let allCards: string[] = [];

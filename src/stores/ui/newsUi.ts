@@ -30,10 +30,7 @@ export async function getNewsUi(supabase: SupabaseClient) {
     const data = response.data as NewsUiModel;
     newsUiStore.set(data);
     // newsUi.set(response.data);
-    // console.log(response)
-    // newsUi.subscribe(value => {
-    //   console.log(value)
-    // });;
+
   }
 }
 

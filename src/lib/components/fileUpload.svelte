@@ -29,7 +29,6 @@
 						imgSource: ImgSourceEnum.local
 					}
 				];
-				console.log(images);
 			};
 			reader.readAsDataURL(file);
 		}

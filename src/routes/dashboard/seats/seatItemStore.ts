@@ -38,7 +38,6 @@ const createItemStore = () => {
     return {
         subscribe,
         setItem: (item: any) => {
-            console.log(item)
             set(item)
         },
         reset: (d3: any) => {

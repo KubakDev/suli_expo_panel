@@ -6,25 +6,33 @@
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell
+		TableHeadCell,
+		Toast
 	} from 'flowbite-svelte';
 	import { paginationData, getNews } from '../../../stores/news';
 	import news from '../../../stores/news';
 	import Pagination from '$lib/components/reusables/pagination.svelte';
 	import { goto } from '$app/navigation';
 	import { Trash, InformationCircle, PencilSquare } from 'svelte-heros-v2';
+	import ToastComponent from '$lib/components/reusables/toastComponent.svelte';
 
 	export let data;
 	$: ({ supabase } = data);
 	$: {
 		getNews(0, 5, supabase);
 	}
-
+	let isShowToast = false;
 	$: newsData = $news ?? [];
 	function createNews() {
-		goto('/dashboard/create_news');
+		isShowToast = true;
+		setTimeout(() => {
+			isShowToast = false;
+		}, 3000);
+		// goto('/dashboard/create_news');
 	}
 </script>
+
+<ToastComponent />
 
 <div
 	class="w-full bg-white p-10 flex flex-col justify-between"

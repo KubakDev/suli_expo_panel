@@ -5,7 +5,6 @@ export const POST = async ({ request, locals: { supabase } }) => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    console.log('redirecting to dashboard');
     const { error } = await supabase.auth.signInWithPassword({
         email,
         password

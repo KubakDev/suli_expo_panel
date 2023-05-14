@@ -11,6 +11,12 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 
 	export let data;
+	interface Image {
+		imgurl: string;
+		imgSource: ImgSourceEnum;
+		id: number;
+	}
+
 	let CardComponent: any;
 	let thumbnailFile: File | undefined;
 	let sliderImagesFile: File[] = [];
@@ -54,7 +60,6 @@
 			.eq('id', +data.newsId)
 			.single()
 			.then((res) => {
-				console.log(res);
 				cardData = {
 					title: res.data?.title,
 					thumbnail: res.data?.thumbnail,
@@ -73,10 +78,12 @@
 						};
 					})
 				};
+				console.log(detailData);
 				value = res.data?.long_description;
 			});
 	}
 	function handleFileUpload(e: Event) {
+		console.log('handleFileUpload');
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput!.files![0];
 		thumbnailFile = file;
@@ -129,19 +136,24 @@
 		CardComponent = module[card as keyof typeof module];
 	});
 	$: {
-		detailData.long_description = value;
+		// detailData.long_description = value;
 	}
 	function getImages(e: { detail: [] }) {
-		console.log(e.detail);
 		let updatedData = detailData;
-		for (let image of e.detail) {
+		updatedData = {
+			...updatedData,
+			images: []
+		};
+		for (let image of e.detail as Image[]) {
+			console.log(image);
 			const newImage = {
-				imgurl: image as string,
-				id: detailData.images.length
+				imgurl: image.imgurl,
+				imgSource: image.imgSource as ImgSourceEnum,
+				id: image.id
 			};
 			updatedData = {
-				...detailData,
-				images: [...detailData.images, newImage]
+				...updatedData,
+				images: [...updatedData.images, newImage]
 			};
 		}
 		detailData = updatedData;
@@ -187,7 +199,6 @@
 						bind:value={cardData.short_description}
 					/>
 				</div>
-				<!-- create a separate line -->
 				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
 				<h1 class="text-xl font-bold">News Detail</h1>
 				<div class="col-span-3 w-full" style="height: 400px;">
@@ -234,7 +245,6 @@
 			</TabItem>
 			<TabItem title="News Detail">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<h1>{detailData.images.length}</h1>
 					<NewsDetail data={detailData} />
 				</div>
 			</TabItem>

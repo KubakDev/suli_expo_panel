@@ -1,23 +1,20 @@
 <script lang="ts">
 	import Editor from '@tinymce/tinymce-svelte';
+	import ToastComponent from '$lib/components/reusables/toastComponent.svelte';
+	import { Button } from 'flowbite-svelte';
+	import { addNewToast } from '../stores/toastStore';
 
 	let conf = {
 		toolbar: 'undo redo',
 		menubar: true
 	};
-	let value = 'some content';
 
-	$: {
-		console.log(value);
+	let value = 'some content';
+	let test = ['test', 'test2', 'test3', 'test4', 'test5'];
+	function showToast(message: string) {
+		test = [...test, message];
 	}
 </script>
 
-<!-- <Editor apiKey="z8xd7vu4qjwgky2gsars9d6ym05l8k665i0cf0d8iiiaeuwr" bind:value={value}/> -->
-<Editor
-	apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-	channel="5"
-	text="readonly-text-output"
-	cssClass="tinymce-wrapper"
-	bind:value
-/>
-<h1>homee</h1>
+<!-- <Button on:click={() => addNewToast()}>Show Toast 1</Button> -->
+<ToastComponent />

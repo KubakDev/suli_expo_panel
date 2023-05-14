@@ -8,6 +8,7 @@
 	import { setSupabaseStore, supabaseStore } from '../stores/supabaseStore';
 	import CustomAlert from '$lib/components/alert/CustomAlert.svelte';
 	import { alertStore } from '../stores/alertStore';
+	import ToastComponent from '$lib/components/reusables/toastComponent.svelte';
 	export let data: PageData;
 	$: ({ supabase, session } = data);
 
@@ -28,6 +29,7 @@
 	});
 </script>
 
+<ToastComponent />
 <div class="alerts">
 	{#each $alertStore as alert}
 		<CustomAlert type={alert.type} message={alert.message} title={alert.title} />

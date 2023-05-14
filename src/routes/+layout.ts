@@ -13,7 +13,6 @@ export const load: LayoutLoad = async ({ fetch, data, depends }) => {
     event: { fetch },
     serverSession: data.session
   });
-  console.log("load", 'supabase ');
   supabaseStore.set(supabase);
 
   const {

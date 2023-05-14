@@ -13,7 +13,6 @@ export let showDeleteModal = writable(false);
 export async function getNews(from: number, to: number, supabase: SupabaseClient) {
   changeLoadingStatus(true)
   await fetchData({ collectionName: "news", from: from, to: to, supabase: supabase }).then(response => {
-    console.log(response)
     let numPages = Math.ceil(response?.count! / (to - from))
     let pages = []
     for (let i = 1; i <= numPages; i++) {
@@ -25,7 +24,6 @@ export async function getNews(from: number, to: number, supabase: SupabaseClient
     paginationData.set({ count: response?.count, pages: pages, currentPage: currentPage })
     news.set(response?.data as [])
     news.subscribe(value => {
-      console.log(value)
     });
     toggleModal(false)
     changeLoadingStatus(false)

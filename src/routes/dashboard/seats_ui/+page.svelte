@@ -28,7 +28,6 @@
 		});
 	}
 	onMount(async () => {
-	
 		getData();
 		// console.log(seatsData);
 		// seats = d3.select(svg).append('isLoaded = true;
