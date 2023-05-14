@@ -41,7 +41,7 @@
 	<div class=" flex justify-center">
 		<div class="w-full lg:w-8/12">
 			<div class="py-10 flex justify-end">
-				<Button on:click={createNews}>Create News</Button>
+				<Button   on:click={createNews}>Create News</Button>
 			</div>
 			<Table>
 				<TableHead>
