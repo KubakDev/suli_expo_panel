@@ -60,7 +60,6 @@
 		"vite": "^4.2.1",
 		"yup": "^1.1.1"
 	},
-	"type": "module",
 	"dependencies": {
 		"@panzoom/panzoom": "^4.5.1",
 		"@tinymce/tinymce-svelte": "^1.0.1",
