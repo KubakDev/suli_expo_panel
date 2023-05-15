@@ -602,13 +602,13 @@
 				</div>
 			{:else}
 				<div class="w-full h-full flex flex-col justify-center items-center">
-					<Lottie
+					<!-- <Lottie
 						path="./love.json"
 						autoplay={true}
 						loop={false}
 						speed={0.2}
 						direction={Direction.REVERSE}
-					/>
+					/> -->
 					<div class="mb-2">Please select the aspect ratio of seats holder first</div>
 					<ButtonGroup>
 						<Button on:click={() => onAreaSizeClick(AreaType.square)} outline color="dark"

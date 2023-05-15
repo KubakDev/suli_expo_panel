@@ -17,13 +17,13 @@
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
 
-	export let data;
 	let currentRowId: number;
 	let CardComponent: any;
 	let loading = false;
 	$: component = CardComponent;
 	let selectedCard: string = 'MainCard';
 	let selectedColorTheme = $colorTheme[0];
+	let allCards: string[] = [];
 	let colors = [
 		'primaryColor',
 		'secondaryColor',
@@ -81,6 +81,13 @@
 		await getUI();
 		await getNews();
 		component = CardComponent;
+		const images = import.meta.glob('../../../../../static/images/cards/*.{jpg,jpeg,png,gif}');
+		console.log(images);
+		Object.keys(images).forEach((key) => {
+			const fileName: string = key.split('/').pop()!;
+			allCards.push(fileName.split('.').shift()!);
+		});
+		console.log(allCards);
 	});
 	async function changeCardType(cardType: any) {
 		//change cardType to pascalCase
@@ -136,12 +143,7 @@
 		}
 		loading = false;
 	}
-	let allCards: string[] = [];
-	const images = import.meta.glob('$lib/images/cards/*.{jpg,jpeg,png,gif}');
-	Object.keys(images).forEach((key) => {
-		const fileName: string = key.split('/').pop()!;
-		allCards.push(fileName.split('.').shift()!);
-	});
+
 	function changeColorTheme(colorTheme: any) {
 		selectedColorTheme = colorTheme;
 	}
@@ -247,11 +249,7 @@
 										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
 										on:click={() => changeCardType(card)}
 									>
-										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
-										<DynamicImage
-											src="../../src/lib/images/cards/{card}.png"
-											className={`w-[80px] h-[80px]`}
-										/>
+										<img src="/images/cards/{card}.png" alt="Not Found" />
 										<p>{card}</p>
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
