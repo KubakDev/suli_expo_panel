@@ -7,7 +7,24 @@ const config = {
 
   theme: {
     colors: {
-      primary: "FFD630",
+      primary: {
+        50: '#E1B168',
+        100: '#E1B168',
+        200: '#E1B168',
+        300: '#E1B168',
+        400: '#E1B168',
+        500: '#E1B168',
+        600: '#E1B168',
+        700: '#E1B168',
+        800: '#E1B168',
+        900: '#E1B168',
+        DEFAULT: '#E1B168', //500
+        'on': '#E1B168',    //50  
+        'dark': {
+          DEFAULT: '#E1B168', //300
+          'on': '#E1B168',    //800  
+        }
+      },
       danger: '#cf250d',
       hoverBox: '#e0dddd',
       info: '#c27803',
