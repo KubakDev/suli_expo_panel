@@ -11,13 +11,15 @@
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
-	import colorTheme from '../../../../stores/colorTheme';
+	import colorTheme, { getAllThemes } from '../../../../stores/colorTheme';
 	import type { ColorTheme } from '../../../../models/colorTheme';
 	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
 
-	export let data;
+	onMount(async () => {
+		await getAllThemes();
+	});
 	let currentRowId: number;
 	let CardComponent: any;
 	let loading = false;
@@ -118,7 +120,8 @@
 			.from('page_builder')
 			.update({
 				componentId: data?.id,
-				color_palette: newColorPaletteId
+				color_palette:
+					Object.keys(customColors).length > 0 ? newColorPaletteId : selectedColorTheme?.id
 			})
 			.eq('id', 2);
 		if (response.error) {
@@ -252,7 +255,7 @@
 											src="../../src/lib/images/cards/{card}.png"
 											className={`w-[80px] h-[80px]`}
 										/>
-										<p>{card}</p>
+										<p class="text-black">{card}</p>
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 								{/each}
@@ -318,7 +321,7 @@
 											on:click={() => changeColorTheme(color)}
 										>
 											<div class="h-14 w-14" style={`background-color:${color?.primaryColor}`} />
-											<p class="text-sm">{color.name}</p>
+											<p class="text-sm text-black">{color.name}</p>
 										</div>
 									{/each}
 								{/if}
