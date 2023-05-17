@@ -5,7 +5,7 @@
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
 	import { onMount } from 'svelte';
 
-	export let data: { images?: [] } = {};
+	export let data: { images?: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] } = {};
 
 	let images: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] = data.images ?? [];
 	afterUpdate(() => {

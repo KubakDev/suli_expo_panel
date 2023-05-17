@@ -4,6 +4,7 @@ import { changeLoadingStatus } from "./loading";
 import fetchData from "$lib/utils/fetchData";
 import type { News } from "../models/news";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ImgSourceEnum } from "../models/imgSourceEnum";
 
 export let showModal = writable<boolean>(false);
 let news = writable<News[]>([]);
@@ -22,7 +23,13 @@ export async function getNews(from: number, to: number, supabase: SupabaseClient
     }
     let currentPage = Math.ceil(from / (to - from)) + 1
     paginationData.set({ count: response?.count, pages: pages, currentPage: currentPage })
-    news.set(response?.data as [])
+    const modifiedData = response?.data?.map(item => {
+      return {
+        ...item,
+        imgSource: ImgSourceEnum.remote
+      };
+    });
+    news.set(modifiedData as News[])
     news.subscribe(value => {
     });
     toggleModal(false)
@@ -38,28 +45,20 @@ export function toggleDeleteModal(cond: boolean) {
 };
 export async function addNewNews(newItem: CreateNews) {
   changeLoadingStatus(true)
-  // let { data, error } = await supabase.from("news").insert({
-  //   title: "newItem.title",
-  //   card_img: "",
-  //   short_description: "newItem.short_description",
-  //   long_description: "newItem.long_description",
-  // });
-  // if (!error) {
-  //   newsCollection.getNews(0, 5)
-  // }
   changeLoadingStatus(false)
 };
-export async function deleteNews(id: number) {
-  changeLoadingStatus(true)
-  // await supabase.from('news').delete().eq('id', id)
-  // await newsCollection.getNews(0, 5)
-  toggleDeleteModal(false)
-  changeLoadingStatus(false)
+export async function deleteNews(id: number, supabase: SupabaseClient) {
+  console.log(typeof id)
+  if (!supabase) return
+  const { data, error } = await supabase
+    .from("news")
+    .delete()
+    .eq('news_id', id);
+  if (error) {
+    console.log(error)
+    return
+  }
+  getNews(0, 10, supabase);
 }
-
-// export let showModal = newsCollection.showModal
-// export let showDeleteModal = newsCollection.deleteModal
-// export let paginationData = newsCollection.paginationData;
-// export let getNews = newsCollection.getNews;
 export default news;
 

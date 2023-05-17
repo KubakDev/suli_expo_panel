@@ -11,12 +11,19 @@
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
-	import colorTheme from '../../../../stores/colorTheme';
+	import colorTheme, { getAllThemes } from '../../../../stores/colorTheme';
 	import type { ColorTheme } from '../../../../models/colorTheme';
 	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
+	import news from '../../../../stores/news';
+	import { getNews } from '../../../../stores/news';
+	import type { News } from '../../../../models/news';
 
+	export let data;
+	onMount(async () => {
+		await getAllThemes();
+	});
 	let currentRowId: number;
 	let CardComponent: any;
 	let loading = false;
@@ -34,7 +41,7 @@
 	];
 	let showCustomColor: boolean = false;
 	let customColors: ColorTheme = {} as ColorTheme;
-	let news: [] = [];
+	let allNews: News[] = [];
 	const enum CardType {
 		Home = 'home',
 		News = 'news'
@@ -67,19 +74,10 @@
 		const module = await import('kubak-svelte-component');
 		CardComponent = module[card as keyof typeof module];
 	}
-	async function getNews() {
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		await supabase
-			.from('news')
-			.select('*')
-			.then((res) => {
-				news = res.data as [];
-			});
-	}
 	onMount(async () => {
 		await getUI();
-		await getNews();
+		await getNews(0, 10, data.supabase);
+		allNews = $news;
 		component = CardComponent;
 		const images = import.meta.glob('../../../../../static/images/cards/*.{jpg,jpeg,png,gif}');
 		console.log(images);
@@ -90,7 +88,6 @@
 		console.log(allCards);
 	});
 	async function changeCardType(cardType: any) {
-		//change cardType to pascalCase
 		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
@@ -125,7 +122,8 @@
 			.from('page_builder')
 			.update({
 				componentId: data?.id,
-				color_palette: newColorPaletteId
+				color_palette:
+					Object.keys(customColors).length > 0 ? newColorPaletteId : selectedColorTheme?.id
 			})
 			.eq('id', 2);
 		if (response.error) {
@@ -171,7 +169,7 @@
 				</h1>
 			</div>
 			<div class="flex flex-wrap justify-center">
-				{#each news as newsItem}
+				{#each allNews as newsItem}
 					<div class="p-10 w-[600px]">
 						{#if component}
 							<svelte:component
@@ -249,8 +247,14 @@
 										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
 										on:click={() => changeCardType(card)}
 									>
+<<<<<<< HEAD
 										<img src="/images/cards/{card}.png" alt={card} />
 										<p>{card}</p>
+=======
+										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
+										<DynamicImage src="/images/cards/{card}.png" className={`w-[80px] h-[80px]`} />
+										<p class="text-black">{card}</p>
+>>>>>>> ffbbf682a0687e2fe262447831b901785703891a
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 								{/each}
@@ -316,7 +320,7 @@
 											on:click={() => changeColorTheme(color)}
 										>
 											<div class="h-14 w-14" style={`background-color:${color?.primaryColor}`} />
-											<p class="text-sm">{color.name}</p>
+											<p class="text-sm text-black">{color.name}</p>
 										</div>
 									{/each}
 								{/if}

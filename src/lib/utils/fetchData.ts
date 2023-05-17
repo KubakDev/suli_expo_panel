@@ -8,6 +8,7 @@ async function fetchData(option: { collectionName: string, from: number, to: num
     .from(option.collectionName)
     .select(option.SelectedValues ?? '*', { count: "exact" })
     .range(option.from, option.to)
+    .order('id', { ascending: false })
   return response;
 }
 
