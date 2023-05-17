@@ -247,14 +247,9 @@
 										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
 										on:click={() => changeCardType(card)}
 									>
-<<<<<<< HEAD
-										<img src="/images/cards/{card}.png" alt={card} />
-										<p>{card}</p>
-=======
 										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
 										<DynamicImage src="/images/cards/{card}.png" className={`w-[80px] h-[80px]`} />
 										<p class="text-black">{card}</p>
->>>>>>> ffbbf682a0687e2fe262447831b901785703891a
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 								{/each}
