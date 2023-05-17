@@ -38,22 +38,22 @@
 	});
 	let value = '';
 	let conf = {
-		file_picker_callback: (cb, value, meta) => {
+		file_picker_callback: (cb: any, value: any, meta: any) => {
 			const input = document.createElement('input');
 			input.setAttribute('type', 'file');
 			input.setAttribute('accept', 'image/*');
 
-			input.addEventListener('change', (e) => {
+			input.addEventListener('change', (e: any) => {
 				const file = e.target.files[0];
-				const reader = new FileReader();
+				const reader: any = new FileReader();
 				reader.addEventListener('load', () => {
 					const id = 'blobid' + new Date().getTime();
-					const blobCache = tinymce.activeEditor.editorUpload.blobCache;
-					const base64 = reader.result.split(',')[1];
-					const blobInfo = blobCache.create(id, file, base64);
-					blobCache.add(blobInfo);
+					// const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+					const base64 = reader?.result?.split(',')[1];
+					// const blobInfo = blobCache.create(id, file, base64);
+					// blobCache.add(blobInfo);
 
-					cb(blobInfo.blobUri(), { title: file.name });
+					// cb(blobInfo.blobUri(), { title: file.name });
 				});
 				reader.readAsDataURL(file);
 			});
@@ -100,6 +100,41 @@
 		long_description: '',
 		images: []
 	};
+	let newsLangData: {
+		title: string;
+		short_description: string;
+		long_description: string;
+		language: string;
+	}[] = [
+		{
+			title: '',
+			short_description: '',
+			long_description: '',
+			language: 'en'
+		},
+		{
+			title: '',
+			short_description: '',
+			long_description: '',
+			language: 'ckb'
+		},
+		{
+			title: '',
+			short_description: '',
+			long_description: '',
+			language: 'ar'
+		}
+	];
+	let newsData: {
+		thumbnail: string;
+		images: string[];
+		imgSource: ImgSourceEnum;
+	} = {
+		thumbnail: '',
+		images: [],
+		imgSource: ImgSourceEnum.local
+	};
+	let selectedLanguageTab = 'en';
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput!.files![0];
@@ -108,6 +143,8 @@
 		reader.onloadend = () => {
 			cardData.thumbnail = reader.result as string;
 			cardData.imgSource = ImgSourceEnum.local;
+			newsData.thumbnail = reader.result as string;
+			newsData.imgSource = ImgSourceEnum.local;
 		};
 		reader.readAsDataURL(file);
 	}
@@ -117,6 +154,8 @@
 		return random;
 	}
 	async function submitForm(e: Event) {
+		console.log(newsLangData);
+
 		let valid = false;
 		invalidateFields = {
 			title: false,
@@ -140,34 +179,38 @@
 					[err.path]: true
 				};
 			});
-		if (valid) {
-			if (!data.supabase) return;
-			const fileName = `${getRandomTextNumber()}.${thumbnailFile?.name.split('.').pop()}`;
-			const response = await data.supabase.storage
-				.from('image')
-				.upload(`images/${fileName}`, thumbnailFile!);
-			if (response) {
-				let detailImages = [];
-				for (let file of sliderImagesFile) {
-					let SliderFileName = `${getRandomTextNumber()}.${file?.name.split('.').pop()}`;
-					const response = await data.supabase.storage
-						.from('image')
-						.upload(`images/${SliderFileName}`, file!);
-					if (response.data) {
-						detailImages.push(response.data.path);
-					}
+		// if (valid) {
+		if (!data.supabase) return;
+		const fileName = `${getRandomTextNumber()}.${thumbnailFile?.name.split('.').pop()}`;
+		const response = await data.supabase.storage
+			.from('image')
+			.upload(`images/${fileName}`, thumbnailFile!);
+		cardData.thumbnail = response.data?.path!;
+		newsData.thumbnail = response.data?.path!;
+		if (response) {
+			let detailImages = [];
+			for (let file of sliderImagesFile) {
+				let SliderFileName = `${getRandomTextNumber()}.${file?.name.split('.').pop()}`;
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`images/${SliderFileName}`, file!);
+				if (response.data) {
+					detailImages.push(response.data.path);
 				}
-				await data.supabase.from('news').insert({
-					title: cardData.title,
-					thumbnail: cardData?.thumbnail,
-					created_at: cardData.created_at,
-					short_description: cardData.short_description,
-					long_description: detailData.long_description,
-					images: detailImages.toString()
-				});
-				changeLoadingStatus(false);
-				goto('/dashboard/news');
 			}
+			newsData.images = detailImages;
+			console.log(newsData.images);
+
+			await data.supabase.rpc('insert_news_and_news_lang', {
+				news_data: {
+					thumbnail: newsData.thumbnail,
+					images: newsData.images.toString()
+				},
+				news_lang_data: newsLangData
+			});
+
+			changeLoadingStatus(false);
+			goto('/dashboard/news');
 		}
 	}
 	onMount(async () => {
@@ -185,18 +228,29 @@
 	}
 	function getImages(e: { detail: [] }) {
 		let updatedData = detailData;
+		let updatedNewsData = newsData;
+		updatedNewsData = {
+			...updatedNewsData,
+			images: []
+		};
 		updatedData = {
 			...updatedData,
 			images: []
 		};
 		for (let image of e.detail) {
 			const newImage = image;
+			updatedNewsData = {
+				...updatedNewsData,
+				images: [...updatedNewsData.images, newImage]
+			};
 			updatedData = {
 				...updatedData,
 				images: [...updatedData.images, newImage]
 			};
 		}
 		detailData = updatedData;
+		newsData = updatedNewsData;
+		console.log(newsData);
 	}
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -212,23 +266,6 @@
 			<h1 class="text-xl font-bold mb-8">News Card Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<div>
-					<Label for="first_name" class="mb-2" color={invalidateFields.title ? 'red' : undefined}
-						>Card Title</Label
-					>
-					<Input
-						type="text"
-						id="first_name"
-						placeholder="The Story"
-						bind:value={cardData.title}
-						color={invalidateFields.title ? 'red' : 'base'}
-					/>
-					{#if invalidateFields.title}
-						<Helper class="mt-2" color="red">
-							<span class="font-medium">title is required!</span>
-						</Helper>
-					{/if}
-				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label
@@ -253,34 +290,75 @@
 						<DateInput bind:value={cardData.created_at} format="yyyy/MM/dd" />
 					</Label>
 				</div>
+				<br />
 				<div class="col-span-3">
-					<Label for="textarea-id" class="mb-2">short description</Label>
-					<Textarea
-						id="textarea-id"
-						placeholder="short description"
-						rows="4"
-						name="message"
-						bind:value={cardData.short_description}
-					/>
-					{#if invalidateFields.short_description}
-						<Helper class="mt-2" color="red"
-							><span class="font-medium">short description is required!</span>
-						</Helper>
-					{/if}
+					<Tabs>
+						{#each newsLangData as langData}
+							<TabItem
+								open={langData.language == selectedLanguageTab}
+								title={langData.language}
+								on:click={() => {
+									selectedLanguageTab = langData.language;
+								}}
+							>
+								<div class="px-10 py-16">
+									<div class="text-center w-full pb-5">
+										<h1 class="text-xl font-bold">
+											{`add data for ${langData.language} language`}
+										</h1>
+										<p>for other language navigate between tabs</p>
+									</div>
+									<div class="pb-10">
+										<Label
+											for="first_name"
+											class="mb-2"
+											color={invalidateFields.title ? 'red' : undefined}>Card Title</Label
+										>
+										<Input
+											type="text"
+											placeholder="The Story"
+											bind:value={langData.title}
+											color={invalidateFields.title ? 'red' : 'base'}
+										/>
+										{#if invalidateFields.title}
+											<Helper class="mt-2" color="red">
+												<span class="font-medium">title is required!</span>
+											</Helper>
+										{/if}
+									</div>
+									<div class="pb-10">
+										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Textarea
+											id="textarea-id"
+											placeholder="short description"
+											rows="4"
+											name="message"
+											bind:value={langData.short_description}
+										/>
+										{#if invalidateFields.short_description}
+											<Helper class="mt-2" color="red"
+												><span class="font-medium">short description is required!</span>
+											</Helper>
+										{/if}
+									</div>
+									<h1 class="text-xl font-bold">News Detail</h1>
+									<div class="pt-4 w-full" style="height: 400px;">
+										<Editor
+											apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+											channel="5"
+											text="readonly-text-output"
+											cssClass="tinymce-wrapper"
+											bind:value={langData.long_description}
+											{conf}
+										/>
+									</div>
+								</div>
+							</TabItem>
+						{/each}
+					</Tabs>
 				</div>
-				<!-- create a separate line -->
 				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
-				<h1 class="text-xl font-bold">News Detail</h1>
-				<div class="col-span-3 w-full" style="height: 400px;">
-					<Editor
-						apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-						channel="5"
-						text="readonly-text-output"
-						cssClass="tinymce-wrapper"
-						bind:value
-						{conf}
-					/>
-				</div>
+
 				<br />
 			</div>
 			<div class="">
@@ -300,12 +378,19 @@
 		<Tabs>
 			<TabItem open title="News List">
 				{#if $newsUiStore}
-					<div class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center">
+					<div
+						class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
+						style="min-height: calc(100vh - 300px);"
+					>
 						<div class="w-[600px]">
 							{#if newsCardComponent}
 								<svelte:component
 									this={newsCardComponent}
-									data={cardData}
+									data={newsLangData.find((item) => item.language == selectedLanguageTab)}
+									imageData={{
+										thumbnail: newsData.thumbnail,
+										imgSource: newsData.imgSource
+									}}
 									colors={$newsUiStore.color_palette}
 								/>
 							{:else}
@@ -316,8 +401,12 @@
 				{/if}
 			</TabItem>
 			<TabItem title="News Detail">
-				<div class=" w-full bg-[#3E4248] rounded-md p-10">
-					<NewsDetail data={detailData} />
+				<div class=" w-full bg-[#3E4248] rounded-md p-10" style="min-height: calc(100vh - 300px);">
+					<NewsDetail
+						long_description={newsLangData.find((item) => item.language == selectedLanguageTab)
+							?.long_description}
+						images={newsData.images}
+					/>
 				</div>
 			</TabItem>
 		</Tabs>

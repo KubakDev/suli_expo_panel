@@ -2,6 +2,7 @@
 	// @ts-nocheck
 	import { Pagination } from 'flowbite-svelte';
 	export let paginationData;
+
 	let pages = [];
 	$: pagesName = pages;
 	$: {
@@ -18,6 +19,9 @@
 	const next = () => {
 		alert('Next btn clicked. Make a call to your server to fetch data.');
 	};
+	function paginate(e) {
+		console.log(e);
+	}
 </script>
 
-<Pagination pages={pagesName} on:previous={previous} on:next={next} />
+<Pagination pages={pagesName} on:previous={previous} on:next={next} on:change={paginate} />

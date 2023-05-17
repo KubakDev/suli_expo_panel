@@ -16,7 +16,11 @@
 	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
+	import news from '../../../../stores/news';
+	import { getNews } from '../../../../stores/news';
+	import type { News } from '../../../../models/news';
 
+	export let data;
 	onMount(async () => {
 		await getAllThemes();
 	});
@@ -26,6 +30,7 @@
 	$: component = CardComponent;
 	let selectedCard: string = 'MainCard';
 	let selectedColorTheme = $colorTheme[0];
+	let allCards: string[] = [];
 	let colors = [
 		'primaryColor',
 		'secondaryColor',
@@ -36,7 +41,7 @@
 	];
 	let showCustomColor: boolean = false;
 	let customColors: ColorTheme = {} as ColorTheme;
-	let news: [] = [];
+	let allNews: News[] = [];
 	const enum CardType {
 		Home = 'home',
 		News = 'news'
@@ -69,23 +74,20 @@
 		const module = await import('kubak-svelte-component');
 		CardComponent = module[card as keyof typeof module];
 	}
-	async function getNews() {
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		await supabase
-			.from('news')
-			.select('*')
-			.then((res) => {
-				news = res.data as [];
-			});
-	}
 	onMount(async () => {
 		await getUI();
-		await getNews();
+		await getNews(0, 10, data.supabase);
+		allNews = $news;
 		component = CardComponent;
+		const images = import.meta.glob('../../../../../static/images/cards/*.{jpg,jpeg,png,gif}');
+		console.log(images);
+		Object.keys(images).forEach((key) => {
+			const fileName: string = key.split('/').pop()!;
+			allCards.push(fileName.split('.').shift()!);
+		});
+		console.log(allCards);
 	});
 	async function changeCardType(cardType: any) {
-		//change cardType to pascalCase
 		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
 		selectedCard = cardType;
 		const module = await import('kubak-svelte-component');
@@ -139,12 +141,7 @@
 		}
 		loading = false;
 	}
-	let allCards: string[] = [];
-	const images = import.meta.glob('$lib/images/cards/*.{jpg,jpeg,png,gif}');
-	Object.keys(images).forEach((key) => {
-		const fileName: string = key.split('/').pop()!;
-		allCards.push(fileName.split('.').shift()!);
-	});
+
 	function changeColorTheme(colorTheme: any) {
 		selectedColorTheme = colorTheme;
 	}
@@ -172,7 +169,7 @@
 				</h1>
 			</div>
 			<div class="flex flex-wrap justify-center">
-				{#each news as newsItem}
+				{#each allNews as newsItem}
 					<div class="p-10 w-[600px]">
 						{#if component}
 							<svelte:component
@@ -251,10 +248,7 @@
 										on:click={() => changeCardType(card)}
 									>
 										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
-										<DynamicImage
-											src="../../src/lib/images/cards/{card}.png"
-											className={`w-[80px] h-[80px]`}
-										/>
+										<DynamicImage src="/images/cards/{card}.png" className={`w-[80px] h-[80px]`} />
 										<p class="text-black">{card}</p>
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
