@@ -249,7 +249,7 @@
 										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
 										on:click={() => changeCardType(card)}
 									>
-										<img src="/images/cards/{card}.png" alt="Not Found" />
+										<img src="/images/cards/{card}.png" alt={card} />
 										<p>{card}</p>
 									</div>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
