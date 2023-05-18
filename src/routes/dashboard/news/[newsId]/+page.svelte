@@ -71,7 +71,7 @@
 			news_languages(*)
 			`
 			)
-			.eq('news_id', +data.newsId)
+			.eq('id', +data.newsId)
 			.single();
 
 		if (response.data) {

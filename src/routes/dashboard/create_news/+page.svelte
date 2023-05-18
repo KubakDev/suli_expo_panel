@@ -209,8 +209,8 @@
 				news_lang_data: newsLangData
 			});
 
-			changeLoadingStatus(false);
 			goto('/dashboard/news');
+			changeLoadingStatus(false);
 		}
 	}
 	onMount(async () => {

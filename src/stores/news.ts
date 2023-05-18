@@ -53,7 +53,7 @@ export async function deleteNews(id: number, supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("news")
     .delete()
-    .eq('news_id', id);
+    .eq('id', id);
   if (error) {
     console.log(error)
     return
