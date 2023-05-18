@@ -1,7 +1,7 @@
 <script lang="ts">
 	import './styles.scss';
 	import type { PageData } from './$types';
-	import "../app.css";
+	import '../app.css';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import CustomAlert from '$lib/components/alert/CustomAlert.svelte';

@@ -72,6 +72,7 @@
 	class="w-full bg-white p-10 flex flex-col justify-between"
 	style="min-height: calc(100vh - 300px);"
 >
+	<h1>Arman</h1>
 	<div class=" flex justify-center">
 		<div class="w-full lg:w-8/12">
 			<div class="py-10 flex justify-end">
