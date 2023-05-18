@@ -16,9 +16,9 @@
 	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
-	import news from '../../../../stores/news';
 	import { getNews } from '../../../../stores/news';
 	import type { News } from '../../../../models/news';
+	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 
 	export let data;
 	onMount(async () => {
@@ -74,10 +74,19 @@
 		const module = await import('kubak-svelte-component');
 		CardComponent = module[card as keyof typeof module];
 	}
+	async function getAllNews() {
+		const response = await data.supabase.from('news').select(
+			`*,
+			news_languages(*)
+			`
+		);
+		allNews = response.data as News[];
+		console.log(allNews);
+	}
 	onMount(async () => {
 		await getUI();
 		await getNews(0, 10, data.supabase);
-		allNews = $news;
+		await getAllNews();
 		component = CardComponent;
 		const images = import.meta.glob('../../../../../static/images/cards/*.{jpg,jpeg,png,gif}');
 		console.log(images);
@@ -174,8 +183,12 @@
 						{#if component}
 							<svelte:component
 								this={component}
-								data={newsItem}
+								data={newsItem.news_languages[0]}
 								colors={Object.keys(customColors).length > 0 ? customColors : selectedColorTheme}
+								imageData={{
+									thumbnail: newsItem.thumbnail,
+									imgSource: ImgSourceEnum.remote
+								}}
 							/>
 						{:else}
 							<div />
