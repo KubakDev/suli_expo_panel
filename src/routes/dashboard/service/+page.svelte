@@ -7,35 +7,23 @@
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell,
-		Toast
+		TableHeadCell
 	} from 'flowbite-svelte';
-	import news, { paginationData, getNews, deleteNews } from '../../../stores/news';
-	import Pagination from '$lib/components/reusables/pagination.svelte';
 	import { goto } from '$app/navigation';
-	import { Trash, InformationCircle, PencilSquare } from 'svelte-heros-v2';
+	import { Trash, InformationCircle } from 'svelte-heros-v2';
+	import service, { getAllServices } from '../../../stores/service';
 
 	export let data;
 	$: ({ supabase } = data);
 	$: {
-		getNews(0, 5, supabase);
+		getAllServices(supabase);
 	}
-	let newsData: any = [];
-	getAllNews();
-	async function getAllNews() {
-		const response = await data.supabase.from('news').select(
-			`*,
-			news_languages(*)
-			`
-		);
-		console.log(response.data);
-		newsData = response.data;
-	}
-	function createNews() {
-		goto('/dashboard/create_news');
+
+	function createService() {
+		goto('/dashboard/create_service');
 	}
 	let popupModal = false;
-	let selectedNewsId = 0;
+	let selectedServiceId = 0;
 </script>
 
 <Modal bind:open={popupModal} size="xs" autoclose>
@@ -57,13 +45,7 @@
 		<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
 			Are you sure you want to delete this items?
 		</h3>
-		<Button
-			color="red"
-			class="mr-2"
-			on:click={() => {
-				deleteNews(selectedNewsId, supabase);
-			}}>Yes, I'm sure</Button
-		>
+		<Button color="red" class="mr-2" on:click={() => {}}>Yes, I'm sure</Button>
 		<Button color="alternative">No, cancel</Button>
 	</div>
 </Modal>
@@ -74,7 +56,7 @@
 	<div class=" flex justify-center">
 		<div class="w-full lg:w-8/12">
 			<div class="py-10 flex justify-end">
-				<Button on:click={createNews}>Create News</Button>
+				<Button on:click={createService}>Create Service</Button>
 			</div>
 			<Table>
 				<TableHead>
@@ -87,11 +69,11 @@
 					</TableHeadCell>
 				</TableHead>
 				<TableBody>
-					{#each newsData as item}
+					{#each $service as item}
 						<TableBodyRow>
-							<TableBodyCell>{item.news_languages[0].title}</TableBodyCell>
+							<TableBodyCell>{item?.service_languages[0]?.title}</TableBodyCell>
 							<TableBodyCell tdClass="w-[300px]"
-								>{item.news_languages[0].short_description}</TableBodyCell
+								>{item?.service_languages[0]?.short_description}</TableBodyCell
 							>
 							<TableBodyCell>
 								<img
@@ -111,7 +93,7 @@
 											class="text-red-800"
 											on:click={() => {
 												popupModal = true;
-												selectedNewsId = item.id;
+												selectedServiceId = item.id ?? 0;
 											}}
 										/>
 									</div>
@@ -121,7 +103,7 @@
 										<InformationCircle
 											class="text-blue-800"
 											on:click={() => {
-												goto(`/dashboard/news/${item.id}`);
+												goto(`/dashboard/service/${item.id}`);
 											}}
 										/>
 									</div>
@@ -131,14 +113,12 @@
 					{/each}
 				</TableBody>
 			</Table>
-			<div class="py-10 flex justify-center w-full">
-				<Pagination paginationData={$paginationData} />
-			</div>
+
 			<div class="flex justify-end items-end">
 				<Button
 					outline
 					on:click={() => {
-						goto('/dashboard/web_builder/news');
+						goto('/dashboard/web_builder/service');
 					}}>Go to Design Page</Button
 				>
 			</div>

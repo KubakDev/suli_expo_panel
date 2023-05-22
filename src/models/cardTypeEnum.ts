@@ -1,4 +1,5 @@
 export const enum CardType {
   Home = 'home',
-  News = 'news'
+  News = 'news',
+  Service = 'service',
 }
