@@ -3,7 +3,7 @@
 	import { DateInput } from 'date-picker-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { supabaseStore } from '../../../stores/supabaseStore';
-	import { NewsDetail } from 'kubak-svelte-component';
+	import { MainCard, NewsDetail } from 'kubak-svelte-component';
 	import { onMount } from 'svelte';
 	import { getNewsUi } from '../../../stores/ui/newsUi';
 	import newsUiStore from '../../../stores/ui/newsUi';
@@ -375,6 +375,12 @@
 	</div>
 
 	<div class=" h-full p-2">
+		<MainCard
+			data={{
+				thumbnail: newsData.thumbnail,
+				imgSource: newsData.imgSource
+			}}
+		/>
 		<Tabs>
 			<TabItem open title="News List">
 				{#if $newsUiStore}
@@ -408,6 +414,7 @@
 						images={newsData.images}
 					/>
 				</div>
+				<h1>asdlkfj</h1>
 			</TabItem>
 		</Tabs>
 	</div>
