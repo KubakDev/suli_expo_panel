@@ -11,6 +11,10 @@ export const load = (async () => {
     "url": "/dashboard/news",
   },
   {
+    "title": "services",
+    "url": "/dashboard/service",
+  },
+  {
     "title": "exhibition",
     "url": "/dashboard/exhibition",
 

@@ -2,24 +2,25 @@
 	import { Label, Button, Input, Fileupload, Textarea, Helper, Spinner } from 'flowbite-svelte';
 	import { DateInput } from 'date-picker-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { supabaseStore } from '../../../stores/supabaseStore';
-	import { MainCard } from 'kubak-svelte-component';
+	import { supabaseStore } from '../../../../stores/supabaseStore';
+	import { NewsDetail } from 'kubak-svelte-component';
 	import { onMount } from 'svelte';
-	import { getNewsUi } from '../../../stores/ui/newsUi';
-	import newsUiStore from '../../../stores/ui/newsUi';
-	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
-	import Editor from '@tinymce/tinymce-svelte';
-	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import { getServiceUi } from '../../../../stores/ui/serviceUi';
+	import serviceUiStore from '../../../../stores/ui/serviceUi';
+	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import * as yup from 'yup';
-	import loading from '../../../stores/loading';
-	import { changeLoadingStatus } from '../../../stores/loading';
+	import loading from '../../../../stores/loading';
+	import { changeLoadingStatus } from '../../../../stores/loading';
 	import { goto } from '$app/navigation';
+	import ColorPicker from 'svelte-awesome-color-picker';
+	import { LanguageEnum } from '../../../../models/languageEnum';
+	import type { Service } from '../../../../models/service';
 
 	export let data;
 	let CardComponent: any;
 	let thumbnailFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	$: newsCardComponent = CardComponent;
+	$: serviceCardComponent = CardComponent;
 
 	let invalidateFields: {
 		title: boolean;
@@ -37,60 +38,17 @@
 		thumbnail: yup.string().required()
 	});
 	let value = '';
-	let conf = {
-		file_picker_callback: (cb: any, value: any, meta: any) => {
-			const input = document.createElement('input');
-			input.setAttribute('type', 'file');
-			input.setAttribute('accept', 'image/*');
-
-			input.addEventListener('change', (e: any) => {
-				const file = e.target.files[0];
-				const reader: any = new FileReader();
-				reader.addEventListener('load', () => {
-					const id = 'blobid' + new Date().getTime();
-					// const blobCache = tinymce.activeEditor.editorUpload.blobCache;
-					const base64 = reader?.result?.split(',')[1];
-					// const blobInfo = blobCache.create(id, file, base64);
-					// blobCache.add(blobInfo);
-
-					// cb(blobInfo.blobUri(), { title: file.name });
-				});
-				reader.readAsDataURL(file);
-			});
-			input.click();
-		},
-		a11y_advanced_options: true,
-		plugins: [
-			'autolink',
-			'autoresize',
-			'codesample',
-			'link',
-			'lists',
-			'media',
-			'powerpaste',
-			'table',
-			'image',
-			'quickbars',
-			'codesample',
-			'help'
+	let serviceData: Service = {
+		service_languages: [
+			{
+				title: '',
+				short_description: '',
+				language: LanguageEnum.CKB
+			}
 		],
-		toolbar:
-			'image undo redo newdocument  bold italic underline strikethrough superscript subscript codeformat | styles blocks fontfamily fontsize align lineheight | forecolor backcolor | language | removeformat'
+		thumbnail: ''
 	};
-	let cardData: {
-		title: string;
-		thumbnail: string;
-		created_at: Date;
-		imgSource: ImgSourceEnum;
-		short_description: string;
-	} = {
-		title: '',
-		thumbnail: '',
-		created_at: new Date(),
-		imgSource: ImgSourceEnum.remote,
-		short_description: ''
-	};
-
+	let newFileUploaded = false;
 	let detailData: {
 		title: string;
 		long_description: string;
@@ -100,28 +58,24 @@
 		long_description: '',
 		images: []
 	};
-	let newsLangData: {
+	let serviceLanguageData: {
 		title: string;
 		short_description: string;
-		long_description: string;
 		language: string;
 	}[] = [
 		{
 			title: '',
 			short_description: '',
-			long_description: '',
 			language: 'en'
 		},
 		{
 			title: '',
 			short_description: '',
-			long_description: '',
 			language: 'ckb'
 		},
 		{
 			title: '',
 			short_description: '',
-			long_description: '',
 			language: 'ar'
 		}
 	];
@@ -134,16 +88,35 @@
 		images: [],
 		imgSource: ImgSourceEnum.local
 	};
+	getService();
+	async function getService() {
+		changeLoadingStatus(true);
+		await data.supabase
+			.from('service')
+			.select('*,service_languages(*)')
+			.eq('id', data.serviceId)
+			.single()
+			.then((res) => {
+				if (res.error) return;
+				serviceData = res.data as Service;
+				serviceData.imgSource = ImgSourceEnum.remote;
+				for (let language of serviceData.service_languages) {
+					let index = serviceLanguageData.findIndex((item) => item.language == language.language);
+					serviceLanguageData[index] = language;
+				}
+				changeLoadingStatus(false);
+			});
+	}
 	let selectedLanguageTab = 'en';
 	function handleFileUpload(e: Event) {
+		newFileUploaded = true;
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput!.files![0];
 		thumbnailFile = file;
-		console.log(file);
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			cardData.thumbnail = reader.result as string;
-			cardData.imgSource = ImgSourceEnum.local;
+			serviceData.thumbnail = reader.result as string;
+			serviceData.imgSource = ImgSourceEnum.local;
 			newsData.thumbnail = reader.result as string;
 			newsData.imgSource = ImgSourceEnum.local;
 		};
@@ -155,71 +128,41 @@
 		return random;
 	}
 	async function submitForm(e: Event) {
-		console.log(newsLangData);
-
-		let valid = false;
 		invalidateFields = {
 			title: false,
 			short_description: false,
 			thumbnail: false
 		};
+		changeLoadingStatus(true);
 		e.preventDefault();
-		await schema
-			.validate({
-				title: cardData.title,
-				short_description: cardData.short_description,
-				thumbnail: cardData.thumbnail
-			})
-			.then((value) => {
-				changeLoadingStatus(true);
-				valid = true;
-			})
-			.catch((err) => {
-				invalidateFields = {
-					...invalidateFields,
-					[err.path]: true
-				};
-			});
-		// if (valid) {
 		if (!data.supabase) return;
 		const fileName = `${getRandomTextNumber()}.${thumbnailFile?.name.split('.').pop()}`;
-		const response = await data.supabase.storage
-			.from('image')
-			.upload(`images/${fileName}`, thumbnailFile!);
-		cardData.thumbnail = response.data?.path!;
-		newsData.thumbnail = response.data?.path!;
-		if (response) {
-			let detailImages = [];
-			for (let file of sliderImagesFile) {
-				let SliderFileName = `${getRandomTextNumber()}.${file?.name.split('.').pop()}`;
-				const response = await data.supabase.storage
-					.from('image')
-					.upload(`images/${SliderFileName}`, file!);
-				if (response.data) {
-					detailImages.push(response.data.path);
-				}
-			}
-			newsData.images = detailImages;
-			console.log(newsData.images);
-
-			await data.supabase.rpc('insert_news_and_news_lang', {
-				news_data: {
-					thumbnail: newsData.thumbnail,
-					images: newsData.images.toString()
+		if (newFileUploaded) {
+			const response = await data.supabase.storage
+				.from('image')
+				.upload(`images/${fileName}`, thumbnailFile!);
+			serviceData.thumbnail = response.data?.path!;
+		}
+		if (serviceData.thumbnail) {
+			const response = await data.supabase.rpc('update_service_and_service_lang', {
+				service_data: {
+					id: serviceData.id,
+					thumbnail: serviceData.thumbnail,
+					primaryColor: serviceData.primaryColor,
+					onPrimaryColor: serviceData.onPrimaryColor
 				},
-				news_lang_data: newsLangData
+				service_lang_data: serviceLanguageData
 			});
-
-			goto('/dashboard/news');
+			getService();
 			changeLoadingStatus(false);
 		}
 	}
 	onMount(async () => {
-		newsCardComponent = CardComponent;
+		serviceCardComponent = CardComponent;
 		const supabase = $supabaseStore;
 		if (!supabase) return;
-		await getNewsUi(supabase);
-		let card = $newsUiStore?.component?.title;
+		await getServiceUi(supabase);
+		let card = $serviceUiStore?.component?.title;
 		const module = await import('kubak-svelte-component');
 
 		CardComponent = module[card as keyof typeof module];
@@ -251,27 +194,23 @@
 		}
 		detailData = updatedData;
 		newsData = updatedNewsData;
-		console.log(newsData);
-	}
-	function getAllImageFile(e: { detail: File[] }) {
-		sliderImagesFile = e.detail;
 	}
 </script>
 
 <div
 	style="min-height: calc(100vh - 160px);"
-	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4]"
+	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4] create-service"
 >
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		<form class="py-10">
 			<h1 class="text-xl font-bold mb-8">News Card Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<div>
+				<div class="">
 					<Label class="space-y-2 mb-2">
 						<Label
 							for="first_name"
-							class="mb-2"
+							class="mb-4"
 							color={invalidateFields.thumbnail ? 'red' : undefined}>upload Card Image</Label
 						>
 						<Fileupload
@@ -285,16 +224,33 @@
 						{/if}
 					</Label>
 				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={cardData.created_at} format="yyyy/MM/dd" />
-					</Label>
+				<div class="flex justify-around w-full col-span-2">
+					<div class="w-full px-6 flex flex-col items-center justify-center">
+						<Label class="text-sm pb-6">Background Color</Label>
+						<ColorPicker
+							hex={serviceData.primaryColor}
+							label=""
+							on:input={(value) => {
+								serviceData.primaryColor = value.detail.hex;
+							}}
+						/>
+					</div>
+					<div class="w-full px-6 flex flex-col items-center justify-center">
+						<Label class="text-sm pb-6">Text Color</Label>
+						<ColorPicker
+							hex={serviceData.onPrimaryColor}
+							label=""
+							on:input={(value) => {
+								serviceData.onPrimaryColor = value.detail.hex;
+							}}
+						/>
+					</div>
 				</div>
+
 				<br />
 				<div class="col-span-3">
 					<Tabs>
-						{#each newsLangData as langData}
+						{#each serviceLanguageData as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -342,28 +298,11 @@
 											</Helper>
 										{/if}
 									</div>
-									<h1 class="text-xl font-bold">News Detail</h1>
-									<div class="pt-4 w-full" style="height: 400px;">
-										<Editor
-											apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-											channel="5"
-											text="readonly-text-output"
-											cssClass="tinymce-wrapper"
-											bind:value={langData.long_description}
-											{conf}
-										/>
-									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
 				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
-
-				<br />
-			</div>
-			<div class="">
-				<FileUploadComponent on:imageChanges={getImages} on:imageFilesChanges={getAllImageFile} />
 			</div>
 			<div class="w-full flex justify-end mt-2">
 				<Button on:click={submitForm} class="my-2 "
@@ -376,47 +315,35 @@
 	</div>
 
 	<div class=" h-full p-2">
-		<MainCard
-			data={{
-				thumbnail: newsData.thumbnail,
-				imgSource: newsData.imgSource
-			}}
-		/>
-		<Tabs>
-			<TabItem open title="News List">
-				{#if $newsUiStore}
-					<div
-						class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
-						style="min-height: calc(100vh - 300px);"
-					>
-						<div class="w-[600px]">
-							{#if newsCardComponent}
-								<svelte:component
-									this={newsCardComponent}
-									data={newsLangData.find((item) => item.language == selectedLanguageTab)}
-									imageData={{
-										thumbnail: newsData.thumbnail,
-										imgSource: newsData.imgSource
-									}}
-									colors={$newsUiStore.color_palette}
-								/>
-							{:else}
-								<div />
-							{/if}
-						</div>
-					</div>
-				{/if}
-			</TabItem>
-			<TabItem title="News Detail">
-				<div class=" w-full bg-[#3E4248] rounded-md p-10" style="min-height: calc(100vh - 300px);">
-					<!-- <NewsDetail
-						long_description={newsLangData.find((item) => item.language == selectedLanguageTab)
-							?.long_description}
-						images={newsData.images}
-					/> -->
+		{#if $serviceUiStore}
+			<div
+				class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
+				style="min-height: calc(100vh - 300px);"
+			>
+				<div class="w-[600px]">
+					{#if serviceCardComponent}
+						<svelte:component
+							this={serviceCardComponent}
+							data={serviceLanguageData.find((item) => item.language == selectedLanguageTab)}
+							imageData={{
+								thumbnail: serviceData.thumbnail,
+								imgSource: serviceData.imgSource
+							}}
+							colors={serviceData}
+						/>
+					{:else}
+						<div />
+					{/if}
 				</div>
-				<h1>asdlkfj</h1>
-			</TabItem>
-		</Tabs>
+			</div>
+		{/if}
 	</div>
 </div>
+
+<style lang="scss">
+	.alpha.svelte-2ybi8r,
+	.color.svelte-2ybi8r {
+		border-radius: 0px !important;
+		background-color: red;
+	}
+</style>

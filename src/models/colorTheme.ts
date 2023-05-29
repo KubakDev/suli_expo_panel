@@ -1,4 +1,5 @@
 export interface ColorTheme {
+  id?: number;
   name?: string;
   primaryColor?: string;
   secondaryColor?: string;

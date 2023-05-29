@@ -1,15 +1,27 @@
 export interface CreateNews {
-  title: string;
-  description: string;
+	title: string;
+	description: string;
 }
-export interface News {
-  images: string[];
-  thumbnail: string;
-  news_languages: NewsLanguage[];
+export interface NewsModel {
+	id: number;
+	news_languages: NewsLanguage[];
+	thumbnail?: string;
+	images: string[];
+	imagesCarousel: CarouselImage[];
 }
+
 export interface NewsLanguage {
-  title: string;
-  long_description: string;
-  short_description: string;
-  language: string;
+	id: number;
+	news_id: number;
+	language_id: number;
+	title: string;
+	short_description: string;
+	long_description: string;
+}
+
+interface CarouselImage {
+	id: number;
+	name: string;
+	imgurl: string;
+	attribution: string;
 }
