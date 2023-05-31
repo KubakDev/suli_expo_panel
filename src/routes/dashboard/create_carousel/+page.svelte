@@ -5,7 +5,11 @@
 	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/carouselStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import type { CarouselModel, CarouselModelLang } from '../../../models/carouselModel';
+	import {
+		CarouselTypeEnum,
+		type CarouselModel,
+		type CarouselModelLang
+	} from '../../../models/carouselModel';
 
 	export let data;
 
@@ -27,7 +31,11 @@
 		});
 	}
 
-	let carouselObject: CarouselModel;
+	let carouselObject: CarouselModel = {
+		image: '',
+		link: '',
+		type: CarouselTypeEnum.Internal
+	};
 
 	// for upload img
 	function handleFileUpload(e: Event) {
@@ -38,7 +46,7 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			carouselObject.image = reader.result as string;
+			carouselObject.image = reader.result as '';
 			carouselObject.image = `carousel/${file.name}`;
 		};
 
@@ -62,11 +70,11 @@
 	function resetForm() {
 		submitted = false;
 
-		// carouselObject = {
-		// 	link: '',
-		// 	type: CarouselTypeEnum,
-		// 	image: ''
-		// };
+		carouselObject = {
+			link: '',
+			type: CarouselTypeEnum.Internal,
+			image: ''
+		};
 
 		carouselDataLang = []; // Resetting carouselDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {

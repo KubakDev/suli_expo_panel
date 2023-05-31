@@ -2,9 +2,9 @@ import type { LanguageEnum } from './languageEnum';
 
 export interface CarouselModel {
 	id?: number;
-	image: string;
-	title: string;
-	subtitle: string;
+	image?: string;
+	title?: string;
+	subtitle?: string;
 	link?: string;
 	type: CarouselTypeEnum;
 	language?: LanguageEnum;
