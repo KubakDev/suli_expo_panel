@@ -2,3 +2,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#default-carousel {
+	width: 100% !important;
+}
+
+#default-carousel img {
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
+}
