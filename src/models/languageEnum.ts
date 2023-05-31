@@ -1,5 +1,5 @@
-export const enum LanguageEnum {
-  CKB = 'ckb',
-  EN = 'en',
-  AR = 'ar'
+export enum LanguageEnum {
+	EN = 'en',
+	CKB = 'ckb',
+	AR = 'ar'
 }

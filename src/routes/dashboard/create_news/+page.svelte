@@ -3,7 +3,7 @@
 	import { DateInput } from 'date-picker-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { supabaseStore } from '../../../stores/supabaseStore';
-	import { MainCard } from 'kubak-svelte-component';
+	import { MainCard, NewsDetail } from 'kubak-svelte-component';
 	import { onMount } from 'svelte';
 	import { getNewsUi } from '../../../stores/ui/newsUi';
 	import newsUiStore from '../../../stores/ui/newsUi';
@@ -30,7 +30,7 @@
 		short_description: false,
 		thumbnail: false
 	};
-
+	console.log('invalidateFields', invalidateFields);
 	const schema = yup.object().shape({
 		title: yup.string().required(),
 		short_description: yup.string().required(),
@@ -376,12 +376,6 @@
 	</div>
 
 	<div class=" h-full p-2">
-		<MainCard
-			data={{
-				thumbnail: newsData.thumbnail,
-				imgSource: newsData.imgSource
-			}}
-		/>
 		<Tabs>
 			<TabItem open title="News List">
 				{#if $newsUiStore}
@@ -409,11 +403,11 @@
 			</TabItem>
 			<TabItem title="News Detail">
 				<div class=" w-full bg-[#3E4248] rounded-md p-10" style="min-height: calc(100vh - 300px);">
-					<!-- <NewsDetail
+					<NewsDetail
 						long_description={newsLangData.find((item) => item.language == selectedLanguageTab)
 							?.long_description}
 						images={newsData.images}
-					/> -->
+					/>
 				</div>
 				<h1>asdlkfj</h1>
 			</TabItem>
