@@ -40,10 +40,14 @@ export const load = async () => {
 		{
 			title: 'carousel',
 			url: '/dashboard/create_carousel'
+		},
+		{
+			title: 'gallery',
+			url: '/dashboard/create_gallery'
 		}
 	];
-	let primaryColor = '#bb222f';
-	let colorTheme = [
+	const primaryColor = '#bb222f';
+	const colorTheme = [
 		{
 			name: '--primary-color',
 			color: '#bb222f'

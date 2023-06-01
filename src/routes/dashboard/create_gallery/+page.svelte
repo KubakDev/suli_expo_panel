@@ -3,21 +3,18 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/carouselStore';
+	import { insertData } from '../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import {
-		CarouselTypeEnum,
-		type CarouselModel,
-		type CarouselModelLang
-	} from '../../../models/carouselModel';
+	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
+	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 
 	export let data;
 
-	let fileName: string;
-	let imageFile: File | undefined;
+	let thumbnailFile: File | undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
-	let carouselDataLang: CarouselModelLang[] = [];
+	let galleryDataLang: GalleryModelLang[] = [];
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	// console.log(languageEnumKeys);
@@ -25,41 +22,32 @@
 	const languageEnumLength = languageEnumKeys.length;
 
 	for (let i = 0; i < languageEnumLength; i++) {
-		carouselDataLang.push({
+		galleryDataLang.push({
 			title: '',
-			subtitle: '',
+			short_description: '',
+			long_description: '',
+			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
 	}
 
-	let carouselObject: CarouselModel = {
-		image: '',
-		link: '',
-		type: CarouselTypeEnum.Internal
+	let galleryObject: GalleryModel = {
+		images: [],
+		thumbnail: 'url',
+		created_at: new Date()
 	};
-
-	// add random number for image URl
-
-	function getRandomTextNumber() {
-		const random =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-		return random;
-	}
 
 	// for upload img
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
-		imageFile = file;
+		thumbnailFile = file;
 		// console.log(file);
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			carouselObject.image = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `carousel/${randomText}_${file.name}`; // Append random text to the file name
-
-			console.log(carouselObject);
+			// galleryObject.thumbnail = reader.result as '';
+			galleryObject.thumbnail = `gallery/${file.name}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -71,10 +59,9 @@
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
-		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		console.log(response);
-		carouselObject.image = response.data?.path;
-		insertData(carouselObject, carouselDataLang, data.supabase);
+		console.log(galleryObject);
+
+		insertData(galleryObject, galleryDataLang, data.supabase);
 		resetForm();
 		setTimeout(() => {
 			showToast = false;
@@ -84,17 +71,19 @@
 	function resetForm() {
 		submitted = false;
 
-		carouselObject = {
-			link: '',
-			type: CarouselTypeEnum.Internal,
-			image: ''
+		galleryObject = {
+			images: [],
+			thumbnail: '',
+			created_at: new Date()
 		};
 
-		carouselDataLang = []; // Resetting carouselDataLang to an empty array
+		galleryDataLang = []; // Resetting galleryDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
-			carouselDataLang.push({
+			galleryDataLang.push({
 				title: '',
-				subtitle: '',
+				short_description: '',
+				long_description: '',
+				created_at: new Date(),
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 			});
 		}
@@ -113,54 +102,27 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Carousel Data</h1>
+			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">upload Carousel Image</Label>
+						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
-						<div class="mb-6">
-							<Label for="large-input" class="block mb-2">Link</Label>
-							<Input
-								bind:value={carouselObject.link}
-								id="link"
-								name="link"
-								size="md"
-								placeholder="please, enter a valid link"
-							/>
-							<!-- <Message name="link" /> -->
-						</div>
+						<span>Date</span>
+						<DateInput bind:value={galleryObject.created_at} format="yyyy/MM/dd" />
 					</Label>
 				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<div class="mb-6">
-							<Label for="large-input" class="block mb-2">Type</Label>
-							<Select
-								bind:value={carouselObject.type}
-								id="type"
-								name="type"
-								size="md"
-								placeholder="Please select a valid type"
-							>
-								<option value="Internal">Internal</option>
-								<option value="External">External</option>
-							</Select>
 
-							<Message name="type" />
-						</div>
-					</Label>
-				</div>
 				<br />
 
 				<div class="col-span-3">
 					<Tabs>
-						{#each carouselDataLang as langData}
+						{#each galleryDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -182,7 +144,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Carousel Title</Label>
+										<Label for="first_name" class="mb-2">Gallery Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -190,18 +152,29 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										<Message name="title" />
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Subtitle</Label>
+										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
 											placeholder="Enter Subtitle"
 											rows="4"
-											bind:value={langData.subtitle}
-											id="subtitle"
-											name="subtitle"
+											bind:value={langData.short_description}
+											id="short_description"
+											name="short_description"
 										/>
-										<!-- <Message name="subtitle" /> -->
+										<Message name="short_description" />
+									</div>
+									<div class="pb-10">
+										<Label for="textarea-id" class="mb-2">long description</Label>
+										<Textarea
+											placeholder="Enter Subtitle"
+											rows="4"
+											bind:value={langData.long_description}
+											id="long_description"
+											name="long_description"
+										/>
+										<Message name="long_description" />
 									</div>
 								</div>
 							</TabItem>
@@ -209,9 +182,15 @@
 					</Tabs>
 				</div>
 				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+
 				<br />
 			</div>
-
+			<div>
+				<Label class="space-y-2 mb-2">
+					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+					<FileUploadComponent />
+				</Label>
+			</div>
 			<div class="w-full flex justify-end mt-2">
 				<button
 					on:click|preventDefault={formSubmit}
