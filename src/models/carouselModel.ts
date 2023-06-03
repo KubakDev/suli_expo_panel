@@ -9,6 +9,7 @@ export interface CarouselModel {
 	type: CarouselTypeEnum;
 	language?: LanguageEnum;
 	created_at?: Date;
+	carousel_languages?: CarouselModelLang[];
 }
 
 export enum CarouselTypeEnum {

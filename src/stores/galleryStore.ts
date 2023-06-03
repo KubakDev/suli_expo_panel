@@ -3,7 +3,7 @@ import type { GalleryModel, GalleryModelLang } from '../models/galleryModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { LanguageEnum } from '../models/languageEnum';
 
-export const carousel = writable<GalleryModel[]>([]);
+export const gallery = writable<GalleryModel[]>([]);
 
 export const insertData = async (
 	galleryObject: GalleryModel,
@@ -16,13 +16,32 @@ export const insertData = async (
 			gallery_lang_data: galleryDataLang
 		});
 		// console.log(gallery_lang_data);
-		console.log(data);
-		carousel.update((currentGallery) => {
+		// console.log(data);
+		gallery.update((currentGallery) => {
 			if (data) {
 				return [...(currentGallery || []), ...data];
 			}
 			return currentGallery || [];
 		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+export const selectData = async (supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase.from('gallery').select('*,gallery_languages(*)');
+		console.log('data : ', data);
+
+		// gallery.update((currentGallery) => {
+		// 	if (data) {
+		// 		return [...(currentGallery || []), ...data];
+		// 	}
+		// 	return currentGallery || [];
+		// });
 
 		return data;
 	} catch (error) {

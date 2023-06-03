@@ -3,10 +3,17 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/galleryStore';
+	import { insertData, selectData } from '../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { onMount } from 'svelte';
+
+	// get data from database
+	// onMount(async () => {
+	// 	const result = await selectData(data.supabase);
+	// 	console.log('result', result);
+	// });
 
 	export let data;
 

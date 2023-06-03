@@ -5,6 +5,7 @@ export interface GalleryModel {
 	images: string[];
 	thumbnail?: string;
 	created_at?: Date;
+	gallery_languages?: GalleryModelLang[];
 }
 
 export interface GalleryModelLang {

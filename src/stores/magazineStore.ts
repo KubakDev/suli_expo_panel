@@ -3,7 +3,7 @@ import type { MagazineModel, MagazineModelLang } from '../models/magazineModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { LanguageEnum } from '../models/languageEnum';
 
-export const carousel = writable<MagazineModel[]>([]);
+export const magazine = writable<MagazineModel[]>([]);
 
 export const insertData = async (
 	magazineObject: MagazineModel,
@@ -16,8 +16,8 @@ export const insertData = async (
 			magazine_lang_data: magazineDataLang
 		});
 		// console.log(magazine_lang_data);
-		console.log(data);
-		carousel.update((currentMagazine) => {
+		// console.log(data);
+		magazine.update((currentMagazine) => {
 			if (data) {
 				return [...(currentMagazine || []), ...data];
 			}

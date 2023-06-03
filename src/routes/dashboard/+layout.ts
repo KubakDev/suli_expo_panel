@@ -48,6 +48,10 @@ export const load = async () => {
 		{
 			title: 'magazine',
 			url: '/dashboard/create_magazine'
+		},
+		{
+			title: 'vedio',
+			url: '/dashboard/create_vedio'
 		}
 	];
 	const primaryColor = '#bb222f';
