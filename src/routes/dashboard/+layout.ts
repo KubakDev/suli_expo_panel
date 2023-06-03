@@ -44,6 +44,10 @@ export const load = async () => {
 		{
 			title: 'gallery',
 			url: '/dashboard/create_gallery'
+		},
+		{
+			title: 'magazine',
+			url: '/dashboard/create_magazine'
 		}
 	];
 	const primaryColor = '#bb222f';

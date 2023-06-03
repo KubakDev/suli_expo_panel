@@ -3,9 +3,9 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/galleryStore';
+	import { insertData } from '../../../stores/magazineStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
+	import type { MagazineModel, MagazineModelLang } from '../../../models/magazineModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 
 	export let data;
@@ -15,7 +15,7 @@
 
 	let selectedLanguageTab = LanguageEnum.EN;
 
-	let galleryDataLang: GalleryModelLang[] = [];
+	let magazineDataLang: MagazineModelLang[] = [];
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	// console.log(languageEnumKeys);
@@ -23,7 +23,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//for swapping between language
 	for (let i = 0; i < languageEnumLength; i++) {
-		galleryDataLang.push({
+		magazineDataLang.push({
 			title: '',
 			short_description: '',
 			long_description: '',
@@ -32,7 +32,7 @@
 		});
 	}
 
-	let galleryObject: GalleryModel = {
+	let magazineObject: MagazineModel = {
 		images: [],
 		thumbnail: '',
 		created_at: new Date()
@@ -54,18 +54,18 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			galleryObject.thumbnail = reader.result as '';
+			magazineObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log(galleryObject);
+			// console.log(magazineObject);
 		};
 
 		reader.readAsDataURL(file);
 	}
 
 	//upload multiple images
-	const galleryFiles: { file: File; fileName: string }[] = [];
+	const magazineFiles: { file: File; fileName: string }[] = [];
 	async function handleMultipleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const files = fileInput.files;
@@ -78,9 +78,9 @@
 
 				reader.onloadend = async () => {
 					const randomText = getRandomTextNumber(); // Generate random text
-					let fileName = `gallery/${randomText}_${file.name}`;
+					let fileName = `magazine/${randomText}_${file.name}`;
 					// Append random text to the file name
-					galleryFiles.push({
+					magazineFiles.push({
 						file: file,
 						fileName: fileName
 					});
@@ -89,7 +89,7 @@
 				reader.readAsDataURL(file);
 			}
 		}
-		// console.log('galleryFiles', galleryFiles);
+		// console.log('magazineFiles', magazineFiles);
 	}
 
 	let submitted = false;
@@ -100,18 +100,18 @@
 		showToast = true;
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
-		for (const fileObj of galleryFiles) {
+		for (const fileObj of magazineFiles) {
 			const responseMultiple = await data.supabase.storage
 				.from('image')
 				.upload(fileObj.fileName, fileObj.file!);
 
-			// console.log(galleryObject);
-			galleryObject.images.push(responseMultiple.data?.path);
+			// console.log(magazineObject);
+			magazineObject.images.push(responseMultiple.data?.path);
 		}
 
 		// console.log(response);
-		galleryObject.thumbnail = response.data?.path;
-		insertData(galleryObject, galleryDataLang, data.supabase);
+		magazineObject.thumbnail = response.data?.path;
+		insertData(magazineObject, magazineDataLang, data.supabase);
 		resetForm();
 		setTimeout(() => {
 			showToast = false;
@@ -121,15 +121,15 @@
 	function resetForm() {
 		submitted = false;
 
-		galleryObject = {
+		magazineObject = {
 			images: [],
 			thumbnail: '',
 			created_at: new Date()
 		};
 
-		galleryDataLang = []; // Resetting galleryDataLang to an empty array
+		magazineDataLang = []; // Resetting magazineDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
-			galleryDataLang.push({
+			magazineDataLang.push({
 				title: '',
 				short_description: '',
 				long_description: '',
@@ -152,20 +152,20 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
+			<h1 class="text-xl font-bold mb-8">Magazine Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+						<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={galleryObject.created_at} format="yyyy/MM/dd" />
+						<DateInput bind:value={magazineObject.created_at} format="yyyy/MM/dd" />
 					</Label>
 				</div>
 
@@ -173,7 +173,7 @@
 
 				<div class="col-span-3">
 					<Tabs>
-						{#each galleryDataLang as langData}
+						{#each magazineDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -195,7 +195,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Gallery Title</Label>
+										<Label for="first_name" class="mb-2">Magazine Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -237,10 +237,10 @@
 				<br />
 			</div>
 
-			<!-- upload gallery image -->
+			<!-- upload magazine image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+					<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload on:change={handleMultipleFileUpload} multiple />
 					<!-- <FileUploadComponent /> -->
 				</Label>

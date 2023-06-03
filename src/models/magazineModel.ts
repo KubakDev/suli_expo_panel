@@ -1,0 +1,17 @@
+import type { LanguageEnum } from './languageEnum';
+
+export interface MagazineModel {
+	id?: number;
+	images: string[];
+	thumbnail?: string;
+	created_at?: Date;
+}
+
+export interface MagazineModelLang {
+	id?: number;
+	title?: string;
+	short_description?: string;
+	long_description?: string;
+	language: LanguageEnum;
+	created_at?: Date;
+}
