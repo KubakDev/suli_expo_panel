@@ -50,8 +50,8 @@ export const load = async () => {
 			url: '/dashboard/create_magazine'
 		},
 		{
-			title: 'vedio',
-			url: '/dashboard/create_vedio'
+			title: 'video',
+			url: '/dashboard/create_MediaVideo'
 		}
 	];
 	const primaryColor = '#bb222f';

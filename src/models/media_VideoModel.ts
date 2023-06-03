@@ -1,14 +1,14 @@
 import type { LanguageEnum } from './languageEnum';
 
-export interface GalleryModel {
+export interface VideoModel {
 	id?: number;
-	images: string[] | string;
 	thumbnail?: string;
 	created_at?: Date;
-	gallery_languages?: GalleryModelLang[];
+	link?: string;
+	mediaVideo_languages?: VideoModelLang[];
 }
 
-export interface GalleryModelLang {
+export interface VideoModelLang {
 	id?: number;
 	title?: string;
 	short_description?: string;
