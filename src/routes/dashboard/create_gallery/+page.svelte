@@ -7,11 +7,12 @@
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
-	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 
 	export let data;
 
-	let thumbnailFile: File | undefined;
+	let fileName: string;
+	let imageFile: File | undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let galleryDataLang: GalleryModelLang[] = [];
@@ -20,7 +21,7 @@
 	// console.log(languageEnumKeys);
 
 	const languageEnumLength = languageEnumKeys.length;
-
+	//for swapping between language
 	for (let i = 0; i < languageEnumLength; i++) {
 		galleryDataLang.push({
 			title: '',
@@ -33,24 +34,62 @@
 
 	let galleryObject: GalleryModel = {
 		images: [],
-		thumbnail: 'url',
+		thumbnail: '',
 		created_at: new Date()
 	};
 
-	// for upload img
+	// generate random number before image URl
+	function getRandomTextNumber() {
+		const random =
+			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+		return random;
+	}
+
+	// for upload thumbnail image
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
-		thumbnailFile = file;
+		imageFile = file;
 		// console.log(file);
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			// galleryObject.thumbnail = reader.result as '';
-			galleryObject.thumbnail = `gallery/${file.name}`;
+			galleryObject.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber(); // Generate random text
+			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
+
+			// console.log(galleryObject);
 		};
 
 		reader.readAsDataURL(file);
+	}
+
+	//upload multiple images
+	const galleryFiles: { file: File; fileName: string }[] = [];
+	async function handleMultipleFileUpload(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const files = fileInput.files;
+
+		if (files) {
+			for (let i = 0; i < files.length; i++) {
+				const file = files[i];
+
+				const reader = new FileReader();
+
+				reader.onloadend = async () => {
+					const randomText = getRandomTextNumber(); // Generate random text
+					let fileName = `gallery/${randomText}_${file.name}`;
+					// Append random text to the file name
+					galleryFiles.push({
+						file: file,
+						fileName: fileName
+					});
+				};
+
+				reader.readAsDataURL(file);
+			}
+		}
+		console.log('galleryFiles', galleryFiles);
 	}
 
 	let submitted = false;
@@ -59,8 +98,26 @@
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
-		console.log(galleryObject);
+		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
+		// for (let gallery of galleryFiles) {
+		// 	const responseMultiple = await data.supabase.storage
+		// 		.from('image')
+		// 		.upload(`${gallery.fileName}`, gallery.file!);
+		// 	galleryObject.images.push(responseMultiple.data?.path);
+		// }
+
+		for (const fileObj of galleryFiles) {
+			const response2 = await data.supabase.storage
+				.from('image')
+				.upload(fileObj.fileName, fileObj.file!);
+
+			console.log(galleryObject);
+			galleryObject.images.push(response2.data?.path);
+		}
+
+		// console.log(response);
+		galleryObject.thumbnail = response.data?.path;
 		insertData(galleryObject, galleryDataLang, data.supabase);
 		resetForm();
 		setTimeout(() => {
@@ -105,6 +162,7 @@
 			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
+				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
@@ -152,7 +210,7 @@
 											id="title"
 											name="title"
 										/>
-										<Message name="title" />
+										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -163,7 +221,7 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<Message name="short_description" />
+										<!-- <Message name="short_description" /> -->
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
@@ -174,7 +232,7 @@
 											id="long_description"
 											name="long_description"
 										/>
-										<Message name="long_description" />
+										<!-- <Message name="long_description" /> -->
 									</div>
 								</div>
 							</TabItem>
@@ -185,12 +243,17 @@
 
 				<br />
 			</div>
+
+			<!-- upload gallery image -->
 			<div>
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-					<FileUploadComponent />
+					<Fileupload on:change={handleMultipleFileUpload} multiple />
+					<!-- <FileUploadComponent /> -->
 				</Label>
 			</div>
+
+			<!-- button for submitForm -->
 			<div class="w-full flex justify-end mt-2">
 				<button
 					on:click|preventDefault={formSubmit}

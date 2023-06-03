@@ -38,8 +38,7 @@
 		type: CarouselTypeEnum.Internal
 	};
 
-	// add random number for image URl
-
+	// generate random number before image URl
 	function getRandomTextNumber() {
 		const random =
 			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -152,7 +151,7 @@
 								<option value="External">External</option>
 							</Select>
 
-							<Message name="type" />
+							<!-- <Message name="type" /> -->
 						</div>
 					</Label>
 				</div>

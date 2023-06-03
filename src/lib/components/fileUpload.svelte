@@ -6,8 +6,8 @@
 	import { onMount } from 'svelte';
 
 	export let data: { images?: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] } = {};
-
 	let images: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] = data.images ?? [];
+
 	afterUpdate(() => {
 		if (images.length === 0) {
 			images = data.images ?? [];
@@ -15,6 +15,7 @@
 	});
 	const dispatch = createEventDispatcher();
 	let imageFiles: File[] = [];
+
 	function addImage(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		for (let file of fileInput!.files!) {
@@ -33,6 +34,7 @@
 			reader.readAsDataURL(file);
 		}
 	}
+
 	function deleteImage(index: number) {
 		const updatedImages = [...images];
 		updatedImages.splice(index, 1);
@@ -43,6 +45,7 @@
 		dispatch('imageChanges', images);
 		dispatch('imageFilesChanges', imageFiles);
 	}
+	console.log('first', data);
 </script>
 
 <div class="w-full h-80 bg-[#e4e4e4] rounded-lg p-5 flex flex-wrap">

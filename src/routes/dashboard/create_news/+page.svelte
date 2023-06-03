@@ -100,6 +100,7 @@
 		long_description: '',
 		images: []
 	};
+
 	let newsLangData: {
 		title: string;
 		short_description: string;
