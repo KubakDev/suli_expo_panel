@@ -54,6 +54,10 @@ export const load = async () => {
 			url: '/dashboard/create_MediaVideo'
 		},
 		{
+			title: 'publishing',
+			url: '/dashboard/create_Publishing'
+		},
+		{
 			title: 'about',
 			url: '/dashboard/create_About'
 		},
