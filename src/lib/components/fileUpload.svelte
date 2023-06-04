@@ -20,6 +20,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		for (let file of fileInput!.files!) {
 			imageFiles = [...imageFiles, file];
+
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				images = [

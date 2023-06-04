@@ -214,7 +214,7 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
-											placeholder="Enter Subtitle"
+											placeholder="Enter short description"
 											rows="4"
 											bind:value={langData.short_description}
 											id="short_description"
@@ -225,7 +225,7 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<Textarea
-											placeholder="Enter Subtitle"
+											placeholder="Enter long description"
 											rows="4"
 											bind:value={langData.long_description}
 											id="long_description"

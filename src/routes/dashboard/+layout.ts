@@ -52,6 +52,14 @@ export const load = async () => {
 		{
 			title: 'video',
 			url: '/dashboard/create_MediaVideo'
+		},
+		{
+			title: 'about',
+			url: '/dashboard/create_About'
+		},
+		{
+			title: 'contact',
+			url: '/dashboard/create_Contact'
 		}
 	];
 	const primaryColor = '#bb222f';

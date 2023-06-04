@@ -30,15 +30,15 @@
 
 <div class="app" style={getTheme()}>
 	<main>
-		<Navbar let:hidden let:toggle style="background-color: #001d3d !important;">
+		<Navbar let:hidden let:toggle style="background-color: #001d3d !important">
 			<NavBrand>
-				<span class="self-center whitespace-nowrap text-xl font-semibold"> SuliExpo </span>
+				<span class="self-center whitespace-nowrap text-xl text-white"> SuliExpo </span>
 			</NavBrand>
 			<NavHamburger on:click={toggle} />
 			<NavUl {hidden}>
 				{#each data.pages as page}
 					<NavLi
-						class="cursor-pointer"
+						class="cursor-pointer text-white"
 						on:click={() => {
 							updateActiveUrl(page.url);
 							goto(page.url);

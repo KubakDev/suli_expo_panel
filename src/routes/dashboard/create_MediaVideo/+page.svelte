@@ -16,7 +16,7 @@
 
 	let selectedLanguageTab = LanguageEnum.EN;
 
-	let vedioDataLang: VideoModelLang[] = [];
+	let videoDataLang: VideoModelLang[] = [];
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	// console.log(languageEnumKeys);
@@ -24,7 +24,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//for swapping between language
 	for (let i = 0; i < languageEnumLength; i++) {
-		vedioDataLang.push({
+		videoDataLang.push({
 			title: '',
 			short_description: '',
 			long_description: '',
@@ -33,7 +33,7 @@
 		});
 	}
 
-	let vedioObjectData: VideoModel = {
+	let videoObjectData: VideoModel = {
 		thumbnail: '',
 		link: '',
 		created_at: new Date()
@@ -48,11 +48,11 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			vedioObjectData.thumbnail = reader.result as '';
+			videoObjectData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `media_videos/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log(vedioObjectData);
+			// console.log(videoObjectData);
 		};
 
 		reader.readAsDataURL(file);
@@ -67,8 +67,8 @@
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
 		// console.log(response);
-		vedioObjectData.thumbnail = response.data?.path;
-		insertData(vedioObjectData, vedioDataLang, data.supabase);
+		videoObjectData.thumbnail = response.data?.path;
+		insertData(videoObjectData, videoDataLang, data.supabase);
 		resetForm();
 		setTimeout(() => {
 			showToast = false;
@@ -78,15 +78,15 @@
 	function resetForm() {
 		submitted = false;
 
-		vedioObjectData = {
+		videoObjectData = {
 			thumbnail: '',
 			link: '',
 			created_at: new Date()
 		};
 
-		vedioDataLang = []; // Resetting vedioDataLang to an empty array
+		videoDataLang = []; // Resetting videoDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
-			vedioDataLang.push({
+			videoDataLang.push({
 				title: '',
 				short_description: '',
 				long_description: '',
@@ -109,20 +109,20 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Vedio Data</h1>
+			<h1 class="text-xl font-bold mb-8">Video Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Vedio Image</Label>
+						<Label for="first_name" class="mb-2">Upload Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={vedioObjectData.created_at} format="yyyy/MM/dd" />
+						<DateInput bind:value={videoObjectData.created_at} format="yyyy/MM/dd" />
 					</Label>
 				</div>
 				<div>
@@ -131,7 +131,7 @@
 						<Input
 							type="text"
 							placeholder="Enter title"
-							bind:value={vedioObjectData.link}
+							bind:value={videoObjectData.link}
 							id="link"
 							name="link"
 						/></Label
@@ -142,7 +142,7 @@
 
 				<div class="col-span-3">
 					<Tabs>
-						{#each vedioDataLang as langData}
+						{#each videoDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -177,7 +177,7 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
-											placeholder="Enter Subtitle"
+											placeholder="Enter short description"
 											rows="4"
 											bind:value={langData.short_description}
 											id="short_description"
@@ -188,7 +188,7 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<Textarea
-											placeholder="Enter Subtitle"
+											placeholder="Enter long description"
 											rows="4"
 											bind:value={langData.long_description}
 											id="long_description"

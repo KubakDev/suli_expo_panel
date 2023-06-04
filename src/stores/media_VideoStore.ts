@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { VideoModel, VideoModelLang } from '../models/media_VideoModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { LanguageEnum } from '../models/languageEnum';
 
 export const vedioStore = writable<VideoModel[]>([]);
 

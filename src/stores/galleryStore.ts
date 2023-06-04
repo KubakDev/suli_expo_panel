@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { GalleryModel, GalleryModelLang } from '../models/galleryModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { LanguageEnum } from '../models/languageEnum';
 
 export const gallery = writable<GalleryModel[]>([]);
 

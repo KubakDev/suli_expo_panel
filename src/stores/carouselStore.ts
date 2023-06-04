@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { CarouselModel, CarouselModelLang } from '../models/carouselModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { LanguageEnum } from '../models/languageEnum';
 
 export const carousel = writable<CarouselModel[]>([]);
 

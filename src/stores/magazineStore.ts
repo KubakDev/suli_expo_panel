@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { MagazineModel, MagazineModelLang } from '../models/magazineModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { LanguageEnum } from '../models/languageEnum';
 
 export const magazine = writable<MagazineModel[]>([]);
 

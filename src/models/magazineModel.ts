@@ -2,7 +2,7 @@ import type { LanguageEnum } from './languageEnum';
 
 export interface MagazineModel {
 	id?: number;
-	images: string[];
+	images: string[] | string;
 	thumbnail?: string;
 	created_at?: Date;
 	magazine_languages?: MagazineModelLang[];
