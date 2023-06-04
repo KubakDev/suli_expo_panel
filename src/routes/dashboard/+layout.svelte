@@ -30,22 +30,22 @@
 
 <div class="app" style={getTheme()}>
 	<main>
-		<Navbar let:hidden let:toggle style="background-color: #f1f3f4 !important;">
+		<Navbar let:hidden let:toggle style="background-color: #001d3d !important;">
 			<NavBrand>
 				<span class="self-center whitespace-nowrap text-xl font-semibold"> SuliExpo </span>
 			</NavBrand>
 			<NavHamburger on:click={toggle} />
 			<NavUl {hidden}>
 				{#each data.pages as page}
-						<NavLi
-							class="cursor-pointer"
-							on:click={() => {
-								updateActiveUrl(page.url);
-								goto(page.url);
-								console.log(page.url);
-							}}
-							active={activeUrl == page.url}>{page.title}</NavLi
-						>
+					<NavLi
+						class="cursor-pointer"
+						on:click={() => {
+							updateActiveUrl(page.url);
+							goto(page.url);
+							console.log(page.url);
+						}}
+						active={activeUrl == page.url}>{page.title}</NavLi
+					>
 				{/each}
 			</NavUl>
 		</Navbar>

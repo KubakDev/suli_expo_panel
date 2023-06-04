@@ -7,6 +7,7 @@
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	export let data;
 
@@ -37,13 +38,6 @@
 		link: '',
 		created_at: new Date()
 	};
-
-	// generate random number before image URl
-	function getRandomTextNumber() {
-		const random =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-		return random;
-	}
 
 	// for upload thumbnail image
 	function handleFileUpload(e: Event) {

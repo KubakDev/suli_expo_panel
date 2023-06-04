@@ -1,6 +1,14 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
-	import { Tabs, TabItem } from 'flowbite-svelte';
+	import {
+		Label,
+		Button,
+		Input,
+		Fileupload,
+		Textarea,
+		Select,
+		Tabs,
+		TabItem
+	} from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/carouselStore';
@@ -10,6 +18,7 @@
 		type CarouselModel,
 		type CarouselModelLang
 	} from '../../../models/carouselModel';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	export let data;
 
@@ -37,13 +46,6 @@
 		link: '',
 		type: CarouselTypeEnum.Internal
 	};
-
-	// generate random number before image URl
-	function getRandomTextNumber() {
-		const random =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-		return random;
-	}
 
 	// for upload img
 	function handleFileUpload(e: Event) {

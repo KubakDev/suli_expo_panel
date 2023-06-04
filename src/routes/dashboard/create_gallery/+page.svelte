@@ -8,6 +8,7 @@
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { onMount } from 'svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	// get data from database
 	// onMount(async () => {
@@ -46,11 +47,6 @@
 	};
 
 	// generate random number before image URl
-	function getRandomTextNumber() {
-		const random =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-		return random;
-	}
 
 	// for upload thumbnail image
 	function handleFileUpload(e: Event) {
@@ -112,9 +108,12 @@
 				.from('image')
 				.upload(fileObj.fileName, fileObj.file!);
 
-			// console.log(galleryObject);
+			console.log(galleryObject);
 			galleryObject.images.push(responseMultiple.data?.path);
 		}
+		// Convert galleryObject.images to a valid array string format
+		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
+		galleryObject.images = `{${imagesArray.join(',')}}`;
 
 		// console.log(response);
 		galleryObject.thumbnail = response.data?.path;

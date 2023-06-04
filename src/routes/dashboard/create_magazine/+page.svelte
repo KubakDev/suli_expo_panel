@@ -7,6 +7,7 @@
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { MagazineModel, MagazineModelLang } from '../../../models/magazineModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	export let data;
 
@@ -38,13 +39,6 @@
 		created_at: new Date()
 	};
 
-	// generate random number before image URl
-	function getRandomTextNumber() {
-		const random =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-		return random;
-	}
-
 	// for upload thumbnail image
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
@@ -66,6 +60,7 @@
 
 	//upload multiple images
 	const magazineFiles: { file: File; fileName: string }[] = [];
+
 	async function handleMultipleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const files = fileInput.files;
@@ -108,6 +103,9 @@
 			// console.log(magazineObject);
 			magazineObject.images.push(responseMultiple.data?.path);
 		}
+		// Convert galleryObject.images to a valid array string format
+		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
+		magazineObject.images = `{${imagesArray.join(',')}}`;
 
 		// console.log(response);
 		magazineObject.thumbnail = response.data?.path;

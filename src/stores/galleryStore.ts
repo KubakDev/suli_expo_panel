@@ -11,8 +11,6 @@ export const insertData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		galleryObject.images =
-			'{"gallery/ftlqpjrpxqoia0c72bkw8m_912023393610bahar1-2022.png","gallery/68luoqmm7rq0mic19jsd8kn_18122021244211atlas.png","gallery/azyogxwbnhkbdkufixm7g_6102022453115book.png","gallery/br04ts6l3st74w31vtyc_15122021153310Ku2.jpg"}';
 		const { data, error } = await supabase.rpc('insert_gallery_and_gallery_lang', {
 			gallery_data: galleryObject,
 			gallery_lang_data: galleryDataLang
