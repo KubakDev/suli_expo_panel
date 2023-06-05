@@ -2,7 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import { goto } from '$app/navigation';
 
 export const load = async () => {
-	let pages = [
+	const pages = [
 		{
 			title: 'Home',
 			url: '/'
@@ -20,16 +20,6 @@ export const load = async () => {
 			url: '/dashboard/exhibition'
 		},
 		{
-			title: 'web builder',
-			url: '/dashboard/web_builder',
-			children: [
-				{
-					title: 'Build News',
-					url: '/dashboard/web_builder/news'
-				}
-			]
-		},
-		{
 			title: 'seats',
 			url: '/dashboard/seats'
 		},
@@ -42,28 +32,43 @@ export const load = async () => {
 			url: '/dashboard/create_carousel'
 		},
 		{
-			title: 'gallery',
-			url: '/dashboard/create_gallery'
-		},
-		{
-			title: 'magazine',
-			url: '/dashboard/create_magazine'
-		},
-		{
-			title: 'video',
-			url: '/dashboard/create_MediaVideo'
-		},
-		{
-			title: 'publishing',
-			url: '/dashboard/create_Publishing'
-		},
-		{
 			title: 'about',
 			url: '/dashboard/create_About'
 		},
 		{
 			title: 'contact',
 			url: '/dashboard/create_Contact'
+		},
+		{
+			title: 'web builder',
+			url: '/dashboard/web_builder',
+			children: [
+				{
+					title: 'Build News',
+					url: '/dashboard/web_builder/news'
+				}
+			]
+		},
+		{
+			title: 'media',
+			children: [
+				{
+					title: 'publishing',
+					url: '/dashboard/create_Publishing'
+				},
+				{
+					title: 'video',
+					url: '/dashboard/create_MediaVideo'
+				},
+				{
+					title: 'magazine',
+					url: '/dashboard/create_magazine'
+				},
+				{
+					title: 'gallery',
+					url: '/dashboard/gallery'
+				}
+			]
 		}
 	];
 	const primaryColor = '#bb222f';
