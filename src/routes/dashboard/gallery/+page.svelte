@@ -72,14 +72,16 @@
 			<tbody>
 				{#each galleryData as item (item.id)}
 					<tr>
-						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
-							<img
-								class="w-10 h-10 rounded-md object-cover"
-								src={item.thumbnail
-									? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${item.thumbnail}`
-									: 'https://images.hindustantimes.com/img/2022/08/07/1600x900/cat_1659882617172_1659882628989_1659882628989.jpg'}
-								alt=""
-							/>
+						<td class="p-3 bg-gray-10 border border-gray-300 table-cell">
+							<div class="flex justify-center">
+								<img
+									class="w-20 h-20 rounded-md object-cover"
+									src={item.thumbnail
+										? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${item.thumbnail}`
+										: 'https://images.hindustantimes.com/img/2022/08/07/1600x900/cat_1659882617172_1659882628989_1659882628989.jpg'}
+									alt=""
+								/>
+							</div>
 						</td>
 						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
 							{#each item.gallery_languages as lang}
@@ -91,21 +93,26 @@
 						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
 							{#each item.gallery_languages as lang}
 								<div>
-									{lang.short_description?.slice(0, 32)}
+									{lang.short_description?.slice(0, 40)}
 								</div>
 							{/each}
 						</td>
 						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
 							{#each item.gallery_languages as lang}
 								<div>
-									{lang.long_description?.slice(0, 32)}
+									{lang.long_description?.slice(0, 40)}
 								</div>
 							{/each}
 						</td>
 
 						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
 							<div class="flex items-center">
-								<button class="text-green-400 hover:text-green-600 underline">Edit</button>
+								<button
+									on:click={() => {
+										goto(`/dashboard/gallery/${item.id}`);
+									}}
+									class="text-green-400 hover:text-green-600 underline">Edit</button
+								>
 
 								<button
 									on:click={() => handleDelete(item.id)}
