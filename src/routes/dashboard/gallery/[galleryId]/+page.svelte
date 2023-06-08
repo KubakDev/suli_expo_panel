@@ -11,23 +11,28 @@
 	import { page } from '$app/stores';
 	import { derived } from 'svelte/store';
 	import { onMount } from 'svelte';
+	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
+	import type { ImagesModel } from '../../../../models/imagesModel';
 
 	export let data;
+	let sliderImagesFile: File[] = [];
+	let fileName: string;
+	let existingImages: string[] = [];
+	let imageFile: File | undefined;
+	const galleryFiles: { file: File; fileName: string }[] = [];
+	let submitted = false;
+	let showToast = false;
+
+	let galleryDataLang: GalleryModelLang[] = [];
 	let galleryData: GalleryModel = {
 		id: 0,
 		images: [],
 		thumbnail: '',
 		created_at: new Date()
 	};
-	let fileName: string;
-	let imageFile: File | undefined;
-	const galleryFiles: { file: File; fileName: string }[] = [];
-	let submitted = false;
-	let showToast = false;
-	let galleryDataLang: GalleryModelLang[] = [];
-
 	const id = $page.params.galleryId;
-
+	let images: ImagesModel[] = [];
 	async function getDataGallery() {
 		await data.supabase
 			.from('gallery')
@@ -41,7 +46,9 @@
 					thumbnail: result.data?.thumbnail,
 					created_at: new Date(result.data?.created_at)
 				};
-
+				// console.log(galleryData.images);
+				console.log(galleryData.thumbnail);
+				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.gallery_languages.findIndex(
 						(galleryLang: GalleryModelLang) =>
@@ -74,10 +81,7 @@
 	let selectedLanguageTab = LanguageEnum.EN;
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
-
 	//** for swapping between language**//
-
-	//** Create object **//
 
 	//**for upload thumbnail image**//
 	function handleFileUpload(e: Event) {
@@ -98,43 +102,35 @@
 		reader.readAsDataURL(file);
 	} //**for upload thumbnail image**//
 
-	//**for upload multiple image**/
-	async function handleMultipleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const files = fileInput.files;
+	//**dropzone**//
+	function getAllImageFile(e: { detail: File[] }) {
+		sliderImagesFile = e.detail;
 
-		if (files) {
-			for (let i = 0; i < files.length; i++) {
-				const file = files[i];
+		// console.log('////', e.detail);
+	}
 
-				const reader = new FileReader();
+	//get image
+	function getImage() {
+		let result = galleryData.images.map((image, i) => {
+			// console.log('///', image);
 
-				reader.onloadend = async () => {
-					const randomText = getRandomTextNumber(); // Generate random text
-					let fileName = `gallery/${randomText}_${file.name}`;
-					// Append random text to the file name
-					galleryFiles.push({
-						file: file,
-						fileName: fileName
-					});
-				};
-
-				reader.readAsDataURL(file);
-			}
-		}
-		// console.log('galleryFiles', galleryFiles);
-	} //**for upload multiple image**/
+			return {
+				id: i,
+				imgurl: image,
+				imgSource: ImgSourceEnum.remote
+			};
+		});
+		// console.log('first', result);
+		return result;
+	}
 
 	//**Handle submit**//
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
-
-		// Check if imageFile is empty
+		galleryData.images = [];
 		if (imageFile) {
-			// Check if the thumbnail already exists
 			if (galleryData.thumbnail) {
-				// Delete the existing thumbnail from storage
 				await data.supabase.storage.from('image').remove([galleryData.thumbnail]);
 			}
 
@@ -142,22 +138,23 @@
 			galleryData.thumbnail = response.data?.path;
 		}
 
-		// Convert galleryData.images to a valid array string format
-		if (galleryFiles.length > 0) {
-			// Remove the existing images from storage
-			const existingImages = galleryData.images;
-			await data.supabase.storage.from('image').remove(existingImages);
-
-			galleryData.images = [];
-
-			for (const fileObj of galleryFiles) {
+		if (sliderImagesFile.length > 0) {
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
 				const responseMultiple = await data.supabase.storage
 					.from('image')
-					.upload(fileObj.fileName, fileObj.file!);
-				galleryData.images.push(responseMultiple.data?.path);
+					.upload(`gallery/${randomText}_${image.name}`, image!);
+				// console.log('responseMultiple:', responseMultiple);
+
+				if (responseMultiple.data?.path) {
+					galleryData.images.push(responseMultiple.data?.path);
+				}
 			}
 		}
-
+		for (let image of existingImages) {
+			galleryData.images.push(image);
+		}
+		// Convert galleryObject.images to a valid array string format
 		const imagesArray = galleryData.images.map((image) => `"${image}"`);
 		galleryData.images = `{${imagesArray.join(',')}}`;
 
@@ -166,6 +163,19 @@
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
+	}
+
+	function imageChanges(e) {
+		// console.log(e.detail);
+		let result: any = [];
+
+		e.detail.forEach((image) => {
+			if (image.imgSource === ImgSourceEnum.remote) {
+				result.push(image.imgurl);
+			}
+		});
+		existingImages = result;
+		console.log('image data :::::', result);
 	}
 </script>
 
@@ -270,8 +280,11 @@
 			<div>
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-					<Fileupload on:change={handleMultipleFileUpload} multiple />
-					<!-- <FileUploadComponent /> -->
+					<FileUploadComponent
+						on:imageChanges={imageChanges}
+						on:imageFilesChanges={getAllImageFile}
+						data={{ images: images }}
+					/>
 				</Label>
 			</div>
 

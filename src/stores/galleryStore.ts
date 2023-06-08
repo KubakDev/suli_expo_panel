@@ -37,14 +37,14 @@ export const getData = async (supabase: SupabaseClient) => {
 		const { data, error } = await supabase.from('gallery').select('*,gallery_languages(*)');
 		console.log('data : ', data);
 
-		gallery.update((currentData) => {
-			if (data) {
-				return [...currentData, ...data];
-			}
-			return currentData;
-		});
+		// gallery.update((currentData) => {
+		// 	if (data) {
+		// 		return [...currentData, ...data];
+		// 	}
+		// 	return currentData;
+		// });
 
-		return data;
+		return data as GalleryModel[];
 	} catch (error) {
 		console.error(error);
 		throw error;
@@ -83,6 +83,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
+		console.log('first');
 		const { data, error } = await supabase.rpc('update_gallery_and_gallery_lang', {
 			gallery_data: galleryObject,
 			gallery_lang_data: galleryDataLang

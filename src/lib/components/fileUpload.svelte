@@ -4,9 +4,10 @@
 	import { XMark } from 'svelte-heros-v2';
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
 	import { onMount } from 'svelte';
+	import type { ImagesModel } from '../../models/imagesModel';
 
-	export let data: { images?: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] } = {};
-	let images: { id: number; imgurl: string; imgSource: ImgSourceEnum }[] = data.images ?? [];
+	export let data: { images?: ImagesModel[] } = {};
+	let images: ImagesModel[] = data.images ?? [];
 
 	afterUpdate(() => {
 		if (images.length === 0) {
@@ -41,18 +42,20 @@
 		updatedImages.splice(index, 1);
 		imageFiles.splice(index, 1);
 		images = updatedImages;
+		console.log('//////i', images);
 	}
 	$: {
 		dispatch('imageChanges', images);
 		dispatch('imageFilesChanges', imageFiles);
 	}
-	console.log('first', data);
 </script>
 
 <div class="w-full h-80 bg-[#e4e4e4] rounded-lg p-5 flex flex-wrap">
 	<div class="h-24 w-24">
 		<Dropzone
 			multiple
+			type="file"
+			accept=".jpg, .jpeg, .png .svg"
 			on:change={addImage}
 			id="dropzone"
 			defaultClass="flex flex-col justify-center items-center w-full h-full bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"

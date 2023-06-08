@@ -1,26 +1,62 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
+	import {
+		Label,
+		Button,
+		Input,
+		Fileupload,
+		Textarea,
+		Select,
+		Dropdown,
+		Chevron,
+		DropdownItem
+	} from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/galleryStore';
+	import { getData, insertData } from '../../../stores/galleryStore';
+	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import DropZone from '$lib/components/uploadMultipleImage/DropZone.svelte';
+	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import { slide } from 'svelte/transition';
+	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 
 	export let data;
 
+	let submitted = false;
+	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
+	let sliderImagesFile: File[] = [];
 
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let galleryDataLang: GalleryModelLang[] = [];
+
+	let galleryObject: GalleryModel = {
+		images: [],
+		thumbnail: '',
+		created_at: new Date(),
+		id: 0
+	};
+
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+			console.log('sdffff//////', exhibitionData);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
-	// console.log(languageEnumKeys);
 
 	const languageEnumLength = languageEnumKeys.length;
 	//for swapping between language
@@ -34,15 +70,6 @@
 		});
 	}
 
-	let galleryObject: GalleryModel = {
-		images: [],
-		thumbnail: '',
-		created_at: new Date()
-	};
-
-	// generate random number before image URl
-
-	// for upload thumbnail image
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -61,56 +88,37 @@
 		reader.readAsDataURL(file);
 	}
 
-	//upload multiple images
-	const galleryFiles: { file: File; fileName: string }[] = [];
-	async function handleMultipleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const files = fileInput.files;
-
-		if (files) {
-			for (let i = 0; i < files.length; i++) {
-				const file = files[i];
-
-				const reader = new FileReader();
-
-				reader.onloadend = async () => {
-					const randomText = getRandomTextNumber(); // Generate random text
-					let fileName = `gallery/${randomText}_${file.name}`;
-					// Append random text to the file name
-					galleryFiles.push({
-						file: file,
-						fileName: fileName
-					});
-				};
-
-				reader.readAsDataURL(file);
-			}
-		}
-		// console.log('galleryFiles', galleryFiles);
-	}
-
-	let submitted = false;
-	let showToast = false;
+	//**dropzone**//
+	function getAllImageFile(e: { detail: File[] }) {
+		sliderImagesFile = e.detail;
+		// console.log('sliderImagesFile', sliderImagesFile);
+	} //**dropzone**//
 
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
+
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
-		for (const fileObj of galleryFiles) {
-			const responseMultiple = await data.supabase.storage
+		for (let image of sliderImagesFile) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
 				.from('image')
-				.upload(fileObj.fileName, fileObj.file!);
-
-			console.log(galleryObject);
-			galleryObject.images.push(responseMultiple.data?.path);
+				.upload(`gallery/${randomText}_${image.name}`, image!)
+				.then((response) => {
+					galleryObject.images.push(response.data.path);
+					console.log(response);
+				});
 		}
+
 		// Convert galleryObject.images to a valid array string format
 		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
 		galleryObject.images = `{${imagesArray.join(',')}}`;
+		console.log(galleryObject);
 
 		// console.log(response);
 		galleryObject.thumbnail = response.data?.path;
+
 		insertData(galleryObject, galleryDataLang, data.supabase);
 		resetForm();
 		setTimeout(() => {
@@ -124,7 +132,8 @@
 		galleryObject = {
 			images: [],
 			thumbnail: '',
-			created_at: new Date()
+			created_at: new Date(),
+			id: 0
 		};
 
 		galleryDataLang = []; // Resetting galleryDataLang to an empty array
@@ -137,6 +146,10 @@
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 			});
 		}
+	}
+
+	function handleSelectChange(event: any) {
+		galleryObject.exhibition_id = event.target.value;
 	}
 </script>
 
@@ -167,6 +180,25 @@
 						<span>Date</span>
 						<DateInput bind:value={galleryObject.created_at} format="yyyy/MM/dd" />
 					</Label>
+				</div>
+				<div>
+					<label class="space-y-2 mb-2">
+						<label for="large-input" class="block">Exhibition Type</label>
+						<select
+							class="border border-gray-300 rounded-md"
+							id="type"
+							name="type"
+							placeholder="Please select a valid type"
+							on:change={handleSelectChange}
+						>
+							<option disabled selected>Select type</option>
+							{#each exhibitionData as exhibition}
+								{#if exhibition.exhibition_languages}
+									<option value={exhibition.id}>{exhibition.exhibition_languages[0].title}</option>
+								{/if}
+							{/each}
+						</select>
+					</label>
 				</div>
 
 				<br />
@@ -241,8 +273,7 @@
 			<div>
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-					<Fileupload on:change={handleMultipleFileUpload} multiple />
-					<!-- <FileUploadComponent /> -->
+					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 				</Label>
 			</div>
 

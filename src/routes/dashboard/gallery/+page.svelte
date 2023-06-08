@@ -11,7 +11,6 @@
 	const fetchData = async () => {
 		try {
 			galleryData = await getData(data.supabase);
-			// console.log('galleryData:', galleryData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -20,7 +19,7 @@
 	onMount(fetchData);
 
 	// delete data
-	const handleDelete = async (galleryId) => {
+	const handleDelete = async (galleryId: number) => {
 		try {
 			await deleteData(galleryId, data.supabase);
 			console.log('Gallery deleted successfully!');
@@ -83,28 +82,35 @@
 								/>
 							</div>
 						</td>
-						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
-							{#each item.gallery_languages as lang}
-								<div>
-									{lang.title}
-								</div>
-							{/each}
-						</td>
-						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
-							{#each item.gallery_languages as lang}
-								<div>
-									{lang.short_description?.slice(0, 40)}
-								</div>
-							{/each}
-						</td>
-						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
-							{#each item.gallery_languages as lang}
-								<div>
-									{lang.long_description?.slice(0, 40)}
-								</div>
-							{/each}
-						</td>
-
+						{#if item.gallery_languages}
+							<td
+								class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell"
+							>
+								{#each item.gallery_languages as lang}
+									<div>
+										{lang.title}
+									</div>
+								{/each}
+							</td>
+							<td
+								class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell"
+							>
+								{#each item.gallery_languages as lang}
+									<div>
+										{lang.short_description?.slice(0, 40)}
+									</div>
+								{/each}
+							</td>
+							<td
+								class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell"
+							>
+								{#each item.gallery_languages as lang}
+									<div>
+										{lang.long_description?.slice(0, 40)}
+									</div>
+								{/each}
+							</td>
+						{/if}
 						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-300 table-cell">
 							<div class="flex items-center">
 								<button
