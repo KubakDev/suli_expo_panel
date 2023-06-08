@@ -14,6 +14,7 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
+	import { goto } from '$app/navigation';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -163,6 +164,7 @@
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
+		goto('/dashboard/gallery');
 	}
 
 	function imageChanges(e) {
@@ -175,7 +177,7 @@
 			}
 		});
 		existingImages = result;
-		console.log('image data :::::', result);
+		// console.log('image data :::::', result);
 	}
 </script>
 

@@ -8,7 +8,9 @@
 	import type { MagazineModel, MagazineModelLang } from '../../../models/magazineModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-
+	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import { onMount } from 'svelte';
+	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	export let data;
 
 	let fileName: string;
@@ -57,6 +59,17 @@
 
 		reader.readAsDataURL(file);
 	}
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+			console.log('sdffff//////', exhibitionData);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	onMount(fetchData);
 
 	//upload multiple images
 	const magazineFiles: { file: File; fileName: string }[] = [];
@@ -136,6 +149,10 @@
 			});
 		}
 	}
+
+	function handleSelectChange(event: any) {
+		magazineObject.exhibition_id = event.target.value;
+	}
 </script>
 
 <div
@@ -165,6 +182,26 @@
 						<span>Date</span>
 						<DateInput bind:value={magazineObject.created_at} format="yyyy/MM/dd" />
 					</Label>
+				</div>
+
+				<div>
+					<label class="space-y-2 mb-2">
+						<label for="large-input" class="block">Exhibition Type</label>
+						<select
+							class="border border-gray-300 rounded-md"
+							id="type"
+							name="type"
+							placeholder="Please select a valid type"
+							on:change={handleSelectChange}
+						>
+							<option disabled selected>Select type</option>
+							{#each exhibitionData as exhibition}
+								{#if exhibition.exhibition_languages}
+									<option value={exhibition.id}>{exhibition.exhibition_languages[0].title}</option>
+								{/if}
+							{/each}
+						</select>
+					</label>
 				</div>
 
 				<br />
