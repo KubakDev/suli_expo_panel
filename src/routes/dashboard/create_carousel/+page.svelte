@@ -9,7 +9,6 @@
 		Tabs,
 		TabItem
 	} from 'flowbite-svelte';
-	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/carouselStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
