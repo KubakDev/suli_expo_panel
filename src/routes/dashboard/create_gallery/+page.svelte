@@ -1,31 +1,23 @@
 <script lang="ts">
-	import {
-		Label,
-		Button,
-		Input,
-		Fileupload,
-		Textarea,
-		Select,
-		Dropdown,
-		Chevron,
-		DropdownItem
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { getData, insertData } from '../../../stores/galleryStore';
-	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { insertData } from '../../../stores/galleryStore';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import DropZone from '$lib/components/uploadMultipleImage/DropZone.svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
-	import { slide } from 'svelte/transition';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import newsUiStore from '../../../stores/ui/newsUi';
+	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
 
 	export let data;
+	let CardComponent: any;
+	$: newsCardComponent = CardComponent;
 
 	let submitted = false;
 	let showToast = false;
@@ -132,6 +124,7 @@
 		galleryObject = {
 			images: [],
 			thumbnail: '',
+			exhibition_type: '',
 			created_at: new Date(),
 			id: 0
 		};
@@ -153,11 +146,8 @@
 	}
 </script>
 
-<div
-	style="min-height: calc(100vh - 160px);"
-	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4]"
->
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
+<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-2 bg-[#f1f3f4]">
+	<div class="w-full h-full col-span-1 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 				successfully submitted
@@ -193,9 +183,7 @@
 						>
 							<option disabled selected>Select type</option>
 							{#each exhibitionData as exhibition}
-								{#if exhibition.exhibition_languages}
-									<option value={exhibition.id}>{exhibition.exhibition_languages[0].title}</option>
-								{/if}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
 							{/each}
 						</select>
 					</label>
@@ -282,11 +270,40 @@
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+					class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
 				>
 					Submit
 				</button>
 			</div>
 		</Form>
+	</div>
+	<div class="h-full p-2 col-span-1 pt-20">
+		<Tabs style="underline">
+			<TabItem open title="Gallery List">
+				{#if $newsUiStore}
+					<div
+						class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
+						style="min-height: calc(100vh - 300px);"
+					>
+						<div class="w-[600px]">
+							{#if newsCardComponent}
+								<svelte:component
+									this={newsCardComponent}
+									data={galleryDataLang.find((item) => item.language == selectedLanguageTab)}
+									imageData={{
+										thumbnail: galleryObject.thumbnail,
+										imgSource: galleryObject.imgSource
+									}}
+									colors={$newsUiStore.color_palette}
+								/>
+							{:else}
+								<div />
+							{/if}
+						</div>
+					</div>
+				{/if}
+			</TabItem>
+			<TabItem title="Gallery Detail">second tab</TabItem>
+		</Tabs>
 	</div>
 </div>

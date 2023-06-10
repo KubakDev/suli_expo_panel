@@ -5,6 +5,7 @@ export interface MagazineModel {
 	exhibition_id?: number;
 	images: string[] | string;
 	thumbnail?: string;
+	exhibition_type?: '';
 	created_at?: Date;
 	magazine_languages?: MagazineModelLang[];
 }

@@ -51,6 +51,7 @@
 	let videoObjectData: VideoModel = {
 		thumbnail: '',
 		link: '',
+		exhibition_type: '',
 		created_at: new Date()
 	};
 
@@ -156,9 +157,7 @@
 						>
 							<option disabled selected>Select type</option>
 							{#each exhibitionData as exhibition}
-								{#if exhibition.exhibition_languages}
-									<option value={exhibition.id}>{exhibition.exhibition_languages[0].title}</option>
-								{/if}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
 							{/each}
 						</select>
 					</label>

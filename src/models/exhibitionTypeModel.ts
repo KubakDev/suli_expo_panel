@@ -4,6 +4,7 @@ export interface ExhibitionModel {
 	id: number;
 	image: string[];
 	exhibition_date?: Date;
+	exhibition_type: string;
 	exhibition_languages?: ExhibitionModelLang[];
 }
 

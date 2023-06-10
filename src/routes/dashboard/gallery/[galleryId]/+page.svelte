@@ -3,25 +3,25 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData, gallery } from '../../../../stores/galleryStore';
+	import { updateData } from '../../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
-	import { derived } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
+	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
+	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	const galleryFiles: { file: File; fileName: string }[] = [];
 	let submitted = false;
 	let showToast = false;
 
@@ -30,10 +30,24 @@
 		id: 0,
 		images: [],
 		thumbnail: '',
+		exhibition_type: '',
 		created_at: new Date()
 	};
 	const id = $page.params.galleryId;
 	let images: ImagesModel[] = [];
+
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+			console.log('exhibitionData//////', exhibitionData);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	onMount(fetchData);
+
 	async function getDataGallery() {
 		await data.supabase
 			.from('gallery')
@@ -43,12 +57,13 @@
 			.then((result) => {
 				galleryData = {
 					id: result.data?.id,
+					exhibition_id: result.data?.exhibition_id,
 					images: result.data?.images,
 					thumbnail: result.data?.thumbnail,
 					created_at: new Date(result.data?.created_at)
 				};
-				// console.log(galleryData.images);
-				console.log(galleryData.thumbnail);
+
+				console.log(galleryData.exhibition_id);
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.gallery_languages.findIndex(
@@ -96,17 +111,14 @@
 			galleryData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-
 			// console.log(galleryData);
 		};
-
 		reader.readAsDataURL(file);
 	} //**for upload thumbnail image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-
 		// console.log('////', e.detail);
 	}
 
@@ -114,7 +126,6 @@
 	function getImage() {
 		let result = galleryData.images.map((image, i) => {
 			// console.log('///', image);
-
 			return {
 				id: i,
 				imgurl: image,
@@ -179,6 +190,11 @@
 		existingImages = result;
 		// console.log('image data :::::', result);
 	}
+
+	function handleSelectChange(event: any) {
+		galleryData.exhibition_id = event.target.value;
+		console.log(event.target.value);
+	}
 </script>
 
 <div
@@ -209,7 +225,28 @@
 						<DateInput bind:value={galleryData.created_at} />
 					</Label>
 				</div>
-
+				<div>
+					<label class="space-y-2 mb-2">
+						<label for="large-input" class="block">Exhibition Type</label>
+						<select
+							class="border border-gray-300 rounded-md"
+							id="type"
+							name="type"
+							placeholder="Please select a valid type"
+							on:change={handleSelectChange}
+						>
+							<option disabled selected>
+								{galleryData.exhibition_id
+									? exhibitionData.find((item) => item.id == galleryData.exhibition_id)
+											?.exhibition_type
+									: 'Select type'}
+							</option>
+							{#each exhibitionData as exhibition}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+							{/each}
+						</select>
+					</label>
+				</div>
 				<br />
 
 				<div class="col-span-3">

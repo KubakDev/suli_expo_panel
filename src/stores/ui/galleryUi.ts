@@ -25,11 +25,10 @@ export async function getNewsUi(supabase: SupabaseClient) {
       )
 		`
 			)
-			.eq('page', CardType.News)
+			.eq('page', CardType.Gallery)
 			.single();
 		const data = response.data as NewsUiModel;
 		newsUiStore.set(data);
-		// newsUi.set(response.data);
 	}
 }
 

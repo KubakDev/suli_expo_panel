@@ -6,6 +6,7 @@ export interface VideoModel {
 	thumbnail?: string;
 	created_at?: Date;
 	link?: string;
+	exhibition_type?: string;
 	mediaVideo_languages?: VideoModelLang[];
 }
 

@@ -5,6 +5,7 @@ export interface PublishingModel {
 	exhibition_id?: number;
 	images: string[] | string;
 	thumbnail?: string;
+	exhibition_type?: string;
 	created_at?: Date;
 	publishing_languages?: PublishingModelLang[];
 }
