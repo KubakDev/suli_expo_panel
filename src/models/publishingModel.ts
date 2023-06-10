@@ -2,6 +2,7 @@ import type { LanguageEnum } from './languageEnum';
 
 export interface PublishingModel {
 	id?: number;
+	exhibition_id?: number;
 	images: string[] | string;
 	thumbnail?: string;
 	created_at?: Date;

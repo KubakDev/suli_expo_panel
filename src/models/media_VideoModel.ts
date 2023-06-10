@@ -2,6 +2,7 @@ import type { LanguageEnum } from './languageEnum';
 
 export interface VideoModel {
 	id?: number;
+	exhibition_id?: number;
 	thumbnail?: string;
 	created_at?: Date;
 	link?: string;

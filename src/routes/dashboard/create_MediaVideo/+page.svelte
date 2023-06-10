@@ -8,6 +8,9 @@
 	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import { onMount } from 'svelte';
+	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
 
 	export let data;
 
@@ -17,6 +20,18 @@
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let videoDataLang: VideoModelLang[] = [];
+
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+			// console.log('sdffff//////', exhibitionData);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+	onMount(fetchData);
+
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	// console.log(languageEnumKeys);
@@ -95,6 +110,10 @@
 			});
 		}
 	}
+
+	function handleSelectChange(event: any) {
+		videoObjectData.exhibition_id = event.target.value;
+	}
 </script>
 
 <div
@@ -111,7 +130,7 @@
 		<Form class="form py-10" {submitted}>
 			<h1 class="text-xl font-bold mb-8">Video Data</h1>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
+			<div class="grid gap-2 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
@@ -124,6 +143,25 @@
 						<span>Date</span>
 						<DateInput bind:value={videoObjectData.created_at} format="yyyy/MM/dd" />
 					</Label>
+				</div>
+				<div>
+					<label class="space-y-2 mb-2">
+						<label for="large-input" class="block">Exhibition Type</label>
+						<select
+							class="border border-gray-300 rounded-md"
+							id="type"
+							name="type"
+							placeholder="Please select a valid type"
+							on:change={handleSelectChange}
+						>
+							<option disabled selected>Select type</option>
+							{#each exhibitionData as exhibition}
+								{#if exhibition.exhibition_languages}
+									<option value={exhibition.id}>{exhibition.exhibition_languages[0].title}</option>
+								{/if}
+							{/each}
+						</select>
+					</label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
