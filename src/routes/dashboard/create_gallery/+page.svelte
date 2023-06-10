@@ -14,6 +14,7 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import newsUiStore from '../../../stores/ui/newsUi';
 	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 
 	export let data;
 	let CardComponent: any;
@@ -280,28 +281,24 @@
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
 			<TabItem open title="Gallery List">
-				{#if $newsUiStore}
-					<div
-						class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
-						style="min-height: calc(100vh - 300px);"
-					>
-						<div class="w-[600px]">
-							{#if newsCardComponent}
-								<svelte:component
-									this={newsCardComponent}
-									data={galleryDataLang.find((item) => item.language == selectedLanguageTab)}
-									imageData={{
-										thumbnail: galleryObject.thumbnail,
-										imgSource: galleryObject.imgSource
-									}}
-									colors={$newsUiStore.color_palette}
-								/>
-							{:else}
-								<div />
-							{/if}
+				<div
+					class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
+					style="min-height: calc(100vh - 300px);"
+				>
+					<div class="w-[600px]">
+						<div>
+							<ExpoCard
+								cardType={CardType.Main}
+								title="text"
+								short_description="text"
+								thumbnail=""
+								primaryColor="bg-primary"
+							/>
 						</div>
+
+						<div />
 					</div>
-				{/if}
+				</div>
 			</TabItem>
 			<TabItem title="Gallery Detail">second tab</TabItem>
 		</Tabs>
