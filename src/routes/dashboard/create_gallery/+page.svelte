@@ -25,7 +25,7 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	let carouselImages = undefined;
+	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let galleryDataLang: GalleryModelLang[] = [];
@@ -84,7 +84,7 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		getImage();
+		getImagesObject();
 	} //**dropzone**//
 
 	async function formSubmit() {
@@ -99,8 +99,10 @@
 				.from('image')
 				.upload(`gallery/${randomText}_${image.name}`, image!)
 				.then((response) => {
-					galleryObject.images.push(response.data.path);
-					// console.log('response ::::', response);
+					if (response.data) {
+						galleryObject.images.push(response.data.path);
+						// console.log('response ::::', response);
+					}
 				});
 		}
 		// Convert galleryObject.images to a valid array string format
@@ -144,20 +146,22 @@
 
 	function handleSelectChange(event: any) {
 		galleryObject.exhibition_id = event.target.value;
+		// console.log('galleryObject//', galleryObject);
 	}
 
-	//get image
-	function getImage() {
+	//get thumbnail
+	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
+			// console.log('//', sliderImagesFile);
 			const imgUrl = URL.createObjectURL(image);
 			return {
 				id: i,
 				imgurl: imgUrl,
-				imgSource: ImgSourceEnum.local,
 				name: image,
 				attribution: ''
 			};
 		});
+		console.log('test//', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
