@@ -25,6 +25,7 @@
 	let isDown: boolean = false;
 	let line: fabric.Line | null;
 	let isDrawing = false; // Whether the mouse is down
+	let strokeWidth = 5; // Width of the stroke
 
 	let gridSize = 20; // size of grid squares in pixels
 
@@ -81,7 +82,7 @@
 		} else {
 			return;
 		}
-		console.log(type);
+
 		const radius = parseInt(value.target.value);
 		switch (type) {
 			case 'tl':
@@ -121,6 +122,7 @@
 	}
 
 	onMount(() => {
+		seatImageItemStore.getAllSeatItems();
 		document.getElementById('color-picker')?.addEventListener('input', function (event) {
 			let selectedColor = event.target!.value;
 
@@ -136,6 +138,18 @@
 		// var customRect = createCustomRectangle();
 
 		canvas = new fabric.Canvas('canvas');
+
+		fabric.Object.prototype.set({
+			borderColor: '#5d9cec',
+			cornerColor: '#5d9cec',
+			cornerSize: 12,
+			cornerStyle: 'circle',
+			transparentCorners: false,
+			borderDashArray: [2, 2],
+			padding: 10,
+			cornerStrokeColor: '#ffffff',
+			borderOpacityWhenMoving: 0.4
+		});
 
 		const supabase = data.supabase;
 
@@ -290,7 +304,23 @@
 		uploadImageModal = true;
 	}
 
-	function onShapeSelected(image: SeatImageItemModel | null = null) {}
+	function onShapeSelected(image: SeatImageItemModel | null = null) {
+		fabric.Image.fromURL(image?.image_url!, function (img) {
+			// Adjust the properties of the image if needed
+			img.set({
+				left: 100,
+				top: 100,
+				scaleX: 0.5,
+				scaleY: 0.5
+			});
+
+			// Add the image to the canvas
+			canvas.add(img);
+
+			// Trigger canvas rendering
+			canvas.renderAll();
+		});
+	}
 
 	function onPenSelect() {
 		isDrawing = !isDrawing; // Toggle the drawing mode
@@ -399,6 +429,21 @@
 		// Trigger canvas rendering
 		canvas.renderAll();
 	}
+
+	function addStroke(event: any) {
+		let strokeWidth = parseInt(event.target.value);
+
+		// Get the selected object (e.g., assuming it's the last added object)
+		let selectedObject = canvas.getActiveObject();
+		// Update the stroke properties of the selected object
+		selectedObject.set({
+			stroke: 'black',
+			strokeWidth: strokeWidth
+		});
+
+		// Trigger canvas rendering
+		canvas.renderAll();
+	}
 </script>
 
 <div class="flex flex-row">
@@ -435,6 +480,18 @@
 					class="text-red-700 dark:text-green-700 outline-none "
 				/>
 			</Button>
+		</div>
+		<div class="w-1/2">
+			<ButtonGroup class="w-full" size="sm">
+				<InputAddon>Stroke</InputAddon><Input
+					type="number"
+					size="sm"
+					value={strokeWidth}
+					on:input={addStroke}
+					placeholder="Rotation"
+					let:props
+				/></ButtonGroup
+			>
 		</div>
 		<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
 			<Label class="space-y-2">

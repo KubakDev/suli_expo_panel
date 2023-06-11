@@ -127,6 +127,7 @@
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
 		console.log(sliderImagesFile);
+
 		// random number
 		const images = sliderImagesFile.map((image, i) => {
 			// console.log('//', sliderImagesFile);
@@ -139,16 +140,17 @@
 				attribution: ''
 			} as CarouselImage;
 		});
-		console.log('$$$$$$$$$$$$$$$$$$ ', images);
-		images.forEach((file) => {
-			const image = {
-				id: carouselImages.length,
-				imgurl: file.imgurl,
-				name: file.name,
-				attribute: ''
-			};
-			carouselImages.push(image);
-		});
+		// console.log('$$$$$$$$$$$$$$$$$$ ', images);
+		// images.forEach((file) => {
+
+		// 	const image = {
+		// 		id: carouselImages.length,
+		// 		imgurl: file.imgurl,
+		// 		name: file.name,
+		// 		attribute: ''
+		// 	};
+
+		// });
 		console.log(carouselImages);
 		// console.log('////', e.detail);
 	}
@@ -213,17 +215,22 @@
 		console.log(e.detail);
 		// console.log(e.detail);
 		let result: any = [];
-
-		e.detail.forEach((image) => {
+		let customImages: any = [];
+		console.log('%%%%%%%%%%%%');
+		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
 				console.log(image);
-
+				const newImage = { ...image };
+				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
+				customImages.push(newImage);
 				// carouselImages.push(image);
 				// console.log(carouselImages);
+			} else {
+				customImages.push(image);
 			}
 		});
-
+		carouselImages = customImages;
 		existingImages = result;
 		// console.log('image data :::::', result);
 	}
