@@ -16,12 +16,15 @@
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
+	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import type { CarouselImage } from 'kubak-svelte-component/dist/models/newsModel';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
+	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
 
@@ -40,7 +43,7 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			console.log('exhibitionData//////', exhibitionData);
+			// console.log('exhibitionData//////', exhibitionData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -59,11 +62,14 @@
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					images: result.data?.images,
-					thumbnail: result.data?.thumbnail,
+					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
+						result.data?.thumbnail
+					}`,
 					created_at: new Date(result.data?.created_at)
 				};
 
-				console.log(galleryData.exhibition_id);
+				// console.log('gallery data : ////////', galleryData);
+
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.gallery_languages.findIndex(
@@ -82,8 +88,8 @@
 					});
 				}
 				galleryDataLang = [...galleryDataLang];
-
 				galleryData = { ...galleryData };
+				getImagesObject();
 			});
 	}
 
@@ -109,6 +115,7 @@
 
 		reader.onloadend = () => {
 			galleryData.thumbnail = reader.result as '';
+
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
 			// console.log(galleryData);
@@ -119,6 +126,30 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
+		console.log(sliderImagesFile);
+		// random number
+		const images = sliderImagesFile.map((image, i) => {
+			// console.log('//', sliderImagesFile);
+			const imgUrl = URL.createObjectURL(image);
+			console.log('imgUrl', imgUrl);
+			return {
+				id: carouselImages.length,
+				imgurl: imgUrl,
+				name: image.name,
+				attribution: ''
+			} as CarouselImage;
+		});
+		console.log('$$$$$$$$$$$$$$$$$$ ', images);
+		images.forEach((file) => {
+			const image = {
+				id: carouselImages.length,
+				imgurl: file.imgurl,
+				name: file.name,
+				attribute: ''
+			};
+			carouselImages.push(image);
+		});
+		console.log(carouselImages);
 		// console.log('////', e.detail);
 	}
 
@@ -178,29 +209,51 @@
 		goto('/dashboard/gallery');
 	}
 
-	function imageChanges(e) {
+	function imageChanges(e: any) {
+		console.log(e.detail);
 		// console.log(e.detail);
 		let result: any = [];
 
 		e.detail.forEach((image) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
+				console.log(image);
+
+				// carouselImages.push(image);
+				// console.log(carouselImages);
 			}
 		});
+
 		existingImages = result;
 		// console.log('image data :::::', result);
 	}
 
 	function handleSelectChange(event: any) {
 		galleryData.exhibition_id = event.target.value;
-		console.log(event.target.value);
+		// console.log(event.target.value);
+	}
+
+	//get thumbnail
+	function getImagesObject() {
+		carouselImages = galleryData.images.map((image, i) => {
+			console.log('//', image);
+
+			return {
+				id: i,
+				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
+				name: image,
+				attribution: ''
+			};
+		});
+		// console.log('print //', carouselImages);
+
+		if (carouselImages.length <= 0) {
+			carouselImages = undefined;
+		}
 	}
 </script>
 
-<div
-	style="min-height: calc(100vh - 160px);"
-	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4]"
->
+<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -250,7 +303,9 @@
 				<br />
 
 				<div class="col-span-3">
-					<Tabs>
+					<Tabs
+						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
+					>
 						{#each galleryDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -318,7 +373,7 @@
 			<!-- upload gallery image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+					<Label for="first_name" class="mb-2">Upload Gallery Images</Label>
 					<FileUploadComponent
 						on:imageChanges={imageChanges}
 						on:imageFilesChanges={getAllImageFile}
@@ -338,5 +393,43 @@
 				</button>
 			</div>
 		</Form>
+	</div>
+	<div class="h-full p-2 col-span-1 pt-20">
+		<Tabs style="underline">
+			<TabItem open title="Gallery List">
+				<div
+					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+					style="min-height: calc(100vh - 300px);"
+				>
+					<div class="flex justify-start items-start">
+						{#each galleryDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<ExpoCard
+									cardType={CardType.Main}
+									title={langData.title}
+									short_description={langData.short_description}
+									thumbnail={galleryData.thumbnail}
+									primaryColor="bg-primary"
+								/>
+							{/if}
+						{/each}
+					</div>
+
+					<div />
+				</div>
+			</TabItem>
+			<TabItem title="Gallery Detail">
+				{#each galleryDataLang as langData}
+					{#if langData.language === selectedLanguageTab}
+						{#if carouselImages}
+							<DetailPage
+								imagesCarousel={carouselImages}
+								long_description={langData.long_description}
+							/>
+						{/if}
+					{/if}
+				{/each}
+			</TabItem>
+		</Tabs>
 	</div>
 </div>
