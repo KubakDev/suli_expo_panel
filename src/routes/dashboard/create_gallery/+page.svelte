@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
@@ -14,7 +14,7 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import newsUiStore from '../../../stores/ui/newsUi';
 	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
-	import { CardType, ExpoCard } from 'kubak-svelte-component';
+	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 
 	export let data;
 	let CardComponent: any;
@@ -25,7 +25,7 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-
+	let carouselImages = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let galleryDataLang: GalleryModelLang[] = [];
@@ -41,7 +41,7 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			console.log('sdffff//////', exhibitionData);
+			// console.log('sdffff//////', exhibitionData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -75,7 +75,7 @@
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log(galleryObject);
+			// console.log('galleryObject//', galleryObject);
 		};
 
 		reader.readAsDataURL(file);
@@ -84,7 +84,7 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		// console.log('sliderImagesFile', sliderImagesFile);
+		getImage();
 	} //**dropzone**//
 
 	async function formSubmit() {
@@ -100,19 +100,19 @@
 				.upload(`gallery/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					galleryObject.images.push(response.data.path);
-					console.log(response);
+					// console.log('response ::::', response);
 				});
 		}
-
 		// Convert galleryObject.images to a valid array string format
 		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
 		galleryObject.images = `{${imagesArray.join(',')}}`;
-		console.log(galleryObject);
+		// console.log('galleryObject ::::', galleryObject);
 
 		// console.log(response);
 		galleryObject.thumbnail = response.data?.path;
 
 		insertData(galleryObject, galleryDataLang, data.supabase);
+
 		resetForm();
 		setTimeout(() => {
 			showToast = false;
@@ -145,10 +145,28 @@
 	function handleSelectChange(event: any) {
 		galleryObject.exhibition_id = event.target.value;
 	}
+
+	//get image
+	function getImage() {
+		carouselImages = sliderImagesFile.map((image, i) => {
+			const imgUrl = URL.createObjectURL(image);
+			return {
+				id: i,
+				imgurl: imgUrl,
+				imgSource: ImgSourceEnum.local,
+				name: image,
+				attribution: ''
+			};
+		});
+
+		if (carouselImages.length <= 0) {
+			carouselImages = undefined;
+		}
+	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-2 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-1 flex justify-center items-center">
+<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
+	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 				successfully submitted
@@ -163,7 +181,7 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-						<Fileupload on:change={handleFileUpload} />
+						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					</Label>
 				</div>
 				<div>
@@ -279,28 +297,41 @@
 		</Form>
 	</div>
 	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="Gallery List">
-				<div
-					class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="w-[600px]">
-						<div>
-							<ExpoCard
-								cardType={CardType.Main}
-								title="text"
-								short_description="text"
-								thumbnail=""
-								primaryColor="bg-primary"
-							/>
+		<div>
+			<Tabs style="underline">
+				<TabItem open title="Gallery List">
+					<div
+						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+						style="min-height: calc(100vh - 300px);"
+					>
+						<div class="flex justify-start items-start">
+							{#each galleryDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<ExpoCard
+										cardType={CardType.Main}
+										title={langData.title}
+										short_description={langData.short_description}
+										thumbnail={galleryObject.thumbnail}
+										primaryColor="bg-primary"
+									/>
+								{/if}
+							{/each}
 						</div>
 
 						<div />
 					</div>
-				</div>
-			</TabItem>
-			<TabItem title="Gallery Detail">second tab</TabItem>
-		</Tabs>
+				</TabItem>
+				<TabItem title="Gallery Detail">
+					{#each galleryDataLang as langData}
+						{#if langData.language === selectedLanguageTab}
+							<DetailPage
+								imagesCarousel={carouselImages}
+								long_description={langData.long_description}
+							/>
+						{/if}
+					{/each}
+				</TabItem>
+			</Tabs>
+		</div>
 	</div>
 </div>
