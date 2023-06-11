@@ -125,8 +125,6 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		console.log(sliderImagesFile);
-
 		// console.log('////', e.detail);
 	}
 
@@ -193,10 +191,6 @@
 		e.detail.forEach((image) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
-
-				carouselImages.push(image);
-				console.log(carouselImages);
 			}
 		});
 
@@ -217,6 +211,7 @@
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
+				imgSource: ImgSourceEnum.remote,
 				name: image,
 				attribution: ''
 			};
@@ -398,7 +393,7 @@
 				{#each galleryDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
 						<DetailPage
-							bind:imagesCarousel={carouselImages}
+							imagesCarousel={carouselImages}
 							long_description={langData.long_description}
 						/>
 					{/if}
