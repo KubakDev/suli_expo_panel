@@ -12,13 +12,11 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
-	import newsUiStore from '../../../stores/ui/newsUi';
-	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { goto } from '$app/navigation';
 
 	export let data;
 	let CardComponent: any;
-	$: newsCardComponent = CardComponent;
 
 	let submitted = false;
 	let showToast = false;
@@ -75,7 +73,7 @@
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log('galleryObject//', galleryObject);
+			// console.log('galleryObject////////////', galleryObject);
 		};
 
 		reader.readAsDataURL(file);
@@ -116,6 +114,7 @@
 		insertData(galleryObject, galleryDataLang, data.supabase);
 
 		resetForm();
+		goto('/dashboard/gallery');
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
