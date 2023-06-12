@@ -233,7 +233,7 @@
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				successfully submitted
+				The Update Was Successfully!
 			</div>
 		{/if}
 

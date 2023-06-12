@@ -40,7 +40,7 @@
 	}
 </script>
 
-<div class="app" style={getTheme()}>
+<div class="app min-h-screen" style={getTheme()}>
 	<main>
 		<Navbar style="background-color: #14213d;" let:hidden let:toggle>
 			<NavBrand href="/">
