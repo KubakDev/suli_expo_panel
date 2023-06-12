@@ -44,7 +44,14 @@
 		images = updatedImages;
 		console.log('//////i', images);
 	}
+
 	$: {
+		if (images.length > 0) {
+			runEvent();
+		}
+	}
+
+	function runEvent() {
 		dispatch('imageChanges', images);
 		dispatch('imageFilesChanges', imageFiles);
 	}

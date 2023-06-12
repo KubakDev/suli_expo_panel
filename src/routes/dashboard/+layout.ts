@@ -8,6 +8,10 @@ export const load = async () => {
 			url: '/'
 		},
 		{
+			title: 'seat_test',
+			url: '/dashboard/seat_test'
+		},
+		{
 			title: 'news',
 			url: '/dashboard/news'
 		},

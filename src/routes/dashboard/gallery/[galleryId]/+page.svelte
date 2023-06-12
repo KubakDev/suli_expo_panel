@@ -17,6 +17,7 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import type { CarouselImage } from 'kubak-svelte-component/dist/models/newsModel';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -125,6 +126,30 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
+		console.log(sliderImagesFile);
+		// random number
+		const images = sliderImagesFile.map((image, i) => {
+			// console.log('//', sliderImagesFile);
+			const imgUrl = URL.createObjectURL(image);
+			console.log('imgUrl', imgUrl);
+			return {
+				id: carouselImages.length,
+				imgurl: imgUrl,
+				name: image.name,
+				attribution: ''
+			} as CarouselImage;
+		});
+		console.log('$$$$$$$$$$$$$$$$$$ ', images);
+		images.forEach((file) => {
+			const image = {
+				id: carouselImages.length,
+				imgurl: file.imgurl,
+				name: file.name,
+				attribute: ''
+			};
+			carouselImages.push(image);
+		});
+		console.log(carouselImages);
 		// console.log('////', e.detail);
 	}
 
@@ -185,12 +210,17 @@
 	}
 
 	function imageChanges(e: any) {
+		console.log(e.detail);
 		// console.log(e.detail);
 		let result: any = [];
 
 		e.detail.forEach((image) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
+				console.log(image);
+
+				carouselImages.push(image);
+				console.log(carouselImages);
 			}
 		});
 
@@ -344,7 +374,7 @@
 			<!-- upload gallery image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+					<Label for="first_name" class="mb-2">Upload Gallery Images</Label>
 					<FileUploadComponent
 						on:imageChanges={imageChanges}
 						on:imageFilesChanges={getAllImageFile}
@@ -393,7 +423,7 @@
 				{#each galleryDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
 						<DetailPage
-							imagesCarousel={carouselImages}
+							bind:imagesCarousel={carouselImages}
 							long_description={langData.long_description}
 						/>
 					{/if}
