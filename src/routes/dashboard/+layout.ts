@@ -63,15 +63,15 @@ export const load = async () => {
 			children: [
 				{
 					title: 'publishing',
-					url: '/dashboard/create_Publishing'
+					url: '/dashboard/publishing'
 				},
 				{
 					title: 'video',
-					url: '/dashboard/create_MediaVideo'
+					url: '/dashboard/mediaVideo'
 				},
 				{
 					title: 'magazine',
-					url: '/dashboard/create_magazine'
+					url: '/dashboard/magazine'
 				},
 				{
 					title: 'gallery',

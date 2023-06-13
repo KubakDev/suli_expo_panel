@@ -4,7 +4,7 @@ export interface MagazineModel {
 	id?: number;
 	exhibition_id?: number;
 	images: string[] | string;
-	thumbnail?: string;
+	thumbnail: string;
 	exhibition_type?: '';
 	created_at?: Date;
 	magazine_languages?: MagazineModelLang[];
@@ -12,7 +12,7 @@ export interface MagazineModel {
 
 export interface MagazineModelLang {
 	id?: number;
-	title?: string;
+	title: string;
 	short_description?: string;
 	long_description?: string;
 	language: LanguageEnum;
