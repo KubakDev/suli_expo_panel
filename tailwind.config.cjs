@@ -7,6 +7,9 @@ const config = {
 
 	theme: {
 		colors: {
+			secondary: {
+				DEFAULT: '#292E36'
+			},
 			primary: {
 				50: '#E1B168',
 				100: '#E1B168',
@@ -31,6 +34,19 @@ const config = {
 			backgroundComponent: '#f2f3f7'
 		},
 		extend: {
+			minWidth: {
+				10: '2.5rem',
+				20: '5rem',
+				32: '8rem',
+				40: '10rem',
+				48: '12rem',
+				64: '16rem',
+				80: '20rem',
+				96: '24rem',
+				128: '32rem',
+				150: '37.5rem',
+				175: '43.75rem'
+			},
 			height: {
 				128: '32rem',
 				'screen-1/2': '50vh',

@@ -17,15 +17,20 @@
 	import seatImageItemStore from '../../../stores/seatImageItemStore';
 	import { alertStore } from '../../../stores/alertStore';
 	import uploadFileStore from '../../../stores/uploadFileStore';
+	import { canvasToFile } from '$lib/utils/canva_to_image';
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
-	let color = '#000000'; // Default color
+	let fillColor = '#000000'; // Default color
 
 	let isDown: boolean = false;
 	let line: fabric.Line | null;
 	let isDrawing = false; // Whether the mouse is down
-	let strokeWidth = 5; // Width of the stroke
+	let strokeWidth: null | string = null; // Width of the stroke
+	let strokeColor = '#000000';
+
+	let itemWidth: null | string = null;
+	let itemHeight: null | string = null;
 
 	let gridSize = 20; // size of grid squares in pixels
 
@@ -52,7 +57,6 @@
 			});
 		}
 	};
-
 	function createCustomRectangle() {
 		var pathData = [
 			`M ${topLeftRadius} 0`,
@@ -123,18 +127,7 @@
 
 	onMount(() => {
 		seatImageItemStore.getAllSeatItems();
-		document.getElementById('color-picker')?.addEventListener('input', function (event) {
-			let selectedColor = event.target!.value;
 
-			// Get the selected object (e.g., assuming it's the last added object)
-			let selectedObject = canvas.getObjects().pop();
-
-			// Update the fill color of the selected object
-			selectedObject.set('fill', selectedColor);
-
-			// Trigger canvas rendering
-			canvas.renderAll();
-		});
 		// var customRect = createCustomRectangle();
 
 		canvas = new fabric.Canvas('canvas');
@@ -164,7 +157,11 @@
 				if (data && data['design']) {
 					await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
 				}
-
+				canvas.setDimensions({
+					width: container.offsetWidth,
+					height: container.offsetHeight
+				});
+				console.log('//////canvas.width', canvas.width);
 				for (var i = 0; i < canvas.width / gridSize; i++) {
 					const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
 						stroke: '#ccc',
@@ -177,14 +174,12 @@
 						selectable: false
 					});
 					line2.toObject = () => null;
-
 					canvas.add(line);
 					canvas.add(line2);
 					canvas.sendToBack(line);
 					canvas.sendToBack(line2);
 					canvas.requestRenderAll();
 					// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
-
 					// canvas.add(customRect);
 				}
 			});
@@ -225,7 +220,7 @@
 			let points = [pointer.x, pointer.y, pointer.x, pointer.y];
 			line = new fabric.Line(points, {
 				strokeWidth: 5,
-				stroke: color,
+				stroke: fillColor,
 				selectable: false
 			});
 			canvas.add(line);
@@ -273,7 +268,61 @@
 				canvas.requestRenderAll();
 			}
 		});
+
+		canvas.on('selection:created', function (event: any) {
+			var selectedObject = event.selected[0];
+			setSelectedObjectValue(selectedObject);
+		});
+		canvas.on('selection:updated', function (event: any) {
+			var selectedObject = event.selected[0];
+			setSelectedObjectValue(selectedObject);
+		});
+
+		canvas.on('selection:cleared', function (event: any) {
+			clearAllInput();
+		});
+
+		canvas.on('object:modified', function (event: any) {
+			var modifiedObject = event.target;
+			console.log(modifiedObject);
+			onObjectModified(modifiedObject);
+		});
 	});
+
+	function clearAllInput() {
+		strokeWidth = null;
+		itemWidth = null;
+		itemHeight = null;
+	}
+
+	function onObjectModified(selectedObject: any) {
+		// selectedObject.setCoords(); // Update object's coordinates after modifications
+		// if()
+		if (selectedObject.scaleX !== 1 || selectedObject.scaleY !== 1) {
+			itemWidth = selectedObject.getScaledWidth();
+			itemHeight = selectedObject.getScaledHeight();
+			console.log(itemWidth, itemHeight);
+			selectedObject.set(
+				{
+					width: parseInt(itemWidth!) / selectedObject.scaleX - parseInt(strokeWidth!),
+					height: parseInt(itemHeight!) / selectedObject.scaleY - parseInt(strokeWidth!)
+				},
+				{ silent: true }
+			);
+			// Reset scale to 1
+			// selectedObject.set({ scaleX: 1, scaleY: 1 }, { silent: true });
+			canvas.requestRenderAll();
+		}
+	}
+
+	function setSelectedObjectValue(selectedObject: any) {
+		strokeColor = selectedObject.stroke;
+		strokeWidth = selectedObject.strokeWidth;
+		fillColor = selectedObject.fill;
+		itemWidth = selectedObject.width;
+		itemHeight = selectedObject.height;
+		canvas.bringToFront(selectedObject);
+	}
 
 	afterUpdate(() => {
 		adjustCanvasSize();
@@ -287,11 +336,33 @@
 
 	async function convetToObject() {
 		let json = canvas.toObject(['left', 'top', 'width', 'height', 'fill']);
-		// You can store this `json` object into your database
 		const supabase = data.supabase;
+		// convert canvas to image file
+
+		const canvasImage = await canvasToFile(canvas, 'a');
+		console.log(canvasImage);
+		// upload canvas image to supabase storage
+		const fileResult = await supabase.storage
+			.from('image')
+			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
+		console.log(fileResult.data);
+
+		if (!fileResult.data) {
+			alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
+			return;
+		}
+
 		const result = await supabase
 			.from('seat_layout')
-			.insert([{ name: 'text', design: json, is_active: true, exhibition: 1 }])
+			.insert([
+				{
+					name: 'text',
+					design: json,
+					is_active: true,
+					exhibition: 1,
+					image_url: fileResult.data.path
+				}
+			])
 			.then((res) => {
 				console.log(res);
 			});
@@ -305,21 +376,25 @@
 	}
 
 	function onShapeSelected(image: SeatImageItemModel | null = null) {
-		fabric.Image.fromURL(image?.image_url!, function (img) {
-			// Adjust the properties of the image if needed
-			img.set({
-				left: 100,
-				top: 100,
-				scaleX: 0.5,
-				scaleY: 0.5
-			});
+		fabric.Image.fromURL(
+			image?.image_url!,
+			function (img) {
+				// Adjust the properties of the image if needed
+				img.set({
+					left: 100,
+					top: 100,
+					scaleX: 0.5,
+					scaleY: 0.5
+				});
 
-			// Add the image to the canvas
-			canvas.add(img);
+				// Add the image to the canvas
+				canvas.add(img);
 
-			// Trigger canvas rendering
-			canvas.renderAll();
-		});
+				// Trigger canvas rendering
+				canvas.renderAll();
+			},
+			{ crossOrigin: 'anonymous' }
+		);
 	}
 
 	function onPenSelect() {
@@ -373,9 +448,9 @@
 
 	function createItem() {
 		let rect = new fabric.Rect({
-			width: 50,
+			width: 100,
 			height: 50,
-			fill: 'black',
+			fill: fillColor,
 			left: 0,
 			top: 0
 		});
@@ -430,168 +505,278 @@
 		canvas.renderAll();
 	}
 
-	function addStroke(event: any) {
-		let strokeWidth = parseInt(event.target.value);
+	function updateItemWidth(event: any) {
+		itemWidth = event.target.value;
+		updateSizeProperties();
+	}
 
+	function updateItemHeight(event: any) {
+		itemHeight = event.target.value;
+		updateSizeProperties();
+	}
+
+	function updateFillColor(event: any) {
+		fillColor = event.target.value;
+		updateFillProperties();
+	}
+
+	function updateStrokeColor(event: any) {
+		strokeColor = event.target.value;
+		updateStrokeProperties();
+	}
+
+	function updateStrokeWidth(event: any) {
+		strokeWidth = event.target.value;
+		updateStrokeProperties();
+	}
+
+	function updateSizeProperties() {
+		// Get the selected object (e.g., assuming it's the last added object)
+		let activeObject = canvas.getActiveObject();
+		if (activeObject) {
+			let scaleX = parseInt(itemWidth!) / activeObject.width;
+			let scaleY = parseInt(itemHeight!) / activeObject.height;
+			activeObject.set(
+				{
+					scaleX: scaleX,
+					scaleY: scaleY
+				},
+				{ silent: true }
+			);
+			canvas.requestRenderAll();
+		}
+	}
+
+	function updateFillProperties() {
 		// Get the selected object (e.g., assuming it's the last added object)
 		let selectedObject = canvas.getActiveObject();
-		// Update the stroke properties of the selected object
+
+		// Update the fill properties of the selected object
 		selectedObject.set({
-			stroke: 'black',
-			strokeWidth: strokeWidth
+			fill: fillColor
 		});
 
 		// Trigger canvas rendering
-		canvas.renderAll();
+		canvas.requestRenderAll();
+	}
+
+	function updateStrokeProperties() {
+		// Get the selected object (e.g., assuming it's the last added object)
+		let selectedObject = canvas.getActiveObject();
+
+		// Update the stroke properties of the selected object
+		selectedObject.set(
+			{
+				stroke: strokeColor,
+				strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
+			},
+			{ silent: true }
+		);
+
+		// Trigger canvas rendering
+		canvas.requestRenderAll();
+	}
+
+	function removeSelectedObject() {
+		let activeObject = canvas.getActiveObject();
+		if (activeObject) {
+			canvas.remove(activeObject);
+			canvas.requestRenderAll();
+		}
 	}
 </script>
 
-<div class="flex flex-row">
-	<div>
-		<div class="flex flex-col space-y-2 p-4">
-			<div on:click={() => createItem()} class="seat-design p-2 bg-gray-200 rounded cursor-move">
-				<svg xmlns="http://www.w3.org/2000/svg" width={50} height={50}>
-					<rect width="100%" height="100%" rx="5" ry="5" />
-					<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
-				</svg>
-			</div>
-
-			<div class="grid grid-cols-2 bg-gray-400 p-1 rounded-md">
-				<Button
-					on:click={() => addImages()}
-					class="w-20 h-20 seat-design p-2  rounded cursor-move m-1"
-				>
-					<Plus class="w-full h-full" />
-				</Button>
-				{#each images as image, index}
-					<div
-						on:click={() => onShapeSelected(image)}
-						class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
-					>
-						<img class="w-full h-full" src={image.image_url} alt={image.name} />
-					</div>
-				{/each}
-			</div>
-
-			<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
-				<Pencil
-					on:click={onPenSelect}
-					size="30"
-					class="text-red-700 dark:text-green-700 outline-none "
-				/>
-			</Button>
-		</div>
-		<div class="w-1/2">
-			<ButtonGroup class="w-full" size="sm">
-				<InputAddon>Stroke</InputAddon><Input
-					type="number"
-					size="sm"
-					value={strokeWidth}
-					on:input={addStroke}
-					placeholder="Rotation"
-					let:props
-				/></ButtonGroup
-			>
-		</div>
-		<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
-			<Label class="space-y-2">
-				<span>Name</span>
-				<Input bind:value={itemName} type="text" name="Name" placeholder="Stairs" required />
-			</Label>
-			<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Upload Image</h3>
-			<Dropzone id="dropzone" on:change={onFileSelected} bind:files>
-				{#if !selectedImageToUpload}
-					<svg
-						aria-hidden="true"
-						class="mb-3 w-10 h-10 text-gray-400"
-						fill="none"
-						stroke="currentColor"
-						viewBox="0 0 24 24"
-						xmlns="http://www.w3.org/2000/svg"
-						><path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-						/></svg
-					>
-					<p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-						<span class="font-semibold">Click to upload</span> or drag and drop
-					</p>
-					<p class="text-xs text-gray-500 dark:text-gray-400">
-						SVG, PNG, JPG or GIF (MAX. 800x400px)
-					</p>
-				{:else}
-					<div class="w-full h-full">
-						<img src={selectedImageToUpload} class="w-full h-full object-cover rounded-md" />
-					</div>
-				{/if}
-			</Dropzone>
-			{#if submittedImage == 'no'}
-				<Button on:click={onSubmit} class="w-full1">Submit</Button>
-			{:else if submittedImage == 'submitted'}
-				<Signal />
-			{:else}
-				<Spinner />
-			{/if}
-		</Modal>
+<div class="flex flex-col w-full h-full flex-1">
+	<div class="flex justify-center bg-secondary border-b border-gray-500 p-2">
+		<Button
+			id="group-button"
+			class="!p-2 mx-4 bg-red"
+			size="lg"
+			color={isDrawing ? 'dark' : 'light'}
+			on:click={convetToObject}>Save</Button
+		>
+		<!-- <Button
+			id="group-button"
+			class="!p-2 mx-4 bg-red"
+			size="lg"
+			color={isDrawing ? 'dark' : 'light'}
+			on:click={removeSelectedObject}>Delete</Button
+		> -->
+		<Button
+			class="!p-2 mx-4 bg-red"
+			size="lg"
+			color={isDrawing ? 'dark' : 'light'}
+			on:click={removeSelectedObject}>Delete</Button
+		>
 	</div>
-	<div class="flex-1">
-		<button on:click={convetToObject} id="save-button">Save</button>
+	<div class="w-full grid grid-cols-6 h-full">
+		<div class="flex flex-col p-4 bg-secondary">
+			<div>
+				<div on:click={() => createItem()} class="seat-design bg-gray-200 rounded cursor-move">
+					<svg xmlns="http://www.w3.org/2000/svg" width={50} height={50}>
+						<rect width="100%" height="100%" rx="5" ry="5" />
+						<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
+					</svg>
+				</div>
 
-		<button id="group-button">Group</button>
+				<div class="grid grid-cols-2 gap-1 rounded-md my-4">
+					<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
+						<Plus class="w-full h-full" />
+					</Button>
+					{#each images as image, index}
+						<div
+							on:click={() => onShapeSelected(image)}
+							class="w-20 h-20 seat-design rounded cursor-move"
+						>
+							<img class="w-full h-full" src={image.image_url} alt={image.name} />
+						</div>
+					{/each}
+				</div>
 
-		<button id="draw-button"><i class="fas fa-pen" /> Draw</button>
-		<div bind:this={container} style="height: 100vh; width: 100%;">
+				<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
+					<Pencil
+						on:click={onPenSelect}
+						size="30"
+						class="text-red-700 dark:text-green-700 outline-none "
+					/>
+				</Button>
+			</div>
+
+			<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
+				<Label class="space-y-2">
+					<span>Name</span>
+					<Input bind:value={itemName} type="text" name="Name" placeholder="Stairs" required />
+				</Label>
+				<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Upload Image</h3>
+				<Dropzone id="dropzone" on:change={onFileSelected} bind:files>
+					{#if !selectedImageToUpload}
+						<svg
+							aria-hidden="true"
+							class="mb-3 w-10 h-10 text-gray-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+							/></svg
+						>
+						<p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+							<span class="font-semibold">Click to upload</span> or drag and drop
+						</p>
+						<p class="text-xs text-gray-500 dark:text-gray-400">
+							SVG, PNG, JPG or GIF (MAX. 800x400px)
+						</p>
+					{:else}
+						<div class="w-full h-full">
+							<img src={selectedImageToUpload} class="w-full h-full object-cover rounded-md" />
+						</div>
+					{/if}
+				</Dropzone>
+				{#if submittedImage == 'no'}
+					<Button on:click={onSubmit} class="w-full1">Submit</Button>
+				{:else if submittedImage == 'submitted'}
+					<Signal />
+				{:else}
+					<Spinner />
+				{/if}
+			</Modal>
+		</div>
+		<div bind:this={container} class="w-full col-span-4">
 			<canvas id="canvas" />
 		</div>
-	</div>
-	<div>
-		<input type="color" id="color-picker" value="#000000" />
-		<div class="grid grid-cols-2 gap-2 p-4">
-			<ButtonGroup class="w-full" size="sm">
-				<InputAddon>(</InputAddon><Input
-					type="number"
-					disabled={topLeftRadius === null || topLeftRadius === undefined}
-					size="sm"
-					value={topLeftRadius}
-					on:input={(value) => updateCustomRectangle(value, 'tl')}
-					placeholder="Radius"
-				/></ButtonGroup
-			>
-			<ButtonGroup class="w-full" size="sm">
-				<InputAddon>(</InputAddon><Input
-					type="number"
-					disabled={topRightRadius === null || topRightRadius === undefined}
-					size="sm"
-					value={topRightRadius}
-					on:input={(value) => updateCustomRectangle(value, 'tr')}
-					placeholder="Radius"
-					let:props
-				/></ButtonGroup
-			>
-			<ButtonGroup class="w-full" size="sm">
-				<InputAddon>(</InputAddon><Input
-					type="number"
-					disabled={bottomLeftRadius === null || bottomLeftRadius === undefined}
-					size="sm"
-					value={bottomLeftRadius}
-					on:input={(value) => updateCustomRectangle(value, 'bl')}
-					placeholder="Radius"
-					let:props
-				/></ButtonGroup
-			>
-			<ButtonGroup class="w-full" size="sm">
-				<InputAddon>(</InputAddon><Input
-					type="number"
-					disabled={bottomRightRadius === null || bottomRightRadius === undefined}
-					size="sm"
-					value={bottomRightRadius}
-					on:input={(value) => updateCustomRectangle(value, 'br')}
-					placeholder="Radius"
-					let:props
-				/></ButtonGroup
-			>
+		<div class="p-4 bg-secondary">
+			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
+			<div class="grid grid-cols-2 gap-4 my-4">
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>Width</InputAddon><Input
+						type="number"
+						size="sm"
+						disabled={itemWidth === null || itemWidth === undefined}
+						bind:value={itemWidth}
+						on:input={updateItemWidth}
+						placeholder="Width"
+						let:props
+					/></ButtonGroup
+				>
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>Height</InputAddon><Input
+						type="number"
+						size="sm"
+						disabled={itemWidth === null || itemWidth === undefined}
+						bind:value={itemHeight}
+						on:input={updateItemHeight}
+						placeholder="Height"
+						let:props
+					/></ButtonGroup
+				>
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>(</InputAddon><Input
+						type="number"
+						disabled={topLeftRadius === null || topLeftRadius === undefined}
+						size="sm"
+						value={topLeftRadius}
+						on:input={(value) => updateCustomRectangle(value, 'tl')}
+						placeholder="Radius"
+					/></ButtonGroup
+				>
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>(</InputAddon><Input
+						type="number"
+						disabled={topRightRadius === null || topRightRadius === undefined}
+						size="sm"
+						value={topRightRadius}
+						on:input={(value) => updateCustomRectangle(value, 'tr')}
+						placeholder="Radius"
+						let:props
+					/></ButtonGroup
+				>
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>(</InputAddon><Input
+						type="number"
+						disabled={bottomLeftRadius === null || bottomLeftRadius === undefined}
+						size="sm"
+						value={bottomLeftRadius}
+						on:input={(value) => updateCustomRectangle(value, 'bl')}
+						placeholder="Radius"
+						let:props
+					/></ButtonGroup
+				>
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>(</InputAddon><Input
+						type="number"
+						disabled={bottomRightRadius === null || bottomRightRadius === undefined}
+						size="sm"
+						value={bottomRightRadius}
+						on:input={(value) => updateCustomRectangle(value, 'br')}
+						placeholder="Radius"
+						let:props
+					/></ButtonGroup
+				>
+				<div class="flex">
+					<ButtonGroup class="w-full" size="sm">
+						<InputAddon
+							><input
+								bind:value={strokeColor}
+								on:input={updateStrokeColor}
+								type="color"
+								id="stroke-color-picker"
+							/></InputAddon
+						><Input
+							disabled={strokeWidth === null || strokeWidth === undefined}
+							type="number"
+							size="sm"
+							bind:value={strokeWidth}
+							on:input={updateStrokeWidth}
+							placeholder="Stroke"
+							let:props
+						/></ButtonGroup
+					>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
