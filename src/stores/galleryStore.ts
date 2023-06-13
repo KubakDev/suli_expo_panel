@@ -32,19 +32,24 @@ export const insertData = async (
 };
 
 //Get all gallery data
-export const getData = async (supabase: SupabaseClient) => {
+export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
 	try {
-		const { data, error } = await supabase.from('gallery').select('*,gallery_languages(*)');
-		console.log('data : ', data);
+		const { data, error } = await supabase
+			.from('gallery')
+			.select('*,gallery_languages(*)')
+			.range((page - 1) * pageSize, page * pageSize - 1)
+			.limit(pageSize)
+			.order('created_at', { ascending: false });
 
-		// gallery.update((currentData) => {
-		// 	if (data) {
-		// 		return [...currentData, ...data];
-		// 	}
-		// 	return currentData;
-		// });
+		const { count } = await supabase.from('gallery').select('count', { count: 'exact' });
 
-		return data as GalleryModel[];
+		console.log('/////////', count);
+		// console.log('data : ', data);
+		let result = {
+			data: data,
+			count: count
+		};
+		return result;
 	} catch (error) {
 		console.error(error);
 		throw error;

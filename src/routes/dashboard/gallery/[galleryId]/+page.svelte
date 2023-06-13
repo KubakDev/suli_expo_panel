@@ -17,7 +17,6 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import type { CarouselImage } from 'kubak-svelte-component/dist/models/newsModel';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -51,6 +50,7 @@
 
 	onMount(fetchData);
 
+	//**** get data from db and put it into the fields ****//
 	async function getDataGallery() {
 		await data.supabase
 			.from('gallery')
@@ -68,7 +68,8 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				// console.log('gallery data : ////////', galleryData);
+				console.log('gallery data get db thumbnail : ////////', galleryData.thumbnail);
+				console.log('gallery data get db images: ////////', galleryData.images);
 
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -97,13 +98,11 @@
 		await getDataGallery();
 	});
 
-	//**** get data from db and put it into the fields ****//
-
-	//** for swapping between language**//
+	//** for swapping between languages**//
 	let selectedLanguageTab = LanguageEnum.EN;
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
-	//** for swapping between language**//
+	//** for swapping between languages**//
 
 	//**for upload thumbnail image**//
 	function handleFileUpload(e: Event) {
@@ -127,38 +126,11 @@
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
 		console.log(sliderImagesFile);
-
-		// random number
-		const images = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
-			const imgUrl = URL.createObjectURL(image);
-			console.log('imgUrl', imgUrl);
-			return {
-				id: carouselImages.length,
-				imgurl: imgUrl,
-				name: image.name,
-				attribution: ''
-			} as CarouselImage;
-		});
-		// console.log('$$$$$$$$$$$$$$$$$$ ', images);
-		// images.forEach((file) => {
-
-		// 	const image = {
-		// 		id: carouselImages.length,
-		// 		imgurl: file.imgurl,
-		// 		name: file.name,
-		// 		attribute: ''
-		// 	};
-
-		// });
-		console.log(carouselImages);
-		// console.log('////', e.detail);
 	}
 
 	//get image
 	function getImage() {
 		let result = galleryData.images.map((image, i) => {
-			// console.log('///', image);
 			return {
 				id: i,
 				imgurl: image,
@@ -224,15 +196,13 @@
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
-				// carouselImages.push(image);
-				// console.log(carouselImages);
 			} else {
 				customImages.push(image);
 			}
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('image data :::::', result);
+		// console.log('carouselImages data :::::', carouselImages);
 	}
 
 	function handleSelectChange(event: any) {
@@ -243,11 +213,10 @@
 	//get thumbnail
 	function getImagesObject() {
 		carouselImages = galleryData.images.map((image, i) => {
-			console.log('//', image);
-
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
+				imgSource: ImgSourceEnum.remote,
 				name: image,
 				attribution: ''
 			};
@@ -264,7 +233,7 @@
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				successfully submitted
+				The Update Was Successfully!
 			</div>
 		{/if}
 
@@ -428,12 +397,10 @@
 			<TabItem title="Gallery Detail">
 				{#each galleryDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
-						{#if carouselImages}
-							<DetailPage
-								imagesCarousel={carouselImages}
-								long_description={langData.long_description}
-							/>
-						{/if}
+						<DetailPage
+							bind:imagesCarousel={carouselImages}
+							long_description={langData.long_description}
+						/>
 					{/if}
 				{/each}
 			</TabItem>

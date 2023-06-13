@@ -84,13 +84,15 @@
 	>
 	{#each images as image, index}
 		<div class="h-24 w-24 bg-[#f1f3f4] mx-2 rounded-lg relative">
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<span
-				class="bg-red-700 absolute -top-2 -right-2 rounded-full p-1 border-2 cursor-pointer"
-				on:click={() => deleteImage(index)}
+			<button
+				class="bg-red-700 absolute -top-2 -right-2 rounded-full border-2 cursor-pointer"
+				on:click={(event) => {
+					event.stopPropagation();
+					deleteImage(index);
+				}}
 			>
 				<XMark class="text-xs h-5 w-5 text-white" />
-			</span>
+			</button>
 			<img
 				src={image.imgSource == ImgSourceEnum.remote
 					? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`

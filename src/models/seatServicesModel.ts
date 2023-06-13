@@ -1,0 +1,16 @@
+import type { LanguageEnum } from './languageEnum';
+
+export interface seatServicesModel {
+	id: number;
+	exhibition_id?: number;
+	icon: string;
+	created_at?: Date;
+	seat_services_languages?: seatServicesModelLang[];
+}
+
+export interface seatServicesModelLang {
+	id?: number;
+	title: string;
+	description: string;
+	language: LanguageEnum;
+}

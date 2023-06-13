@@ -7,10 +7,7 @@ export const load = async () => {
 			title: 'Home',
 			url: '/'
 		},
-		{
-			title: 'seat_test',
-			url: '/dashboard/seat_test'
-		},
+
 		{
 			title: 'news',
 			url: '/dashboard/news'
@@ -43,6 +40,10 @@ export const load = async () => {
 		{
 			title: 'contact',
 			url: '/dashboard/create_Contact'
+		},
+		{
+			title: 'seat-services',
+			url: '/dashboard/create_SeatServices'
 		},
 		{
 			title: 'web builder',

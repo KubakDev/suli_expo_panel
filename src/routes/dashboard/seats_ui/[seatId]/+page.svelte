@@ -12,12 +12,14 @@
 		Modal,
 		Spinner
 	} from 'flowbite-svelte';
-	import { Pencil, Plus, Signal } from 'svelte-heros-v2';
-	import type { SeatImageItemModel } from '../../../stores/seatImageItemStore';
-	import seatImageItemStore from '../../../stores/seatImageItemStore';
-	import { alertStore } from '../../../stores/alertStore';
-	import uploadFileStore from '../../../stores/uploadFileStore';
+	import { Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
 	import { canvasToFile } from '$lib/utils/canva_to_image';
+	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
+	import { alertStore } from '../../../../stores/alertStore';
+	import seatImageItemStore from '../../../../stores/seatImageItemStore';
+	import uploadFileStore from '../../../../stores/uploadFileStore';
+	import { page } from '$app/stores';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
@@ -55,6 +57,8 @@
 				width: container.offsetWidth,
 				height: container.offsetHeight
 			});
+			// Create a rectangle with no fill, only a stroke (border)
+			// Create a rectangle with no fill, only a stroke (border)
 		}
 	};
 	function createCustomRectangle() {
@@ -146,44 +150,67 @@
 
 		const supabase = data.supabase;
 
-		// get all seat from database
-		supabase
-			.from('seat_layout')
-			.select('*')
-			.single()
-			.then(async (result) => {
-				const data: any = result.data;
-				console.log(data);
-				if (data && data['design']) {
-					await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
-				}
-				canvas.setDimensions({
-					width: container.offsetWidth,
-					height: container.offsetHeight
-				});
-				console.log('//////canvas.width', canvas.width);
-				for (var i = 0; i < canvas.width / gridSize; i++) {
-					const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
-						stroke: '#ccc',
-						selectable: false
+		const pageId = $page.params.seatId;
+		if (pageId !== 'create') {
+			supabase
+				.from('seat_layout')
+				.select('*')
+				.eq('id', pageId)
+				.single()
+				.then(async (result) => {
+					const data: any = result.data;
+					console.log(data);
+					if (data && data['design']) {
+						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
+					}
+					canvas.setDimensions({
+						width: container.offsetWidth,
+						height: container.offsetHeight
 					});
-					line.toObject = () => null;
-					// This rect will not be included in canvas.toObject()
-					const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
-						stroke: '#ccc',
-						selectable: false
-					});
-					line2.toObject = () => null;
-					canvas.add(line);
-					canvas.add(line2);
-					canvas.sendToBack(line);
-					canvas.sendToBack(line2);
-					canvas.requestRenderAll();
-					// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
-					// canvas.add(customRect);
-				}
-			});
+					console.log('//////canvas.width', canvas.width);
+					for (var i = 0; i < canvas.width / gridSize; i++) {
+						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
+							stroke: '#ccc',
+							selectable: false
+						});
+						line.toObject = () => null;
+						// This rect will not be included in canvas.toObject()
+						const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
+							stroke: '#ccc',
+							selectable: false
+						});
+						line2.toObject = () => null;
+						canvas.add(line);
+						canvas.add(line2);
+						canvas.sendToBack(line);
+						canvas.sendToBack(line2);
+						canvas.requestRenderAll();
+						// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
+						// canvas.add(customRect);
+					}
 
+					var border = new fabric.Rect({
+						left: 0,
+						top: 0,
+						width: canvas.width,
+						height: canvas.height,
+						fill: 'transparent',
+						stroke: 'black',
+						strokeWidth: 5,
+						selectable: false,
+						evented: false
+					});
+
+					// Add the rectangle to the canvas
+					border.toObject = () => null;
+					canvas.add(border);
+
+					// Ensure the border always stays in the back of other objects
+					canvas.on('object:added', function () {
+						canvas.sendToBack(border);
+					});
+				});
+		}
 		canvas.on('object:moving', function (options: fabric.IEvent) {
 			if (options.target) {
 				options.target.set({
@@ -213,33 +240,75 @@
 		// 	options.e.preventDefault();
 		// });
 
-		canvas.on('mouse:down', function (options: any) {
-			if (!isDrawing) return;
-			isDown = true;
-			let pointer = canvas.getPointer(options.e);
-			let points = [pointer.x, pointer.y, pointer.x, pointer.y];
-			line = new fabric.Line(points, {
-				strokeWidth: 5,
-				stroke: fillColor,
-				selectable: false
-			});
-			canvas.add(line);
+		var panning = false;
+		var lastPosX: any, lastPosY: any;
+		let spacePressed = false; // state for tracking space key
+
+		// Listen for space key down and up events on the window
+		window.addEventListener('keydown', function (e) {
+			if (e.code === 'Space') {
+				e.preventDefault();
+				spacePressed = true;
+			}
 		});
 
-		canvas.on('mouse:move', function (options: any) {
-			if (!isDown || !isDrawing) return;
-			let pointer = canvas.getPointer(options.e);
-			line!.set({ x2: pointer.x, y2: pointer.y });
-			canvas.requestRenderAll();
+		window.addEventListener('keyup', function (e) {
+			if (e.code === 'Space') {
+				e.preventDefault();
+				spacePressed = false;
+				panning = false;
+			}
+		});
+
+		canvas.on('mouse:down', function (options: any) {
+			if (isDrawing) {
+				isDown = true;
+				let pointer = canvas.getPointer(options.e);
+				let points = [pointer.x, pointer.y, pointer.x, pointer.y];
+				line = new fabric.Line(points, {
+					strokeWidth: 5,
+					stroke: fillColor,
+					selectable: false
+				});
+				canvas.add(line);
+			}
+
+			console.log('mouse down');
+			if (spacePressed) {
+				console.log('Starting panning');
+
+				panning = true;
+				lastPosX = options.e.clientX;
+				lastPosY = options.e.clientY;
+			}
+		});
+
+		canvas.on('mouse:move', function (opt: any) {
+			if (isDown || isDrawing) {
+				let pointer = canvas.getPointer(opt.e);
+				line!.set({ x2: pointer.x, y2: pointer.y });
+				canvas.requestRenderAll();
+			}
+
+			if (panning && spacePressed) {
+				var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+				canvas.relativePan(delta);
+				lastPosX = opt.e.clientX;
+				lastPosY = opt.e.clientY;
+			}
 		});
 
 		canvas.on('mouse:up', function (options: any) {
-			if (!isDrawing) return;
-			isDown = false;
-			line!.set({ selectable: true, evented: true }); // set 'evented' to true to interact with the line
-			line!.setControlsVisibility({ mtr: true }); // show the rotate control ('mtr')
-			line!.hasControls = true; // show controls
-			line = null;
+			if (isDrawing) {
+				isDown = false;
+				line!.set({ selectable: true, evented: true }); // set 'evented' to true to interact with the line
+				line!.setControlsVisibility({ mtr: true }); // show the rotate control ('mtr')
+				line!.hasControls = true; // show controls
+				line = null;
+			}
+
+			panning = false;
+			spacePressed = false;
 		});
 
 		// Add an event listener to your group button
@@ -269,6 +338,23 @@
 			}
 		});
 
+		canvas.on('mouse:wheel', function (opt: any) {
+			var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+			// Ctrl + Scroll for Windows and other platforms, Command + Scroll for MacOS
+			if ((isMac && opt.e.metaKey) || (!isMac && opt.e.ctrlKey)) {
+				var delta = opt.e.deltaY;
+				var zoom = canvas.getZoom();
+				zoom *= Math.pow(1.1, -delta / 100);
+				if (zoom > 20) zoom = 20;
+				if (zoom < 0.01) zoom = 0.01;
+				canvas.setZoom(zoom);
+				opt.e.preventDefault();
+				opt.e.stopPropagation();
+			}
+			canvas.requestRenderAll();
+		});
+
 		canvas.on('selection:created', function (event: any) {
 			var selectedObject = event.selected[0];
 			setSelectedObjectValue(selectedObject);
@@ -286,6 +372,14 @@
 			var modifiedObject = event.target;
 			console.log(modifiedObject);
 			onObjectModified(modifiedObject);
+		});
+
+		window.addEventListener('keydown', function (e) {
+			// keyCode 46 corresponds to the Delete key
+			console.log(e);
+			if (e.key === 'Delete' || e.key === 'Backspace') {
+				removeSelectedObject();
+			}
 		});
 	});
 
@@ -336,10 +430,11 @@
 
 	async function convetToObject() {
 		let json = canvas.toObject(['left', 'top', 'width', 'height', 'fill']);
+		console.log(json);
 		const supabase = data.supabase;
-		// convert canvas to image file
-
-		const canvasImage = await canvasToFile(canvas, 'a');
+		// convert canvas to image fil	e
+		const randomImageName = getRandomTextNumber();
+		const canvasImage = await canvasToFile(canvas, randomImageName);
 		console.log(canvasImage);
 		// upload canvas image to supabase storage
 		const fileResult = await supabase.storage
@@ -352,22 +447,39 @@
 			return;
 		}
 
-		const result = await supabase
-			.from('seat_layout')
-			.insert([
-				{
-					name: 'text',
-					design: json,
-					is_active: true,
-					exhibition: 1,
-					image_url: fileResult.data.path
-				}
-			])
-			.then((res) => {
-				console.log(res);
-			});
-		console.log(result);
-		console.log(json);
+		const seatId = $page.params.seatId;
+		if (seatId !== 'create') {
+			const result = await supabase
+				.from('seat_layout ')
+				.update([
+					{
+						name: 'text',
+						design: json,
+						is_active: true,
+						exhibition: 1,
+						image_url: fileResult.data.path
+					}
+				])
+				.eq('id', seatId)
+				.then((res) => {
+					console.log(res);
+				});
+		} else {
+			const result = await supabase
+				.from('seat_layout ')
+				.insert([
+					{
+						name: 'text',
+						design: json,
+						is_active: true,
+						exhibition: 1,
+						image_url: fileResult.data.path
+					}
+				])
+				.then((res) => {
+					console.log(res);
+				});
+		}
 	}
 
 	function addImages() {
@@ -584,6 +696,22 @@
 			canvas.requestRenderAll();
 		}
 	}
+
+	let zoomLevel = 1;
+
+	// Zoom In
+	function zoomIn() {
+		zoomLevel *= 1.1;
+		canvas.setZoom(zoomLevel);
+		canvas.renderAll();
+	}
+
+	// Zoom Out
+	function zoomOut() {
+		zoomLevel /= 1.1;
+		canvas.setZoom(zoomLevel);
+		canvas.renderAll();
+	}
 </script>
 
 <div class="flex flex-col w-full h-full flex-1">
@@ -612,7 +740,7 @@
 	<div class="w-full grid grid-cols-6 h-full">
 		<div class="flex flex-col p-4 bg-secondary">
 			<div>
-				<div on:click={() => createItem()} class="seat-design bg-gray-200 rounded cursor-move">
+				<div on:click={() => createItem()} class="seat-design rounded cursor-move">
 					<svg xmlns="http://www.w3.org/2000/svg" width={50} height={50}>
 						<rect width="100%" height="100%" rx="5" ry="5" />
 						<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
@@ -685,8 +813,12 @@
 				{/if}
 			</Modal>
 		</div>
-		<div bind:this={container} class="w-full col-span-4">
+		<div bind:this={container} class="w-full col-span-4 relative">
 			<canvas id="canvas" />
+			<div class="absolute bottom-10 right-10 w-40 flex justify-between">
+				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
+				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
+			</div>
 		</div>
 		<div class="p-4 bg-secondary">
 			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />

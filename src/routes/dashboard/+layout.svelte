@@ -84,13 +84,7 @@
 			{/each}
 		</NavUl>
 	</Navbar>
-	{#if $page.url.pathname.includes('/web_builder') || $page.url.pathname.includes('/seat_test')}
-		<div class="flex-1 flex">
-			<slot />
-		</div>
-	{:else}
-		<div class="p-10 flex-1 flex">
-			<slot />
-		</div>
-	{/if}
+	<div class="flex-1 flex">
+		<slot />
+	</div>
 </div>
