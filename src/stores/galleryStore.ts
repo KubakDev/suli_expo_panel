@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const gallery = writable<GalleryModel[]>([]);
 
 //Create a new instance of the gallery
+
 export const insertData = async (
 	galleryObject: GalleryModel,
 	galleryDataLang: GalleryModelLang[],
@@ -31,24 +32,38 @@ export const insertData = async (
 	}
 };
 
-//Get all gallery data
-export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+//Get all gallery data && //implement search function
+export const getData = async (
+	supabase: SupabaseClient,
+	page: number,
+	pageSize: number,
+	searchQuery: string
+) => {
 	try {
-		const { data, error } = await supabase
+		let query = supabase
 			.from('gallery')
 			.select('*,gallery_languages(*)')
 			.range((page - 1) * pageSize, page * pageSize - 1)
 			.limit(pageSize)
 			.order('created_at', { ascending: false });
 
+		if (searchQuery) {
+			query = query.ilike('gallery_languages.title', `%${searchQuery}%`);
+		}
+
+		const { data, error } = await query;
+
 		const { count } = await supabase.from('gallery').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
+		const filteredData = data.filter((item) => item.gallery_languages.length > 0);
+
 		let result = {
-			data: data,
-			count: count
+			data: filteredData || [],
+			count: count || 0
 		};
+
+		console.log('Search Result:', result);
+
 		return result;
 	} catch (error) {
 		console.error(error);
