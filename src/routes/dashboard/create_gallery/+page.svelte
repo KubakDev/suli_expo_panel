@@ -147,7 +147,7 @@
 		// console.log('galleryObject//', galleryObject);
 	}
 
-	//get thumbnail
+	//create object for image
 	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
 			// console.log('//', sliderImagesFile);

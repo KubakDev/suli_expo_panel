@@ -204,7 +204,7 @@
 					<button
 						on:click|preventDefault={formSubmit}
 						type="submit"
-						class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+						class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
 					>
 						Submit
 					</button>

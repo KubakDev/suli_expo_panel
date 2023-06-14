@@ -1,188 +1,184 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Helper, Spinner } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { supabaseStore } from '../../../stores/supabaseStore';
-	import { onMount } from 'svelte';
-	import { getServiceUi } from '../../../stores/ui/serviceUi';
-	import serviceUiStore from '../../../stores/ui/serviceUi';
-	import { ImgSourceEnum } from '../../../models/imgSourceEnum';
 	import * as yup from 'yup';
-	import loading from '../../../stores/loading';
-	import { changeLoadingStatus } from '../../../stores/loading';
-	import { goto } from '$app/navigation';
-	import ColorPicker from 'svelte-awesome-color-picker';
-	import type { Service } from '../../../models/service';
+	import { Form, Message } from 'svelte-yup';
+	import { insertData } from '../../../stores/serviceStore';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
+	import type { ServiceModel, ServiceModelLang } from '../../../models/serviceModel';
+	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { onMount } from 'svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
+	import { goto } from '$app/navigation';
 
 	export let data;
-	let CardComponent: any;
-	let thumbnailFile: File | undefined;
-	let sliderImagesFile: File[] = [];
-	$: serviceCardComponent = CardComponent;
 
-	let invalidateFields: {
-		title: boolean;
-		short_description: boolean;
-		thumbnail: boolean;
-	} = {
-		title: false,
-		short_description: false,
-		thumbnail: false
+	let submitted = false;
+	let showToast = false;
+	let fileName: string;
+	let imageFile: File | undefined;
+
+	let selectedLanguageTab = LanguageEnum.EN;
+
+	let serviceDataLang: ServiceModelLang[] = [];
+
+	let serviceObject: ServiceModel = {
+		id: 0,
+		thumbnail: '',
+		primaryColor: '#c27803',
+		onPrimaryColor: '#c27803',
+		created_at: new Date()
 	};
-	$: customColors = {
-		primaryColor: $serviceUiStore?.color_palette?.primaryColor,
-		onPrimaryColor: $serviceUiStore?.color_palette?.onPrimaryColor
-	};
-	const schema = yup.object().shape({
-		title: yup.string().required(),
-		short_description: yup.string().required(),
-		thumbnail: yup.string().required()
-	});
-	let serviceData: Service = {
-		service_languages: [
-			{
-				title: '',
-				short_description: '',
-				language: LanguageEnum.CKB
-			}
-		],
-		thumbnail: ''
-	};
-	let serviceLanguageData: {
-		title: string;
-		short_description: string;
-		language: string;
-	}[] = [
-		{
-			title: '',
-			short_description: '',
-			language: 'en'
-		},
-		{
-			title: '',
-			short_description: '',
-			language: 'ckb'
-		},
-		{
-			title: '',
-			short_description: '',
-			language: 'ar'
+
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+		} catch (error) {
+			console.error(error);
 		}
-	];
-	let selectedLanguageTab = 'en';
+	};
+
+	onMount(fetchData);
+	// Calculate the length of LanguageEnum
+	const languageEnumKeys = Object.keys(LanguageEnum);
+
+	const languageEnumLength = languageEnumKeys.length;
+	//for swapping between language
+	for (let i = 0; i < languageEnumLength; i++) {
+		serviceDataLang.push({
+			title: '',
+			short_description: '',
+			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+		});
+	}
+
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput!.files![0];
-		thumbnailFile = file;
+		const file = fileInput.files![0];
+		imageFile = file;
+		// console.log(file);
 		const reader = new FileReader();
+
 		reader.onloadend = () => {
-			serviceData.thumbnail = reader.result as string;
-			serviceData.imgSource = ImgSourceEnum.local;
+			serviceObject.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber(); // Generate random text
+			fileName = `service/${randomText}_${file.name}`; // Append random text to the file name
+
+			// console.log('serviceObject////////////', serviceObject);
 		};
+
 		reader.readAsDataURL(file);
 	}
-	function getRandomTextNumber() {
-		const random =
-			Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-		return random;
-	}
-	async function submitForm(e: Event) {
-		serviceData.primaryColor = customColors.primaryColor;
-		serviceData.onPrimaryColor = customColors.onPrimaryColor;
-		console.log(serviceLanguageData);
-		console.log(serviceData);
-		invalidateFields = {
-			title: false,
-			short_description: false,
-			thumbnail: false
-		};
-		e.preventDefault();
-		if (!data.supabase) return;
-		const fileName = `${getRandomTextNumber()}.${thumbnailFile?.name.split('.').pop()}`;
-		const response = await data.supabase.storage
-			.from('image')
-			.upload(`images/${fileName}`, thumbnailFile!);
-		serviceData.thumbnail = response.data?.path!;
-		if (response) {
-			await data.supabase.rpc('insert_service_and_service_lang', {
-				service_data: {
-					thumbnail: serviceData.thumbnail,
-					primaryColor: serviceData.primaryColor,
-					onPrimaryColor: serviceData.onPrimaryColor
-				},
-				service_lang_data: serviceLanguageData
-			});
 
-			goto('/dashboard/service');
-			changeLoadingStatus(false);
+	async function formSubmit() {
+		submitted = true;
+		showToast = true;
+
+		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+		serviceObject.thumbnail = response.data?.path;
+
+		insertData(serviceObject, serviceDataLang, data.supabase);
+
+		resetForm();
+		goto('/dashboard/service');
+		setTimeout(() => {
+			showToast = false;
+		}, 1000);
+	}
+
+	function resetForm() {
+		submitted = false;
+
+		serviceObject = {
+			id: 0,
+
+			thumbnail: '',
+			exhibition_type: '',
+			created_at: new Date(),
+			primaryColor: '',
+			onPrimaryColor: ''
+		};
+
+		serviceDataLang = []; // Resetting serviceDataLang to an empty array
+		for (let i = 0; i < languageEnumLength; i++) {
+			serviceDataLang.push({
+				title: '',
+				short_description: '',
+				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+			});
 		}
 	}
-	onMount(async () => {
-		serviceCardComponent = CardComponent;
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		await getServiceUi(supabase);
-		let card = $serviceUiStore?.component?.title;
-		const module = await import('kubak-svelte-component');
 
-		CardComponent = module[card as keyof typeof module];
+	function handleSelectChange(event: any) {
+		serviceObject.exhibition_id = event.target.value;
+	}
+
+	onMount(() => {
+		const colorInput1 = document.getElementById('colorInput1');
+		const colorInput2 = document.getElementById('colorInput2');
+
+		colorInput1.addEventListener('input', () => {
+			color1 = colorInput1.value;
+		});
+
+		colorInput2.addEventListener('input', () => {
+			color2 = colorInput2.value;
+		});
 	});
 </script>
 
-<div
-	style="min-height: calc(100vh - 160px);"
-	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4] create-service"
->
+<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		<form class="py-10">
+		{#if showToast}
+			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+				successfully submitted
+			</div>
+		{/if}
+
+		<Form class="form py-10" {submitted}>
 			<h1 class="text-xl font-bold mb-8">Service Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<div class="">
+				<!-- upload thumbnail image  -->
+				<div>
 					<Label class="space-y-2 mb-2">
-						<Label
-							for="first_name"
-							class="mb-4"
-							color={invalidateFields.thumbnail ? 'red' : undefined}>upload Card Image</Label
-						>
-						<Fileupload
-							on:change={handleFileUpload}
-							color={invalidateFields.thumbnail ? 'red' : 'base'}
-						/>
-						{#if invalidateFields.thumbnail}
-							<Helper class="mt-2" color="red">
-								<span class="font-medium">thumbnail is required!</span>
-							</Helper>
-						{/if}
+						<Label for="first_name" class="mb-2">Upload Service Image</Label>
+						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					</Label>
 				</div>
-				<div class="flex justify-around w-full col-span-2">
-					<div class="w-full px-6 flex flex-col items-center justify-center">
-						<Label class="text-sm pb-6">Background Color</Label>
-						<ColorPicker
-							hex="#985151"
-							label=""
-							on:input={(value) => {
-								customColors.primaryColor = value.detail.hex;
-							}}
-						/>
-					</div>
-					<div class="w-full px-6 flex flex-col items-center justify-center">
-						<Label class="text-sm pb-6">Text Color</Label>
-						<ColorPicker
-							hex="#985151"
-							label=""
-							on:input={(value) => {
-								customColors.onPrimaryColor = value.detail.hex;
-							}}
-						/>
-					</div>
+				<div>
+					<Label class="space-y-2 mb-2">
+						<span>Date</span>
+						<DateInput bind:value={serviceObject.created_at} format="yyyy/MM/dd" />
+					</Label>
+				</div>
+				<div>
+					<label class="space-y-2 mb-2">
+						<label for="large-input" class="block">Exhibition Type</label>
+						<select
+							class="border border-gray-300 rounded-md"
+							id="type"
+							name="type"
+							placeholder="Please select a valid type"
+							on:change={handleSelectChange}
+						>
+							<option disabled selected>Select type</option>
+							{#each exhibitionData as exhibition}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+							{/each}
+						</select>
+					</label>
 				</div>
 
 				<br />
+
 				<div class="col-span-3">
 					<Tabs>
-						{#each serviceLanguageData as langData}
+						{#each serviceDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -193,84 +189,108 @@
 								<div class="px-10 py-16">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
-											{`add data for ${langData.language} language`}
+											{#if langData.language === 'ar'}
+												{`أضف البيانات إلى اللغة العربية`}
+											{:else if langData.language === 'ckb'}
+												{`زیاد کردنی داتا بە زمانی کوردی`}
+											{:else}
+												{`Add data for ${langData.language} language`}
+											{/if}
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label
-											for="first_name"
-											class="mb-2"
-											color={invalidateFields.title ? 'red' : undefined}>Card Title</Label
-										>
+										<Label for="first_name" class="mb-2">Service Title</Label>
 										<Input
 											type="text"
-											placeholder="The Story"
+											placeholder="Enter title"
 											bind:value={langData.title}
-											color={invalidateFields.title ? 'red' : 'base'}
+											id="title"
+											name="title"
 										/>
-										{#if invalidateFields.title}
-											<Helper class="mt-2" color="red">
-												<span class="font-medium">title is required!</span>
-											</Helper>
-										{/if}
+										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
-											id="textarea-id"
-											placeholder="short description"
+											placeholder="Enter short description"
 											rows="4"
-											name="message"
 											bind:value={langData.short_description}
+											id="short_description"
+											name="short_description"
 										/>
-										{#if invalidateFields.short_description}
-											<Helper class="mt-2" color="red"
-												><span class="font-medium">short description is required!</span>
-											</Helper>
-										{/if}
+										<!-- <Message name="short_description" /> -->
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
 				</div>
-			</div>
-			<div class="w-full flex justify-end mt-2">
-				<Button on:click={submitForm} class="my-2 "
-					>{#if $loading}
-						<Spinner class="mr-3" size="4" />
-					{/if}Submit</Button
-				>
-			</div>
-		</form>
-	</div>
+				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
 
-	<div class=" h-full p-2">
-		{#if $serviceUiStore}
-			<div
-				class=" w-full bg-[#3E4248] rounded-md p-10 flex justify-center items-center"
-				style="min-height: calc(100vh - 300px);"
-			>
-				<div class="w-[600px]">
-					{#if serviceCardComponent}
-						<svelte:component
-							this={serviceCardComponent}
-							data={serviceLanguageData.find((item) => item.language == selectedLanguageTab)}
-							imageData={{
-								thumbnail: serviceData.thumbnail,
-								imgSource: serviceData.imgSource
-							}}
-							colors={customColors}
-						/>
-					{:else}
-						<div />
-					{/if}
-				</div>
+				<br />
 			</div>
-		{/if}
+
+			<!-- button for submitForm -->
+			<div class="w-full flex justify-end mt-2">
+				<button
+					on:click|preventDefault={formSubmit}
+					type="submit"
+					class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
+				>
+					Submit
+				</button>
+			</div>
+		</Form>
+	</div>
+	<div class="h-full p-2 col-span-1 pt-20">
+		<div>
+			<Tabs style="underline">
+				<div class="flex justify-between items-center">
+					<TabItem open title="Service List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each serviceDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.short_description}
+											thumbnail={serviceObject.thumbnail}
+											primaryColor={serviceObject.primaryColor}
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<!-- color picker -->
+					<div class="flex justify-center items-center">
+						<div class="flex px-4 -mb-2">
+							<input
+								type="color"
+								id="colorInput1"
+								name="favcolor1"
+								bind:value={serviceObject.primaryColor}
+								class="w-32 h-14 border-none"
+							/>
+
+							<input
+								type="color"
+								id="colorInput2"
+								name="favcolor2"
+								bind:value={serviceObject.onPrimaryColor}
+								class="w-32 h-14 border-none"
+							/>
+						</div>
+					</div>
+				</div>
+			</Tabs>
+		</div>
 	</div>
 </div>
-
-<style lang="scss">
-</style>
