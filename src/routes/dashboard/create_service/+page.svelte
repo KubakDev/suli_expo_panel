@@ -28,8 +28,8 @@
 	let serviceObject: ServiceModel = {
 		id: 0,
 		thumbnail: '',
-		primaryColor: '#c27803',
-		onPrimaryColor: '#a27232',
+		primaryColor: '#F5EFE7',
+		onPrimaryColor: '#D8C4B6',
 		created_at: new Date()
 	};
 
@@ -98,8 +98,8 @@
 			thumbnail: '',
 			exhibition_type: '',
 			created_at: new Date(),
-			primaryColor: '#c27803',
-			onPrimaryColor: '#a27232'
+			primaryColor: '#F5EFE7',
+			onPrimaryColor: '#D8C4B6'
 		};
 
 		serviceDataLang = []; // Resetting serviceDataLang to an empty array
@@ -235,7 +235,7 @@
 				<div class="flex justify-between items-center">
 					<TabItem open title="Service List">
 						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							class="w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 							style="min-height: calc(100vh - 300px);"
 						>
 							<div class="flex justify-start items-start">
