@@ -16,7 +16,6 @@
 	import { goto } from '$app/navigation';
 
 	export let data;
-	let CardComponent: any;
 
 	let submitted = false;
 	let showToast = false;
@@ -338,5 +337,3 @@
 		</div>
 	</div>
 </div>
-
-
