@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const gallery = writable<GalleryModel[]>([]);
 
 //Create a new instance of the gallery
+
 export const insertData = async (
 	galleryObject: GalleryModel,
 	galleryDataLang: GalleryModelLang[],
@@ -31,25 +32,43 @@ export const insertData = async (
 	}
 };
 
-//Get all gallery data
-export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+//Get all gallery data && //implement search function
+export const getData = async (
+	supabase: SupabaseClient,
+	page: number,
+	pageSize: number,
+	searchQuery: string
+) => {
 	try {
-		const { data, error } = await supabase
-			.from('gallery')
-			.select('*,gallery_languages(*)')
-			.range((page - 1) * pageSize, page * pageSize - 1)
-			.limit(pageSize)
-			.order('created_at', { ascending: false });
+		// let query = supabase
+		// 	.from('gallery')
+		// 	.select('*,gallery_languages(*)', { count: 'exact' })
+		// 	.order('created_at', { ascending: false });
 
-		const { count } = await supabase.from('gallery').select('count', { count: 'exact' });
+		// if (searchQuery) {
+		// 	query = query.filter('gallery_languages.title', 'ilike', `%${searchQuery}%`);
+		// } else {
+		// 	query = query.range((page - 1) * pageSize, page * pageSize - 1).limit(pageSize);
+		// }
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
-		let result = {
-			data: data,
-			count: count
-		};
-		return result;
+		// const result = await query;
+
+		const result = await supabase.rpc('search_seat_services_by_language_title', {
+			language_title: searchQuery
+		});
+
+		const data = result.data || [];
+
+		// const { count } = await supabase.from('gallery').select('count', { count: 'exact' });
+
+		// const filteredData = data.filter((item) => item.gallery_languages.length > 0);
+		console.log('filteredData', data);
+		// let result = {
+		// 	data: filteredData || [],
+		// 	count: count || 0
+		// };
+
+		return data;
 	} catch (error) {
 		console.error(error);
 		throw error;

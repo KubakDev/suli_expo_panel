@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Button, Card } from 'flowbite-svelte';
+	import { Button } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import type { SeatLayoutModel } from '../seats/seatLayoutStore';
 	import { goto } from '$app/navigation';

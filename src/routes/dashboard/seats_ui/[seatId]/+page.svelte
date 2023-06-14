@@ -5,11 +5,17 @@
 	import {
 		Button,
 		ButtonGroup,
+		Checkbox,
+		Chevron,
+		Dropdown,
+		DropdownItem,
 		Dropzone,
+		Helper,
 		Input,
 		InputAddon,
 		Label,
 		Modal,
+		Search,
 		Spinner
 	} from 'flowbite-svelte';
 	import { Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
@@ -739,28 +745,13 @@
 	</div>
 	<div class="w-full grid grid-cols-6 h-full">
 		<div class="flex flex-col p-4 bg-secondary">
-			<div>
+			<div class="flex justify-between">
 				<div on:click={() => createItem()} class="seat-design rounded cursor-move">
 					<svg xmlns="http://www.w3.org/2000/svg" width={50} height={50}>
 						<rect width="100%" height="100%" rx="5" ry="5" />
 						<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
 					</svg>
 				</div>
-
-				<div class="grid grid-cols-2 gap-1 rounded-md my-4">
-					<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
-						<Plus class="w-full h-full" />
-					</Button>
-					{#each images as image, index}
-						<div
-							on:click={() => onShapeSelected(image)}
-							class="w-20 h-20 seat-design rounded cursor-move"
-						>
-							<img class="w-full h-full" src={image.image_url} alt={image.name} />
-						</div>
-					{/each}
-				</div>
-
 				<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
 					<Pencil
 						on:click={onPenSelect}
@@ -769,6 +760,62 @@
 					/>
 				</Button>
 			</div>
+			<div class="grid grid-cols-2 gap-2 rounded-md my-6">
+				<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
+					<Plus class="w-full h-full" />
+				</Button>
+				{#each images as image, index}
+					<div
+						on:click={() => onShapeSelected(image)}
+						class="w-full h-20 seat-design rounded cursor-move"
+					>
+						<img class="w-full h-full object-cover" src={image.image_url} alt={image.name} />
+					</div>
+				{/each}
+			</div>
+			<Button id="placements"><Chevron>Services</Chevron></Button>
+			<Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
+				<div slot="header" class="p-3">
+					<Search size="md" />
+				</div>
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+					<Checkbox>Robert Gouth</Checkbox>
+				</li>
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+					<Checkbox>Jese Leos</Checkbox>
+				</li>
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+					<Checkbox checked>Bonnie Green</Checkbox>
+				</li>
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+					<Checkbox>Jese Leos</Checkbox>
+				</li>
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+					<Checkbox>Robert Gouth</Checkbox>
+				</li>
+				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+					<Checkbox>Bonnie Green</Checkbox>
+				</li>
+				<a
+					slot="footer"
+					href="/"
+					class="flex items-center p-3 -mb-1 text-sm font-medium text-red-600 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500 hover:underline"
+				>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="w-5 h-5 mr-1"
+						><path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+						/></svg
+					>Delete user
+				</a>
+			</Dropdown>
 
 			<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
 				<Label class="space-y-2">
@@ -824,7 +871,7 @@
 			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
 			<div class="grid grid-cols-2 gap-4 my-4">
 				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>Width</InputAddon><Input
+					<InputAddon>W</InputAddon><Input
 						type="number"
 						size="sm"
 						disabled={itemWidth === null || itemWidth === undefined}
@@ -835,7 +882,7 @@
 					/></ButtonGroup
 				>
 				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>Height</InputAddon><Input
+					<InputAddon>H</InputAddon><Input
 						type="number"
 						size="sm"
 						disabled={itemWidth === null || itemWidth === undefined}
@@ -888,7 +935,7 @@
 						let:props
 					/></ButtonGroup
 				>
-				<div class="flex">
+				<div class="flex col-span-2">
 					<ButtonGroup class="w-full" size="sm">
 						<InputAddon
 							><input

@@ -7,19 +7,26 @@
 	export let data;
 	let currentPage = 1;
 	const pageSize = 5;
-
+	let searchQuery = '';
+	let searchResults = [];
 	let galleryData = [];
 	let totalPages = 1;
 
+	// console.log('gallery//', gallery);
+
 	async function fetchData() {
-		let result = await getData(data.supabase, currentPage, pageSize);
-		galleryData = result.data;
+		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
+
+		galleryData = result;
+
 		gallery.set(galleryData);
+		// console.log('g///////', galleryData);
 
 		// Recalculate the total number of pages
-		const totalItems = result.count;
+		const totalItems = result.length;
+		console.log(totalItems);
 		totalPages = Math.ceil(totalItems / pageSize);
-		console.log(totalPages);
+		// console.log(totalPages);
 	}
 
 	onMount(fetchData);
@@ -53,11 +60,97 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="py-5 flex justify-end">
-		<Button on:click={createGallery} class="bg-primary-dark hover:bg-primary-50">Create</Button>
+	<div class="py-5 flex justify-between">
+		<div class="flex gap-2">
+			<input
+				class="rounded border-gray-300 focus:outline-none focus:ring-0 focus:border-gray-400"
+				type="text"
+				bind:value={searchQuery}
+				placeholder="Search..."
+			/>
+
+			<button on:click={fetchData}>Search</button>
+
+			<!-- <form>
+				<label
+					for="default-search"
+					class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label
+				>
+				<div class="relative">
+					<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+						<svg
+							aria-hidden="true"
+							class="w-5 h-5 text-gray-500 dark:text-gray-400"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
+							><path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							/></svg
+						>
+					</div>
+					<input
+						type="search"
+						id="default-search"
+						class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						placeholder="Search..."
+						required
+					/>
+				</div>
+			</form> -->
+		</div>
+
+		<Button on:click={createGallery} class="bg-primary-dark hover:bg-primary-50 flex gap-2">
+			<svg
+				width="20px"
+				height="20px"
+				viewBox="0 0 24 24"
+				xmlns="http://www.w3.org/2000/svg"
+				fill="#000000"
+				><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+					id="SVGRepo_tracerCarrier"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/><g id="SVGRepo_iconCarrier">
+					<title />
+					<g id="Complete">
+						<g data-name="add" id="add-2">
+							<g>
+								<line
+									fill="none"
+									stroke="#ffffff"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									x1="12"
+									x2="12"
+									y1="19"
+									y2="5"
+								/>
+								<line
+									fill="none"
+									stroke="#ffffff"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									x1="5"
+									x2="19"
+									y1="12"
+									y2="12"
+								/>
+							</g>
+						</g>
+					</g>
+				</g></svg
+			>Add Gallery
+		</Button>
 	</div>
 
-	<div class="overflow-x-auto rounded-md">
+	<div class="overflow-x-auto">
 		<table class="border-collapse w-full">
 			<thead>
 				<tr>
@@ -65,38 +158,7 @@
 						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
 					>
 						<div class="flex justify-start items-center gap-2">
-							<span>
-								<svg
-									width="20px"
-									height="20px"
-									viewBox="0 -5.5 21 21"
-									version="1.1"
-									xmlns="http://www.w3.org/2000/svg"
-									xmlns:xlink="http://www.w3.org/1999/xlink"
-									fill="#000000"
-									><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-										id="SVGRepo_tracerCarrier"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									/><g id="SVGRepo_iconCarrier">
-										<title>list [#1510]</title> <desc>Created with Sketch.</desc> <defs />
-										<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-											<g
-												id="Dribbble-Light-Preview"
-												transform="translate(-59.000000, -285.000000)"
-												fill="#65686c"
-											>
-												<g id="icons" transform="translate(56.000000, 160.000000)">
-													<path
-														d="M3,135 L5.1,135 L5.1,133 L3,133 L3,135 Z M3,127.006 L5.1,127.006 L5.1,125.006 L3,125.006 L3,127.006 Z M3,131 L5.1,131 L5.1,129 L3,129 L3,131 Z M7.2,135 L24,135 L24,133 L7.2,133 L7.2,135 Z M7.2,127 L24,127 L24,125 L7.2,125 L7.2,127 Z M7.2,131 L24,131 L24,129 L7.2,129 L7.2,131 Z"
-														id="list-[#1510]"
-													/>
-												</g>
-											</g>
-										</g>
-									</g></svg
-								></span
-							><span>no</span>
+							<span>#</span>
 						</div>
 					</th>
 
@@ -259,13 +321,15 @@
 				{#each $gallery as item, index (item.id)}
 					<tr>
 						<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-							<span>{calculateIndex(index)}</span>
+							<span class="flex justify-center text-gray-700 font-semibold"
+								>{calculateIndex(index)}</span
+							>
 						</td>
 
 						<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 							<div class="flex justify-center">
 								<img
-									class="w-20 h-20 rounded-md object-cover"
+									class="w-20 h-20 object-cover rounded"
 									src={item.thumbnail
 										? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${item.thumbnail}`
 										: 'https://images.hindustantimes.com/img/2022/08/07/1600x900/cat_1659882617172_1659882628989_1659882628989.jpg'}
@@ -274,27 +338,21 @@
 							</div>
 						</td>
 						{#if item.gallery_languages}
-							<td
-								class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-200 table-cell"
-							>
+							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
 								{#each item.gallery_languages as lang}
 									<div>
 										{lang.title}
 									</div>
 								{/each}
 							</td>
-							<td
-								class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-200 table-cell"
-							>
+							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
 								{#each item.gallery_languages as lang}
 									<div>
 										{lang.short_description?.slice(0, 40)}
 									</div>
 								{/each}
 							</td>
-							<td
-								class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-200 table-cell"
-							>
+							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
 								{#each item.gallery_languages as lang}
 									<div>
 										{lang.long_description?.slice(0, 40)}
@@ -302,20 +360,20 @@
 								{/each}
 							</td>
 						{/if}
-						<td class="p-3 font-medium bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+						<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
 							<div class="flex items-center">
 								<button
 									on:click={() => {
 										goto(`/dashboard/gallery/${item.id}`);
 									}}
-									class="text-green-400 hover:text-green-600 underline"
+									class="text-green-400 hover:text-green-600 hover:underline"
 								>
 									Edit</button
 								>
 
 								<button
 									on:click={() => handleDelete(item.id)}
-									class="text-red-400 hover:text-red-600 underline pl-6"
+									class="text-red-400 hover:text-red-600 hover:underline pl-6"
 								>
 									Remove</button
 								>
@@ -329,74 +387,41 @@
 
 	<!-- Add pagination -->
 	<div class="py-5 flex justify-end items-center">
-		<button
-			on:click={() => goToPage(currentPage - 1)}
-			disabled={currentPage === 1}
-			class="border bg-white hover:bg-gray-100 text-black py-2 px-4 rounded-l-md"
-		>
-			<div>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 1024 1024"
-					class="icon"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="#65686c"
-					><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-						id="SVGRepo_tracerCarrier"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/><g id="SVGRepo_iconCarrier"
-						><path
-							d="M768 903.232l-50.432 56.768L256 512l461.568-448 50.432 56.768L364.928 512z"
-							fill="#65686c"
-						/></g
-					></svg
-				>
-			</div>
-		</button>
+		<nav aria-label="Page navigation example">
+			<ul class="inline-flex -space-x-px">
+				<li>
+					<button
+						on:click={() => goToPage(currentPage - 1)}
+						disabled={currentPage === 1}
+						class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+						>Previous</button
+					>
+				</li>
+				<li>
+					{#if totalPages}
+						{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
+							<button
+								class={`px-3 py-2 leading-tight   border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
+									page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
+								}`}
+								on:click={() => goToPage(page)}
+							>
+								{page}
+							</button>
+						{/each}
+					{/if}
+				</li>
 
-		<div>
-			{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
-				<button
-					class={`px-4 py-2 border ${
-						page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
-					}`}
-					on:click={() => goToPage(page)}
-				>
-					{page}
-				</button>
-			{/each}
-		</div>
-
-		<button
-			on:click={() => goToPage(currentPage + 1)}
-			class="border bg-white hover:bg-gray-100 text-black py-2 px-4 rounded-r-md"
-			disabled={currentPage == totalPages}
-		>
-			<div>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 1024 1024"
-					class="icon"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="#000000"
-					><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-						id="SVGRepo_tracerCarrier"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/><g id="SVGRepo_iconCarrier"
-						><path
-							d="M256 120.768L306.432 64 768 512l-461.568 448L256 903.232 659.072 512z"
-							fill="#65686c"
-						/></g
-					></svg
-				>
-			</div>
-		</button>
+				<li>
+					<button
+						on:click={() => goToPage(currentPage + 1)}
+						disabled={currentPage == totalPages}
+						class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+						>Next</button
+					>
+				</li>
+			</ul>
+		</nav>
 	</div>
 </div>
 
