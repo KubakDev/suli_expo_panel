@@ -12,17 +12,13 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import { goto } from '$app/navigation';
 
 	export let data;
-	let CardComponent: any;
 
 	let submitted = false;
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let sliderImagesFile: File[] = [];
-	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let seatServicesDataLang: seatServicesModelLang[] = [];
@@ -111,11 +107,6 @@
 			});
 		}
 	}
-
-	function handleSelectChange(event: any) {
-		seatServicesObject.exhibition_id = event.target.value;
-		// console.log('galleryObject//', galleryObject);
-	}
 </script>
 
 <div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
@@ -142,23 +133,6 @@
 						<span>Date</span>
 						<DateInput bind:value={seatServicesObject.created_at} format="yyyy/MM/dd" />
 					</Label>
-				</div>
-				<div>
-					<label class="space-y-2 mb-2">
-						<label for="large-input" class="block">Exhibition Type</label>
-						<select
-							class="border border-gray-300 rounded-md"
-							id="type"
-							name="type"
-							placeholder="Please select a valid type"
-							on:change={handleSelectChange}
-						>
-							<option disabled selected>Select type</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-					</label>
 				</div>
 
 				<br />

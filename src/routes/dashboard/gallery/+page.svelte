@@ -17,13 +17,14 @@
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
 
-		galleryData = result.data;
+		galleryData = result;
 
 		gallery.set(galleryData);
 		// console.log('g///////', galleryData);
 
 		// Recalculate the total number of pages
-		const totalItems = result.count;
+		const totalItems = result.length;
+		console.log(totalItems);
 		totalPages = Math.ceil(totalItems / pageSize);
 		// console.log(totalPages);
 	}
@@ -397,16 +398,18 @@
 					>
 				</li>
 				<li>
-					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
-						<button
-							class={`px-3 py-2 leading-tight   border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
-								page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
-							}`}
-							on:click={() => goToPage(page)}
-						>
-							{page}
-						</button>
-					{/each}
+					{#if totalPages}
+						{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
+							<button
+								class={`px-3 py-2 leading-tight   border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
+									page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
+								}`}
+								on:click={() => goToPage(page)}
+							>
+								{page}
+							</button>
+						{/each}
+					{/if}
 				</li>
 
 				<li>

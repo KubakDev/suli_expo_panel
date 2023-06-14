@@ -29,7 +29,7 @@
 		id: 0,
 		thumbnail: '',
 		primaryColor: '#c27803',
-		onPrimaryColor: '#c27803',
+		onPrimaryColor: '#a27232',
 		created_at: new Date()
 	};
 
@@ -95,12 +95,11 @@
 
 		serviceObject = {
 			id: 0,
-
 			thumbnail: '',
 			exhibition_type: '',
 			created_at: new Date(),
-			primaryColor: '',
-			onPrimaryColor: ''
+			primaryColor: '#c27803',
+			onPrimaryColor: '#a27232'
 		};
 
 		serviceDataLang = []; // Resetting serviceDataLang to an empty array
@@ -116,19 +115,6 @@
 	function handleSelectChange(event: any) {
 		serviceObject.exhibition_id = event.target.value;
 	}
-
-	onMount(() => {
-		const colorInput1 = document.getElementById('colorInput1');
-		const colorInput2 = document.getElementById('colorInput2');
-
-		colorInput1.addEventListener('input', () => {
-			color1 = colorInput1.value;
-		});
-
-		colorInput2.addEventListener('input', () => {
-			color2 = colorInput2.value;
-		});
-	});
 </script>
 
 <div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
@@ -261,6 +247,7 @@
 											short_description={langData.short_description}
 											thumbnail={serviceObject.thumbnail}
 											primaryColor={serviceObject.primaryColor}
+											overlayPrimaryColor={serviceObject.onPrimaryColor}
 										/>
 									{/if}
 								{/each}

@@ -1,16 +1,10 @@
-import { redirect } from '@sveltejs/kit';
-import { goto } from '$app/navigation';
-
 export const load = async () => {
 	const pages = [
 		{
 			title: 'Home',
 			url: '/'
 		},
-		{
-			title: 'seat_test',
-			url: '/dashboard/seat_test'
-		},
+
 		{
 			title: 'news',
 			url: '/dashboard/news'
