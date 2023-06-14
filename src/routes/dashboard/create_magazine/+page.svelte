@@ -14,6 +14,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import CustomFileUpload from '$lib/components/CustomFileUpload.svelte';
 	export let data;
 
 	let submitted = false;
@@ -285,7 +286,7 @@
 			<div>
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
-
+					<!-- <CustomFileUpload /> -->
 					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 					<!-- <FileUploadComponent /> -->
 				</Label>

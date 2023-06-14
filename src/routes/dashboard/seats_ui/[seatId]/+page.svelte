@@ -26,6 +26,7 @@
 	import uploadFileStore from '../../../../stores/uploadFileStore';
 	import { page } from '$app/stores';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { seatServiceStore } from '../../../../stores/seatServicesStore';
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
@@ -53,6 +54,7 @@
 	let bottomLeftRadius = 0;
 	let topLeftRadius = 0;
 	let topRightRadius = 0;
+	let exhibitionName: undefined | string = undefined;
 
 	$: {
 		images = $seatImageItemStore;
@@ -136,6 +138,7 @@
 	}
 
 	onMount(() => {
+		seatServiceStore.get(data.supabase);
 		seatImageItemStore.getAllSeatItems();
 
 		// var customRect = createCustomRectangle();
@@ -165,6 +168,7 @@
 				.single()
 				.then(async (result) => {
 					const data: any = result.data;
+					exhibitionName = data.name;
 					console.log(data);
 					if (data && data['design']) {
 						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
@@ -722,6 +726,15 @@
 
 <div class="flex flex-col w-full h-full flex-1">
 	<div class="flex justify-center bg-secondary border-b border-gray-500 p-2">
+		<ButtonGroup class="" size="sm">
+			<InputAddon>Name</InputAddon><Input
+				type="text"
+				size="sm"
+				bind:value={exhibitionName}
+				placeholder="Name"
+				let:props
+			/></ButtonGroup
+		>
 		<Button
 			id="group-button"
 			class="!p-2 mx-4 bg-red"
@@ -778,24 +791,15 @@
 				<div slot="header" class="p-3">
 					<Search size="md" />
 				</div>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Robert Gouth</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Jese Leos</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox checked>Bonnie Green</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Jese Leos</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Robert Gouth</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Bonnie Green</Checkbox>
-				</li>
+				{#if $seatServiceStore}
+					{#each $seatServiceStore as service}
+						<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+							{#if service.languages}
+								<Checkbox>{service.languages[0].title}</Checkbox>
+							{/if}
+						</li>
+					{/each}
+				{/if}
 				<a
 					slot="footer"
 					href="/"
