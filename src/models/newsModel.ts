@@ -1,16 +1,16 @@
 import type { LanguageEnum } from './languageEnum';
 
-export interface VideoModel {
-	id?: number;
+export interface NewsModel {
+	id: number;
 	exhibition_id?: number;
+	images: string[];
 	thumbnail: string;
-	created_at?: Date;
-	link?: string;
 	exhibition_type?: string;
-	mediaVideo_languages?: VideoModelLang[];
+	created_at?: Date;
+	gallery_languages?: NewsModelLang[];
 }
 
-export interface VideoModelLang {
+export interface NewsModelLang {
 	id?: number;
 	title: string;
 	short_description?: string;

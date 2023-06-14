@@ -2,13 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 
-	function createNews() {
-		goto('/dashboard/create_news');
+	function createMagazine() {
+		goto('/dashboard/create_MediaVideo');
 	}
 </script>
 
-<h1>News page</h1>
-<Button on:click={createNews} class="bg-primary-dark hover:bg-primary-50 flex gap-2">
+<h1>Media Video page</h1>
+<Button on:click={createMagazine} class="bg-primary-dark hover:bg-primary-50 flex gap-2">
 	<svg
 		width="20px"
 		height="20px"
@@ -50,5 +50,5 @@
 				</g>
 			</g>
 		</g></svg
-	>Add News
+	>Add Video
 </Button>

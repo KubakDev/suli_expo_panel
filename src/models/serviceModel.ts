@@ -1,20 +1,19 @@
 import type { LanguageEnum } from './languageEnum';
 
-export interface VideoModel {
-	id?: number;
+export interface ServiceModel {
+	id: number;
 	exhibition_id?: number;
 	thumbnail: string;
-	created_at?: Date;
-	link?: string;
 	exhibition_type?: string;
-	mediaVideo_languages?: VideoModelLang[];
+	created_at?: Date;
+	gallery_languages?: ServiceModelLang[];
+	primaryColor?: string;
+	onPrimaryColor?: string;
 }
 
-export interface VideoModelLang {
+export interface ServiceModelLang {
 	id?: number;
 	title: string;
 	short_description?: string;
-	long_description?: string;
 	language: LanguageEnum;
-	created_at?: Date;
 }

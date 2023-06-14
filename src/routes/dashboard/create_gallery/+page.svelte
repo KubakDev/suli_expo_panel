@@ -16,7 +16,6 @@
 	import { goto } from '$app/navigation';
 
 	export let data;
-	let CardComponent: any;
 
 	let submitted = false;
 	let showToast = false;
@@ -148,7 +147,7 @@
 		// console.log('galleryObject//', galleryObject);
 	}
 
-	//get thumbnail
+	//create object for image
 	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
 			// console.log('//', sliderImagesFile);

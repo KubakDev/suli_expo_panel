@@ -11,15 +11,26 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { onMount } from 'svelte';
 	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { goto } from '$app/navigation';
+	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 
 	export let data;
 
+	let submitted = false;
+	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-
+	let sliderImagesFile: File[] = [];
+	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let videoDataLang: VideoModelLang[] = [];
+
+	let videoObjectData: VideoModel = {
+		thumbnail: '',
+		created_at: new Date(),
+		id: 0
+	};
 
 	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {
@@ -30,11 +41,10 @@
 			console.error(error);
 		}
 	};
-	onMount(fetchData);
 
+	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
-	// console.log(languageEnumKeys);
 
 	const languageEnumLength = languageEnumKeys.length;
 	//for swapping between language
@@ -48,14 +58,6 @@
 		});
 	}
 
-	let videoObjectData: VideoModel = {
-		thumbnail: '',
-		link: '',
-		exhibition_type: '',
-		created_at: new Date()
-	};
-
-	// for upload thumbnail image
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -66,26 +68,27 @@
 		reader.onloadend = () => {
 			videoObjectData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `media_videos/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log(videoObjectData);
+			// console.log('galleryObject////////////', galleryObject);
 		};
 
 		reader.readAsDataURL(file);
 	}
 
-	let submitted = false;
-	let showToast = false;
-
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
+
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
 		// console.log(response);
 		videoObjectData.thumbnail = response.data?.path;
+
 		insertData(videoObjectData, videoDataLang, data.supabase);
+
 		resetForm();
+		goto('/dashboard/mediaVideo');
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
@@ -96,11 +99,12 @@
 
 		videoObjectData = {
 			thumbnail: '',
-			link: '',
-			created_at: new Date()
+			exhibition_type: '',
+			created_at: new Date(),
+			id: 0
 		};
 
-		videoDataLang = []; // Resetting videoDataLang to an empty array
+		videoDataLang = [];
 		for (let i = 0; i < languageEnumLength; i++) {
 			videoDataLang.push({
 				title: '',
@@ -114,6 +118,26 @@
 
 	function handleSelectChange(event: any) {
 		videoObjectData.exhibition_id = event.target.value;
+		// console.log('galleryObject//', galleryObject);
+	}
+
+	//get thumbnail
+	function getImagesObject() {
+		carouselImages = sliderImagesFile.map((image, i) => {
+			// console.log('//', sliderImagesFile);
+			const imgUrl = URL.createObjectURL(image);
+			return {
+				id: i,
+				imgurl: imgUrl,
+				name: image,
+				attribution: ''
+			};
+		});
+		console.log('test//', carouselImages);
+
+		if (carouselImages.length <= 0) {
+			carouselImages = undefined;
+		}
 	}
 </script>
 
@@ -136,7 +160,7 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="first_name" class="mb-2">Upload Image</Label>
-						<Fileupload on:change={handleFileUpload} />
+						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					</Label>
 				</div>
 				<div>
@@ -254,5 +278,44 @@
 				</button>
 			</div>
 		</Form>
+	</div>
+
+	<div class="h-full p-2 col-span-1 pt-20">
+		<div>
+			<Tabs style="underline">
+				<TabItem open title="Gallery List">
+					<div
+						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+						style="min-height: calc(100vh - 300px);"
+					>
+						<div class="flex justify-start items-start">
+							{#each videoDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<ExpoCard
+										cardType={CardType.Main}
+										title={langData.title}
+										short_description={langData.short_description}
+										thumbnail={videoObjectData.thumbnail}
+										primaryColor="bg-primary"
+									/>
+								{/if}
+							{/each}
+						</div>
+
+						<div />
+					</div>
+				</TabItem>
+				<TabItem title="Video Detail">
+					{#each videoDataLang as langData}
+						{#if langData.language === selectedLanguageTab}
+							<DetailPage
+								imagesCarousel={carouselImages}
+								long_description={langData.long_description}
+							/>
+						{/if}
+					{/each}
+				</TabItem>
+			</Tabs>
+		</div>
 	</div>
 </div>

@@ -11,17 +11,41 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { onMount } from 'svelte';
 	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { goto } from '$app/navigation';
+	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	export let data;
 
+	let submitted = false;
+	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-
+	let sliderImagesFile: File[] = [];
+	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let magazineDataLang: MagazineModelLang[] = [];
+
+	let magazineObject: MagazineModel = {
+		images: [],
+		thumbnail: '',
+		created_at: new Date(),
+		id: 0
+	};
+
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+			// console.log('sdffff//////', exhibitionData);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
-	// console.log(languageEnumKeys);
 
 	const languageEnumLength = languageEnumKeys.length;
 	//for swapping between language
@@ -35,14 +59,6 @@
 		});
 	}
 
-	let magazineObject: MagazineModel = {
-		images: [],
-		thumbnail: '',
-		exhibition_type: '',
-		created_at: new Date()
-	};
-
-	// for upload thumbnail image
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -53,78 +69,50 @@
 		reader.onloadend = () => {
 			magazineObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log(magazineObject);
+			// console.log('galleryObject////////////', galleryObject);
 		};
 
 		reader.readAsDataURL(file);
 	}
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-			console.log('sdffff//////', exhibitionData);
-		} catch (error) {
-			console.error(error);
-		}
-	};
 
-	onMount(fetchData);
-
-	//upload multiple images
-	const magazineFiles: { file: File; fileName: string }[] = [];
-
-	async function handleMultipleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const files = fileInput.files;
-
-		if (files) {
-			for (let i = 0; i < files.length; i++) {
-				const file = files[i];
-
-				const reader = new FileReader();
-
-				reader.onloadend = async () => {
-					const randomText = getRandomTextNumber(); // Generate random text
-					let fileName = `magazine/${randomText}_${file.name}`;
-					// Append random text to the file name
-					magazineFiles.push({
-						file: file,
-						fileName: fileName
-					});
-				};
-
-				reader.readAsDataURL(file);
-			}
-		}
-		// console.log('magazineFiles', magazineFiles);
-	}
-
-	let submitted = false;
-	let showToast = false;
+	//**dropzone**//
+	function getAllImageFile(e: { detail: File[] }) {
+		sliderImagesFile = e.detail;
+		getImagesObject();
+	} //**dropzone**//
 
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
+
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
-		for (const fileObj of magazineFiles) {
-			const responseMultiple = await data.supabase.storage
+		for (let image of sliderImagesFile) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
 				.from('image')
-				.upload(fileObj.fileName, fileObj.file!);
-
-			// console.log(magazineObject);
-			magazineObject.images.push(responseMultiple.data?.path);
+				.upload(`gallery/${randomText}_${image.name}`, image!)
+				.then((response) => {
+					if (response.data) {
+						magazineObject.images.push(response.data.path);
+						// console.log('response ::::', response);
+					}
+				});
 		}
-		// Convert galleryObject.images to a valid array string format
+		// Convert magazineObject.images to a valid array string format
 		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
 		magazineObject.images = `{${imagesArray.join(',')}}`;
+		// console.log('magazineObject ::::', magazineObject);
 
 		// console.log(response);
 		magazineObject.thumbnail = response.data?.path;
+
 		insertData(magazineObject, magazineDataLang, data.supabase);
+
 		resetForm();
+		goto('/dashboard/magazine');
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
@@ -136,10 +124,12 @@
 		magazineObject = {
 			images: [],
 			thumbnail: '',
-			created_at: new Date()
+			exhibition_type: '',
+			created_at: new Date(),
+			id: 0
 		};
 
-		magazineDataLang = []; // Resetting magazineDataLang to an empty array
+		magazineDataLang = []; // Resetting galleryDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
 			magazineDataLang.push({
 				title: '',
@@ -153,6 +143,26 @@
 
 	function handleSelectChange(event: any) {
 		magazineObject.exhibition_id = event.target.value;
+		// console.log('galleryObject//', galleryObject);
+	}
+
+	//get thumbnail
+	function getImagesObject() {
+		carouselImages = sliderImagesFile.map((image, i) => {
+			// console.log('//', sliderImagesFile);
+			const imgUrl = URL.createObjectURL(image);
+			return {
+				id: i,
+				imgurl: imgUrl,
+				name: image,
+				attribution: ''
+			};
+		});
+		console.log('test//', carouselImages);
+
+		if (carouselImages.length <= 0) {
+			carouselImages = undefined;
+		}
 	}
 </script>
 
@@ -175,7 +185,7 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
-						<Fileupload on:change={handleFileUpload} />
+						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					</Label>
 				</div>
 				<div>
@@ -275,7 +285,8 @@
 			<div>
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
-					<Fileupload on:change={handleMultipleFileUpload} multiple />
+
+					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 					<!-- <FileUploadComponent /> -->
 				</Label>
 			</div>
@@ -291,5 +302,44 @@
 				</button>
 			</div>
 		</Form>
+	</div>
+
+	<div class="h-full p-2 col-span-1 pt-20">
+		<div>
+			<Tabs style="underline">
+				<TabItem open title="Gallery List">
+					<div
+						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+						style="min-height: calc(100vh - 300px);"
+					>
+						<div class="flex justify-start items-start">
+							{#each magazineDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<ExpoCard
+										cardType={CardType.Main}
+										title={langData.title}
+										short_description={langData.short_description}
+										thumbnail={magazineObject.thumbnail}
+										primaryColor="bg-primary"
+									/>
+								{/if}
+							{/each}
+						</div>
+
+						<div />
+					</div>
+				</TabItem>
+				<TabItem title="Gallery Detail">
+					{#each magazineDataLang as langData}
+						{#if langData.language === selectedLanguageTab}
+							<DetailPage
+								imagesCarousel={carouselImages}
+								long_description={langData.long_description}
+							/>
+						{/if}
+					{/each}
+				</TabItem>
+			</Tabs>
+		</div>
 	</div>
 </div>
