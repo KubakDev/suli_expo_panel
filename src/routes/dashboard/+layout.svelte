@@ -84,7 +84,7 @@
 			{/each}
 		</NavUl>
 	</Navbar>
-	<div class="flex-1 flex">
+	<div class="flex-1 flex justify-center">
 		<slot />
 	</div>
 </div>

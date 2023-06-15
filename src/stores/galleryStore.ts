@@ -40,35 +40,31 @@ export const getData = async (
 	searchQuery: string
 ) => {
 	try {
-		// let query = supabase
-		// 	.from('gallery')
-		// 	.select('*,gallery_languages(*)', { count: 'exact' })
-		// 	.order('created_at', { ascending: false });
+		let query = supabase
+			.from('gallery')
+			.select('*,gallery_languages(*)')
+			.range((page - 1) * pageSize, page * pageSize - 1)
+			.limit(pageSize)
+			.order('created_at', { ascending: false });
 
-		// if (searchQuery) {
-		// 	query = query.filter('gallery_languages.title', 'ilike', `%${searchQuery}%`);
-		// } else {
-		// 	query = query.range((page - 1) * pageSize, page * pageSize - 1).limit(pageSize);
-		// }
+		if (searchQuery) {
+			query = query.ilike('gallery_languages.title', `%${searchQuery}%`);
+		}
 
-		// const result = await query;
+		const { data, error } = await query;
 
-		const result = await supabase.rpc('search_seat_services_by_language_title', {
-			language_title: searchQuery
-		});
+		const { count } = await supabase.from('gallery').select('count', { count: 'exact' });
 
-		const data = result.data || [];
+		const filteredData = data.filter((item) => item.gallery_languages.length > 0);
 
-		// const { count } = await supabase.from('gallery').select('count', { count: 'exact' });
+		let result = {
+			data: filteredData || [],
+			count: count || 0
+		};
 
-		// const filteredData = data.filter((item) => item.gallery_languages.length > 0);
-		console.log('filteredData', data);
-		// let result = {
-		// 	data: filteredData || [],
-		// 	count: count || 0
-		// };
+		console.log('Search Result:', result);
 
-		return data;
+		return result;
 	} catch (error) {
 		console.error(error);
 		throw error;

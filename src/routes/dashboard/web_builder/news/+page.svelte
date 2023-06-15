@@ -16,9 +16,8 @@
 	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
-	import { getNews } from '../../../../stores/news';
-	import type { News } from '../../../../models/news';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
+	import type { NewsModel } from '../../../../models/newsModel';
 
 	export let data;
 	onMount(async () => {
@@ -41,7 +40,7 @@
 	];
 	let showCustomColor: boolean = false;
 	let customColors: ColorTheme = {} as ColorTheme;
-	let allNews: News[] = [];
+	let allNews: NewsModel[] = [];
 	const enum CardType {
 		Home = 'home',
 		News = 'news'
@@ -80,7 +79,7 @@
 			news_languages(*)
 			`
 		);
-		allNews = response.data as News[];
+		allNews = response.data as NewsModel[];
 		console.log(allNews);
 	}
 	onMount(async () => {

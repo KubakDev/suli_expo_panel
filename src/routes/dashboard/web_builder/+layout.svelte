@@ -2,14 +2,12 @@
 	import { Sidebar, SidebarGroup, SidebarItem, SidebarWrapper } from 'flowbite-svelte';
 	// import '../styles.scss';
 	import type { PageData } from './$types';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	// import BsTrash from 'svelte-icons-pack/bs/BsTrash';
 	// import Icon from 'svelte-icons-pack';
 
 	export let data: PageData;
 
-	let spanClass = 'flex-1 ml-3 whitespace-nowrap';
 	$: activeUrl = '/';
 	let IconComponent: any = null;
 	$: if ($page.url) {

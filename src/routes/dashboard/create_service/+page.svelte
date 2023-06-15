@@ -28,8 +28,8 @@
 	let serviceObject: ServiceModel = {
 		id: 0,
 		thumbnail: '',
-		primaryColor: '#c27803',
-		onPrimaryColor: '#c27803',
+		primaryColor: '#F5EFE7',
+		onPrimaryColor: '#D8C4B6',
 		created_at: new Date()
 	};
 
@@ -95,12 +95,11 @@
 
 		serviceObject = {
 			id: 0,
-
 			thumbnail: '',
 			exhibition_type: '',
 			created_at: new Date(),
-			primaryColor: '',
-			onPrimaryColor: ''
+			primaryColor: '#F5EFE7',
+			onPrimaryColor: '#D8C4B6'
 		};
 
 		serviceDataLang = []; // Resetting serviceDataLang to an empty array
@@ -116,19 +115,6 @@
 	function handleSelectChange(event: any) {
 		serviceObject.exhibition_id = event.target.value;
 	}
-
-	onMount(() => {
-		const colorInput1 = document.getElementById('colorInput1');
-		const colorInput2 = document.getElementById('colorInput2');
-
-		colorInput1.addEventListener('input', () => {
-			color1 = colorInput1.value;
-		});
-
-		colorInput2.addEventListener('input', () => {
-			color2 = colorInput2.value;
-		});
-	});
 </script>
 
 <div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
@@ -249,7 +235,7 @@
 				<div class="flex justify-between items-center">
 					<TabItem open title="Service List">
 						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							class="w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 							style="min-height: calc(100vh - 300px);"
 						>
 							<div class="flex justify-start items-start">
@@ -260,8 +246,8 @@
 											title={langData.title}
 											short_description={langData.short_description}
 											thumbnail={serviceObject.thumbnail}
-											overlayPrimaryColor={serviceObject.onPrimaryColor}
 											primaryColor={serviceObject.primaryColor}
+											overlayPrimaryColor={serviceObject.onPrimaryColor}
 										/>
 									{/if}
 								{/each}

@@ -17,14 +17,13 @@
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
 
-		galleryData = result;
+		galleryData = result.data;
 
 		gallery.set(galleryData);
 		// console.log('g///////', galleryData);
 
 		// Recalculate the total number of pages
-		const totalItems = result.length;
-		console.log(totalItems);
+		const totalItems = result.count;
 		totalPages = Math.ceil(totalItems / pageSize);
 		// console.log(totalPages);
 	}
@@ -70,38 +69,6 @@
 			/>
 
 			<button on:click={fetchData}>Search</button>
-
-			<!-- <form>
-				<label
-					for="default-search"
-					class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label
-				>
-				<div class="relative">
-					<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-						<svg
-							aria-hidden="true"
-							class="w-5 h-5 text-gray-500 dark:text-gray-400"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-							/></svg
-						>
-					</div>
-					<input
-						type="search"
-						id="default-search"
-						class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-						placeholder="Search..."
-						required
-					/>
-				</div>
-			</form> -->
 		</div>
 
 		<Button on:click={createGallery} class="bg-primary-dark hover:bg-primary-50 flex gap-2">
@@ -398,18 +365,16 @@
 					>
 				</li>
 				<li>
-					{#if totalPages}
-						{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
-							<button
-								class={`px-3 py-2 leading-tight   border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
-									page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
-								}`}
-								on:click={() => goToPage(page)}
-							>
-								{page}
-							</button>
-						{/each}
-					{/if}
+					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
+						<button
+							class={`px-3 py-2 leading-tight   border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
+								page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
+							}`}
+							on:click={() => goToPage(page)}
+						>
+							{page}
+						</button>
+					{/each}
 				</li>
 
 				<li>
@@ -424,5 +389,3 @@
 		</nav>
 	</div>
 </div>
-
-<!-- Pagination -->
