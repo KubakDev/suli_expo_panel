@@ -17,6 +17,7 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import Editor from '@tinymce/tinymce-svelte';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -227,6 +228,14 @@
 			carouselImages = undefined;
 		}
 	}
+
+	// text editor
+	const conf = {
+		toolbar: 'undo redo | bold italic | alignleft aligncenter alignright | code',
+		plugins: 'code',
+		height: 300
+		// Additional configuration options...
+	};
 </script>
 
 <div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
@@ -327,14 +336,15 @@
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<div class="pt-4 w-full" style="height: 400px;">
+											<Editor
+												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+												channel="5-dev"
+												text="readonly-text-output"
+												bind:value={langData.long_description}
+												{conf}
+											/>
+										</div>
 									</div>
 								</div>
 							</TabItem>

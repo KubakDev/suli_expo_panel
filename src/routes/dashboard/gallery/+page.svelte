@@ -20,7 +20,7 @@
 		galleryData = result.data;
 
 		gallery.set(galleryData);
-		// console.log('g///////', galleryData);
+		console.log('gallery data///////', galleryData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count;
@@ -55,6 +55,13 @@
 
 	function calculateIndex(index) {
 		return index + 1 + (currentPage - 1) * pageSize;
+	}
+
+	// convert html tag that return it from db to regular text
+	function extractText(html) {
+		const tempElement = document.createElement('div');
+		tempElement.innerHTML = html;
+		return tempElement.textContent || tempElement.innerText || '';
 	}
 </script>
 
@@ -322,7 +329,7 @@
 							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
 								{#each item.gallery_languages as lang}
 									<div>
-										{lang.long_description?.slice(0, 40)}
+										{extractText(lang.long_description)?.slice(0, 40)}
 									</div>
 								{/each}
 							</td>
