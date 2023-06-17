@@ -18,7 +18,7 @@
 		Search,
 		Spinner
 	} from 'flowbite-svelte';
-	import { Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
+	import { ChatBubbleBottomCenter, Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
 	import { canvasToFile } from '$lib/utils/canva_to_image';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import { alertStore } from '../../../../stores/alertStore';
@@ -27,14 +27,20 @@
 	import { page } from '$app/stores';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { seatServiceStore } from '../../../../stores/seatServicesStore';
+	import Sortable from 'sortablejs';
+
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
 	let fillColor = '#000000'; // Default color
 
 	let isDown: boolean = false;
-	let line: fabric.Line | null;
+	let points: any[] = [];
+	let lines: any[] = [];
+
 	let isDrawing = false; // Whether the mouse is down
+	let originX;
+	let originY;
 	let strokeWidth: null | string = null; // Width of the stroke
 	let strokeColor = '#000000';
 
@@ -55,6 +61,75 @@
 	let topLeftRadius = 0;
 	let topRightRadius = 0;
 	let exhibitionName: undefined | string = undefined;
+	let isAddingText = false;
+	let objects: any[] = []; // holds the objects on the canvas
+
+	class MyGroup extends fabric.Group {
+		groupId: number;
+
+		constructor(items: fabric.Object[], options: fabric.IGroupOptions = {}) {
+			super(items, options);
+			this.groupId = options.groupId;
+		}
+	}
+
+	class MyObject extends fabric.Object {
+		groupId: number;
+	}
+
+	// Function to update layers
+	const updateLayers = () => {
+		console.log(canvas.getObjects());
+		objects = canvas
+			.getObjects()
+			.filter((object: any) => !(object.type !== 'group' && object.groupId !== undefined))
+			.map((object: any, index: number) => {
+				if (object.type === 'group') {
+					// This object is a group, add group-specific information
+					return {
+						id: index,
+						type: object.type,
+						isGroup: true,
+						children: object._objects.map((child: any, childIndex: number) => {
+							return {
+								id: childIndex,
+								type: child.type
+							};
+						})
+					};
+				} else {
+					// This object is not a group
+					return {
+						id: index,
+						type: object.type,
+						isGroup: false
+					};
+				}
+			});
+		console.log('objects ', objects);
+		const el = document.getElementById('layers');
+		const sortable = Sortable.create(el, {
+			onEnd: (evt: any) => {
+				const id = evt.item.dataset.id;
+				console.log('id ', evt.item);
+				const object = canvas.getObjects().find((obj: any) => obj.id == id);
+				console.log('object ', canvas.getObjects());
+				console.log('object ', object);
+				if (object) {
+					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
+					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
+					// Ensure index is within array bounds.
+					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
+					// Move the object to the new position.
+					object.moveTo(newIndex);
+					// Rerender canvas.
+					canvas.renderAll();
+					// Update the layers in the UI.
+					updateLayers();
+				}
+			}
+		});
+	};
 
 	$: {
 		images = $seatImageItemStore;
@@ -143,7 +218,16 @@
 
 		// var customRect = createCustomRectangle();
 
-		canvas = new fabric.Canvas('canvas');
+		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
+		canvas.on('path:created', (e: any) => {
+			let path = e.path;
+			path.set({ stroke: 'red' });
+
+			// canvas.isDrawingMode = false;
+			canvas.renderAll();
+
+			// You can save `path` to a database here, if you want
+		});
 
 		fabric.Object.prototype.set({
 			borderColor: '#5d9cec',
@@ -199,28 +283,20 @@
 						// canvas.add(customRect);
 					}
 
-					var border = new fabric.Rect({
-						left: 0,
-						top: 0,
-						width: canvas.width,
-						height: canvas.height,
-						fill: 'transparent',
-						stroke: 'black',
-						strokeWidth: 5,
-						selectable: false,
-						evented: false
-					});
-
-					// Add the rectangle to the canvas
-					border.toObject = () => null;
-					canvas.add(border);
-
 					// Ensure the border always stays in the back of other objects
-					canvas.on('object:added', function () {
-						canvas.sendToBack(border);
-					});
 				});
 		}
+
+		canvas.on('object:added', function () {
+			console.log('object:added');
+			updateLayers();
+		});
+
+		// Handle object removed
+		canvas.on('object:removed', () => {
+			updateLayers();
+		});
+		updateLayers();
 		canvas.on('object:moving', function (options: fabric.IEvent) {
 			if (options.target) {
 				options.target.set({
@@ -269,18 +345,68 @@
 				panning = false;
 			}
 		});
-
+		let liveLine: any | null = null;
 		canvas.on('mouse:down', function (options: any) {
-			if (isDrawing) {
-				isDown = true;
-				let pointer = canvas.getPointer(options.e);
-				let points = [pointer.x, pointer.y, pointer.x, pointer.y];
-				line = new fabric.Line(points, {
-					strokeWidth: 5,
-					stroke: fillColor,
-					selectable: false
+			let pointer = canvas.getPointer(options.e);
+			if (isAddingText) {
+				const text = new fabric.IText('Click to edit text', {
+					left: pointer.x,
+					top: pointer.y,
+					fontSize: 20,
+					fill: 'black'
 				});
-				canvas.add(line);
+
+				canvas.add(text);
+				isAddingText = false;
+			}
+			if (isDrawing) {
+				console.log('mouse down');
+
+				points.push({ x: pointer.x, y: pointer.y });
+
+				// Draw a line from the last point to this point
+
+				liveLine = new fabric.Line(
+					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
+					{
+						stroke: 'red',
+						strokeWidth: 1,
+						selectable: false
+					}
+				);
+
+				canvas.add(liveLine);
+				lines.push(liveLine);
+
+				if (
+					points.length > 2 &&
+					Math.abs(points[0].x - points[points.length - 1].x) < 50 &&
+					Math.abs(points[0].y - points[points.length - 1].y) < 50
+				) {
+					points[points.length - 1] = points[0];
+
+					// Close the shape
+					let polygon = new fabric.Polygon(points, {
+						stroke: 'red',
+						fill: 'transparent',
+						strokeWidth: 1,
+						selectable: true
+					});
+
+					canvas.add(polygon);
+					canvas.renderAll(); // You might need to request a re-render of the canvas
+
+					// Reset
+					isDrawing = false;
+					points = [];
+
+					// Remove temporary lines
+					for (let line of lines) {
+						console.log('removing line');
+						canvas.remove(line);
+					}
+					lines = [];
+				}
 			}
 
 			console.log('mouse down');
@@ -296,8 +422,15 @@
 		canvas.on('mouse:move', function (opt: any) {
 			if (isDown || isDrawing) {
 				let pointer = canvas.getPointer(opt.e);
-				line!.set({ x2: pointer.x, y2: pointer.y });
-				canvas.requestRenderAll();
+				const mouseX = pointer.x;
+				const mouseY = pointer.y;
+				if (points.length === 0) return;
+				const x = points[points.length - 1].x;
+				const y = points[points.length - 1].y;
+				if (liveLine) {
+					liveLine.set({ x2: pointer.x, y2: pointer.y, x1: x, y1: y });
+					canvas.renderAll();
+				}
 			}
 
 			if (panning && spacePressed) {
@@ -311,10 +444,6 @@
 		canvas.on('mouse:up', function (options: any) {
 			if (isDrawing) {
 				isDown = false;
-				line!.set({ selectable: true, evented: true }); // set 'evented' to true to interact with the line
-				line!.setControlsVisibility({ mtr: true }); // show the rotate control ('mtr')
-				line!.hasControls = true; // show controls
-				line = null;
 			}
 
 			panning = false;
@@ -367,6 +496,8 @@
 
 		canvas.on('selection:created', function (event: any) {
 			var selectedObject = event.selected[0];
+			const index = canvas.getObjects().indexOf(selectedObject);
+			console.log("The object's layer order is", index);
 			setSelectedObjectValue(selectedObject);
 		});
 		canvas.on('selection:updated', function (event: any) {
@@ -386,13 +517,35 @@
 
 		window.addEventListener('keydown', function (e) {
 			// keyCode 46 corresponds to the Delete key
+			const selectedObject = canvas.getActiveObject();
 			console.log(e);
 			if (e.key === 'Delete' || e.key === 'Backspace') {
 				removeSelectedObject();
 			}
+			handleKeydown(e, selectedObject);
 		});
 	});
 
+	function handleKeydown(event: any, selectedObject: any) {
+		let movingPixel = 1;
+		if (event.shiftKey) movingPixel = 10;
+		switch (event.code) {
+			case 'ArrowUp':
+				selectedObject.top -= movingPixel;
+				break;
+			case 'ArrowDown':
+				selectedObject.top += movingPixel;
+				break;
+			case 'ArrowLeft':
+				selectedObject.left -= movingPixel;
+				break;
+			case 'ArrowRight':
+				selectedObject.left += movingPixel;
+				break;
+		}
+		console.log(selectedObject);
+		canvas.renderAll(); // Render changes
+	}
 	function clearAllInput() {
 		strokeWidth = null;
 		itemWidth = null;
@@ -425,7 +578,7 @@
 		fillColor = selectedObject.fill;
 		itemWidth = selectedObject.width;
 		itemHeight = selectedObject.height;
-		canvas.bringToFront(selectedObject);
+		// canvas.bringToFront(selectedObject);
 	}
 
 	afterUpdate(() => {
@@ -520,7 +673,13 @@
 	}
 
 	function onPenSelect() {
-		isDrawing = !isDrawing; // Toggle the drawing mode
+		canvas.isDrawingMode = !canvas.isDrawingMode;
+		canvas.freeDrawingBrush.width = 5;
+		canvas.freeDrawingBrush.color = 'red';
+	}
+
+	function onDrawLine() {
+		isDrawing = !isDrawing;
 	}
 
 	async function onFileSelected(e: any) {
@@ -722,10 +881,107 @@
 		canvas.setZoom(zoomLevel);
 		canvas.renderAll();
 	}
+
+	function groupObjects() {
+		let activeObjects = canvas.getActiveObjects();
+		if (activeObjects) {
+			console.log(activeObjects);
+
+			canvas.discardActiveObject();
+			const group = new MyGroup(activeObjects, { groupId: Date.now() });
+			group._objects.forEach((obj: any) => {
+				obj.groupId = group.groupId; // Add groupId to each object
+			});
+			canvas.add(group);
+			canvas.requestRenderAll();
+		}
+	}
+
+	function unGroupObjects() {
+		let group = canvas.getActiveObject();
+		if (group.type === 'group') {
+			// Ungroup
+
+			group.destroy();
+			canvas.remove(group);
+			// group.forEach(function (item: any) {
+			// 	item.groupId = undefined;
+			// 	item.set('dirty', true);
+			// });
+
+			// make groupId for each object undefined
+			//
+			group.forEachObject(function (obj: any) {
+				console.log(obj);
+				obj.groupId = undefined;
+			});
+			group.groupId = undefined;
+			canvas.add.apply(canvas, group);
+			canvas.renderAll();
+			updateLayers();
+		}
+	}
+
+	function selectImageForBackground() {
+		let input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		input.onchange = (event: any) => {
+			let file = event.target.files[0];
+			let reader = new FileReader();
+			reader.onload = (event: any) => {
+				let imgObj = new Image();
+				imgObj.src = event.target.result;
+				imgObj.onload = () => {
+					let image = new fabric.Image(imgObj);
+					image.set({
+						left: 0,
+						top: 0,
+						angle: 0,
+						padding: 10
+					});
+					// set to object to null
+					// image.toObject() = () => null;
+					//image.scale(getRandomNum(0.1, 0.25)).setCoords();
+
+					// change canvas size to image size
+					canvas.setWidth(image.width!);
+					canvas.setHeight(image.height!);
+
+					canvas.setBackgroundImage(image, canvas.renderAll.bind(canvas), {
+						scaleX: canvas.width / image!.width!,
+						scaleY: canvas.height / image!.height!
+					});
+				};
+			};
+			reader.readAsDataURL(file);
+		};
+		input.click();
+	}
+
+	function toggleBackgroundImage() {
+		// hide and show background image
+		let image = canvas.backgroundImage;
+		if (image) {
+			image.visible = !image.visible;
+			canvas.renderAll();
+		}
+	}
+
+	// Function to enable text adding mode
+	const enableTextMode = () => {
+		isAddingText = true;
+	};
 </script>
 
 <div class="flex flex-col w-full h-full flex-1">
 	<div class="flex justify-center bg-secondary border-b border-gray-500 p-2">
+		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={toggleBackgroundImage}
+			>Toggle background</Button
+		>
+		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={selectImageForBackground}
+			>Add Image to background</Button
+		>
 		<ButtonGroup class="" size="sm">
 			<InputAddon>Name</InputAddon><Input
 				type="text"
@@ -742,13 +998,20 @@
 			color={isDrawing ? 'dark' : 'light'}
 			on:click={convetToObject}>Save</Button
 		>
-		<!-- <Button
+		<Button
 			id="group-button"
 			class="!p-2 mx-4 bg-red"
 			size="lg"
 			color={isDrawing ? 'dark' : 'light'}
-			on:click={removeSelectedObject}>Delete</Button
-		> -->
+			on:click={groupObjects}>Group</Button
+		>
+		<Button
+			id="group-button"
+			class="!p-2 mx-4 bg-red"
+			size="lg"
+			color={isDrawing ? 'dark' : 'light'}
+			on:click={unGroupObjects}>UnGroup</Button
+		>
 		<Button
 			class="!p-2 mx-4 bg-red"
 			size="lg"
@@ -765,13 +1028,27 @@
 						<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
 					</svg>
 				</div>
-				<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
+				<Button
+					class="!p-2 w-10 h-10 bg-red"
+					size="lg"
+					color={canvas && canvas.isDrawingMode ? 'dark' : 'light'}
+				>
 					<Pencil
 						on:click={onPenSelect}
 						size="30"
 						class="text-red-700 dark:text-green-700 outline-none "
 					/>
 				</Button>
+				<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
+					<Pencil
+						on:click={onDrawLine}
+						size="30"
+						class=" text-black dark:text-green-700 outline-none "
+					/>
+				</Button>
+				<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={enableTextMode}
+					><ChatBubbleBottomCenter /></Button
+				>
 			</div>
 			<div class="grid grid-cols-2 gap-2 rounded-md my-6">
 				<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
@@ -863,8 +1140,36 @@
 					<Spinner />
 				{/if}
 			</Modal>
+			<div class="mt-4">
+				<h2>Layers</h2>
+
+				<ul id="layers">
+					{#each objects as object (object.id)}
+						<li
+							data-id={object.id}
+							class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 {object.isGroup
+								? 'bg-blue-50'
+								: 'bg-gray-50'}"
+						>
+							<span>{object.type} {object.id + 1}</span>
+							{#if object.isGroup}
+								<ul class="ml-4">
+									{#each object.children as child (child.id)}
+										<li
+											data-id={child.id}
+											class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 bg-gray-50"
+										>
+											<span>{child.type} {child.id + 1}</span>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</div>
 		</div>
-		<div bind:this={container} class="w-full col-span-4 relative">
+		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
 			<canvas id="canvas" />
 			<div class="absolute bottom-10 right-10 w-40 flex justify-between">
 				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>

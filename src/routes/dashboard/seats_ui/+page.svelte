@@ -42,7 +42,7 @@
 		</Button>
 	</div>
 
-	<div class="px-4 grid grid-cols-3 gap-4">
+	<div class="px-4 grid grid-cols-3 gap-4 mt-10">
 		{#if designs}
 			{#each designs as design}
 				<div
@@ -51,7 +51,7 @@
 				>
 					<div class="h-20 w-full bg-black rounded-tl-2xl rounded-tr-2xl">
 						<img
-							class="object-cover w-full h-full"
+							class="object-cover w-full h-full rounded-tl-2xl rounded-tr-2xl"
 							src={import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + design.image_url}
 						/>
 					</div>
