@@ -1,7 +1,7 @@
-import type { ToastTypeEnum } from "./toastTypeEnum"
+import type { ToastTypeEnum } from './toastTypeEnum';
 export interface ToastType {
-  id?: number;
-  title?: string;
-  message?: string;
-  type: ToastTypeEnum;
+	id?: number;
+	title?: string;
+	message?: string;
+	type: ToastTypeEnum;
 }
