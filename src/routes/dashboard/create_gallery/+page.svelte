@@ -105,11 +105,11 @@
 		}
 		// Convert galleryObject.images to a valid array string format
 		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
-		galleryObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('galleryObject ::::', galleryObject);
+		galleryObject.images = [`{${imagesArray.join(',')}}`];
+		console.log('galleryObject ::::', galleryObject);
 
 		// console.log(response);
-		galleryObject.thumbnail = response.data?.path;
+		galleryObject.thumbnail = response.data?.path || '';
 
 		insertData(galleryObject, galleryDataLang, data.supabase);
 
@@ -160,7 +160,7 @@
 				attribution: ''
 			};
 		});
-		console.log('test//', carouselImages);
+		// console.log('test//', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

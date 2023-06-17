@@ -59,8 +59,8 @@
 </script>
 
 <div class="w-full h-80 bg-[#e4e4e4] rounded-lg p-5 flex flex-wrap">
-	<Dropzone multiple id="dropzone" type="file" accept=".jpg, .jpeg, .png .svg"
-		>upload iamge</Dropzone
+	<Dropzone multiple id="dropzone" type="file" accept=".jpg, .jpeg, .png .svg" on:change={addImage}
+		>upload image</Dropzone
 	>
 
 	{#each images as image, index}

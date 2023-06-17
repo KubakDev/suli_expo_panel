@@ -14,6 +14,8 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import Editor from '@tinymce/tinymce-svelte';
+
 	export let data;
 
 	let submitted = false;
@@ -69,9 +71,7 @@
 		reader.onloadend = () => {
 			magazineObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-
-			// console.log('galleryObject////////////', galleryObject);
+			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);
@@ -93,7 +93,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`gallery/${randomText}_${image.name}`, image!)
+				.upload(`magazine/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
 						magazineObject.images.push(response.data.path);
@@ -129,7 +129,7 @@
 			id: 0
 		};
 
-		magazineDataLang = []; // Resetting galleryDataLang to an empty array
+		magazineDataLang = [];
 		for (let i = 0; i < languageEnumLength; i++) {
 			magazineDataLang.push({
 				title: '',
@@ -143,7 +143,6 @@
 
 	function handleSelectChange(event: any) {
 		magazineObject.exhibition_id = event.target.value;
-		// console.log('galleryObject//', galleryObject);
 	}
 
 	//get thumbnail
@@ -164,6 +163,38 @@
 			carouselImages = undefined;
 		}
 	}
+
+	const conf = {
+		toolbar:
+			'undo redo | a11ycheck casechange blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | ' +
+			'bullist numlist checklist outdent indent | removeformat | code table help',
+		plugins: [
+			'a11ychecker',
+			'advlist',
+			'advcode',
+			'advtable',
+			'autolink',
+			'checklist',
+			'export',
+			'lists',
+			'link',
+			'image',
+			'charmap',
+			'preview',
+			'anchor',
+			'searchreplace',
+			'visualblocks',
+			'powerpaste',
+			'fullscreen',
+			'formatpainter',
+			'insertdatetime',
+			'media',
+			'table',
+			'help',
+			'wordcount'
+		],
+		height: 500
+	};
 </script>
 
 <div
@@ -261,15 +292,16 @@
 										<!-- <Message name="short_description" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<Label for="textarea-id" class="mb-2">Magazine detail</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<Editor
+												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+												channel="5-dev"
+												text="readonly-text-output"
+												bind:value={langData.long_description}
+												{conf}
+											/>
+										</div>
 									</div>
 								</div>
 							</TabItem>
