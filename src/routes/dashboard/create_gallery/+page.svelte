@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
+	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/galleryStore';
-	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
-	import Editor from '@tinymce/tinymce-svelte';
+	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
 
@@ -39,7 +39,7 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('sdffff//////', exhibitionData);
+			// console.log('//////', exhibitionData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -72,8 +72,6 @@
 			galleryObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-
-			// console.log('galleryObject////////////', galleryObject);
 		};
 
 		reader.readAsDataURL(file);
@@ -90,6 +88,8 @@
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+		// console.log(response);
+		galleryObject.thumbnail = response.data?.path;
 
 		for (let image of sliderImagesFile) {
 			const randomText = getRandomTextNumber();
@@ -103,13 +103,11 @@
 					}
 				});
 		}
+
 		// Convert galleryObject.images to a valid array string format
 		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
 		galleryObject.images = `{${imagesArray.join(',')}}`;
 		// console.log('galleryObject ::::', galleryObject);
-
-		// console.log(response);
-		galleryObject.thumbnail = response.data?.path;
 
 		insertData(galleryObject, galleryDataLang, data.supabase);
 
@@ -148,10 +146,8 @@
 		// console.log('galleryObject//', galleryObject);
 	}
 
-	//create object for image
 	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
 			const imgUrl = URL.createObjectURL(image);
 			return {
 				id: i,
@@ -160,47 +156,18 @@
 				attribution: ''
 			};
 		});
-		console.log('test//', carouselImages);
+		// console.log('test//', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
 	}
-
-	const conf = {
-		toolbar:
-			'undo redo | a11ycheck casechange blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | ' +
-			'bullist numlist checklist outdent indent | removeformat | code table help',
-		plugins: [
-			'a11ychecker',
-			'advlist',
-			'advcode',
-			'advtable',
-			'autolink',
-			'checklist',
-			'export',
-			'lists',
-			'link',
-			'image',
-			'charmap',
-			'preview',
-			'anchor',
-			'searchreplace',
-			'visualblocks',
-			'powerpaste',
-			'fullscreen',
-			'formatpainter',
-			'insertdatetime',
-			'media',
-			'table',
-			'help',
-			'wordcount'
-		],
-		height: 500
-	};
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
+<div
+	style="min-height: calc(100vh - 160px);"
+	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4]"
+>
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -280,7 +247,7 @@
 										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Short description</Label>
+										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
@@ -290,16 +257,11 @@
 										/>
 										<!-- <Message name="short_description" /> -->
 									</div>
+
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">Gallery detail</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<Editor
-												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-												channel="5-dev"
-												text="readonly-text-output"
-												bind:value={langData.long_description}
-												{conf}
-											/>
+											<EditorComponent {langData} />
 										</div>
 									</div>
 								</div>
@@ -315,23 +277,24 @@
 			<!-- upload gallery image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+					<Label for="pdf_file" class="mb-2">Upload Gallery Image</Label>
 					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 				</Label>
 			</div>
 
-			<!-- button for submitForm -->
+			<!-- submit Form -->
 			<div class="w-full flex justify-end mt-2">
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"
-					class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
 				>
 					Submit
 				</button>
 			</div>
 		</Form>
 	</div>
+
 	<div class="h-full p-2 col-span-1 pt-20">
 		<div>
 			<Tabs style="underline">

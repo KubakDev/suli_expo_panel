@@ -7,14 +7,19 @@
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { MagazineModel, MagazineModelLang } from '../../../models/magazineModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
-	import { onMount } from 'svelte';
-	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
-	import { goto } from '$app/navigation';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+<<<<<<< HEAD
 	import CustomFileUpload from '$lib/components/CustomFileUpload.svelte';
+=======
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
+
+>>>>>>> ca9b1d901f11311bcdf558e3dff2ffbc89252670
 	export let data;
 
 	let submitted = false;
@@ -22,6 +27,7 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
+	let pdfFiles: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
@@ -30,6 +36,7 @@
 	let magazineObject: MagazineModel = {
 		images: [],
 		thumbnail: '',
+		pdf_files: [],
 		created_at: new Date(),
 		id: 0
 	};
@@ -38,7 +45,7 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('sdffff//////', exhibitionData);
+			// console.log('//////', exhibitionData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -70,9 +77,7 @@
 		reader.onloadend = () => {
 			magazineObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-
-			// console.log('galleryObject////////////', galleryObject);
+			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);
@@ -84,11 +89,40 @@
 		getImagesObject();
 	} //**dropzone**//
 
+	//**pdf files**//
+	function getPDFObject() {
+		for (let pdf of pdfFiles) {
+			console.log('PDF file:', pdf.name);
+		}
+	}
+
+	function getAllPDFFile(e: { detail: File[] }) {
+		pdfFiles = e.detail;
+		getPDFObject();
+	}
+
+	//**pdf files**//
+
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
 
+		// Upload magazine thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+		magazineObject.thumbnail = response.data?.path;
+
+		// Upload PDF files
+		for (let pdf of pdfFiles) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
+				.from('PDF')
+				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
+				.then((response) => {
+					if (response.data) {
+						magazineObject.pdf_files.push(response.data.path);
+					}
+				});
+		}
 
 		for (let image of sliderImagesFile) {
 			const randomText = getRandomTextNumber();
@@ -98,18 +132,17 @@
 				.then((response) => {
 					if (response.data) {
 						magazineObject.images.push(response.data.path);
-						// console.log('response ::::', response);
 					}
 				});
 		}
-		// Convert magazineObject.images to a valid array string format
+
+		// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
 		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
+		const pdfFilesArray = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
 		magazineObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('magazineObject ::::', magazineObject);
+		magazineObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
 
-		// console.log(response);
-		magazineObject.thumbnail = response.data?.path;
-
+		// Insert data into Supabase
 		insertData(magazineObject, magazineDataLang, data.supabase);
 
 		resetForm();
@@ -130,7 +163,7 @@
 			id: 0
 		};
 
-		magazineDataLang = []; // Resetting galleryDataLang to an empty array
+		magazineDataLang = []; // Resetting magazineDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
 			magazineDataLang.push({
 				title: '',
@@ -144,13 +177,11 @@
 
 	function handleSelectChange(event: any) {
 		magazineObject.exhibition_id = event.target.value;
-		// console.log('galleryObject//', galleryObject);
+		// console.log('magazineObject//', magazineObject);
 	}
 
-	//get thumbnail
 	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
 			const imgUrl = URL.createObjectURL(image);
 			return {
 				id: i,
@@ -159,7 +190,7 @@
 				attribution: ''
 			};
 		});
-		console.log('test//', carouselImages);
+		// console.log('test//', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
@@ -195,7 +226,6 @@
 						<DateInput bind:value={magazineObject.created_at} format="yyyy/MM/dd" />
 					</Label>
 				</div>
-
 				<div>
 					<label class="space-y-2 mb-2">
 						<label for="large-input" class="block">Exhibition Type</label>
@@ -213,6 +243,8 @@
 						</select>
 					</label>
 				</div>
+
+				<!-- upload PDF file  -->
 
 				<br />
 
@@ -261,16 +293,12 @@
 										/>
 										<!-- <Message name="short_description" /> -->
 									</div>
+
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<Label for="textarea-id" class="mb-2">Magazine detail</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<EditorComponent {langData} />
+										</div>
 									</div>
 								</div>
 							</TabItem>
@@ -282,12 +310,24 @@
 				<br />
 			</div>
 
-			<!-- upload magazine image -->
+			<!-- upload Magazine image -->
 			<div>
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
+<<<<<<< HEAD
 					<!-- <CustomFileUpload /> -->
+=======
+>>>>>>> ca9b1d901f11311bcdf558e3dff2ffbc89252670
 					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+					<!-- <FileUploadComponent /> -->
+				</Label>
+			</div>
+
+			<!-- upload pdf file -->
+			<div class="py-20">
+				<Label class="space-y-2 mb-2">
+					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
+					<FileUploadComponent on:imageFilesChanges={getAllPDFFile} />
 					<!-- <FileUploadComponent /> -->
 				</Label>
 			</div>
@@ -308,7 +348,7 @@
 	<div class="h-full p-2 col-span-1 pt-20">
 		<div>
 			<Tabs style="underline">
-				<TabItem open title="Gallery List">
+				<TabItem open title="Magazine List">
 					<div
 						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 						style="min-height: calc(100vh - 300px);"
@@ -330,7 +370,7 @@
 						<div />
 					</div>
 				</TabItem>
-				<TabItem title="Gallery Detail">
+				<TabItem title="Magazine Detail">
 					{#each magazineDataLang as langData}
 						{#if langData.language === selectedLanguageTab}
 							<DetailPage

@@ -196,7 +196,7 @@
 										<!-- <Message name="short_description" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Gallery detail</Label>
+										<Label for="textarea-id" class="mb-2">About Paragraph</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
 											<Editor
 												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}

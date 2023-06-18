@@ -213,6 +213,8 @@
 					</label>
 				</div>
 
+				<!-- upload PDF file  -->
+
 				<br />
 
 				<div class="col-span-3">

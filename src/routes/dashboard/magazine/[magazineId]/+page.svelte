@@ -3,9 +3,9 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData } from '../../../../stores/galleryStore';
+	import { updateData } from '../../../../stores/magazineStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
-	import type { GalleryModel, GalleryModelLang } from '../../../../models/galleryModel';
+	import type { MagazineModel, MagazineModelLang } from '../../../../models/magazineModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
@@ -18,7 +18,6 @@
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import Editor from '@tinymce/tinymce-svelte';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -29,15 +28,15 @@
 	let submitted = false;
 	let showToast = false;
 
-	let galleryDataLang: GalleryModelLang[] = [];
-	let galleryData: GalleryModel = {
+	let magazineDataLang: MagazineModelLang[] = [];
+	let magazineData: MagazineModel = {
 		id: 0,
 		images: [],
 		thumbnail: '',
 		exhibition_type: '',
 		created_at: new Date()
 	};
-	const id = $page.params.galleryId;
+	const id = $page.params.magazineId;
 	let images: ImagesModel[] = [];
 
 	let exhibitionData: ExhibitionModel[] = [];
@@ -53,14 +52,14 @@
 	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//
-	async function getDataGallery() {
+	async function getMagazineData() {
 		await data.supabase
-			.from('gallery')
-			.select('*,gallery_languages(*)')
+			.from('magazine')
+			.select('*,magazine_languages(*)')
 			.eq('id', id)
 			.single()
 			.then((result) => {
-				galleryData = {
+				magazineData = {
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					images: result.data?.images,
@@ -70,34 +69,35 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				// console.log('gallery data get db thumbnail : ////////', galleryData.thumbnail);
-				// console.log('gallery data get db images: ////////', galleryData.images);
+				console.log('magazine data get db thumbnail : ////////', magazineData.thumbnail);
+				console.log('magazine data get db images: ////////', magazineData.images);
 
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
-					const index = result.data?.gallery_languages.findIndex(
-						(galleryLang: GalleryModelLang) =>
-							galleryLang.language == LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+					const index = result.data?.magazine_languages.findIndex(
+						(magazineLang: MagazineModelLang) =>
+							magazineLang.language ==
+							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					);
-					const galleryLang = result.data?.gallery_languages[index];
-					galleryDataLang.push({
-						title: galleryLang?.title ?? '',
-						short_description: galleryLang?.short_description ?? '',
-						long_description: galleryLang?.long_description ?? '',
-						// created_at: galleryLang ? new Date(galleryLang.created_at) : new Date(),
+					const magazineLang = result.data?.magazine_languages[index];
+					magazineDataLang.push({
+						title: magazineLang?.title ?? '',
+						short_description: magazineLang?.short_description ?? '',
+						long_description: magazineLang?.long_description ?? '',
+						// created_at: magazineLang ? new Date(magazineLang.created_at) : new Date(),
 						language:
-							galleryLang?.language ??
+							magazineLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 				}
-				galleryDataLang = [...galleryDataLang];
-				galleryData = { ...galleryData };
+				magazineDataLang = [...magazineDataLang];
+				magazineData = { ...magazineData };
 				getImagesObject();
 			});
 	}
 
 	onMount(async () => {
-		await getDataGallery();
+		await getMagazineData();
 	});
 
 	//** for swapping between languages**//
@@ -115,11 +115,11 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			galleryData.thumbnail = reader.result as '';
+			magazineData.thumbnail = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(galleryData);
+			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
+			// console.log(magazineData);
 		};
 		reader.readAsDataURL(file);
 	} //**for upload thumbnail image**//
@@ -132,7 +132,7 @@
 
 	//get image
 	function getImage() {
-		let result = galleryData.images.map((image, i) => {
+		let result = magazineData.images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: image,
@@ -147,14 +147,14 @@
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
-		galleryData.images = [];
+		magazineData.images = [];
 		if (imageFile) {
-			if (galleryData.thumbnail) {
-				await data.supabase.storage.from('image').remove([galleryData.thumbnail]);
+			if (magazineData.thumbnail) {
+				await data.supabase.storage.from('image').remove([magazineData.thumbnail]);
 			}
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			galleryData.thumbnail = response.data?.path;
+			magazineData.thumbnail = response.data?.path;
 		}
 
 		if (sliderImagesFile.length > 0) {
@@ -162,27 +162,27 @@
 				const randomText = getRandomTextNumber();
 				const responseMultiple = await data.supabase.storage
 					.from('image')
-					.upload(`gallery/${randomText}_${image.name}`, image!);
+					.upload(`magazine/${randomText}_${image.name}`, image!);
 				// console.log('responseMultiple:', responseMultiple);
 
 				if (responseMultiple.data?.path) {
-					galleryData.images.push(responseMultiple.data?.path);
+					magazineData.images.push(responseMultiple.data?.path);
 				}
 			}
 		}
 		for (let image of existingImages) {
-			galleryData.images.push(image);
+			magazineData.images.push(image);
 		}
-		// Convert galleryObject.images to a valid array string format
-		const imagesArray = galleryData.images.map((image) => `"${image}"`);
-		galleryData.images = `{${imagesArray.join(',')}}`;
+		// Convert magazine.images to a valid array string format
+		const imagesArray = magazineData.images.map((image) => `"${image}"`);
+		magazineData.images = `{${imagesArray.join(',')}}`;
 
-		updateData(galleryData, galleryDataLang, data.supabase);
+		updateData(magazineData, magazineDataLang, data.supabase);
 
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
-		goto('/dashboard/gallery');
+		goto('/dashboard/magazine');
 	}
 
 	function imageChanges(e: any) {
@@ -208,13 +208,13 @@
 	}
 
 	function handleSelectChange(event: any) {
-		galleryData.exhibition_id = event.target.value;
+		magazineData.exhibition_id = event.target.value;
 		// console.log(event.target.value);
 	}
 
 	//get thumbnail
 	function getImagesObject() {
-		carouselImages = galleryData.images.map((image, i) => {
+		carouselImages = magazineData.images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
@@ -229,6 +229,39 @@
 			carouselImages = undefined;
 		}
 	}
+
+	// text editor
+	const conf = {
+		toolbar:
+			'undo redo | a11ycheck casechange blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | ' +
+			'bullist numlist checklist outdent indent | removeformat | code table help',
+		plugins: [
+			'a11ychecker',
+			'advlist',
+			'advcode',
+			'advtable',
+			'autolink',
+			'checklist',
+			'export',
+			'lists',
+			'link',
+			'image',
+			'charmap',
+			'preview',
+			'anchor',
+			'searchreplace',
+			'visualblocks',
+			'powerpaste',
+			'fullscreen',
+			'formatpainter',
+			'insertdatetime',
+			'media',
+			'table',
+			'help',
+			'wordcount'
+		],
+		height: 500
+	};
 </script>
 
 <div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
@@ -240,20 +273,20 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
+			<h1 class="text-xl font-bold mb-8">Magazine Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+						<Label for="first_name" class="mb-2">Upload Magazine Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={galleryData.created_at} />
+						<DateInput bind:value={magazineData.created_at} />
 					</Label>
 				</div>
 				<div>
@@ -267,8 +300,8 @@
 							on:change={handleSelectChange}
 						>
 							<option disabled selected>
-								{galleryData.exhibition_id
-									? exhibitionData.find((item) => item.id == galleryData.exhibition_id)
+								{magazineData.exhibition_id
+									? exhibitionData.find((item) => item.id == magazineData.exhibition_id)
 											?.exhibition_type
 									: 'Select type'}
 							</option>
@@ -284,7 +317,7 @@
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
-						{#each galleryDataLang as langData}
+						{#each magazineDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -306,7 +339,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Gallery Title</Label>
+										<Label for="first_name" class="mb-2">Magazine Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -330,7 +363,13 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+											<Editor
+												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+												channel="5-dev"
+												text="readonly-text-output"
+												bind:value={langData.long_description}
+												{conf}
+											/>
 										</div>
 									</div>
 								</div>
@@ -343,10 +382,10 @@
 				<br />
 			</div>
 
-			<!-- upload gallery image -->
+			<!-- upload magazine image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Images</Label>
+					<Label for="first_name" class="mb-2">Upload Magazine Images</Label>
 					<FileUploadComponent
 						on:imageChanges={imageChanges}
 						on:imageFilesChanges={getAllImageFile}
@@ -369,19 +408,19 @@
 	</div>
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
-			<TabItem open title="Gallery List">
+			<TabItem open title="Magazine List">
 				<div
 					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 					style="min-height: calc(100vh - 300px);"
 				>
 					<div class="flex justify-start items-start">
-						{#each galleryDataLang as langData}
+						{#each magazineDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<ExpoCard
 									cardType={CardType.Main}
 									title={langData.title}
 									short_description={langData.short_description}
-									thumbnail={galleryData.thumbnail}
+									thumbnail={magazineData.thumbnail}
 									primaryColor="bg-primary"
 								/>
 							{/if}
@@ -391,8 +430,8 @@
 					<div />
 				</div>
 			</TabItem>
-			<TabItem title="Gallery Detail">
-				{#each galleryDataLang as langData}
+			<TabItem title="Magazine Detail">
+				{#each magazineDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
 						<DetailPage
 							bind:imagesCarousel={carouselImages}

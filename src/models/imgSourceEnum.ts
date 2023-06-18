@@ -1,4 +1,5 @@
 export enum ImgSourceEnum {
-  local = 'local',
-  remote = 'remote',
+	local = 'local',
+	remote = 'remote',
+	pdf = 'pdf'
 }
