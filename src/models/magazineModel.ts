@@ -4,6 +4,7 @@ export interface MagazineModel {
 	id?: number;
 	exhibition_id?: number;
 	images: string[] | string;
+	pdf_files: string[] | string;
 	thumbnail: string;
 	exhibition_type?: '';
 	created_at?: Date;
