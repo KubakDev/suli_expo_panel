@@ -19,7 +19,7 @@
 		Spinner
 	} from 'flowbite-svelte';
 	import { ChatBubbleBottomCenter, Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
-	import { canvasToFile } from '$lib/utils/canva_to_image';
+	import { canvasToDataUrl, canvasToFile } from '$lib/utils/canva_to_image';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import { alertStore } from '../../../../stores/alertStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
@@ -28,6 +28,11 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { seatServiceStore } from '../../../../stores/seatServicesStore';
 	import Sortable from 'sortablejs';
+	import { EditingMode } from '../../../../models/editingModeModel';
+
+	let iconCanvas = new fabric.StaticCanvas();
+	iconCanvas.setWidth(50);
+	iconCanvas.setHeight(50);
 
 	export let data: PageData;
 	let canvas: any;
@@ -79,7 +84,6 @@
 
 	// Function to update layers
 	const updateLayers = () => {
-		console.log(canvas.getObjects());
 		objects = canvas
 			.getObjects()
 			.filter((object: any) => !(object.type !== 'group' && object.groupId !== undefined))
@@ -87,7 +91,8 @@
 				if (object.type === 'group') {
 					// This object is a group, add group-specific information
 					return {
-						id: index,
+						id: object.id,
+						icon: object.icon,
 						type: object.type,
 						isGroup: true,
 						children: object._objects.map((child: any, childIndex: number) => {
@@ -98,34 +103,33 @@
 						})
 					};
 				} else {
-					// This object is not a group
 					return {
-						id: index,
+						icon: object.icon,
+						id: object.id,
 						type: object.type,
 						isGroup: false
 					};
 				}
 			});
-		console.log('objects ', objects);
 		const el = document.getElementById('layers');
 		const sortable = Sortable.create(el, {
 			onEnd: (evt: any) => {
 				const id = evt.item.dataset.id;
-				console.log('id ', evt.item);
+				console.log('id ', id);
 				const object = canvas.getObjects().find((obj: any) => obj.id == id);
-				console.log('object ', canvas.getObjects());
-				console.log('object ', object);
 				if (object) {
 					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
 					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
 					// Ensure index is within array bounds.
 					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
 					// Move the object to the new position.
+					console.log('newIndex ', newIndex);
 					object.moveTo(newIndex);
+					console.log('object ', object);
 					// Rerender canvas.
 					canvas.renderAll();
 					// Update the layers in the UI.
-					updateLayers();
+					// updateLayers();
 				}
 			}
 		});
@@ -134,16 +138,16 @@
 	$: {
 		images = $seatImageItemStore;
 	}
-	const adjustCanvasSize = () => {
-		if (canvas) {
-			canvas.setDimensions({
-				width: container.offsetWidth,
-				height: container.offsetHeight
-			});
-			// Create a rectangle with no fill, only a stroke (border)
-			// Create a rectangle with no fill, only a stroke (border)
-		}
-	};
+	// const adjustCanvasSize = () => {
+	// 	console.log('adjustCanvasSize ', container.offsetWidth);
+	// 	if (canvas) {
+	// 		canvas.setDimensions({
+	// 			width: container.offsetWidth
+	// 		});
+	// 		// Create a rectangle with no fill, only a stroke (border)
+	// 		// Create a rectangle with no fill, only a stroke (border)
+	// 	}
+	// };
 	function createCustomRectangle() {
 		var pathData = [
 			`M ${topLeftRadius} 0`,
@@ -253,14 +257,12 @@
 				.then(async (result) => {
 					const data: any = result.data;
 					exhibitionName = data.name;
+					const design = data.design;
 					console.log(data);
 					if (data && data['design']) {
 						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
 					}
-					canvas.setDimensions({
-						width: container.offsetWidth,
-						height: container.offsetHeight
-					});
+
 					console.log('//////canvas.width', canvas.width);
 					for (var i = 0; i < canvas.width / gridSize; i++) {
 						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
@@ -282,15 +284,19 @@
 						// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
 						// canvas.add(customRect);
 					}
+					const prevCanvasWidth = design.width;
+					const prevCanvasHeight = design.height;
 
+					const prevCanvasRatio = prevCanvasWidth / prevCanvasHeight;
+
+					const newCanvasHeight = container.offsetWidth / prevCanvasRatio;
+					canvas.setWidth(container.offsetHeight);
+
+					canvas.setHeight(newCanvasHeight);
+					canvas.renderAll();
 					// Ensure the border always stays in the back of other objects
 				});
 		}
-
-		canvas.on('object:added', function () {
-			console.log('object:added');
-			updateLayers();
-		});
 
 		// Handle object removed
 		canvas.on('object:removed', () => {
@@ -312,10 +318,10 @@
 		// 	object.angle = Math.round(object.angle! / 10) * 10;
 		// });
 
-		if (typeof window !== 'undefined') {
-			window.addEventListener('resize', adjustCanvasSize);
-			adjustCanvasSize();
-		}
+		// if (typeof window !== 'undefined') {
+		// 	window.addEventListener('resize', adjustCanvasSize);
+		// 	adjustCanvasSize();
+		// }
 
 		// canvas.bringToFront(rect);
 		// canvas.bringToFront(aa);
@@ -374,7 +380,7 @@
 						selectable: false
 					}
 				);
-
+				liveLine['id'] = new Date().getTime();
 				canvas.add(liveLine);
 				lines.push(liveLine);
 
@@ -392,7 +398,7 @@
 						strokeWidth: 1,
 						selectable: true
 					});
-
+					polygon['id'] = new Date().getTime();
 					canvas.add(polygon);
 					canvas.renderAll(); // You might need to request a re-render of the canvas
 
@@ -406,6 +412,7 @@
 						canvas.remove(line);
 					}
 					lines = [];
+					updateLayers();
 				}
 			}
 
@@ -582,17 +589,27 @@
 	}
 
 	afterUpdate(() => {
-		adjustCanvasSize();
+		// adjustCanvasSize();
 	});
 
 	onDestroy(() => {
 		if (typeof window !== 'undefined') {
-			window.removeEventListener('resize', adjustCanvasSize);
+			// window.removeEventListener('resize', adjustCanvasSize);
 		}
 	});
 
 	async function convetToObject() {
-		let json = canvas.toObject(['left', 'top', 'width', 'height', 'fill']);
+		let json = canvas.toObject([
+			'left',
+			'top',
+			'width',
+			'height',
+			'fill',
+			'id',
+			'stroke',
+			'strokeWidth',
+			'icon'
+		]);
 		console.log(json);
 		const supabase = data.supabase;
 		// convert canvas to image fil	e
@@ -604,7 +621,6 @@
 			.from('image')
 			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
 		console.log(fileResult.data);
-
 		if (!fileResult.data) {
 			alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
 			return;
@@ -651,6 +667,10 @@
 	}
 
 	function onShapeSelected(image: SeatImageItemModel | null = null) {
+		let iconCanvas = new fabric.StaticCanvas(null);
+		iconCanvas.setWidth(50);
+		iconCanvas.setHeight(50);
+
 		fabric.Image.fromURL(
 			image?.image_url!,
 			function (img) {
@@ -661,25 +681,33 @@
 					scaleX: 0.5,
 					scaleY: 0.5
 				});
-
+				img.id = new Date().getTime();
 				// Add the image to the canvas
-				canvas.add(img);
 
-				// Trigger canvas rendering
+				let scale = Math.max(
+					iconCanvas.getWidth() / img.width!,
+					iconCanvas.getHeight() / img.height!
+				);
+				const newImg = new fabric.Image(img.getElement(), {
+					scaleX: scale,
+					scaleY: scale,
+					left: iconCanvas.getWidth() / 2,
+					top: iconCanvas.getHeight() / 2,
+					originX: 'center',
+					originY: 'center'
+				});
+				iconCanvas.add(newImg);
+				iconCanvas.renderAll();
+
+				let iconDataURL = canvasToDataUrl(iconCanvas);
+				img.icon = iconDataURL;
+
+				canvas.add(img);
 				canvas.renderAll();
+				updateLayers();
 			},
 			{ crossOrigin: 'anonymous' }
 		);
-	}
-
-	function onPenSelect() {
-		canvas.isDrawingMode = !canvas.isDrawingMode;
-		canvas.freeDrawingBrush.width = 5;
-		canvas.freeDrawingBrush.color = 'red';
-	}
-
-	function onDrawLine() {
-		isDrawing = !isDrawing;
 	}
 
 	async function onFileSelected(e: any) {
@@ -943,10 +971,18 @@
 					// set to object to null
 					// image.toObject() = () => null;
 					//image.scale(getRandomNum(0.1, 0.25)).setCoords();
+					const containerWidth = container.offsetWidth;
 
-					// change canvas size to image size
-					canvas.setWidth(image.width!);
-					canvas.setHeight(image.height!);
+					const imageRatio = image.width! / image.height!;
+
+					// change canvas size to fit container
+					canvas.setWidth(containerWidth);
+
+					// set image height to respect ratio
+
+					const canvasHeight = containerWidth / imageRatio;
+
+					canvas.setHeight(canvasHeight);
 
 					canvas.setBackgroundImage(image, canvas.renderAll.bind(canvas), {
 						scaleX: canvas.width / image!.width!,
@@ -970,12 +1006,75 @@
 
 	// Function to enable text adding mode
 	const enableTextMode = () => {
-		isAddingText = true;
+		canvas.isDrawingMode = false;
+		isDrawing = false;
+		isAddingText = !isAddingText;
 	};
+
+	function onPenSelect() {
+		isDrawing = false;
+		isAddingText = false;
+		canvas.isDrawingMode = !canvas.isDrawingMode;
+		canvas.freeDrawingBrush.width = 5;
+		canvas.freeDrawingBrush.color = 'red';
+	}
+
+	function onDrawLine() {
+		canvas.isDrawingMode = false;
+		isAddingText = false;
+		isDrawing = !isDrawing;
+	}
+
+	function selectEditingMode(modeType: EditingMode) {
+		switch (modeType) {
+			case EditingMode.Draw:
+				onPenSelect();
+				break;
+			case EditingMode.Text:
+				enableTextMode();
+				break;
+			case EditingMode.Line:
+				onDrawLine();
+				break;
+		}
+	}
 </script>
 
 <div class="flex flex-col w-full h-full flex-1">
-	<div class="flex justify-center bg-secondary border-b border-gray-500 p-2">
+	<div class="flex justify-between bg-secondary border-b border-gray-500 h-16">
+		<div class="flex justify-between">
+			<div on:click={() => createItem()} class="seat-design rounded cursor-move">Shape</div>
+			<Button
+				class="h-full border-none rounded-none"
+				size="lg"
+				color={canvas && canvas.isDrawingMode ? 'primary' : 'secondary'}
+			>
+				<Pencil
+					on:click={() => selectEditingMode(EditingMode.Draw)}
+					size="30"
+					class="text-white  outline-none"
+				/>
+			</Button>
+			<Button
+				class="h-full border-none rounded-none"
+				size="lg"
+				color={isDrawing ? 'primary' : 'secondary'}
+			>
+				<Pencil
+					on:click={() => selectEditingMode(EditingMode.Line)}
+					size="30"
+					class=" text-white dark:text-green-700 outline-none "
+				/>
+			</Button>
+			<Button
+				id="group-button"
+				class="h-full border-none rounded-none"
+				size="lg"
+				color={isAddingText ? 'primary' : 'secondary'}
+				on:click={() => selectEditingMode(EditingMode.Text)}
+				><ChatBubbleBottomCenter color="white" /></Button
+			>
+		</div>
 		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={toggleBackgroundImage}
 			>Toggle background</Button
 		>
@@ -1012,44 +1111,9 @@
 			color={isDrawing ? 'dark' : 'light'}
 			on:click={unGroupObjects}>UnGroup</Button
 		>
-		<Button
-			class="!p-2 mx-4 bg-red"
-			size="lg"
-			color={isDrawing ? 'dark' : 'light'}
-			on:click={removeSelectedObject}>Delete</Button
-		>
 	</div>
 	<div class="w-full grid grid-cols-6 h-full">
 		<div class="flex flex-col p-4 bg-secondary">
-			<div class="flex justify-between">
-				<div on:click={() => createItem()} class="seat-design rounded cursor-move">
-					<svg xmlns="http://www.w3.org/2000/svg" width={50} height={50}>
-						<rect width="100%" height="100%" rx="5" ry="5" />
-						<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
-					</svg>
-				</div>
-				<Button
-					class="!p-2 w-10 h-10 bg-red"
-					size="lg"
-					color={canvas && canvas.isDrawingMode ? 'dark' : 'light'}
-				>
-					<Pencil
-						on:click={onPenSelect}
-						size="30"
-						class="text-red-700 dark:text-green-700 outline-none "
-					/>
-				</Button>
-				<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
-					<Pencil
-						on:click={onDrawLine}
-						size="30"
-						class=" text-black dark:text-green-700 outline-none "
-					/>
-				</Button>
-				<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={enableTextMode}
-					><ChatBubbleBottomCenter /></Button
-				>
-			</div>
 			<div class="grid grid-cols-2 gap-2 rounded-md my-6">
 				<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
 					<Plus class="w-full h-full" />
@@ -1141,17 +1205,18 @@
 				{/if}
 			</Modal>
 			<div class="mt-4">
-				<h2>Layers</h2>
-
-				<ul id="layers">
+				<div class="text-white text-xl my-4">Layers</div>
+				<ul id="layers" style="height: 30vh " class="overflow-y-scroll">
 					{#each objects as object (object.id)}
 						<li
 							data-id={object.id}
-							class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 {object.isGroup
+							class="layer mb-2 p-1 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 flex justify-start items-center {object.isGroup
 								? 'bg-blue-50'
 								: 'bg-gray-50'}"
 						>
-							<span>{object.type} {object.id + 1}</span>
+							<img src={object.icon} alt="Object icon" class="object-icon w-8 h-8" />
+							<div class="w-2 h-full" />
+							<span>{object.type}</span>
 							{#if object.isGroup}
 								<ul class="ml-4">
 									{#each object.children as child (child.id)}

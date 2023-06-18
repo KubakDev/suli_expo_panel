@@ -28,7 +28,7 @@ export const load = async () => {
 		},
 		{
 			title: 'about',
-			url: '/dashboard/create_About'
+			url: '/dashboard/about'
 		},
 
 		{
