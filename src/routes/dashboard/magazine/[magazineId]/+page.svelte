@@ -11,19 +11,23 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import Editor from '@tinymce/tinymce-svelte';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
+	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
+	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
+	let pdfFiles: File[] = [];
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
@@ -33,6 +37,7 @@
 		id: 0,
 		images: [],
 		thumbnail: '',
+		pdf_files: [],
 		exhibition_type: '',
 		created_at: new Date()
 	};
@@ -66,13 +71,15 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
+					pdf_files: result.data?.pdf_files,
 					created_at: new Date(result.data?.created_at)
 				};
 
-				console.log('magazine data get db thumbnail : ////////', magazineData.thumbnail);
-				console.log('magazine data get db images: ////////', magazineData.images);
+				// console.log('magazine data get db pdf files : ////////', magazineData.pdf_files);
+				// console.log('magazine data get db images: ////////', magazineData.images);
 
 				images = getImage();
+				pdfFiles = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.magazine_languages.findIndex(
 						(magazineLang: MagazineModelLang) =>
@@ -127,8 +134,16 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		console.log(sliderImagesFile);
+		// console.log(sliderImagesFile);
 	}
+
+	//**pdf files**//
+
+	function getAllPDFFile(e: { detail: File[] }) {
+		sliderPDFFile = e.detail;
+	}
+
+	//**pdf files**//
 
 	//get image
 	function getImage() {
@@ -140,6 +155,19 @@
 			};
 		});
 		// console.log('first', result);
+		return result;
+	}
+
+	//get pdf File
+	function getPdfFile() {
+		let result = magazineData.pdf_files.map((file, i) => {
+			return {
+				id: i,
+				fileName: file,
+				imgSource: ImgSourceEnum.PdfRemote
+			};
+		});
+		console.log('first pdf file ', result);
 		return result;
 	}
 
@@ -177,8 +205,28 @@
 		const imagesArray = magazineData.images.map((image) => `"${image}"`);
 		magazineData.images = `{${imagesArray.join(',')}}`;
 
-		updateData(magazineData, magazineDataLang, data.supabase);
+		// ***insert pdf *****//
+		if (sliderPDFFile.length > 0) {
+			for (let PDFfile of sliderPDFFile) {
+				const randomText = getRandomTextNumber();
+				const responseMultiple = await data.supabase.storage
+					.from('PDF')
+					.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
 
+				if (responseMultiple.data?.path) {
+					magazineData.pdf_files.push(responseMultiple.data.path);
+				}
+			}
+		}
+		for (let pd of existingPDFfiles) {
+			magazineData.pdf_files.push(pd);
+		}
+		// Convert magazine.images to a valid array string format
+		const pdfArray = magazineData.pdf_files.map((file) => `"${file}"`);
+		magazineData.pdf_files = `{${pdfArray.join(',')}}`;
+
+		updateData(magazineData, magazineDataLang, data.supabase);
+		console.log('result before store :', magazineData);
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
@@ -186,15 +234,13 @@
 	}
 
 	function imageChanges(e: any) {
-		console.log(e.detail);
 		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
-		console.log('%%%%%%%%%%%%');
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
+				// console.log('///////', image);
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -207,12 +253,30 @@
 		// console.log('carouselImages data :::::', carouselImages);
 	}
 
+	function pdfChanges(e: any) {
+		// console.log(e.detail);
+		let result: any = [];
+		let customImages: any = [];
+		e.detail.forEach((files: any) => {
+			if (files.imgSource === ImgSourceEnum.PdfRemote) {
+				result.push(files.imgurl);
+				const newFile = { ...files };
+				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${files.imgurl}`;
+				// customImages.push(newFile);
+				console.log('first');
+			} else {
+				// customImages.push(files);
+			}
+		});
+		existingPDFfiles = customImages;
+		// console.log('carouselImages data :::::', existingPDFfiles);
+	}
+
 	function handleSelectChange(event: any) {
 		magazineData.exhibition_id = event.target.value;
 		// console.log(event.target.value);
 	}
 
-	//get thumbnail
 	function getImagesObject() {
 		carouselImages = magazineData.images.map((image, i) => {
 			return {
@@ -229,39 +293,6 @@
 			carouselImages = undefined;
 		}
 	}
-
-	// text editor
-	const conf = {
-		toolbar:
-			'undo redo | a11ycheck casechange blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | ' +
-			'bullist numlist checklist outdent indent | removeformat | code table help',
-		plugins: [
-			'a11ychecker',
-			'advlist',
-			'advcode',
-			'advtable',
-			'autolink',
-			'checklist',
-			'export',
-			'lists',
-			'link',
-			'image',
-			'charmap',
-			'preview',
-			'anchor',
-			'searchreplace',
-			'visualblocks',
-			'powerpaste',
-			'fullscreen',
-			'formatpainter',
-			'insertdatetime',
-			'media',
-			'table',
-			'help',
-			'wordcount'
-		],
-		height: 500
-	};
 </script>
 
 <div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
@@ -363,13 +394,7 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<Editor
-												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-												channel="5-dev"
-												text="readonly-text-output"
-												bind:value={langData.long_description}
-												{conf}
-											/>
+											<EditorComponent {langData} />
 										</div>
 									</div>
 								</div>
@@ -394,7 +419,19 @@
 				</Label>
 			</div>
 
-			<!-- button for submitForm -->
+			<!-- upload pdf file -->
+			<div class="py-20">
+				<Label class="space-y-2 mb-2">
+					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
+					<PDFUploadComponent
+						on:imageChanges={pdfChanges}
+						on:imageFilesChanges={getAllPDFFile}
+						data={{ images: pdfFiles }}
+					/>
+				</Label>
+			</div>
+
+			<!-- submitForm -->
 			<div class="w-full flex justify-end mt-2">
 				<button
 					on:click|preventDefault={formSubmit}
@@ -406,6 +443,8 @@
 			</div>
 		</Form>
 	</div>
+	<!-- preview data -->
+	<!-- right section -->
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
 			<TabItem open title="Magazine List">

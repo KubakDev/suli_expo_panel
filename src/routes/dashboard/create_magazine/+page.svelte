@@ -14,6 +14,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
@@ -86,19 +87,12 @@
 	} //**dropzone**//
 
 	//**pdf files**//
-	function getPDFObject() {
-		for (let pdf of pdfFiles) {
-			console.log('PDF file:', pdf.name);
-		}
-	}
 
 	function getAllPDFFile(e: { detail: File[] }) {
 		pdfFiles = e.detail;
-		getPDFObject();
 	}
 
 	//**pdf files**//
-
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
@@ -319,8 +313,7 @@
 			<div class="py-20">
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
-					<FileUploadComponent on:imageFilesChanges={getAllPDFFile} />
-					<!-- <FileUploadComponent /> -->
+					<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
 				</Label>
 			</div>
 
