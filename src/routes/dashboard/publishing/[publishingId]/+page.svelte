@@ -58,7 +58,7 @@
 	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//
-	async function getpublishingData() {
+	async function getPublishingData() {
 		await data.supabase
 			.from('publishing')
 			.select('*,publishing_languages(*)')
@@ -105,7 +105,7 @@
 	}
 
 	onMount(async () => {
-		await getpublishingData();
+		await getPublishingData();
 	});
 
 	//** for swapping between languages**//
@@ -203,7 +203,7 @@
 		for (let image of existingImages) {
 			publishingData.images.push(image);
 		}
-		// Convert publishing.images to a valid array string format
+		// Convert publishing images to a valid array string format
 		const imagesArray = publishingData.images.map((image) => `"${image}"`);
 		publishingData.images = `{${imagesArray.join(',')}}`;
 
@@ -309,13 +309,13 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Publishing Data</h1>
+			<h1 class="text-xl font-bold mb-8">publishing Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Publishing Image</Label>
+						<Label for="first_name" class="mb-2">Upload publishing Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
@@ -375,7 +375,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Publishing Title</Label>
+										<Label for="first_name" class="mb-2">publishing Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -415,7 +415,7 @@
 			<!-- upload publishing image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Publishing Images</Label>
+					<Label for="first_name" class="mb-2">Upload publishing Images</Label>
 					<FileUploadComponent
 						on:imageChanges={imageChanges}
 						on:imageFilesChanges={getAllImageFile}
@@ -452,7 +452,7 @@
 	<!-- right section -->
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
-			<TabItem open title="Publishing List">
+			<TabItem open title="publishing List">
 				<div
 					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 					style="min-height: calc(100vh - 300px);"
@@ -474,7 +474,7 @@
 					<div />
 				</div>
 			</TabItem>
-			<TabItem title="Publishing Detail">
+			<TabItem title="publishing Detail">
 				{#each publishingDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
 						<DetailPage
