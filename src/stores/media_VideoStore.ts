@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const vedioStore = writable<VideoModel[]>([]);
 
+//insert a video data
 export const insertData = async (
 	videoObject: VideoModel,
 	videoDataLang: VideoModelLang[],
@@ -21,6 +22,98 @@ export const insertData = async (
 				return [...(currentData || []), ...data];
 			}
 			return currentData || [];
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//Get all media_videos data
+export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+	try {
+		const { data, error } = await supabase
+			.from('media_video')
+			.select('*,media_video_languages(*)')
+			.range((page - 1) * pageSize, page * pageSize - 1)
+			.limit(pageSize)
+			.order('created_at', { ascending: false });
+
+		const { count } = await supabase.from('media_video').select('count', { count: 'exact' });
+
+		console.log('/////////', count);
+		// console.log('data : ', data);
+		const result = {
+			data: data,
+			count: count
+		};
+		return result;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//delete media_videos by id
+export const deleteData = async (mediaVideoId: number, supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase.rpc('delete_media_video_and_video_lang', {
+			data: { id: mediaVideoId }
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		vedioStore.update((currentData) => {
+			if (data) {
+				return currentData.filter((item) => item.id !== mediaVideoId);
+			}
+			return currentData;
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//update media_videos by id
+export const updateData = async (
+	mediaVideoObject: VideoModel,
+	mediaVideoDataLang: VideoModelLang[],
+	supabase: SupabaseClient
+) => {
+	try {
+		console.log('first');
+		const { data, error } = await supabase.rpc('update_media_video_and_video_lang', {
+			mediavideo_data: mediaVideoObject,
+			mediavideo_lang_data: mediaVideoDataLang
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		vedioStore.update((currentMediaVideo) => {
+			if (data) {
+				// Find the index of the updated item
+				const index = currentMediaVideo.findIndex((item) => item.id === mediaVideoObject.id);
+
+				// Create a new array with the updated item
+				const updatedGallery = [
+					...currentMediaVideo.slice(0, index),
+					data,
+					...currentMediaVideo.slice(index + 1)
+				];
+
+				return updatedGallery;
+			}
+
+			return currentMediaVideo;
 		});
 
 		return data;

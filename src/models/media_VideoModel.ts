@@ -7,7 +7,7 @@ export interface VideoModel {
 	created_at?: Date;
 	link?: string;
 	exhibition_type?: string;
-	mediaVideo_languages?: VideoModelLang[];
+	media_video_languages?: VideoModelLang[];
 }
 
 export interface VideoModelLang {

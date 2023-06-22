@@ -13,6 +13,7 @@
 	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
 
@@ -68,7 +69,7 @@
 		reader.onloadend = () => {
 			videoObjectData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `mediaVideoPictures/${randomText}_${file.name}`; // Append random text to the file name
 
 			// console.log('galleryObject////////////', galleryObject);
 		};
@@ -247,15 +248,10 @@
 										<!-- <Message name="short_description" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<Label for="textarea-id" class="mb-2">Video description</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<EditorComponent {langData} />
+										</div>
 									</div>
 								</div>
 							</TabItem>
@@ -283,7 +279,7 @@
 	<div class="h-full p-2 col-span-1 pt-20">
 		<div>
 			<Tabs style="underline">
-				<TabItem open title="Gallery List">
+				<TabItem open title="Video List">
 					<div
 						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 						style="min-height: calc(100vh - 300px);"
