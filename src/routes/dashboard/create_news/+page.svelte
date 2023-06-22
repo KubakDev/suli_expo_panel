@@ -14,6 +14,7 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
 
@@ -242,7 +243,7 @@
 										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Label for="textarea-id" class="mb-2">Short description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
@@ -253,15 +254,10 @@
 										<!-- <Message name="short_description" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<Label for="textarea-id" class="mb-2">News detail</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<EditorComponent {langData} />
+										</div>
 									</div>
 								</div>
 							</TabItem>
