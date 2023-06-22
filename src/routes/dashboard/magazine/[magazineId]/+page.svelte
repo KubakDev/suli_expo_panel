@@ -14,6 +14,7 @@
 	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
+	import type { PDFModel } from '../../../../models/pdfModel';
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
@@ -43,7 +44,7 @@
 	};
 	const id = $page.params.magazineId;
 	let images: ImagesModel[] = [];
-
+	let pdf_files: PDFModel[] = [];
 	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {
 		try {
@@ -75,11 +76,11 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				// console.log('magazine data get db pdf files : ////////', magazineData.pdf_files);
-				// console.log('magazine data get db images: ////////', magazineData.images);
+				console.log('magazine data get db pdf files : ////////', magazineData.pdf_files);
+				console.log('magazine data get db images: ////////', magazineData.images);
 
 				images = getImage();
-				pdfFiles = getPdfFile();
+				pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.magazine_languages.findIndex(
 						(magazineLang: MagazineModelLang) =>
@@ -113,7 +114,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload thumbnail image**//
+	//**for upload magazine image**//
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -129,7 +130,7 @@
 			// console.log(magazineData);
 		};
 		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
+	} //**for upload magazine image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
@@ -163,11 +164,11 @@
 		let result = magazineData.pdf_files.map((file, i) => {
 			return {
 				id: i,
-				fileName: file,
+				imgurl: file,
 				imgSource: ImgSourceEnum.PdfRemote
 			};
 		});
-		console.log('first pdf file ', result);
+		// console.log('first pdf file ', result);
 		return result;
 	}
 
@@ -175,6 +176,7 @@
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
+		magazineData.pdf_files = [];
 		magazineData.images = [];
 		if (imageFile) {
 			if (magazineData.thumbnail) {
@@ -191,7 +193,7 @@
 				const responseMultiple = await data.supabase.storage
 					.from('image')
 					.upload(`magazine/${randomText}_${image.name}`, image!);
-				// console.log('responseMultiple:', responseMultiple);
+				// console.log('responseMultiple img:', responseMultiple);
 
 				if (responseMultiple.data?.path) {
 					magazineData.images.push(responseMultiple.data?.path);
@@ -212,14 +214,15 @@
 				const responseMultiple = await data.supabase.storage
 					.from('PDF')
 					.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
+				// console.log('responseMultiple pdf:', responseMultiple);
 
 				if (responseMultiple.data?.path) {
 					magazineData.pdf_files.push(responseMultiple.data.path);
 				}
 			}
 		}
-		for (let pd of existingPDFfiles) {
-			magazineData.pdf_files.push(pd);
+		for (let pdf of existingPDFfiles) {
+			magazineData.pdf_files.push(pdf);
 		}
 		// Convert magazine.images to a valid array string format
 		const pdfArray = magazineData.pdf_files.map((file) => `"${file}"`);
@@ -233,6 +236,7 @@
 		goto('/dashboard/magazine');
 	}
 
+	//update images
 	function imageChanges(e: any) {
 		// console.log(e.detail);
 		let result: any = [];
@@ -253,6 +257,7 @@
 		// console.log('carouselImages data :::::', carouselImages);
 	}
 
+	//update pdf file
 	function pdfChanges(e: any) {
 		// console.log(e.detail);
 		let result: any = [];
@@ -261,14 +266,14 @@
 			if (files.imgSource === ImgSourceEnum.PdfRemote) {
 				result.push(files.imgurl);
 				const newFile = { ...files };
-				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${files.imgurl}`;
+				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
 				// customImages.push(newFile);
 				console.log('first');
 			} else {
 				// customImages.push(files);
 			}
 		});
-		existingPDFfiles = customImages;
+		existingPDFfiles = result;
 		// console.log('carouselImages data :::::', existingPDFfiles);
 	}
 
@@ -426,7 +431,7 @@
 					<PDFUploadComponent
 						on:imageChanges={pdfChanges}
 						on:imageFilesChanges={getAllPDFFile}
-						data={{ images: pdfFiles }}
+						data={{ pdfFiles: pdf_files }}
 					/>
 				</Label>
 			</div>
