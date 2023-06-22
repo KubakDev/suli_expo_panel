@@ -118,7 +118,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`gallery/${randomText}_${image.name}`, image!)
+				.upload(`magazine/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
 						magazineObject.images.push(response.data.path);
@@ -148,6 +148,7 @@
 		magazineObject = {
 			images: [],
 			thumbnail: '',
+			pdf_files: '',
 			exhibition_type: '',
 			created_at: new Date(),
 			id: 0
