@@ -230,54 +230,52 @@
 		</Form>
 	</div>
 	<div class="h-full p-2 col-span-1 pt-20">
-		<div>
-			<Tabs style="underline">
-				<div class="flex justify-between items-center">
-					<TabItem open title="Service List">
-						<div
-							class="w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
-							<div class="flex justify-start items-start">
-								{#each serviceDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Main}
-											title={langData.title}
-											short_description={langData.short_description}
-											thumbnail={serviceObject.thumbnail}
-											primaryColor={serviceObject.primaryColor}
-											overlayPrimaryColor={serviceObject.onPrimaryColor}
-										/>
-									{/if}
-								{/each}
-							</div>
-
-							<div />
+		<Tabs style="underline">
+			<div class="flex justify-between items-center">
+				<TabItem open title="Service List">
+					<div
+						class="w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+						style="min-height: calc(100vh - 300px);"
+					>
+						<div class="flex justify-start items-start">
+							{#each serviceDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<ExpoCard
+										cardType={CardType.Main}
+										title={langData.title}
+										short_description={langData.short_description}
+										thumbnail={serviceObject.thumbnail}
+										primaryColor={serviceObject.primaryColor}
+										overlayPrimaryColor={serviceObject.onPrimaryColor}
+									/>
+								{/if}
+							{/each}
 						</div>
-					</TabItem>
-					<!-- color picker -->
-					<div class="flex justify-center items-center">
-						<div class="flex px-4 -mb-2">
-							<input
-								type="color"
-								id="colorInput1"
-								name="favcolor1"
-								bind:value={serviceObject.primaryColor}
-								class="w-32 h-14 border-none"
-							/>
 
-							<input
-								type="color"
-								id="colorInput2"
-								name="favcolor2"
-								bind:value={serviceObject.onPrimaryColor}
-								class="w-32 h-14 border-none"
-							/>
-						</div>
+						<div />
+					</div>
+				</TabItem>
+				<!-- color picker -->
+				<div class="flex justify-center items-center">
+					<div class="flex px-4 -mb-2">
+						<input
+							type="color"
+							id="colorInput1"
+							name="favcolor1"
+							bind:value={serviceObject.primaryColor}
+							class="w-32 h-14 border-none"
+						/>
+
+						<input
+							type="color"
+							id="colorInput2"
+							name="favcolor2"
+							bind:value={serviceObject.onPrimaryColor}
+							class="w-32 h-14 border-none"
+						/>
 					</div>
 				</div>
-			</Tabs>
-		</div>
+			</div>
+		</Tabs>
 	</div>
 </div>

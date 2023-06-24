@@ -6,9 +6,9 @@ export interface ServiceModel {
 	thumbnail: string;
 	exhibition_type?: string;
 	created_at?: Date;
-	gallery_languages?: ServiceModelLang[];
 	primaryColor?: string;
 	onPrimaryColor?: string;
+	service_languages?: ServiceModelLang[];
 }
 
 export interface ServiceModelLang {
