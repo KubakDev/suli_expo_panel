@@ -1,7 +1,7 @@
-<script>
-	export let page;
-	export let currentPage;
-	export let onClick;
+<script lang="ts">
+	export let page: number;
+	export let currentPage: number;
+	export let onClick: any;
 </script>
 
 <button

@@ -14,6 +14,6 @@ export interface ServiceModel {
 export interface ServiceModelLang {
 	id?: number;
 	title: string;
-	short_description?: string;
+	short_description: string;
 	language: LanguageEnum;
 }

@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import PaginationButton from './PaginationButton.svelte';
 
-	export let currentPage;
-	export let totalPages;
-	export let goToPage;
+	export let currentPage: number;
+	export let totalPages: number;
+	export let goToPage: any;
 </script>
 
 <div class="py-5 flex justify-end items-center">

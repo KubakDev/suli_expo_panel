@@ -14,8 +14,8 @@ export interface PublishingModel {
 export interface PublishingModelLang {
 	id?: number;
 	title: string;
-	short_description?: string;
-	long_description?: string;
+	short_description: string;
+	long_description: string;
 	language: LanguageEnum;
 	created_at?: Date;
 }

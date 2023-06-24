@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
 	import Editor from '@tinymce/tinymce-svelte';
 
-	export let langData;
+	export let langData: string;
 
 	const conf = {
 		toolbar:
