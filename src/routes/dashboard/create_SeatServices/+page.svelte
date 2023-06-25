@@ -3,15 +3,15 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/seatServicesStore';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { seatServicesModel, seatServicesModelLang } from '../../../models/seatServicesModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { seatServiceStore } from '../../../stores/seatServicesStore';
 
 	export let data;
 
@@ -80,7 +80,7 @@
 		// console.log(response);
 		seatServicesObject.icon = response.data?.path;
 
-		insertData(seatServicesObject, seatServicesDataLang, data.supabase);
+		seatServiceStore.set(seatServicesObject, seatServicesDataLang, data.supabase);
 
 		resetForm();
 		// goto('/dashboard/gallery');

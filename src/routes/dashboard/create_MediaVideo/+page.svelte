@@ -6,7 +6,7 @@
 	import { insertData } from '../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { onMount } from 'svelte';

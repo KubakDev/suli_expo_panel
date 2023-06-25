@@ -7,7 +7,7 @@
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { NewsModel, NewsModelLang } from '../../../models/newsModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';

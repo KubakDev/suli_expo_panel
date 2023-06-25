@@ -6,7 +6,7 @@
 	import { insertData } from '../../../stores/magazineStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { MagazineModel, MagazineModelLang } from '../../../models/magazineModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';

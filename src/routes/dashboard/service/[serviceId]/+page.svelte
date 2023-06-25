@@ -6,7 +6,7 @@
 	import { updateData } from '../../../../stores/serviceStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ServiceModel, ServiceModelLang } from '../../../../models/serviceModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
