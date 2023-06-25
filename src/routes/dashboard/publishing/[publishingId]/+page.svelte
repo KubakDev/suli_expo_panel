@@ -3,16 +3,18 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData } from '../../../../stores/galleryStore';
+	import { updateData } from '../../../../stores/publishingStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
-	import type { GalleryModel, GalleryModelLang } from '../../../../models/galleryModel';
+	import type { PublishingModel, PublishingModelLang } from '../../../../models/publishingModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
+	import type { PDFModel } from '../../../../models/pdfModel';
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
@@ -21,24 +23,28 @@
 
 	export let data;
 	let sliderImagesFile: File[] = [];
+	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
+	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
+	let pdfFiles: File[] = [];
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
 
-	let galleryDataLang: GalleryModelLang[] = [];
-	let galleryData: GalleryModel = {
+	let publishingDataLang: PublishingModelLang[] = [];
+	let publishingData: PublishingModel = {
 		id: 0,
 		images: [],
 		thumbnail: '',
+		pdf_files: [],
 		exhibition_type: '',
 		created_at: new Date()
 	};
-	const id = $page.params.galleryId;
+	const id = $page.params.publishingId;
 	let images: ImagesModel[] = [];
-
+	let pdf_files: PDFModel[] = [];
 	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {
 		try {
@@ -55,54 +61,58 @@
 			console.error(error);
 		}
 	};
+
 	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//
-	async function getDataGallery() {
+	async function getPublishingData() {
 		await data.supabase
-			.from('gallery')
-			.select('*,gallery_languages(*)')
+			.from('publishing')
+			.select('*,publishing_languages(*)')
 			.eq('id', id)
 			.single()
 			.then((result) => {
-				galleryData = {
+				publishingData = {
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					images: result.data?.images,
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
+					pdf_files: result.data?.pdf_files,
 					created_at: new Date(result.data?.created_at)
 				};
 
-				// console.log('gallery data get db thumbnail : ////////', galleryData.thumbnail);
-				// console.log('gallery data get db images: ////////', galleryData.images);
+				console.log('publishing data get db pdf files : ////////', publishingData.pdf_files);
+				console.log('publishing data get db images: ////////', publishingData.images);
 
 				images = getImage();
+				pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
-					const index = result.data?.gallery_languages.findIndex(
-						(galleryLang: GalleryModelLang) =>
-							galleryLang.language == LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+					const index = result.data?.publishing_languages.findIndex(
+						(publishingLang: PublishingModelLang) =>
+							publishingLang.language ==
+							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					);
-					const galleryLang = result.data?.gallery_languages[index];
-					galleryDataLang.push({
-						title: galleryLang?.title ?? '',
-						short_description: galleryLang?.short_description ?? '',
-						long_description: galleryLang?.long_description ?? '',
-						// created_at: galleryLang ? new Date(galleryLang.created_at) : new Date(),
+					const publishingLang = result.data?.publishing_languages[index];
+					publishingDataLang.push({
+						title: publishingLang?.title ?? '',
+						short_description: publishingLang?.short_description ?? '',
+						long_description: publishingLang?.long_description ?? '',
+						// created_at: publishingLang ? new Date(publishingLang.created_at) : new Date(),
 						language:
-							galleryLang?.language ??
+							publishingLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 				}
-				galleryDataLang = [...galleryDataLang];
-				galleryData = { ...galleryData };
+				publishingDataLang = [...publishingDataLang];
+				publishingData = { ...publishingData };
 				getImagesObject();
 			});
 	}
 
 	onMount(async () => {
-		await getDataGallery();
+		await getPublishingData();
 	});
 
 	//** for swapping between languages**//
@@ -111,7 +121,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload thumbnail image**//
+	//**for upload publishing image**//
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -120,24 +130,32 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			galleryData.thumbnail = reader.result as '';
+			publishingData.thumbnail = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(galleryData);
+			fileName = `publishing/${randomText}_${file.name}`; // Append random text to the file name
+			// console.log(publishingData);
 		};
 		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
+	} //**for upload publishing image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		console.log(sliderImagesFile);
+		// console.log(sliderImagesFile);
 	}
+
+	//**pdf files**//
+
+	function getAllPDFFile(e: { detail: File[] }) {
+		sliderPDFFile = e.detail;
+	}
+
+	//**pdf files**//
 
 	//get image
 	function getImage() {
-		let result = galleryData.images.map((image, i) => {
+		let result = publishingData.images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: image,
@@ -148,18 +166,32 @@
 		return result;
 	}
 
+	//get pdf File
+	function getPdfFile() {
+		let result = publishingData.pdf_files.map((file, i) => {
+			return {
+				id: i,
+				imgurl: file,
+				imgSource: ImgSourceEnum.PdfRemote
+			};
+		});
+		// console.log('first pdf file ', result);
+		return result;
+	}
+
 	//**Handle submit**//
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
-		galleryData.images = [];
+		publishingData.pdf_files = [];
+		publishingData.images = [];
 		if (imageFile) {
-			if (galleryData.thumbnail) {
-				await data.supabase.storage.from('image').remove([galleryData.thumbnail]);
+			if (publishingData.thumbnail) {
+				await data.supabase.storage.from('image').remove([publishingData.thumbnail]);
 			}
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			galleryData.thumbnail = response.data?.path;
+			publishingData.thumbnail = response.data?.path;
 		}
 
 		if (sliderImagesFile.length > 0) {
@@ -167,39 +199,59 @@
 				const randomText = getRandomTextNumber();
 				const responseMultiple = await data.supabase.storage
 					.from('image')
-					.upload(`gallery/${randomText}_${image.name}`, image!);
-				// console.log('responseMultiple:', responseMultiple);
+					.upload(`publishing/${randomText}_${image.name}`, image!);
+				// console.log('responseMultiple img:', responseMultiple);
 
 				if (responseMultiple.data?.path) {
-					galleryData.images.push(responseMultiple.data?.path);
+					publishingData.images.push(responseMultiple.data?.path);
 				}
 			}
 		}
 		for (let image of existingImages) {
-			galleryData.images.push(image);
+			publishingData.images.push(image);
 		}
-		// Convert galleryObject.images to a valid array string format
-		const imagesArray = galleryData.images.map((image) => `"${image}"`);
-		galleryData.images = `{${imagesArray.join(',')}}`;
+		// Convert publishing images to a valid array string format
+		const imagesArray = publishingData.images.map((image) => `"${image}"`);
+		publishingData.images = `{${imagesArray.join(',')}}`;
 
-		updateData(galleryData, galleryDataLang, data.supabase);
+		// ***insert pdf *****//
+		if (sliderPDFFile.length > 0) {
+			for (let PDFfile of sliderPDFFile) {
+				const randomText = getRandomTextNumber();
+				const responseMultiple = await data.supabase.storage
+					.from('PDF')
+					.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
+				// console.log('responseMultiple pdf:', responseMultiple);
 
+				if (responseMultiple.data?.path) {
+					publishingData.pdf_files.push(responseMultiple.data.path);
+				}
+			}
+		}
+		for (let pdf of existingPDFfiles) {
+			publishingData.pdf_files.push(pdf);
+		}
+		// Convert publishing.images to a valid array string format
+		const pdfArray = publishingData.pdf_files.map((file) => `"${file}"`);
+		publishingData.pdf_files = `{${pdfArray.join(',')}}`;
+
+		updateData(publishingData, publishingDataLang, data.supabase);
+		console.log('result before store :', publishingData);
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
-		goto('/dashboard/gallery');
+		goto('/dashboard/publishing');
 	}
 
+	//update images
 	function imageChanges(e: any) {
-		console.log(e.detail);
 		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
-		console.log('%%%%%%%%%%%%');
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
+				// console.log('///////', image);
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -212,14 +264,33 @@
 		// console.log('carouselImages data :::::', carouselImages);
 	}
 
+	//update pdf file
+	function pdfChanges(e: any) {
+		// console.log(e.detail);
+		let result: any = [];
+		let customImages: any = [];
+		e.detail.forEach((files: any) => {
+			if (files.imgSource === ImgSourceEnum.PdfRemote) {
+				result.push(files.imgurl);
+				const newFile = { ...files };
+				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
+				// customImages.push(newFile);
+				console.log('first');
+			} else {
+				// customImages.push(files);
+			}
+		});
+		existingPDFfiles = result;
+		// console.log('carouselImages data :::::', existingPDFfiles);
+	}
+
 	function handleSelectChange(event: any) {
-		galleryData.exhibition_id = event.target.value;
+		publishingData.exhibition_id = event.target.value;
 		// console.log(event.target.value);
 	}
 
-	//get thumbnail
 	function getImagesObject() {
-		carouselImages = galleryData.images.map((image, i) => {
+		carouselImages = publishingData.images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
@@ -245,20 +316,20 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
+			<h1 class="text-xl font-bold mb-8">publishing Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+						<Label for="first_name" class="mb-2">Upload publishing Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={galleryData.created_at} />
+						<DateInput bind:value={publishingData.created_at} />
 					</Label>
 				</div>
 				<div>
@@ -272,8 +343,8 @@
 							on:change={handleSelectChange}
 						>
 							<option disabled selected>
-								{galleryData.exhibition_id
-									? exhibitionData.find((item) => item.id == galleryData.exhibition_id)
+								{publishingData.exhibition_id
+									? exhibitionData.find((item) => item.id == publishingData.exhibition_id)
 											?.exhibition_type
 									: 'Select type'}
 							</option>
@@ -289,7 +360,7 @@
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
-						{#each galleryDataLang as langData}
+						{#each publishingDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -311,7 +382,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Gallery Title</Label>
+										<Label for="first_name" class="mb-2">publishing Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -348,10 +419,10 @@
 				<br />
 			</div>
 
-			<!-- upload gallery image -->
+			<!-- upload publishing image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Images</Label>
+					<Label for="first_name" class="mb-2">Upload publishing Images</Label>
 					<FileUploadComponent
 						on:imageChanges={imageChanges}
 						on:imageFilesChanges={getAllImageFile}
@@ -360,7 +431,19 @@
 				</Label>
 			</div>
 
-			<!-- button for submitForm -->
+			<!-- upload pdf file -->
+			<div class="py-20">
+				<Label class="space-y-2 mb-2">
+					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
+					<PDFUploadComponent
+						on:imageChanges={pdfChanges}
+						on:imageFilesChanges={getAllPDFFile}
+						data={{ pdfFiles: pdf_files }}
+					/>
+				</Label>
+			</div>
+
+			<!-- submitForm -->
 			<div class="w-full flex justify-end mt-2">
 				<button
 					on:click|preventDefault={formSubmit}
@@ -372,21 +455,23 @@
 			</div>
 		</Form>
 	</div>
+	<!-- preview data -->
+	<!-- right section -->
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
-			<TabItem open title="Gallery List">
+			<TabItem open title="publishing List">
 				<div
 					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 					style="min-height: calc(100vh - 300px);"
 				>
 					<div class="flex justify-start items-start">
-						{#each galleryDataLang as langData}
+						{#each publishingDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<ExpoCard
 									cardType={CardType.Main}
 									title={langData.title}
 									short_description={langData.short_description}
-									thumbnail={galleryData.thumbnail}
+									thumbnail={publishingData.thumbnail}
 									primaryColor="bg-primary"
 								/>
 							{/if}
@@ -396,8 +481,8 @@
 					<div />
 				</div>
 			</TabItem>
-			<TabItem title="Gallery Detail">
-				{#each galleryDataLang as langData}
+			<TabItem title="publishing Detail">
+				{#each publishingDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
 						<DetailPage
 							bind:imagesCarousel={carouselImages}

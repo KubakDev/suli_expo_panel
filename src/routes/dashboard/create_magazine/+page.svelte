@@ -14,6 +14,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
@@ -41,7 +42,14 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('//////', exhibitionData);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -86,19 +94,12 @@
 	} //**dropzone**//
 
 	//**pdf files**//
-	function getPDFObject() {
-		for (let pdf of pdfFiles) {
-			console.log('PDF file:', pdf.name);
-		}
-	}
 
 	function getAllPDFFile(e: { detail: File[] }) {
 		pdfFiles = e.detail;
-		getPDFObject();
 	}
 
 	//**pdf files**//
-
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
@@ -124,7 +125,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`gallery/${randomText}_${image.name}`, image!)
+				.upload(`magazine/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
 						magazineObject.images.push(response.data.path);
@@ -154,6 +155,7 @@
 		magazineObject = {
 			images: [],
 			thumbnail: '',
+			pdf_files: '',
 			exhibition_type: '',
 			created_at: new Date(),
 			id: 0
@@ -319,8 +321,7 @@
 			<div class="py-20">
 				<Label class="space-y-2 mb-2">
 					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
-					<FileUploadComponent on:imageFilesChanges={getAllPDFFile} />
-					<!-- <FileUploadComponent /> -->
+					<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
 				</Label>
 			</div>
 

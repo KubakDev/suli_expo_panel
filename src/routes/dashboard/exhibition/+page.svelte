@@ -1,106 +1,318 @@
 <script>
-	import {
-		Button,
-		Modal,
-		Spinner,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead,
-		TableHeadCell
-	} from 'flowbite-svelte';
-	import news from '../../../stores/news';
-	import { showDeleteModal, paginationData } from '../../../stores/news';
-	// import BsTrash from 'svelte-icons-pack/bs/BsTrash';
-	// import FiEdit from 'svelte-icons-pack/fi/FiEdit';
-	import loading from '../../../stores/loading';
-	import Pagination from '$lib/components/reusables/pagination.svelte';
+	import { onMount } from 'svelte';
+	import { exhibition, getData, deleteData } from '../../../stores/exhibitionStore';
+	import { goto } from '$app/navigation';
+	import { Button } from 'flowbite-svelte';
+	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
-	$: deleteModal = $showDeleteModal;
-	let addNewsModal = false;
-	$: newsData = $news ?? [];
-	function closeModal() {
-		addNewsModal = false;
+	export let data;
+	let currentPage = 1;
+	const pageSize = 10;
+	let exhibitionData = [];
+	let totalPages = 1;
+
+	// console.log('exhibition//', exhibition);
+
+	async function fetchData() {
+		let result = await getData(data.supabase, currentPage, pageSize);
+
+		exhibitionData = result.data;
+
+		exhibition.set(exhibitionData);
+		console.log('exhibition data///////', exhibitionData);
+
+		// Recalculate the total number of pages
+		const totalItems = result.count || 0;
+		totalPages = Math.ceil(totalItems / pageSize);
+		// console.log(totalPages);
 	}
-	function openModal() {
-		// newsCollection.toggleModal(true);
+
+	onMount(fetchData);
+
+	async function goToPage(page) {
+		currentPage = page;
+		await fetchData();
 	}
-	let selectedItem = { id: 0 };
-	function deleteItem() {
-		// newsCollection.deleteNews(selectedItem.id);
+
+	function createExhibition() {
+		goto('/dashboard/create_exhibition');
+	}
+
+	// delete data
+	async function handleDelete(exhibitionId) {
+		try {
+			await deleteData(exhibitionId, data.supabase);
+			alert('exhibition deleted successfully!');
+			if (currentPage > totalPages) {
+				currentPage = totalPages;
+			}
+			await fetchData();
+		} catch (error) {
+			console.error('Error deleting exhibition:', error);
+		}
+	}
+
+	function calculateIndex(index) {
+		return index + 1 + (currentPage - 1) * pageSize;
+	}
+
+	// convert html tag that return it from db to regular text
+	function extractText(html) {
+		const tempElement = document.createElement('div');
+		tempElement.innerHTML = html;
+		return tempElement.textContent || tempElement.innerText || '';
 	}
 </script>
 
-<div class="w-full bg-white p-10" style="min-height: calc(100vh - 300px);">
-	<div class="py-10 flex justify-end">
-		<Button on:click={openModal}>add</Button>
-	</div>
-	<Table>
-		<TableHead>
-			<TableHeadCell>Title</TableHeadCell>
-			<TableHeadCell>Date</TableHeadCell>
-			<TableHeadCell>Description</TableHeadCell>
-			<TableHeadCell>Image</TableHeadCell>
-			<TableHeadCell>
-				<span class="sr-only"> Edit </span>
-			</TableHeadCell>
-		</TableHead>
-		<TableBody>
-			{#each newsData as item}
-				<TableBodyRow>
-					<TableBodyCell>{item.title}</TableBodyCell>
-					<TableBodyCell>{item.created_at}</TableBodyCell>
-					<TableBodyCell>{item}</TableBodyCell>
-					<TableBodyCell>
-						<div class="flex">
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<div
-								class="rounded-md w-10 h-10 flex justify-center items-center hover:bg-hoverBox cursor-pointer"
-							>
-								<!-- <Icon src={FiEdit} size="1.2rem" className="text-info" /> -->
-							</div>
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<div
-								class="rounded-md w-10 h-10 flex justify-center items-center hover:bg-hoverBox cursor-pointer"
-								on:click={() => (newsCollection.toggleDeleteModal(true), (selectedItem = item))}
-							>
-								<!-- <Icon src={BsTrash} size="1.2rem" className="text-danger" /> -->
-							</div>
-						</div>
-					</TableBodyCell>
-				</TableBodyRow>
-			{/each}
-		</TableBody>
-	</Table>
-	<div class="py-10 flex justify-center w-full">
-		<!-- <Pagination paginationData={$paginationData} /> -->
-	</div>
-	<Modal bind:open={deleteModal} size="xs" backdropClose={false}>
-		<div class="text-center">
+<div class="max-w-screen-2xl mx-auto py-10">
+	<div class="py-5 flex justify-end">
+		<Button on:click={createExhibition} class="bg-primary-dark hover:bg-primary-50 flex gap-2">
 			<svg
-				aria-hidden="true"
-				class="mx-auto mb-4 w-14 h-14 text-gray-400 dark:text-gray-200"
-				fill="none"
-				stroke="currentColor"
+				width="20px"
+				height="20px"
 				viewBox="0 0 24 24"
 				xmlns="http://www.w3.org/2000/svg"
-				><path
+				fill="#000000"
+				><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+					id="SVGRepo_tracerCarrier"
 					stroke-linecap="round"
 					stroke-linejoin="round"
-					stroke-width="2"
-					d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-				/></svg
-			>
-			<h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-				Are you sure you want to delete this item?
-			</h3>
-			<Button color="red" class="mr-2" on:click={deleteItem}
-				>{#if $loading}
-					<Spinner class="mr-3" size="4" />
-				{/if}Yes, I'm sure</Button
-			>
-			<Button color="alternative">No, cancel</Button>
-		</div>
-	</Modal>
+				/><g id="SVGRepo_iconCarrier">
+					<title />
+					<g id="Complete">
+						<g data-name="add" id="add-2">
+							<g>
+								<line
+									fill="none"
+									stroke="#ffffff"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									x1="12"
+									x2="12"
+									y1="19"
+									y2="5"
+								/>
+								<line
+									fill="none"
+									stroke="#ffffff"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									x1="5"
+									x2="19"
+									y1="12"
+									y2="12"
+								/>
+							</g>
+						</g>
+					</g>
+				</g></svg
+			>Add Exhibition
+		</Button>
+	</div>
+
+	<!-- table data -->
+	<div class="overflow-x-auto">
+		<table class="border-collapse w-full">
+			<thead>
+				<tr>
+					<th
+						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+					>
+						<div class="flex justify-start items-center gap-2">
+							<span>#</span>
+						</div>
+					</th>
+
+					<th
+						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+					>
+						<div class="flex items-center gap-2">
+							<span
+								><svg
+									width="20px"
+									height="20px"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+									><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+										id="SVGRepo_tracerCarrier"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/><g id="SVGRepo_iconCarrier">
+										<path
+											d="M21.6809 16.9601L18.5509 9.65013C17.4909 7.17013 15.5409 7.07013 14.2309 9.43013L12.3409 12.8401C11.3809 14.5701 9.5909 14.7201 8.3509 13.1701L8.1309 12.8901C6.8409 11.2701 5.0209 11.4701 4.0909 13.3201L2.3709 16.7701C1.1609 19.1701 2.9109 22.0001 5.5909 22.0001H18.3509C20.9509 22.0001 22.7009 19.3501 21.6809 16.9601Z"
+											stroke="#65686c"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+										<path
+											opacity="0.4"
+											d="M6.9707 8C8.62756 8 9.9707 6.65685 9.9707 5C9.9707 3.34315 8.62756 2 6.9707 2C5.31385 2 3.9707 3.34315 3.9707 5C3.9707 6.65685 5.31385 8 6.9707 8Z"
+											stroke="#65686c"
+											stroke-width="1.5"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</g></svg
+								></span
+							>
+
+							<span>Thumbnail</span>
+						</div>
+					</th>
+					<th
+						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+					>
+						<div class="flex items-start gap-2">
+							<span
+								><svg
+									width="20px"
+									height="20px"
+									viewBox="0 0 24 24"
+									fill="none"
+									xmlns="http://www.w3.org/2000/svg"
+									><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+										id="SVGRepo_tracerCarrier"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/><g id="SVGRepo_iconCarrier">
+										<g id="Menu / Menu_Alt_01">
+											<path
+												id="Vector"
+												d="M12 17H19M5 12H19M5 7H19"
+												stroke="#65686c"
+												stroke-width="2"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+											/>
+										</g>
+									</g></svg
+								></span
+							>
+
+							<span>Title</span>
+						</div>
+					</th>
+					<th
+						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+					>
+						<div class="flex items-center gap-2">
+							<span>
+								<svg
+									width="20px"
+									height="20px"
+									viewBox="0 0 16 16"
+									xmlns="http://www.w3.org/2000/svg"
+									version="1.1"
+									fill="none"
+									stroke="#65686c"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="1.5"
+									><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+										id="SVGRepo_tracerCarrier"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/><g id="SVGRepo_iconCarrier">
+										<path d="m2.75 12.25h10.5m-10.5-4h10.5m-10.5-4h10.5" />
+									</g></svg
+								></span
+							>
+							<span>Short description</span>
+						</div>
+					</th>
+
+					<th
+						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+					>
+						<div class="flex items-start gap-2">
+							<span
+								><svg
+									width="20px"
+									height="20px"
+									viewBox="0 0 24 24"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="#65686c"
+									><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+										id="SVGRepo_tracerCarrier"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/><g id="SVGRepo_iconCarrier"
+										><path
+											d="M9.5 2h-6A1.502 1.502 0 0 0 2 3.5v6A1.502 1.502 0 0 0 3.5 11h6A1.502 1.502 0 0 0 11 9.5v-6A1.502 1.502 0 0 0 9.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 2h-6A1.502 1.502 0 0 0 13 3.5v6a1.502 1.502 0 0 0 1.5 1.5h6A1.502 1.502 0 0 0 22 9.5v-6A1.502 1.502 0 0 0 20.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM9.5 13h-6A1.502 1.502 0 0 0 2 14.5v6A1.502 1.502 0 0 0 3.5 22h6a1.502 1.502 0 0 0 1.5-1.5v-6A1.502 1.502 0 0 0 9.5 13zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 13h-6a1.502 1.502 0 0 0-1.5 1.5v6a1.502 1.502 0 0 0 1.5 1.5h6a1.502 1.502 0 0 0 1.5-1.5v-6a1.502 1.502 0 0 0-1.5-1.5zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5z"
+										/><path fill="none" d="M0 0h24v24H0z" /></g
+									></svg
+								></span
+							> <span>Actions</span>
+						</div>
+					</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				{#each $exhibition as item, index (item.id)}
+					<tr>
+						<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<span class="flex justify-center text-gray-700 font-semibold"
+								>{calculateIndex(index)}</span
+							>
+						</td>
+
+						<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<div class="flex justify-center">
+								<img
+									class="w-20 h-20 object-cover rounded"
+									src={item.thumbnail
+										? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${item.thumbnail}`
+										: 'https://images.hindustantimes.com/img/2022/08/07/1600x900/cat_1659882617172_1659882628989_1659882628989.jpg'}
+									alt=""
+								/>
+							</div>
+						</td>
+						{#if item.exhibition_languages}
+							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+								{#each item.exhibition_languages as lang}
+									<div>
+										{lang.title}
+									</div>
+								{/each}
+							</td>
+							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+								{#each item.exhibition_languages as lang}
+									<div>
+										{lang.description?.slice(0, 40)}
+									</div>
+								{/each}
+							</td>
+						{/if}
+						<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+							<div class="flex items-center">
+								<button
+									on:click={() => {
+										goto(`/dashboard/exhibition/${item.id}`);
+									}}
+									class="text-green-400 hover:text-green-600 hover:underline"
+								>
+									Edit</button
+								>
+
+								<button
+									on:click={() => handleDelete(item.id)}
+									class="text-red-400 hover:text-red-600 hover:underline pl-6"
+								>
+									Remove</button
+								>
+							</div>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Add pagination -->
+	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>

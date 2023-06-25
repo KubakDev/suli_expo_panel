@@ -14,6 +14,8 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import { filter } from 'd3';
 
 	export let data;
 
@@ -38,7 +40,14 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('sdffff//////', exhibitionData);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -199,7 +208,9 @@
 						>
 							<option disabled selected>Select type</option>
 							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+								<option value={exhibition.id}>
+									{exhibition.exhibition_type}
+								</option>
 							{/each}
 						</select>
 					</label>
@@ -242,7 +253,7 @@
 										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Label for="textarea-id" class="mb-2">Short description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
@@ -253,15 +264,10 @@
 										<!-- <Message name="short_description" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<Label for="textarea-id" class="mb-2">News detail</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<EditorComponent {langData} />
+										</div>
 									</div>
 								</div>
 							</TabItem>

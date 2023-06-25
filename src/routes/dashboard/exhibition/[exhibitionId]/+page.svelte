@@ -3,9 +3,9 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData } from '../../../../stores/galleryStore';
+	import { updateData } from '../../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
-	import type { GalleryModel, GalleryModelLang } from '../../../../models/galleryModel';
+	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../../models/exhibitionModel';
 	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
@@ -17,7 +17,7 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import moment from 'moment';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -27,82 +27,77 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let HandleDate: string = '';
 
-	let galleryDataLang: GalleryModelLang[] = [];
-	let galleryData: GalleryModel = {
+	let exhibitionDataLang: ExhibitionsModelLang[] = [];
+	let exhibitionsData: ExhibitionsModel = {
 		id: 0,
 		images: [],
 		thumbnail: '',
+		video_youtube_id: '',
 		exhibition_type: '',
-		created_at: new Date()
+		exhibition_date: ''
 	};
-	const id = $page.params.galleryId;
+	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
 
 	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
+			// console.log('exhibitionData//////', exhibitionData);
 		} catch (error) {
 			console.error(error);
 		}
 	};
+
 	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//
-	async function getDataGallery() {
+	async function getExhibitionData() {
 		await data.supabase
-			.from('gallery')
-			.select('*,gallery_languages(*)')
+			.from('exhibition')
+			.select('*,exhibition_languages(*)')
 			.eq('id', id)
 			.single()
 			.then((result) => {
-				galleryData = {
+				exhibitionsData = {
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					images: result.data?.images,
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
-					created_at: new Date(result.data?.created_at)
+					video_youtube_id: result.data?.video_youtube_id,
+					exhibition_type: result.data?.exhibition_type,
+					exhibition_date: result.data?.exhibition_date
 				};
-
-				// console.log('gallery data get db thumbnail : ////////', galleryData.thumbnail);
-				// console.log('gallery data get db images: ////////', galleryData.images);
+				console.log('date value ', exhibitionsData.exhibition_date);
 
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
-					const index = result.data?.gallery_languages.findIndex(
-						(galleryLang: GalleryModelLang) =>
-							galleryLang.language == LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+					const index = result.data?.exhibition_languages.findIndex(
+						(exhibitionLang: ExhibitionsModelLang) =>
+							exhibitionLang.language ==
+							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					);
-					const galleryLang = result.data?.gallery_languages[index];
-					galleryDataLang.push({
-						title: galleryLang?.title ?? '',
-						short_description: galleryLang?.short_description ?? '',
-						long_description: galleryLang?.long_description ?? '',
-						// created_at: galleryLang ? new Date(galleryLang.created_at) : new Date(),
+					const exhibitionLang = result.data?.exhibition_languages[index];
+					exhibitionDataLang.push({
+						title: exhibitionLang?.title ?? '',
+						description: exhibitionLang?.description ?? '',
 						language:
-							galleryLang?.language ??
+							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 				}
-				galleryDataLang = [...galleryDataLang];
-				galleryData = { ...galleryData };
+				exhibitionDataLang = [...exhibitionDataLang];
+				exhibitionsData = { ...exhibitionsData };
 				getImagesObject();
 			});
 	}
 
 	onMount(async () => {
-		await getDataGallery();
+		await getExhibitionData();
 	});
 
 	//** for swapping between languages**//
@@ -120,11 +115,10 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			galleryData.thumbnail = reader.result as '';
+			exhibitionsData.thumbnail = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(galleryData);
+			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
 		};
 		reader.readAsDataURL(file);
 	} //**for upload thumbnail image**//
@@ -137,7 +131,7 @@
 
 	//get image
 	function getImage() {
-		let result = galleryData.images.map((image, i) => {
+		let result = exhibitionsData.images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: image,
@@ -147,19 +141,21 @@
 		// console.log('first', result);
 		return result;
 	}
-
+	function datepicked(e) {
+		HandleDate = e.detail.datepicked;
+	}
 	//**Handle submit**//
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
-		galleryData.images = [];
+		exhibitionsData.images = [];
 		if (imageFile) {
-			if (galleryData.thumbnail) {
-				await data.supabase.storage.from('image').remove([galleryData.thumbnail]);
+			if (exhibitionsData.thumbnail) {
+				await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
 			}
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			galleryData.thumbnail = response.data?.path;
+			exhibitionsData.thumbnail = response.data?.path;
 		}
 
 		if (sliderImagesFile.length > 0) {
@@ -167,27 +163,28 @@
 				const randomText = getRandomTextNumber();
 				const responseMultiple = await data.supabase.storage
 					.from('image')
-					.upload(`gallery/${randomText}_${image.name}`, image!);
+					.upload(`exhibition/${randomText}_${image.name}`, image!);
 				// console.log('responseMultiple:', responseMultiple);
 
 				if (responseMultiple.data?.path) {
-					galleryData.images.push(responseMultiple.data?.path);
+					exhibitionsData.images.push(responseMultiple.data?.path);
 				}
 			}
 		}
 		for (let image of existingImages) {
-			galleryData.images.push(image);
+			exhibitionsData.images.push(image);
 		}
 		// Convert galleryObject.images to a valid array string format
-		const imagesArray = galleryData.images.map((image) => `"${image}"`);
-		galleryData.images = `{${imagesArray.join(',')}}`;
-
-		updateData(galleryData, galleryDataLang, data.supabase);
+		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
+		exhibitionsData.images = `{${imagesArray.join(',')}}`;
+		exhibitionsData.exhibition_date = HandleDate;
+		console.log('last update ///', exhibitionsData.exhibition_date);
+		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
-		goto('/dashboard/gallery');
+		goto('/dashboard/exhibition');
 	}
 
 	function imageChanges(e: any) {
@@ -195,7 +192,7 @@
 		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
-		console.log('%%%%%%%%%%%%');
+
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
@@ -212,14 +209,9 @@
 		// console.log('carouselImages data :::::', carouselImages);
 	}
 
-	function handleSelectChange(event: any) {
-		galleryData.exhibition_id = event.target.value;
-		// console.log(event.target.value);
-	}
-
 	//get thumbnail
 	function getImagesObject() {
-		carouselImages = galleryData.images.map((image, i) => {
+		carouselImages = exhibitionsData.images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
@@ -245,51 +237,48 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
+			<h1 class="text-xl font-bold mb-8">Exhibition Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
+						<Label for="first_name" class="mb-2">Upload Exhibition Image</Label>
 						<Fileupload on:change={handleFileUpload} />
+					</Label>
+				</div>
+
+				<div>
+					<Label class="space-y-2 mb-2">
+						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
+						<DateInput
+							value={new Date(exhibitionsData.exhibition_date)}
+							format="yyyy-MM-dd HH:mm:ss"
+							on:datepicked={datepicked}
+						/>
+					</Label>
+				</div>
+				<br />
+				<div>
+					<Label class="space-y-2 mb-2">
+						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
+						<Input bind:value={exhibitionsData.exhibition_type} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={galleryData.created_at} />
+						<Label for="default-input" class="block mb-2">Video youtube link</Label>
+						<Input bind:value={exhibitionsData.video_youtube_id} />
 					</Label>
 				</div>
-				<div>
-					<label class="space-y-2 mb-2">
-						<label for="large-input" class="block">Exhibition Type</label>
-						<select
-							class="border border-gray-300 rounded-md"
-							id="type"
-							name="type"
-							placeholder="Please select a valid type"
-							on:change={handleSelectChange}
-						>
-							<option disabled selected>
-								{galleryData.exhibition_id
-									? exhibitionData.find((item) => item.id == galleryData.exhibition_id)
-											?.exhibition_type
-									: 'Select type'}
-							</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-					</label>
-				</div>
+
 				<br />
 
 				<div class="col-span-3">
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
-						{#each galleryDataLang as langData}
+						{#each exhibitionDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -311,7 +300,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Gallery Title</Label>
+										<Label for="first_name" class="mb-2">Exhibition Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -322,21 +311,15 @@
 										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Label for="textarea-id" class="mb-2">Exhibition description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
-											bind:value={langData.short_description}
+											bind:value={langData.description}
 											id="short_description"
 											name="short_description"
 										/>
 										<!-- <Message name="short_description" /> -->
-									</div>
-									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
-										</div>
 									</div>
 								</div>
 							</TabItem>
@@ -348,10 +331,10 @@
 				<br />
 			</div>
 
-			<!-- upload gallery image -->
+			<!-- upload Exhibition image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Images</Label>
+					<Label for="first_name" class="mb-2">Upload Exhibition Images</Label>
 					<FileUploadComponent
 						on:imageChanges={imageChanges}
 						on:imageFilesChanges={getAllImageFile}
@@ -374,19 +357,19 @@
 	</div>
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
-			<TabItem open title="Gallery List">
+			<TabItem open title="Exhibition List">
 				<div
 					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 					style="min-height: calc(100vh - 300px);"
 				>
 					<div class="flex justify-start items-start">
-						{#each galleryDataLang as langData}
+						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<ExpoCard
 									cardType={CardType.Main}
 									title={langData.title}
-									short_description={langData.short_description}
-									thumbnail={galleryData.thumbnail}
+									short_description={langData.description}
+									thumbnail={exhibitionsData.thumbnail}
 									primaryColor="bg-primary"
 								/>
 							{/if}
@@ -396,13 +379,10 @@
 					<div />
 				</div>
 			</TabItem>
-			<TabItem title="Gallery Detail">
-				{#each galleryDataLang as langData}
+			<TabItem title="Exhibition Detail">
+				{#each exhibitionDataLang as langData}
 					{#if langData.language === selectedLanguageTab}
-						<DetailPage
-							bind:imagesCarousel={carouselImages}
-							long_description={langData.long_description}
-						/>
+						<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
 					{/if}
 				{/each}
 			</TabItem>

@@ -14,6 +14,8 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
+	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
 
@@ -22,6 +24,7 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
+	let pdfFiles: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
@@ -30,6 +33,7 @@
 	let publishingObject: PublishingModel = {
 		images: [],
 		thumbnail: '',
+		pdf_files: [],
 		created_at: new Date(),
 		id: 0
 	};
@@ -38,7 +42,14 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('sdffff//////', exhibitionData);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -70,9 +81,7 @@
 		reader.onloadend = () => {
 			publishingObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-
-			// console.log('galleryObject////////////', galleryObject);
+			fileName = `publishing/${randomText}_${file.name}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);
@@ -84,32 +93,53 @@
 		getImagesObject();
 	} //**dropzone**//
 
+	//**pdf files**//
+
+	function getAllPDFFile(e: { detail: File[] }) {
+		pdfFiles = e.detail;
+	}
+
+	//**pdf files**//
 	async function formSubmit() {
 		submitted = true;
 		showToast = true;
 
+		// Upload publishing thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+		publishingObject.thumbnail = response.data?.path;
+
+		// Upload PDF files
+		for (let pdf of pdfFiles) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
+				.from('PDF')
+				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
+				.then((response) => {
+					if (response.data) {
+						publishingObject.pdf_files.push(response.data.path);
+					}
+				});
+		}
 
 		for (let image of sliderImagesFile) {
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`gallery/${randomText}_${image.name}`, image!)
+				.upload(`publishing/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
 						publishingObject.images.push(response.data.path);
-						// console.log('response ::::', response);
 					}
 				});
 		}
-		// Convert publishingObject.images to a valid array string format
+
+		// Convert publishingObject.images and publishingObject.pdf_files to valid array string format
 		const imagesArray = publishingObject.images.map((image) => `"${image}"`);
+		const pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
 		publishingObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('publishingObject ::::', publishingObject);
+		publishingObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
 
-		// console.log(response);
-		publishingObject.thumbnail = response.data?.path;
-
+		// Insert data into Supabase
 		insertData(publishingObject, publishingDataLang, data.supabase);
 
 		resetForm();
@@ -125,12 +155,13 @@
 		publishingObject = {
 			images: [],
 			thumbnail: '',
+			pdf_files: '',
 			exhibition_type: '',
 			created_at: new Date(),
 			id: 0
 		};
 
-		publishingDataLang = []; // Resetting galleryDataLang to an empty array
+		publishingDataLang = []; // Resettinet publishingDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
 			publishingDataLang.push({
 				title: '',
@@ -144,13 +175,11 @@
 
 	function handleSelectChange(event: any) {
 		publishingObject.exhibition_id = event.target.value;
-		// console.log('galleryObject//', galleryObject);
+		// console.log('publishingObject//', publishingObject);
 	}
 
-	//get thumbnail
 	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
 			const imgUrl = URL.createObjectURL(image);
 			return {
 				id: i,
@@ -159,7 +188,7 @@
 				attribution: ''
 			};
 		});
-		console.log('test//', carouselImages);
+		// console.log('test//', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
@@ -179,13 +208,13 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Publishing Data</h1>
+			<h1 class="text-xl font-bold mb-8">publishing Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Publishing Image</Label>
+						<Label for="first_name" class="mb-2">Upload publishing Image</Label>
 						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					</Label>
 				</div>
@@ -241,7 +270,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Publishing Title</Label>
+										<Label for="first_name" class="mb-2">publishing Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -262,16 +291,12 @@
 										/>
 										<!-- <Message name="short_description" /> -->
 									</div>
+
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<Textarea
-											placeholder="Enter long description"
-											rows="4"
-											bind:value={langData.long_description}
-											id="long_description"
-											name="long_description"
-										/>
-										<!-- <Message name="long_description" /> -->
+										<Label for="textarea-id" class="mb-2">publishing detail</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<EditorComponent {langData} />
+										</div>
 									</div>
 								</div>
 							</TabItem>
@@ -283,12 +308,20 @@
 				<br />
 			</div>
 
-			<!-- upload gallery image -->
+			<!-- upload publishing image -->
 			<div>
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Publishing Image</Label>
+					<Label for="first_name" class="mb-2">Upload publishing Image</Label>
 					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 					<!-- <FileUploadComponent /> -->
+				</Label>
+			</div>
+
+			<!-- upload pdf file -->
+			<div class="py-20">
+				<Label class="space-y-2 mb-2">
+					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
+					<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
 				</Label>
 			</div>
 
@@ -308,7 +341,7 @@
 	<div class="h-full p-2 col-span-1 pt-20">
 		<div>
 			<Tabs style="underline">
-				<TabItem open title="Gallery List">
+				<TabItem open title="publishing List">
 					<div
 						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 						style="min-height: calc(100vh - 300px);"
@@ -330,7 +363,7 @@
 						<div />
 					</div>
 				</TabItem>
-				<TabItem title="Gallery Detail">
+				<TabItem title="publishing Detail">
 					{#each publishingDataLang as langData}
 						{#if langData.language === selectedLanguageTab}
 							<DetailPage

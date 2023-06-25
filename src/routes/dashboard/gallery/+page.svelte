@@ -3,6 +3,7 @@
 	import { gallery, getData, deleteData } from '../../../stores/galleryStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
+	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
 	export let data;
 	let currentPage = 1;
@@ -123,7 +124,7 @@
 			>Add Gallery
 		</Button>
 	</div>
-
+	<!-- table data -->
 	<div class="overflow-x-auto">
 		<table class="border-collapse w-full">
 			<thead>
@@ -360,39 +361,5 @@
 	</div>
 
 	<!-- Add pagination -->
-	<div class="py-5 flex justify-end items-center">
-		<nav aria-label="Page navigation example">
-			<ul class="inline-flex -space-x-px">
-				<li>
-					<button
-						on:click={() => goToPage(currentPage - 1)}
-						disabled={currentPage === 1}
-						class="px-3 py-2 ml-0 leading-tight text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-						>Previous</button
-					>
-				</li>
-				<li>
-					{#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
-						<button
-							class={`px-3 py-2 leading-tight   border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white ${
-								page === currentPage ? ' bg-primary text-white' : 'bg-white hover:bg-gray-300'
-							}`}
-							on:click={() => goToPage(page)}
-						>
-							{page}
-						</button>
-					{/each}
-				</li>
-
-				<li>
-					<button
-						on:click={() => goToPage(currentPage + 1)}
-						disabled={currentPage == totalPages}
-						class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
-						>Next</button
-					>
-				</li>
-			</ul>
-		</nav>
-	</div>
+	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>

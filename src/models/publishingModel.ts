@@ -4,6 +4,7 @@ export interface PublishingModel {
 	id?: number;
 	exhibition_id?: number;
 	images: string[] | string;
+	pdf_files: string[] | string;
 	thumbnail: string;
 	exhibition_type?: string;
 	created_at?: Date;
@@ -13,8 +14,8 @@ export interface PublishingModel {
 export interface PublishingModelLang {
 	id?: number;
 	title: string;
-	short_description?: string;
-	long_description?: string;
+	short_description: string;
+	long_description: string;
 	language: LanguageEnum;
 	created_at?: Date;
 }

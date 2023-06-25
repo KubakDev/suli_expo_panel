@@ -7,14 +7,14 @@ export interface VideoModel {
 	created_at?: Date;
 	link?: string;
 	exhibition_type?: string;
-	mediaVideo_languages?: VideoModelLang[];
+	media_video_languages?: VideoModelLang[];
 }
 
 export interface VideoModelLang {
 	id?: number;
 	title: string;
-	short_description?: string;
-	long_description?: string;
+	short_description: string;
+	long_description: string;
 	language: LanguageEnum;
 	created_at?: Date;
 }
