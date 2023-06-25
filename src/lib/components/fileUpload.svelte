@@ -65,19 +65,6 @@
 </script>
 
 <div class="w-full h-80 bg-[#e4e4e4] rounded-lg p-5 flex flex-wrap">
-<<<<<<< HEAD
-	<div class="w-24 h-24">
-		<Dropzone
-			multiple
-			id="dropzone"
-			type="file"
-			accept=".jpg, .jpeg, .png .svg"
-			on:change={(e) => addImage(e)}
-			defaultClass="flex flex-col justify-center items-center w-full h-full bg-gray-50 rounded-lg border-2 border-gray-300 border-dashed cursor-pointer dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
-			>Upload</Dropzone
-		>
-	</div>
-=======
 	<Dropzone
 		multiple
 		id="dropzone"
@@ -86,7 +73,6 @@
 		on:change={addImage}>upload</Dropzone
 	>
 
->>>>>>> ca9b1d901f11311bcdf558e3dff2ffbc89252670
 	{#each images as image, index}
 		<div class="h-24 w-24 bg-[#f1f3f4] mx-2 rounded-lg relative">
 			<button
