@@ -88,7 +88,7 @@ export const updateData = async (
 ) => {
 	try {
 		console.log('first');
-		const { data, error } = await supabase.rpc('update_news_and_news_lang', {
+		const { data, error } = await supabase.rpc('update_exhibition_and_exhibition_lang', {
 			exhibition_data: exhibitionObject,
 			exhibition_lang_data: exhibitionDataLang
 		});
@@ -103,13 +103,13 @@ export const updateData = async (
 				const index = currentExhibition.findIndex((item) => item.id === exhibitionObject.id);
 
 				// Create a new array with the updated item
-				const updatedNews = [
+				const updatedExhibition = [
 					...currentExhibition.slice(0, index),
 					data,
 					...currentExhibition.slice(index + 1)
 				];
 
-				return updatedNews;
+				return updatedExhibition;
 			}
 
 			return currentExhibition;

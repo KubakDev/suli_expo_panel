@@ -32,7 +32,7 @@
 		thumbnail: '',
 		video_youtube_id: '',
 		exhibition_type: '',
-		created_at: new Date(),
+		exhibition_date: new Date(),
 		id: 0
 	};
 
@@ -114,7 +114,7 @@
 			thumbnail: '',
 			video_youtube_id: '',
 			exhibition_type: '',
-			created_at: new Date(),
+			exhibition_date: new Date(),
 			id: 0
 		};
 
@@ -171,7 +171,7 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={exhibitionsObject.created_at} format="yyyy/MM/dd" />
+						<DateInput bind:value={exhibitionsObject.exhibition_date} format="yyyy/MM/dd" />
 					</Label>
 				</div>
 

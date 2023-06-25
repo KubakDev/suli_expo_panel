@@ -15,6 +15,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import { filter } from 'd3';
 
 	export let data;
 
@@ -200,7 +201,9 @@
 						>
 							<option disabled selected>Select type</option>
 							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+								<option value={exhibition.id}>
+									{exhibition.exhibition_type}
+								</option>
 							{/each}
 						</select>
 					</label>
