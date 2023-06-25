@@ -15,6 +15,7 @@
 	import { goto } from '$app/navigation';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -37,7 +38,7 @@
 	};
 	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
-
+	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
@@ -247,13 +248,7 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
-						<!-- <DateInput
-							value={new Date(exhibitionsData.exhibition_date)}
-							format="yyyy-MM-dd HH:mm:ss"
-							on:datepicked={datepicked}
-						/> -->
 						<Input type="date" bind:value={exhibitionsData.exhibition_date} />
-						<p>{new Date(exhibitionsData.exhibition_date).toLocaleDateString('en-US')}</p>
 					</Label>
 				</div>
 				<br />
@@ -369,6 +364,7 @@
 									short_description={langData.description}
 									thumbnail={exhibitionsData.thumbnail}
 									primaryColor="bg-primary"
+									created_at={exhibitionsData.exhibition_date}
 								/>
 							{/if}
 						{/each}
