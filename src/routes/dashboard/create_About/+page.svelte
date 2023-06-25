@@ -6,11 +6,11 @@
 	import { insertData } from '../../../stores/aboutStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { AboutModel, AboutModelLang } from '../../../models/aboutModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import Editor from '@tinymce/tinymce-svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 
 	export let data;
 

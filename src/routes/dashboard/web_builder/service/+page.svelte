@@ -19,8 +19,8 @@
 	import { getNews } from '../../../../stores/news';
 	import type { News } from '../../../../models/news';
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
-	import service, { getAllServices } from '../../../../stores/service';
 	import { CardType } from '../../../../models/cardTypeEnum';
+	import { service } from '../../../../stores/serviceStore';
 
 	export let data;
 	onMount(async () => {
@@ -85,7 +85,7 @@
 		allNews = response.data as News[];
 	}
 	onMount(async () => {
-		await getAllServices(data.supabase);
+		// await getAllServices(data.supabase);
 		await getUI();
 		await getNews(0, 10, data.supabase);
 		await getAllNews();

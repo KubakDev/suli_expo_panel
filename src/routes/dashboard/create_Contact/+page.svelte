@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Label, Input, Textarea, Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
+	import { Form } from 'svelte-yup';
 	import { insertData } from '../../../stores/contactStor';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ContactModel, ContactModelLang } from '../../../models/contactModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 
 	export let data;
 

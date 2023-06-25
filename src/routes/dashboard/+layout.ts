@@ -17,10 +17,7 @@ export const load = async () => {
 			title: 'exhibition',
 			url: '/dashboard/exhibition'
 		},
-		{
-			title: 'seats',
-			url: '/dashboard/seats'
-		},
+
 		{
 			title: 'seats-ui',
 			url: '/dashboard/seats_ui'

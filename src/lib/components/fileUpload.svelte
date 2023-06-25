@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Dropzone } from 'flowbite-svelte';
 	import { afterUpdate, createEventDispatcher } from 'svelte';
-	import { XMark } from 'svelte-heros-v2';
+	import { Photo, XMark } from 'svelte-heros-v2';
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
 	import { onMount } from 'svelte';
 	import type { ImagesModel } from '../../models/imagesModel';

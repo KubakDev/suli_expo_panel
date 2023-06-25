@@ -18,22 +18,34 @@
 		Search,
 		Spinner
 	} from 'flowbite-svelte';
-	import { Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
-	import { canvasToFile } from '$lib/utils/canva_to_image';
+	import { ChatBubbleBottomCenter, Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
+	import { canvasToDataUrl, canvasToFile } from '$lib/utils/canva_to_image';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import { alertStore } from '../../../../stores/alertStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import uploadFileStore from '../../../../stores/uploadFileStore';
 	import { page } from '$app/stores';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { seatServiceStore } from '../../../../stores/seatServicesStore';
+	import Sortable from 'sortablejs';
+	import { EditingMode } from '../../../../models/editingModeModel';
+
+	let iconCanvas = new fabric.StaticCanvas();
+	iconCanvas.setWidth(50);
+	iconCanvas.setHeight(50);
+
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
 	let fillColor = '#000000'; // Default color
 
 	let isDown: boolean = false;
-	let line: fabric.Line | null;
+	let points: any[] = [];
+	let lines: any[] = [];
+
 	let isDrawing = false; // Whether the mouse is down
+	let originX;
+	let originY;
 	let strokeWidth: null | string = null; // Width of the stroke
 	let strokeColor = '#000000';
 
@@ -53,20 +65,89 @@
 	let bottomLeftRadius = 0;
 	let topLeftRadius = 0;
 	let topRightRadius = 0;
+	let exhibitionName: undefined | string = undefined;
+	let isAddingText = false;
+	let objects: any[] = []; // holds the objects on the canvas
+
+	class MyGroup extends fabric.Group {
+		groupId: number;
+
+		constructor(items: fabric.Object[], options: fabric.IGroupOptions = {}) {
+			super(items, options);
+			this.groupId = options.groupId;
+		}
+	}
+
+	class MyObject extends fabric.Object {
+		groupId: number;
+	}
+
+	// Function to update layers
+	const updateLayers = () => {
+		objects = canvas
+			.getObjects()
+			.filter((object: any) => !(object.type !== 'group' && object.groupId !== undefined))
+			.map((object: any, index: number) => {
+				if (object.type === 'group') {
+					// This object is a group, add group-specific information
+					return {
+						id: object.id,
+						icon: object.icon,
+						type: object.type,
+						isGroup: true,
+						children: object._objects.map((child: any, childIndex: number) => {
+							return {
+								id: childIndex,
+								type: child.type
+							};
+						})
+					};
+				} else {
+					return {
+						icon: object.icon,
+						id: object.id,
+						type: object.type,
+						isGroup: false
+					};
+				}
+			});
+		const el = document.getElementById('layers');
+		const sortable = Sortable.create(el, {
+			onEnd: (evt: any) => {
+				const id = evt.item.dataset.id;
+				console.log('id ', id);
+				const object = canvas.getObjects().find((obj: any) => obj.id == id);
+				if (object) {
+					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
+					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
+					// Ensure index is within array bounds.
+					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
+					// Move the object to the new position.
+					console.log('newIndex ', newIndex);
+					object.moveTo(newIndex);
+					console.log('object ', object);
+					// Rerender canvas.
+					canvas.renderAll();
+					// Update the layers in the UI.
+					// updateLayers();
+				}
+			}
+		});
+	};
 
 	$: {
 		images = $seatImageItemStore;
 	}
-	const adjustCanvasSize = () => {
-		if (canvas) {
-			canvas.setDimensions({
-				width: container.offsetWidth,
-				height: container.offsetHeight
-			});
-			// Create a rectangle with no fill, only a stroke (border)
-			// Create a rectangle with no fill, only a stroke (border)
-		}
-	};
+	// const adjustCanvasSize = () => {
+	// 	console.log('adjustCanvasSize ', container.offsetWidth);
+	// 	if (canvas) {
+	// 		canvas.setDimensions({
+	// 			width: container.offsetWidth
+	// 		});
+	// 		// Create a rectangle with no fill, only a stroke (border)
+	// 		// Create a rectangle with no fill, only a stroke (border)
+	// 	}
+	// };
 	function createCustomRectangle() {
 		var pathData = [
 			`M ${topLeftRadius} 0`,
@@ -136,11 +217,21 @@
 	}
 
 	onMount(() => {
+		seatServiceStore.get(data.supabase);
 		seatImageItemStore.getAllSeatItems();
 
 		// var customRect = createCustomRectangle();
 
-		canvas = new fabric.Canvas('canvas');
+		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
+		canvas.on('path:created', (e: any) => {
+			let path = e.path;
+			path.set({ stroke: 'red' });
+
+			// canvas.isDrawingMode = false;
+			canvas.renderAll();
+
+			// You can save `path` to a database here, if you want
+		});
 
 		fabric.Object.prototype.set({
 			borderColor: '#5d9cec',
@@ -165,14 +256,13 @@
 				.single()
 				.then(async (result) => {
 					const data: any = result.data;
+					exhibitionName = data.name;
+					const design = data.design;
 					console.log(data);
 					if (data && data['design']) {
 						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
 					}
-					canvas.setDimensions({
-						width: container.offsetWidth,
-						height: container.offsetHeight
-					});
+
 					console.log('//////canvas.width', canvas.width);
 					for (var i = 0; i < canvas.width / gridSize; i++) {
 						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
@@ -194,29 +284,25 @@
 						// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
 						// canvas.add(customRect);
 					}
+					const prevCanvasWidth = design.width;
+					const prevCanvasHeight = design.height;
 
-					var border = new fabric.Rect({
-						left: 0,
-						top: 0,
-						width: canvas.width,
-						height: canvas.height,
-						fill: 'transparent',
-						stroke: 'black',
-						strokeWidth: 5,
-						selectable: false,
-						evented: false
-					});
+					const prevCanvasRatio = prevCanvasWidth / prevCanvasHeight;
 
-					// Add the rectangle to the canvas
-					border.toObject = () => null;
-					canvas.add(border);
+					const newCanvasHeight = container.offsetWidth / prevCanvasRatio;
+					canvas.setWidth(container.offsetHeight);
 
+					canvas.setHeight(newCanvasHeight);
+					canvas.renderAll();
 					// Ensure the border always stays in the back of other objects
-					canvas.on('object:added', function () {
-						canvas.sendToBack(border);
-					});
 				});
 		}
+
+		// Handle object removed
+		canvas.on('object:removed', () => {
+			updateLayers();
+		});
+		updateLayers();
 		canvas.on('object:moving', function (options: fabric.IEvent) {
 			if (options.target) {
 				options.target.set({
@@ -232,10 +318,10 @@
 		// 	object.angle = Math.round(object.angle! / 10) * 10;
 		// });
 
-		if (typeof window !== 'undefined') {
-			window.addEventListener('resize', adjustCanvasSize);
-			adjustCanvasSize();
-		}
+		// if (typeof window !== 'undefined') {
+		// 	window.addEventListener('resize', adjustCanvasSize);
+		// 	adjustCanvasSize();
+		// }
 
 		// canvas.bringToFront(rect);
 		// canvas.bringToFront(aa);
@@ -265,18 +351,69 @@
 				panning = false;
 			}
 		});
-
+		let liveLine: any | null = null;
 		canvas.on('mouse:down', function (options: any) {
-			if (isDrawing) {
-				isDown = true;
-				let pointer = canvas.getPointer(options.e);
-				let points = [pointer.x, pointer.y, pointer.x, pointer.y];
-				line = new fabric.Line(points, {
-					strokeWidth: 5,
-					stroke: fillColor,
-					selectable: false
+			let pointer = canvas.getPointer(options.e);
+			if (isAddingText) {
+				const text = new fabric.IText('Click to edit text', {
+					left: pointer.x,
+					top: pointer.y,
+					fontSize: 20,
+					fill: 'black'
 				});
-				canvas.add(line);
+
+				canvas.add(text);
+				isAddingText = false;
+			}
+			if (isDrawing) {
+				console.log('mouse down');
+
+				points.push({ x: pointer.x, y: pointer.y });
+
+				// Draw a line from the last point to this point
+
+				liveLine = new fabric.Line(
+					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
+					{
+						stroke: 'red',
+						strokeWidth: 1,
+						selectable: false
+					}
+				);
+				liveLine['id'] = new Date().getTime();
+				canvas.add(liveLine);
+				lines.push(liveLine);
+
+				if (
+					points.length > 2 &&
+					Math.abs(points[0].x - points[points.length - 1].x) < 50 &&
+					Math.abs(points[0].y - points[points.length - 1].y) < 50
+				) {
+					points[points.length - 1] = points[0];
+
+					// Close the shape
+					let polygon = new fabric.Polygon(points, {
+						stroke: 'red',
+						fill: 'transparent',
+						strokeWidth: 1,
+						selectable: true
+					});
+					polygon['id'] = new Date().getTime();
+					canvas.add(polygon);
+					canvas.renderAll(); // You might need to request a re-render of the canvas
+
+					// Reset
+					isDrawing = false;
+					points = [];
+
+					// Remove temporary lines
+					for (let line of lines) {
+						console.log('removing line');
+						canvas.remove(line);
+					}
+					lines = [];
+					updateLayers();
+				}
 			}
 
 			console.log('mouse down');
@@ -292,8 +429,15 @@
 		canvas.on('mouse:move', function (opt: any) {
 			if (isDown || isDrawing) {
 				let pointer = canvas.getPointer(opt.e);
-				line!.set({ x2: pointer.x, y2: pointer.y });
-				canvas.requestRenderAll();
+				const mouseX = pointer.x;
+				const mouseY = pointer.y;
+				if (points.length === 0) return;
+				const x = points[points.length - 1].x;
+				const y = points[points.length - 1].y;
+				if (liveLine) {
+					liveLine.set({ x2: pointer.x, y2: pointer.y, x1: x, y1: y });
+					canvas.renderAll();
+				}
 			}
 
 			if (panning && spacePressed) {
@@ -307,10 +451,6 @@
 		canvas.on('mouse:up', function (options: any) {
 			if (isDrawing) {
 				isDown = false;
-				line!.set({ selectable: true, evented: true }); // set 'evented' to true to interact with the line
-				line!.setControlsVisibility({ mtr: true }); // show the rotate control ('mtr')
-				line!.hasControls = true; // show controls
-				line = null;
 			}
 
 			panning = false;
@@ -363,6 +503,8 @@
 
 		canvas.on('selection:created', function (event: any) {
 			var selectedObject = event.selected[0];
+			const index = canvas.getObjects().indexOf(selectedObject);
+			console.log("The object's layer order is", index);
 			setSelectedObjectValue(selectedObject);
 		});
 		canvas.on('selection:updated', function (event: any) {
@@ -382,13 +524,35 @@
 
 		window.addEventListener('keydown', function (e) {
 			// keyCode 46 corresponds to the Delete key
+			const selectedObject = canvas.getActiveObject();
 			console.log(e);
 			if (e.key === 'Delete' || e.key === 'Backspace') {
 				removeSelectedObject();
 			}
+			handleKeydown(e, selectedObject);
 		});
 	});
 
+	function handleKeydown(event: any, selectedObject: any) {
+		let movingPixel = 1;
+		if (event.shiftKey) movingPixel = 10;
+		switch (event.code) {
+			case 'ArrowUp':
+				selectedObject.top -= movingPixel;
+				break;
+			case 'ArrowDown':
+				selectedObject.top += movingPixel;
+				break;
+			case 'ArrowLeft':
+				selectedObject.left -= movingPixel;
+				break;
+			case 'ArrowRight':
+				selectedObject.left += movingPixel;
+				break;
+		}
+		console.log(selectedObject);
+		canvas.renderAll(); // Render changes
+	}
 	function clearAllInput() {
 		strokeWidth = null;
 		itemWidth = null;
@@ -421,21 +585,31 @@
 		fillColor = selectedObject.fill;
 		itemWidth = selectedObject.width;
 		itemHeight = selectedObject.height;
-		canvas.bringToFront(selectedObject);
+		// canvas.bringToFront(selectedObject);
 	}
 
 	afterUpdate(() => {
-		adjustCanvasSize();
+		// adjustCanvasSize();
 	});
 
 	onDestroy(() => {
 		if (typeof window !== 'undefined') {
-			window.removeEventListener('resize', adjustCanvasSize);
+			// window.removeEventListener('resize', adjustCanvasSize);
 		}
 	});
 
 	async function convetToObject() {
-		let json = canvas.toObject(['left', 'top', 'width', 'height', 'fill']);
+		let json = canvas.toObject([
+			'left',
+			'top',
+			'width',
+			'height',
+			'fill',
+			'id',
+			'stroke',
+			'strokeWidth',
+			'icon'
+		]);
 		console.log(json);
 		const supabase = data.supabase;
 		// convert canvas to image fil	e
@@ -447,7 +621,6 @@
 			.from('image')
 			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
 		console.log(fileResult.data);
-
 		if (!fileResult.data) {
 			alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
 			return;
@@ -494,6 +667,10 @@
 	}
 
 	function onShapeSelected(image: SeatImageItemModel | null = null) {
+		let iconCanvas = new fabric.StaticCanvas(null);
+		iconCanvas.setWidth(50);
+		iconCanvas.setHeight(50);
+
 		fabric.Image.fromURL(
 			image?.image_url!,
 			function (img) {
@@ -504,19 +681,33 @@
 					scaleX: 0.5,
 					scaleY: 0.5
 				});
-
+				img.id = new Date().getTime();
 				// Add the image to the canvas
-				canvas.add(img);
 
-				// Trigger canvas rendering
+				let scale = Math.max(
+					iconCanvas.getWidth() / img.width!,
+					iconCanvas.getHeight() / img.height!
+				);
+				const newImg = new fabric.Image(img.getElement(), {
+					scaleX: scale,
+					scaleY: scale,
+					left: iconCanvas.getWidth() / 2,
+					top: iconCanvas.getHeight() / 2,
+					originX: 'center',
+					originY: 'center'
+				});
+				iconCanvas.add(newImg);
+				iconCanvas.renderAll();
+
+				let iconDataURL = canvasToDataUrl(iconCanvas);
+				img.icon = iconDataURL;
+
+				canvas.add(img);
 				canvas.renderAll();
+				updateLayers();
 			},
 			{ crossOrigin: 'anonymous' }
 		);
-	}
-
-	function onPenSelect() {
-		isDrawing = !isDrawing; // Toggle the drawing mode
 	}
 
 	async function onFileSelected(e: any) {
@@ -718,10 +909,187 @@
 		canvas.setZoom(zoomLevel);
 		canvas.renderAll();
 	}
+
+	function groupObjects() {
+		let activeObjects = canvas.getActiveObjects();
+		if (activeObjects) {
+			console.log(activeObjects);
+
+			canvas.discardActiveObject();
+			const group = new MyGroup(activeObjects, { groupId: Date.now() });
+			group._objects.forEach((obj: any) => {
+				obj.groupId = group.groupId; // Add groupId to each object
+			});
+			canvas.add(group);
+			canvas.requestRenderAll();
+		}
+	}
+
+	function unGroupObjects() {
+		let group = canvas.getActiveObject();
+		if (group.type === 'group') {
+			// Ungroup
+
+			group.destroy();
+			canvas.remove(group);
+			// group.forEach(function (item: any) {
+			// 	item.groupId = undefined;
+			// 	item.set('dirty', true);
+			// });
+
+			// make groupId for each object undefined
+			//
+			group.forEachObject(function (obj: any) {
+				console.log(obj);
+				obj.groupId = undefined;
+			});
+			group.groupId = undefined;
+			canvas.add.apply(canvas, group);
+			canvas.renderAll();
+			updateLayers();
+		}
+	}
+
+	function selectImageForBackground() {
+		let input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		input.onchange = (event: any) => {
+			let file = event.target.files[0];
+			let reader = new FileReader();
+			reader.onload = (event: any) => {
+				let imgObj = new Image();
+				imgObj.src = event.target.result;
+				imgObj.onload = () => {
+					let image = new fabric.Image(imgObj);
+					image.set({
+						left: 0,
+						top: 0,
+						angle: 0,
+						padding: 10
+					});
+					// set to object to null
+					// image.toObject() = () => null;
+					//image.scale(getRandomNum(0.1, 0.25)).setCoords();
+					const containerWidth = container.offsetWidth;
+
+					const imageRatio = image.width! / image.height!;
+
+					// change canvas size to fit container
+					canvas.setWidth(containerWidth);
+
+					// set image height to respect ratio
+
+					const canvasHeight = containerWidth / imageRatio;
+
+					canvas.setHeight(canvasHeight);
+
+					canvas.setBackgroundImage(image, canvas.renderAll.bind(canvas), {
+						scaleX: canvas.width / image!.width!,
+						scaleY: canvas.height / image!.height!
+					});
+				};
+			};
+			reader.readAsDataURL(file);
+		};
+		input.click();
+	}
+
+	function toggleBackgroundImage() {
+		// hide and show background image
+		let image = canvas.backgroundImage;
+		if (image) {
+			image.visible = !image.visible;
+			canvas.renderAll();
+		}
+	}
+
+	// Function to enable text adding mode
+	const enableTextMode = () => {
+		canvas.isDrawingMode = false;
+		isDrawing = false;
+		isAddingText = !isAddingText;
+	};
+
+	function onPenSelect() {
+		isDrawing = false;
+		isAddingText = false;
+		canvas.isDrawingMode = !canvas.isDrawingMode;
+		canvas.freeDrawingBrush.width = 5;
+		canvas.freeDrawingBrush.color = 'red';
+	}
+
+	function onDrawLine() {
+		canvas.isDrawingMode = false;
+		isAddingText = false;
+		isDrawing = !isDrawing;
+	}
+
+	function selectEditingMode(modeType: EditingMode) {
+		switch (modeType) {
+			case EditingMode.Draw:
+				onPenSelect();
+				break;
+			case EditingMode.Text:
+				enableTextMode();
+				break;
+			case EditingMode.Line:
+				onDrawLine();
+				break;
+		}
+	}
 </script>
 
 <div class="flex flex-col w-full h-full flex-1">
-	<div class="flex justify-center bg-secondary border-b border-gray-500 p-2">
+	<div class="flex justify-between bg-secondary border-b border-gray-500 h-16">
+		<div class="flex justify-between">
+			<div on:click={() => createItem()} class="seat-design rounded cursor-move">Shape</div>
+			<Button
+				class="h-full border-none rounded-none"
+				size="lg"
+				color={canvas && canvas.isDrawingMode ? 'primary' : 'secondary'}
+			>
+				<Pencil
+					on:click={() => selectEditingMode(EditingMode.Draw)}
+					size="30"
+					class="text-white  outline-none"
+				/>
+			</Button>
+			<Button
+				class="h-full border-none rounded-none"
+				size="lg"
+				color={isDrawing ? 'primary' : 'secondary'}
+			>
+				<Pencil
+					on:click={() => selectEditingMode(EditingMode.Line)}
+					size="30"
+					class=" text-white dark:text-green-700 outline-none "
+				/>
+			</Button>
+			<Button
+				id="group-button"
+				class="h-full border-none rounded-none"
+				size="lg"
+				color={isAddingText ? 'primary' : 'secondary'}
+				on:click={() => selectEditingMode(EditingMode.Text)}
+				><ChatBubbleBottomCenter color="white" /></Button
+			>
+		</div>
+		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={toggleBackgroundImage}
+			>Toggle background</Button
+		>
+		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={selectImageForBackground}
+			>Add Image to background</Button
+		>
+		<ButtonGroup class="" size="sm">
+			<InputAddon>Name</InputAddon><Input
+				type="text"
+				size="sm"
+				bind:value={exhibitionName}
+				placeholder="Name"
+				let:props
+			/></ButtonGroup
+		>
 		<Button
 			id="group-button"
 			class="!p-2 mx-4 bg-red"
@@ -729,37 +1097,23 @@
 			color={isDrawing ? 'dark' : 'light'}
 			on:click={convetToObject}>Save</Button
 		>
-		<!-- <Button
+		<Button
 			id="group-button"
 			class="!p-2 mx-4 bg-red"
 			size="lg"
 			color={isDrawing ? 'dark' : 'light'}
-			on:click={removeSelectedObject}>Delete</Button
-		> -->
+			on:click={groupObjects}>Group</Button
+		>
 		<Button
+			id="group-button"
 			class="!p-2 mx-4 bg-red"
 			size="lg"
 			color={isDrawing ? 'dark' : 'light'}
-			on:click={removeSelectedObject}>Delete</Button
+			on:click={unGroupObjects}>UnGroup</Button
 		>
 	</div>
 	<div class="w-full grid grid-cols-6 h-full">
 		<div class="flex flex-col p-4 bg-secondary">
-			<div class="flex justify-between">
-				<div on:click={() => createItem()} class="seat-design rounded cursor-move">
-					<svg xmlns="http://www.w3.org/2000/svg" width={50} height={50}>
-						<rect width="100%" height="100%" rx="5" ry="5" />
-						<text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" class="text-sm" />
-					</svg>
-				</div>
-				<Button class="!p-2 w-10 h-10 bg-red" size="lg" color={isDrawing ? 'dark' : 'light'}>
-					<Pencil
-						on:click={onPenSelect}
-						size="30"
-						class="text-red-700 dark:text-green-700 outline-none "
-					/>
-				</Button>
-			</div>
 			<div class="grid grid-cols-2 gap-2 rounded-md my-6">
 				<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
 					<Plus class="w-full h-full" />
@@ -778,24 +1132,15 @@
 				<div slot="header" class="p-3">
 					<Search size="md" />
 				</div>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Robert Gouth</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Jese Leos</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox checked>Bonnie Green</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Jese Leos</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Robert Gouth</Checkbox>
-				</li>
-				<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-					<Checkbox>Bonnie Green</Checkbox>
-				</li>
+				{#if $seatServiceStore}
+					{#each $seatServiceStore as service}
+						<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+							{#if service.languages}
+								<Checkbox>{service.languages[0].title}</Checkbox>
+							{/if}
+						</li>
+					{/each}
+				{/if}
 				<a
 					slot="footer"
 					href="/"
@@ -859,8 +1204,37 @@
 					<Spinner />
 				{/if}
 			</Modal>
+			<div class="mt-4">
+				<div class="text-white text-xl my-4">Layers</div>
+				<ul id="layers" style="height: 30vh " class="overflow-y-scroll">
+					{#each objects as object (object.id)}
+						<li
+							data-id={object.id}
+							class="layer mb-2 p-1 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 flex justify-start items-center {object.isGroup
+								? 'bg-blue-50'
+								: 'bg-gray-50'}"
+						>
+							<img src={object.icon} alt="Object icon" class="object-icon w-8 h-8" />
+							<div class="w-2 h-full" />
+							<span>{object.type}</span>
+							{#if object.isGroup}
+								<ul class="ml-4">
+									{#each object.children as child (child.id)}
+										<li
+											data-id={child.id}
+											class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 bg-gray-50"
+										>
+											<span>{child.type} {child.id + 1}</span>
+										</li>
+									{/each}
+								</ul>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			</div>
 		</div>
-		<div bind:this={container} class="w-full col-span-4 relative">
+		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
 			<canvas id="canvas" />
 			<div class="absolute bottom-10 right-10 w-40 flex justify-between">
 				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>

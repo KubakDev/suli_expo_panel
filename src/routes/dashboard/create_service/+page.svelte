@@ -7,7 +7,7 @@
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ServiceModel, ServiceModelLang } from '../../../models/serviceModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
+	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
