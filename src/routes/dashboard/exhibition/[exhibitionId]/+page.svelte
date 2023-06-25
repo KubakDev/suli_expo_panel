@@ -359,12 +359,11 @@
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<ExpoCard
-									cardType={CardType.Main}
+									cardType={CardType.Square}
 									title={langData.title}
-									short_description={langData.description}
 									thumbnail={exhibitionsData.thumbnail}
 									primaryColor="bg-primary"
-									created_at={exhibitionsData.exhibition_date}
+									date={exhibitionsData.exhibition_date}
 								/>
 							{/if}
 						{/each}
