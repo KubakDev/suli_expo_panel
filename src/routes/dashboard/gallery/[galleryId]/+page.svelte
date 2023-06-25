@@ -17,7 +17,6 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import Editor from '@tinymce/tinymce-svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
@@ -44,12 +43,18 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('exhibitionData//////', exhibitionData);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
 	};
-
 	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//

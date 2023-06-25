@@ -49,7 +49,14 @@
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('exhibitionData//////', exhibitionData);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
