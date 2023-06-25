@@ -287,6 +287,7 @@
 										short_description={langData.description}
 										thumbnail={exhibitionsObject.thumbnail}
 										primaryColor="bg-primary"
+										created_at={exhibitionsObject.exhibition_date}
 									/>
 								{/if}
 							{/each}
