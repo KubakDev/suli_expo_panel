@@ -27,6 +27,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let prevThumbnail: string = '';
 
 	let galleryDataLang: GalleryModelLang[] = [];
 	let galleryData: GalleryModel = {
@@ -77,7 +78,7 @@
 
 				// console.log('gallery data get db thumbnail : ////////', galleryData.thumbnail);
 				// console.log('gallery data get db images: ////////', galleryData.images);
-
+				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.gallery_languages.findIndex(
@@ -160,6 +161,8 @@
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 			galleryData.thumbnail = response.data?.path;
+		} else {
+			galleryData.thumbnail = prevThumbnail;
 		}
 
 		if (sliderImagesFile.length > 0) {

@@ -6,7 +6,6 @@
 	import { updateData } from '../../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../../models/exhibitionModel';
-	import DateInput from 'date-picker-svelte/DateInput.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -14,10 +13,8 @@
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import moment from 'moment';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -27,7 +24,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
-	let HandleDate: string = '';
+	let prevThumbnail: string = '';
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
@@ -36,12 +33,11 @@
 		thumbnail: '',
 		video_youtube_id: '',
 		exhibition_type: '',
-		exhibition_date: ''
+		exhibition_date: new Date()
 	};
 	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
 
-	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
@@ -72,8 +68,8 @@
 					exhibition_type: result.data?.exhibition_type,
 					exhibition_date: result.data?.exhibition_date
 				};
-				console.log('date value ', exhibitionsData.exhibition_date);
-
+				console.log('date value ///////', exhibitionsData.exhibition_date);
+				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.exhibition_languages.findIndex(
@@ -141,9 +137,7 @@
 		// console.log('first', result);
 		return result;
 	}
-	function datepicked(e) {
-		HandleDate = e.detail.datepicked;
-	}
+
 	//**Handle submit**//
 	async function formSubmit() {
 		submitted = true;
@@ -155,7 +149,10 @@
 			}
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+			console.log(response.data);
 			exhibitionsData.thumbnail = response.data?.path;
+		} else {
+			exhibitionsData.thumbnail = prevThumbnail;
 		}
 
 		if (sliderImagesFile.length > 0) {
@@ -177,8 +174,7 @@
 		// Convert galleryObject.images to a valid array string format
 		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
 		exhibitionsData.images = `{${imagesArray.join(',')}}`;
-		exhibitionsData.exhibition_date = HandleDate;
-		console.log('last update ///', exhibitionsData.exhibition_date);
+		console.log(exhibitionsData);
 		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
 		setTimeout(() => {
@@ -251,11 +247,13 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
-						<DateInput
+						<!-- <DateInput
 							value={new Date(exhibitionsData.exhibition_date)}
 							format="yyyy-MM-dd HH:mm:ss"
 							on:datepicked={datepicked}
-						/>
+						/> -->
+						<Input type="date" bind:value={exhibitionsData.exhibition_date} />
+						<p>{new Date(exhibitionsData.exhibition_date).toLocaleDateString('en-US')}</p>
 					</Label>
 				</div>
 				<br />

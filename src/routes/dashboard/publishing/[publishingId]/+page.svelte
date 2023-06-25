@@ -32,6 +32,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let prevThumbnail: string = '';
 
 	let publishingDataLang: PublishingModelLang[] = [];
 	let publishingData: PublishingModel = {
@@ -85,7 +86,7 @@
 
 				console.log('publishing data get db pdf files : ////////', publishingData.pdf_files);
 				console.log('publishing data get db images: ////////', publishingData.images);
-
+				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -192,6 +193,8 @@
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 			publishingData.thumbnail = response.data?.path;
+		} else {
+			publishingData.thumbnail = prevThumbnail;
 		}
 
 		if (sliderImagesFile.length > 0) {

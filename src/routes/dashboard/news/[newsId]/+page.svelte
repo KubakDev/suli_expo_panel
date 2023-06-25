@@ -17,7 +17,6 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import Editor from '@tinymce/tinymce-svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
@@ -28,6 +27,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let prevThumbnail: string = '';
 
 	let newsDataLang: NewsModelLang[] = [];
 	let newsData: NewsModel = {
@@ -79,7 +79,7 @@
 
 				// console.log('news data get db thumbnail : ////////', newsData.thumbnail);
 				// console.log('news data get db images: ////////', newsData.images);
-
+				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.news_languages.findIndex(
@@ -161,6 +161,8 @@
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 			newsData.thumbnail = response.data?.path;
+		} else {
+			newsData.thumbnail = prevThumbnail;
 		}
 
 		if (sliderImagesFile.length > 0) {

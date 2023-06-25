@@ -21,6 +21,7 @@
 	let imageFile: File | undefined;
 	let submitted = false;
 	let showToast = false;
+	let prevThumbnail: string = '';
 
 	let serviceDataLang: ServiceModelLang[] = [];
 	let serviceData: ServiceModel = {
@@ -74,7 +75,7 @@
 
 				// console.log('service data get db thumbnail : ////////', serviceData.thumbnail);
 				// console.log('service data get db images: ////////', serviceData.images);
-
+				prevThumbnail = result.data?.thumbnail;
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.service_languages.findIndex(
 						(serviceLang: ServiceModelLang) =>
@@ -134,6 +135,8 @@
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 			serviceData.thumbnail = response.data?.path;
+		} else {
+			serviceData.thumbnail = prevThumbnail;
 		}
 
 		updateData(serviceData, serviceDataLang, data.supabase);

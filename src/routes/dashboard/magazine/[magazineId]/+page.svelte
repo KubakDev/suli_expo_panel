@@ -32,6 +32,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let prevThumbnail: string = '';
 
 	let magazineDataLang: MagazineModelLang[] = [];
 	let magazineData: MagazineModel = {
@@ -86,6 +87,7 @@
 				console.log('magazine data get db pdf files : ////////', magazineData.pdf_files);
 				console.log('magazine data get db images: ////////', magazineData.images);
 
+				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -192,6 +194,8 @@
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 			magazineData.thumbnail = response.data?.path;
+		} else {
+			magazineData.thumbnail = prevThumbnail;
 		}
 
 		if (sliderImagesFile.length > 0) {

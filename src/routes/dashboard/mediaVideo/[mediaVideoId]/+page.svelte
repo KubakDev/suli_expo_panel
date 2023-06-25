@@ -28,6 +28,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let prevThumbnail: string = '';
 
 	let mediaVideoDataLang: VideoModelLang[] = [];
 	let mediaVideoData: VideoModel = {
@@ -79,7 +80,7 @@
 
 				// console.log('video data get db thumbnail : ////////', mediaVideoData.thumbnail);
 				// console.log('video data get db images: ////////', mediaVideoData.images);
-
+				prevThumbnail = result.data?.thumbnail;
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.media_video_languages.findIndex(
 						(mediaVideoLang: VideoModelLang) =>
@@ -142,6 +143,8 @@
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 			mediaVideoData.thumbnail = response.data?.path;
+		} else {
+			mediaVideoData.thumbnail = prevThumbnail;
 		}
 
 		updateData(mediaVideoData, mediaVideoDataLang, data.supabase);
