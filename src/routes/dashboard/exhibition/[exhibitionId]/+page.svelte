@@ -17,6 +17,7 @@
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import moment from 'moment';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -26,6 +27,7 @@
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
+	let HandleDate: string = '';
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
@@ -34,7 +36,7 @@
 		thumbnail: '',
 		video_youtube_id: '',
 		exhibition_type: '',
-		exhibition_date: new Date()
+		exhibition_date: ''
 	};
 	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
@@ -70,6 +72,7 @@
 					exhibition_type: result.data?.exhibition_type,
 					exhibition_date: result.data?.exhibition_date
 				};
+				console.log('date value ', exhibitionsData.exhibition_date);
 
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -138,7 +141,9 @@
 		// console.log('first', result);
 		return result;
 	}
-
+	function datepicked(e) {
+		HandleDate = e.detail.datepicked;
+	}
 	//**Handle submit**//
 	async function formSubmit() {
 		submitted = true;
@@ -172,7 +177,8 @@
 		// Convert galleryObject.images to a valid array string format
 		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
 		exhibitionsData.images = `{${imagesArray.join(',')}}`;
-
+		exhibitionsData.exhibition_date = HandleDate;
+		console.log('last update ///', exhibitionsData.exhibition_date);
 		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
 		setTimeout(() => {
@@ -245,7 +251,11 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
-						<input bind:value={exhibitionsData.exhibition_date} />
+						<DateInput
+							value={new Date(exhibitionsData.exhibition_date)}
+							format="yyyy-MM-dd HH:mm:ss"
+							on:datepicked={datepicked}
+						/>
 					</Label>
 				</div>
 				<br />

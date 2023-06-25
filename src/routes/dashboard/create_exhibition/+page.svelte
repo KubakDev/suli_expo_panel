@@ -171,7 +171,10 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={exhibitionsObject.exhibition_date} format="yyyy/MM/dd" />
+						<DateInput
+							bind:value={exhibitionsObject.exhibition_date}
+							format="yyyy-MM-dd HH:mm:ss"
+						/>
 					</Label>
 				</div>
 

@@ -7,7 +7,7 @@ export interface ExhibitionsModel {
 	thumbnail: string;
 	video_youtube_id: string;
 	exhibition_type: string;
-	exhibition_date: Date;
+	exhibition_date: string;
 	exhibition_languages?: ExhibitionsModelLang[];
 }
 
