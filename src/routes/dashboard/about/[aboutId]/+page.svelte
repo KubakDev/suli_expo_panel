@@ -1,0 +1,249 @@
+<script lang="ts">
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Tabs, TabItem } from 'flowbite-svelte';
+	import * as yup from 'yup';
+	import { Form, Message } from 'svelte-yup';
+	import { updateData } from '../../../../stores/aboutStore';
+	import { LanguageEnum } from '../../../../models/languageEnum';
+	import type { AboutModel, AboutModelLang } from '../../../../models/aboutModel';
+	import { DateInput } from '$lib/components/DateTimePicker';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
+
+	export let data;
+	let fileName: string;
+	let imageFile: File | undefined;
+	let carouselImages: any = undefined;
+	let submitted = false;
+	let showToast = false;
+	let prevThumbnail: string = '';
+
+	let aboutDataLang: AboutModelLang[] = [];
+	let aboutData: AboutModel = {
+		id: 0,
+		image: '',
+		created_at: new Date()
+	};
+	const id = $page.params.aboutId;
+
+	//**** get data from db and put it into the fields ****//
+	async function getAboutData() {
+		await data.supabase
+			.from('about')
+			.select('*,about_languages(*)')
+			.eq('id', id)
+			.single()
+			.then((result) => {
+				aboutData = {
+					id: result.data?.id,
+					image: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.image}`,
+					created_at: new Date(result.data?.created_at)
+				};
+
+				prevThumbnail = result.data?.image;
+
+				for (let i = 0; i < languageEnumLength; i++) {
+					const index = result.data?.about_languages.findIndex(
+						(aboutLang: AboutModelLang) =>
+							aboutLang.language == LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+					);
+					const aboutLang = result.data?.about_languages[index];
+					aboutDataLang.push({
+						short_description: aboutLang?.short_description ?? '',
+						long_description: aboutLang?.long_description ?? '',
+						language:
+							aboutLang?.language ?? LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+					});
+				}
+				aboutDataLang = [...aboutDataLang];
+				aboutData = { ...aboutData };
+			});
+	}
+
+	onMount(async () => {
+		await getAboutData();
+	});
+
+	//** for swapping between languages**//
+	let selectedLanguageTab = LanguageEnum.EN;
+	const languageEnumKeys = Object.keys(LanguageEnum);
+	const languageEnumLength = languageEnumKeys.length;
+	//** for swapping between languages**//
+
+	//**for upload image image**//
+	function handleFileUpload(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
+		// console.log(file);
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			aboutData.image = reader.result as '';
+
+			const randomText = getRandomTextNumber(); // Generate random text
+			fileName = `about/${randomText}_${file.name}`; // Append random text to the file name
+			// console.log(aboutData);
+		};
+		reader.readAsDataURL(file);
+	} //**for upload image image**//
+
+	//**Handle submit**//
+	async function formSubmit() {
+		submitted = true;
+		showToast = true;
+
+		if (imageFile) {
+			if (aboutData.image) {
+				await data.supabase.storage.from('image').remove([aboutData.image]);
+			}
+
+			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+			aboutData.image = response.data?.path;
+		} else {
+			aboutData.image = prevThumbnail;
+		}
+		console.log('////data before submission :', aboutData, 'language :', aboutDataLang);
+		updateData(aboutData, aboutDataLang, data.supabase);
+
+		setTimeout(() => {
+			showToast = false;
+		}, 1000);
+		goto('/dashboard/about');
+	}
+</script>
+
+<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
+	<div class="w-full h-full col-span-2 flex justify-center items-center">
+		{#if showToast}
+			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+				The Update Was Successfully!
+			</div>
+		{/if}
+
+		<Form class="form py-10" {submitted}>
+			<h1 class="text-xl font-bold mb-8">About Data</h1>
+
+			<div class="grid gap-4 md:grid-cols-3 mt-8">
+				<!-- upload image image  -->
+				<div>
+					<Label class="space-y-2 mb-2">
+						<Label for="first_name" class="mb-2">Upload About Image</Label>
+						<Fileupload on:change={handleFileUpload} />
+					</Label>
+				</div>
+				<div>
+					<Label class="space-y-2 mb-2">
+						<span>Date</span>
+						<DateInput bind:value={aboutData.created_at} />
+					</Label>
+				</div>
+
+				<br />
+
+				<div class="col-span-3">
+					<Tabs
+						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
+					>
+						{#each aboutDataLang as langData}
+							<TabItem
+								open={langData.language == selectedLanguageTab}
+								title={langData.language}
+								on:click={() => {
+									selectedLanguageTab = langData.language;
+								}}
+							>
+								<div class="px-10 py-16">
+									<div class="text-center w-full pb-5">
+										<h1 class="text-xl font-bold">
+											{#if langData.language === 'ar'}
+												{`أضف البيانات إلى اللغة العربية`}
+											{:else if langData.language === 'ckb'}
+												{`زیاد کردنی داتا بە زمانی کوردی`}
+											{:else}
+												{`Add data for ${langData.language} language`}
+											{/if}
+										</h1>
+										<p>for other language navigate between tabs</p>
+									</div>
+
+									<div class="pb-10">
+										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Textarea
+											placeholder="Enter short description"
+											rows="4"
+											bind:value={langData.short_description}
+											id="short_description"
+											name="short_description"
+										/>
+										<!-- <Message name="short_description" /> -->
+									</div>
+									<div class="pb-10">
+										<Label for="textarea-id" class="mb-2">long description</Label>
+										<div class="pt-4 w-full" style="height: 400px;">
+											<EditorComponent {langData} />
+										</div>
+									</div>
+								</div>
+							</TabItem>
+						{/each}
+					</Tabs>
+				</div>
+				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+
+				<br />
+			</div>
+
+			<!-- button for submitForm -->
+			<div class="w-full flex justify-end mt-2">
+				<button
+					on:click|preventDefault={formSubmit}
+					type="submit"
+					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+				>
+					Submit
+				</button>
+			</div>
+		</Form>
+	</div>
+	<div class="h-full p-2 col-span-1 pt-20">
+		<Tabs style="underline">
+			<TabItem open title="About List">
+				<div
+					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+					style="min-height: calc(100vh - 300px);"
+				>
+					<div class="flex justify-start items-start">
+						{#each aboutDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<ExpoCard
+									cardType={CardType.Main}
+									title=""
+									short_description={langData.short_description}
+									thumbnail={aboutData.image}
+									primaryColor="bg-primary"
+								/>
+							{/if}
+						{/each}
+					</div>
+
+					<div />
+				</div>
+			</TabItem>
+			<TabItem title="About Detail">
+				{#each aboutDataLang as langData}
+					{#if langData.language === selectedLanguageTab}
+						<DetailPage
+							bind:imagesCarousel={carouselImages}
+							long_description={langData.long_description}
+						/>
+					{/if}
+				{/each}
+			</TabItem>
+		</Tabs>
+	</div>
+</div>

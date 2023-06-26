@@ -30,3 +30,70 @@ export const insertData = async (
 		throw error;
 	}
 };
+
+//Get all about data
+export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+	try {
+		const { data, error } = await supabase
+			.from('about')
+			.select('*,about_languages(*)')
+			.range((page - 1) * pageSize, page * pageSize - 1)
+			.limit(pageSize)
+			.order('created_at', { ascending: false });
+
+		const { count } = await supabase.from('about').select('count', { count: 'exact' });
+
+		console.log('/////////', count);
+		// console.log('data : ', data);
+		const result = {
+			data: data,
+			count: count
+		};
+		return result;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//update about by id
+export const updateData = async (
+	aboutObject: AboutModel,
+	aboutDataLang: AboutModelLang[],
+	supabase: SupabaseClient
+) => {
+	try {
+		console.log('first');
+		const { data, error } = await supabase.rpc('update_about_and_about_lang', {
+			about_data: aboutObject,
+			about_lang_data: aboutDataLang
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		about.update((currentAbout) => {
+			if (data) {
+				// Find the index of the updated item
+				const index = currentAbout.findIndex((item) => item.id === aboutObject.id);
+
+				// Create a new array with the updated item
+				const updatedAbout = [
+					...currentAbout.slice(0, index),
+					data,
+					...currentAbout.slice(index + 1)
+				];
+
+				return updatedAbout;
+			}
+
+			return currentAbout;
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
