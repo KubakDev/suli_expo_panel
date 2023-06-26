@@ -24,7 +24,7 @@ export const load = async () => {
 		},
 		{
 			title: 'carousel',
-			url: '/dashboard/create_carousel'
+			url: '/dashboard/carousel'
 		},
 		{
 			title: 'about',

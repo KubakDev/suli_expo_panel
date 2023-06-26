@@ -128,25 +128,6 @@
 		videoObjectData.exhibition_id = event.target.value;
 		// console.log('galleryObject//', galleryObject);
 	}
-
-	//get thumbnail
-	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		console.log('test//', carouselImages);
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
-	}
 </script>
 
 <div

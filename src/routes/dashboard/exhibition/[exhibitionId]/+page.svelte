@@ -363,7 +363,7 @@
 									title={langData.title}
 									thumbnail={exhibitionsData.thumbnail}
 									primaryColor="bg-primary"
-									date={exhibitionsData.exhibition_date}
+									created_at={exhibitionsData.exhibition_date}
 								/>
 							{/if}
 						{/each}

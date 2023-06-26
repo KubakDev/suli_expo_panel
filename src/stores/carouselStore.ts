@@ -29,3 +29,95 @@ export const insertData = async (
 		throw error;
 	}
 };
+
+//Get all carousel data
+export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+	try {
+		const { data, error } = await supabase
+			.from('carousel')
+			.select('*,carousel_languages(*)')
+			.range((page - 1) * pageSize, page * pageSize - 1)
+			.limit(pageSize)
+			.order('created_at', { ascending: false });
+
+		const { count } = await supabase.from('carousel').select('count', { count: 'exact' });
+
+		console.log('/////////', count);
+		// console.log('data : ', data);
+		const result = {
+			data: data,
+			count: count
+		};
+		return result;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//delete carousel by id
+export const deleteData = async (carouselId: number, supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase.rpc('delete_carousel_and_carousel_lang', {
+			data: { id: carouselId }
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		carousel.update((currentCarousel) => {
+			if (data) {
+				return currentCarousel.filter((item) => item.id !== carouselId);
+			}
+			return currentCarousel;
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//update carousel by id
+export const updateData = async (
+	carouselObject: CarouselModel,
+	carouselDataLang: CarouselModelLang[],
+	supabase: SupabaseClient
+) => {
+	try {
+		console.log('first');
+		const { data, error } = await supabase.rpc('update_carousel_and_carousel_lang', {
+			carousel_data: carouselObject,
+			carousel_lang_data: carouselDataLang
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		carousel.update((currentCarousel) => {
+			if (data) {
+				// Find the index of the updated item
+				const index = currentCarousel.findIndex((item) => item.id === carouselObject.id);
+
+				// Create a new array with the updated item
+				const updatedCarousel = [
+					...currentCarousel.slice(0, index),
+					data,
+					...currentCarousel.slice(index + 1)
+				];
+
+				return updatedCarousel;
+			}
+
+			return currentCarousel;
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};

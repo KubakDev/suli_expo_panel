@@ -18,6 +18,8 @@
 		type CarouselModelLang
 	} from '../../../models/carouselModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -75,7 +77,9 @@
 		console.log(response);
 		carouselObject.image = response.data?.path;
 		insertData(carouselObject, carouselDataLang, data.supabase);
+
 		resetForm();
+		goto('/dashboard/carousel');
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
@@ -222,5 +226,34 @@
 				</button>
 			</div>
 		</Form>
+	</div>
+
+	<div class="h-full p-2 col-span-1 pt-20">
+		<div>
+			<Tabs style="underline">
+				<TabItem open title="Video List">
+					<div
+						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+						style="min-height: calc(100vh - 300px);"
+					>
+						<div class="flex justify-start items-start">
+							{#each carouselDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<ExpoCard
+										cardType={CardType.Main}
+										title={langData.title}
+										short_description={langData.subtitle}
+										thumbnail={carouselObject.image}
+										primaryColor="bg-primary"
+									/>
+								{/if}
+							{/each}
+						</div>
+
+						<div />
+					</div>
+				</TabItem>
+			</Tabs>
+		</div>
 	</div>
 </div>
