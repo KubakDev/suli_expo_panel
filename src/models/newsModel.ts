@@ -7,7 +7,7 @@ export interface NewsModel {
 	thumbnail: string;
 	exhibition_type?: string;
 	created_at?: Date;
-	gallery_languages?: NewsModelLang[];
+	news_languages?: NewsModelLang[];
 }
 
 export interface NewsModelLang {

@@ -3,15 +3,12 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { insertData } from '../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { seatServicesModel, seatServicesModelLang } from '../../../models/seatServicesModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
-	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import { seatServiceStore } from '../../../stores/seatServicesStore';
+	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -24,22 +21,11 @@
 	let seatServicesDataLang: seatServicesModelLang[] = [];
 
 	let seatServicesObject: seatServicesModel = {
+		id: 0,
 		icon: '',
-		created_at: new Date(),
-		id: 0
+		created_at: new Date()
 	};
 
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('sdffff//////', exhibitionData);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 
@@ -57,15 +43,12 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
 			seatServicesObject.icon = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`;
-
-			// console.log('galleryObject////////////', galleryObject);
+			fileName = `seat_services/${randomText}_${file.name}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -80,10 +63,10 @@
 		// console.log(response);
 		seatServicesObject.icon = response.data?.path;
 
-		seatServiceStore.set(seatServicesObject, seatServicesDataLang, data.supabase);
+		insertData(seatServicesObject, seatServicesDataLang, data.supabase);
 
 		resetForm();
-		// goto('/dashboard/gallery');
+		goto('/dashboard/seatServices');
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
@@ -98,7 +81,7 @@
 			id: 0
 		};
 
-		seatServicesDataLang = [];
+		seatServicesDataLang = []; // Resetting seatServicesDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
 			seatServicesDataLang.push({
 				title: '',
@@ -118,20 +101,14 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Seat Services Data</h1>
+			<h1 class="text-xl font-bold mb-8">SeatServices Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
+				<!-- upload icon image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Seat Services Image</Label>
+						<Label for="first_name" class="mb-2">Upload seatServices Icon</Label>
 						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={seatServicesObject.created_at} format="yyyy/MM/dd" />
 					</Label>
 				</div>
 
@@ -161,7 +138,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Seat Services Title</Label>
+										<Label for="first_name" class="mb-2">seatServices Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -172,13 +149,13 @@
 										<!-- <Message name="title" /> -->
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Label for="textarea-id" class="mb-2">Description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
 											bind:value={langData.description}
-											id="description"
-											name="description"
+											id="short_description"
+											name="short_description"
 										/>
 										<!-- <Message name="short_description" /> -->
 									</div>
@@ -207,7 +184,7 @@
 	<div class="h-full p-2 col-span-1 pt-20">
 		<div>
 			<Tabs style="underline">
-				<TabItem open title="Seat Services List">
+				<TabItem open title="News List">
 					<div
 						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 						style="min-height: calc(100vh - 300px);"

@@ -15,7 +15,6 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
-	import { filter } from 'd3';
 
 	export let data;
 

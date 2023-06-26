@@ -36,8 +36,8 @@ export const load = async () => {
 			url: '/dashboard/create_Contact'
 		},
 		{
-			title: 'seat-services',
-			url: '/dashboard/create_SeatServices'
+			title: 'seatServices',
+			url: '/dashboard/seatServices'
 		},
 		{
 			title: 'web builder',

@@ -3,69 +3,72 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData } from '../../../../stores/aboutStore';
+	import { updateData } from '../../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
-	import type { AboutModel, AboutModelLang } from '../../../../models/aboutModel';
+	import type {
+		seatServicesModel,
+		seatServicesModelLang
+	} from '../../../../models/seatServicesModel';
 	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
 
-	let aboutDataLang: AboutModelLang[] = [];
-	let aboutData: AboutModel = {
+	let seatServicesDataLang: seatServicesModelLang[] = [];
+	let seatServicesData: seatServicesModel = {
 		id: 0,
-		image: '',
+		icon: '',
 		created_at: new Date()
 	};
-	const id = $page.params.aboutId;
+	const id = $page.params.seatServicesId;
 
 	//**** get data from db and put it into the fields ****//
-	async function getAboutData() {
+	async function getSeatServicesData() {
 		await data.supabase
-			.from('about')
-			.select('*,about_languages(*)')
+			.from('seat_services')
+			.select('*,seat_services_languages(*)')
 			.eq('id', id)
 			.single()
 			.then((result) => {
-				aboutData = {
+				seatServicesData = {
 					id: result.data?.id,
-					image: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.image}`,
+					icon: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.icon}`,
 					created_at: new Date(result.data?.created_at)
 				};
 
-				prevThumbnail = result.data?.image;
+				prevThumbnail = result.data?.icon;
 
 				for (let i = 0; i < languageEnumLength; i++) {
-					const index = result.data?.about_languages.findIndex(
-						(aboutLang: AboutModelLang) =>
-							aboutLang.language == LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+					const index = result.data?.seat_services_languages.findIndex(
+						(seatServicesLang: seatServicesModelLang) =>
+							seatServicesLang.language ==
+							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					);
-					const aboutLang = result.data?.about_languages[index];
-					aboutDataLang.push({
-						short_description: aboutLang?.short_description ?? '',
-						long_description: aboutLang?.long_description ?? '',
+					const seatServicesLang = result.data?.seat_services_languages[index];
+					seatServicesDataLang.push({
+						title: seatServicesLang?.title ?? '',
+						description: seatServicesLang?.description ?? '',
 						language:
-							aboutLang?.language ?? LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+							seatServicesLang?.language ??
+							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 				}
-				aboutDataLang = [...aboutDataLang];
-				aboutData = { ...aboutData };
+				seatServicesDataLang = [...seatServicesDataLang];
+				seatServicesData = { ...seatServicesData };
 			});
 	}
 
 	onMount(async () => {
-		await getAboutData();
+		await getSeatServicesData();
 	});
 
 	//** for swapping between languages**//
@@ -74,7 +77,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload image image**//
+	//**for upload icon image**//
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -83,14 +86,14 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			aboutData.image = reader.result as '';
+			seatServicesData.icon = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `about/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(aboutData);
+			fileName = `seat_services/${randomText}_${file.name}`; // Append random text to the file name
+			// console.log(seatServicesData);
 		};
 		reader.readAsDataURL(file);
-	} //**for upload image image**//
+	} //**for upload icon image**//
 
 	//**Handle submit**//
 	async function formSubmit() {
@@ -98,22 +101,25 @@
 		showToast = true;
 
 		if (imageFile) {
-			if (aboutData.image) {
-				await data.supabase.storage.from('image').remove([aboutData.image]);
+			if (seatServicesData.icon) {
+				await data.supabase.storage.from('image').remove([seatServicesData.icon]);
 			}
 
 			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			aboutData.image = response.data?.path;
+
+			if (response.data) {
+				seatServicesData.icon = response.data.path;
+			}
 		} else {
-			aboutData.image = prevThumbnail;
+			seatServicesData.icon = prevThumbnail;
 		}
-		// console.log('////data before submission :', aboutData, 'language :', aboutDataLang);
-		updateData(aboutData, aboutDataLang, data.supabase);
+
+		updateData(seatServicesData, seatServicesDataLang, data.supabase);
 
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);
-		goto('/dashboard/about');
+		goto('/dashboard/seatServices');
 	}
 </script>
 
@@ -126,20 +132,20 @@
 		{/if}
 
 		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">About Data</h1>
+			<h1 class="text-xl font-bold mb-8">seatServices Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload image image  -->
+				<!-- upload thumbnail image  -->
 				<div>
 					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload About Image</Label>
+						<Label for="first_name" class="mb-2">Upload seatServices Image</Label>
 						<Fileupload on:change={handleFileUpload} />
 					</Label>
 				</div>
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<DateInput bind:value={aboutData.created_at} />
+						<DateInput bind:value={seatServicesData.created_at} />
 					</Label>
 				</div>
 
@@ -149,7 +155,7 @@
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
-						{#each aboutDataLang as langData}
+						{#each seatServicesDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -170,23 +176,27 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-
+									<div class="pb-10">
+										<Label for="first_name" class="mb-2">seatServices Title</Label>
+										<Input
+											type="text"
+											placeholder="Enter title"
+											bind:value={langData.title}
+											id="title"
+											name="title"
+										/>
+										<!-- <Message name="title" /> -->
+									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
-											bind:value={langData.short_description}
+											bind:value={langData.description}
 											id="short_description"
 											name="short_description"
 										/>
 										<!-- <Message name="short_description" /> -->
-									</div>
-									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
-										</div>
 									</div>
 								</div>
 							</TabItem>
@@ -212,19 +222,19 @@
 	</div>
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
-			<TabItem open title="About List">
+			<TabItem open title="seatServices List">
 				<div
 					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 					style="min-height: calc(100vh - 300px);"
 				>
 					<div class="flex justify-start items-start">
-						{#each aboutDataLang as langData}
+						{#each seatServicesDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<ExpoCard
 									cardType={CardType.Main}
-									title=""
-									short_description={langData.short_description}
-									thumbnail={aboutData.image}
+									title={langData.title}
+									short_description={langData.description}
+									thumbnail={seatServicesData.icon}
 									primaryColor="bg-primary"
 								/>
 							{/if}
@@ -233,16 +243,6 @@
 
 					<div />
 				</div>
-			</TabItem>
-			<TabItem title="About Detail">
-				{#each aboutDataLang as langData}
-					{#if langData.language === selectedLanguageTab}
-						<DetailPage
-							bind:imagesCarousel={carouselImages}
-							long_description={langData.long_description}
-						/>
-					{/if}
-				{/each}
 			</TabItem>
 		</Tabs>
 	</div>
