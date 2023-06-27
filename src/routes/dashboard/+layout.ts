@@ -4,7 +4,6 @@ export const load = async () => {
 			title: 'Home',
 			url: '/'
 		},
-
 		{
 			title: 'news',
 			url: '/dashboard/news'
@@ -33,7 +32,7 @@ export const load = async () => {
 
 		{
 			title: 'contact',
-			url: '/dashboard/create_Contact'
+			url: '/dashboard/contactInfo'
 		},
 		{
 			title: 'seatServices',

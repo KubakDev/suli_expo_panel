@@ -6,6 +6,7 @@
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ContactModel, ContactModelLang } from '../../../models/contactModel';
 	import { DateInput } from '$lib/components/DateTimePicker';
+	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -44,6 +45,7 @@
 
 		insertData(contactInfoObject, contactInfoDataLang, data.supabase);
 		resetForm();
+		goto('/dashboard/contactInfo');
 		setTimeout(() => {
 			showToast = false;
 		}, 1000);

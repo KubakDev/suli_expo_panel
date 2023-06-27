@@ -29,3 +29,85 @@ export const insertData = async (
 		throw error;
 	}
 };
+
+//Get contactInfo data
+export const getData = async (supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase
+			.from('contact_info')
+			.select('*,contact_info_languages(*)')
+			.order('created_at', { ascending: false });
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//delete contactInfo by id
+export const deleteData = async (contactInfo_id: number, supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase.rpc('delete_contactInfo_and_contactInfo_lang', {
+			data: { id: contactInfo_id }
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		contactData.update((currentContactInfo) => {
+			if (data) {
+				return currentContactInfo.filter((item) => item.id !== contactInfo_id);
+			}
+			return currentContactInfo;
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//update contactInfo by id
+export const updateData = async (
+	contactInfoObject: ContactModel,
+	contactInfoDataLang: ContactModelLang[],
+	supabase: SupabaseClient
+) => {
+	try {
+		console.log('first');
+		const { data, error } = await supabase.rpc('update_contactInfo_and_contactInfo_lang', {
+			contactinfo_data: contactInfoObject,
+			contactinfo_lang_data: contactInfoDataLang
+		});
+
+		if (error) {
+			throw error;
+		}
+
+		contactData.update((currentContactInfo) => {
+			if (data) {
+				// Find the index of the updated item
+				const index = currentContactInfo.findIndex((item) => item.id === contactInfoObject.id);
+
+				// Create a new array with the updated item
+				const updatedContactInfo = [
+					...currentContactInfo.slice(0, index),
+					data,
+					...currentContactInfo.slice(index + 1)
+				];
+
+				return updatedContactInfo;
+			}
+
+			return currentContactInfo;
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};

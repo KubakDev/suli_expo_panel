@@ -3,7 +3,7 @@ import type { LanguageEnum } from './languageEnum';
 export interface ContactModel {
 	id?: number;
 	created_at?: Date;
-	gallery_languages?: ContactModelLang[];
+	contact_info_languages?: ContactModelLang[];
 }
 
 export interface ContactModelLang {
