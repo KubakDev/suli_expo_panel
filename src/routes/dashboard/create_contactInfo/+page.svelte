@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Label, Input, Textarea, Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
 	import { Form } from 'svelte-yup';
 	import { insertData } from '../../../stores/contactStor';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -38,17 +37,58 @@
 
 	let submitted = false;
 	let showToast = false;
+	let errorMessages = {};
+
+	function getErrorMessage(fieldName) {
+		return errorMessages[fieldName] || '';
+	}
 
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		const isEmpty = contactInfoDataLang.some((lang) => {
+			const isEmptyField =
+				lang?.location?.trim() === '' &&
+				lang?.email?.trim() === '' &&
+				lang?.phoneNumber_relations?.trim() === '' &&
+				lang?.phoneNumber_Technical?.trim() === '' &&
+				lang?.phoneNumber_Administration?.trim() === '' &&
+				lang?.phoneNumber_marketing?.trim() === '';
 
-		insertData(contactInfoObject, contactInfoDataLang, data.supabase);
-		resetForm();
-		goto('/dashboard/contactInfo');
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
+			if (isEmptyField) {
+				errorMessages = {
+					...errorMessages,
+					location: lang.location.trim() === '' ? 'Please enter a location.' : '',
+					email: lang.email.trim() === '' ? 'Please enter an email.' : '',
+					phoneNumber_relations:
+						lang.phoneNumber_relations.trim() === ''
+							? 'Please enter a relations phone number.'
+							: '',
+					phoneNumber_Technical:
+						lang.phoneNumber_Technical.trim() === ''
+							? 'Please enter a technical phone number.'
+							: '',
+					phoneNumber_Administration:
+						lang.phoneNumber_Administration.trim() === ''
+							? 'Please enter an administration phone number.'
+							: '',
+					phoneNumber_marketing:
+						lang.phoneNumber_marketing.trim() === '' ? 'Please enter a marketing phone number.' : ''
+				};
+			}
+
+			return isEmptyField;
+		});
+
+		if (!isEmpty) {
+			submitted = true;
+			showToast = true;
+
+			insertData(contactInfoObject, contactInfoDataLang, data.supabase);
+			resetForm();
+			goto('/dashboard/contactInfo');
+			setTimeout(() => {
+				showToast = false;
+			}, 1000);
+		}
 	}
 
 	function resetForm() {
@@ -74,16 +114,18 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class=" bg-[#f1f3f4]">
+<div style="min-height: calc(100vh - 160px);" class="max-w-screen-xl mx-auto">
 	{#if showToast}
 		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			successfully submitted
 		</div>
 	{/if}
 
-	<div class="px-20 py-10">
+	<div class="px-20 py-10 border m-10 bg-white shadow rounded-lg">
 		<Form class="form " {submitted}>
-			<h1 class="text-xl font-bold mb-8">Contact Information Data</h1>
+			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-700">
+				Contact Information Data
+			</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<div>
@@ -101,7 +143,7 @@
 
 				<div class="col-span-3">
 					<Tabs>
-						{#each contactInfoDataLang as langData}
+						{#each contactInfoDataLang as langData, index}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
 								title={langData.language}
@@ -124,37 +166,37 @@
 									</div>
 									<div class="flex items-center gap-2 py-10">
 										<div class="w-full">
-											<Label for="first_name" class="mb-2">Relations</Label>
+											<Label for="relations" class="mb-2">Relations</Label>
 											<Input
 												type="text"
 												placeholder="Enter phoneNumber"
 												bind:value={langData.phoneNumber_relations}
-												id="title"
-												name="title"
+												id="phoneNumber_relations"
+												name="phoneNumber_relations"
 											/>
 											<!-- <Message name="title" /> -->
 										</div>
 										<div class="w-full">
-											<Label for="first_name" class="mb-2">Administration</Label>
+											<Label for="administration" class="mb-2">Administration</Label>
 											<Input
 												type="text"
 												placeholder="Enter phoneNumber"
 												bind:value={langData.phoneNumber_Administration}
-												id="title"
-												name="title"
+												id="phoneNumber_Administration"
+												name="phoneNumber_Administration"
 											/>
 											<!-- <Message name="title" /> -->
 										</div>
 									</div>
 									<div class="pb-10 flex items-center gap-2">
 										<div class="w-full">
-											<Label for="first_name" class="mb-2">Technical</Label>
+											<Label for="technical" class="mb-2">Technical</Label>
 											<Input
 												type="text"
 												placeholder="Enter phoneNumber"
 												bind:value={langData.phoneNumber_Technical}
-												id="title"
-												name="title"
+												id="phoneNumber_Technical"
+												name="phoneNumber_Technical"
 											/>
 											<!-- <Message name="title" /> -->
 										</div>
@@ -164,8 +206,8 @@
 												type="text"
 												placeholder="Enter phoneNumber"
 												bind:value={langData.phoneNumber_marketing}
-												id="title"
-												name="title"
+												id="phoneNumber_marketing"
+												name="phoneNumber_marketing"
 											/>
 											<!-- <Message name="title" /> -->
 										</div>
@@ -173,22 +215,26 @@
 									<div class="pb-10">
 										<Label for="first_name" class="mb-2">Contact Email Address</Label>
 										<Input
+											id={`email-${index}`}
 											type="text"
 											placeholder="Enter email address"
 											bind:value={langData.email}
-											id="title"
-											name="title"
+											name="email"
 										/>
-										<!-- <Message name="title" /> -->
+										<p class="error-message">
+											{#if langData.email.trim() === '' && getErrorMessage('email') !== ''}{getErrorMessage(
+													'email'
+												)}{/if}
+										</p>
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">location</Label>
+										<Label for="location" class="mb-2">location</Label>
 										<Textarea
 											placeholder="Enter location"
 											rows="4"
 											bind:value={langData.location}
-											id="subtitle"
-											name="subtitle"
+											id="location"
+											name="location"
 										/>
 										<!-- <Message name="subtitle" /> -->
 									</div>
@@ -201,11 +247,11 @@
 				<br />
 			</div>
 
-			<div class="w-full flex justify-end mt-2">
+			<div class="w-full flex justify-end">
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"
-					class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 				>
 					Submit
 				</button>
@@ -213,3 +259,9 @@
 		</Form>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>
