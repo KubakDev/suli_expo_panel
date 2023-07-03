@@ -58,50 +58,30 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="py-5 flex justify-end">
-		<Button on:click={createService} class="bg-primary-dark hover:bg-primary-50 flex gap-2">
+	<div class="py-5 px-4 lg:px-0 flex justify-end">
+		<Button
+			on:click={createService}
+			class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+		>
 			<svg
 				width="20px"
 				height="20px"
-				viewBox="0 0 24 24"
+				viewBox="0 0 20 20"
 				xmlns="http://www.w3.org/2000/svg"
-				fill="#000000"
-				><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-					id="SVGRepo_tracerCarrier"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				/><g id="SVGRepo_iconCarrier">
-					<title />
-					<g id="Complete">
-						<g data-name="add" id="add-2">
-							<g>
-								<line
-									fill="none"
-									stroke="#ffffff"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									x1="12"
-									x2="12"
-									y1="19"
-									y2="5"
-								/>
-								<line
-									fill="none"
-									stroke="#ffffff"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									x1="5"
-									x2="19"
-									y1="12"
-									y2="12"
-								/>
-							</g>
-						</g>
-					</g>
-				</g></svg
-			>Add Service
+				fill="none"
+			>
+				<g id="SVGRepo_bgCarrier" stroke-width="0" />
+
+				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
+
+				<g id="SVGRepo_iconCarrier">
+					<path
+						fill="#6b6b6b"
+						fill-rule="evenodd"
+						d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"
+					/>
+				</g>
+			</svg>
 		</Button>
 	</div>
 	<!-- table data -->

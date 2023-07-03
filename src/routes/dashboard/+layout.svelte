@@ -7,8 +7,6 @@
 		NavLi,
 		Dropdown,
 		DropdownItem,
-		DropdownDivider,
-		Button,
 		Chevron
 	} from 'flowbite-svelte';
 
@@ -17,7 +15,6 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { FeDropShadowElement } from 'canvg';
 	export let data: PageData;
 	let activeUrl: string;
 
@@ -51,16 +48,13 @@
 				</div>
 			</NavBrand>
 			<NavHamburger on:click={toggle} />
-			<NavUl {hidden} class="bg-[#14213d] lg:flex lg:items-center lg:justify-center">
-				<!-- Add 'flex items-center' class -->
+			<NavUl {hidden} class="bg-[#14213d] ">
 				{#each data.pages as page}
 					{#if page.children}
-						<div class="py-2">
-							<Button
-								class="bg-primary-dark focus:outline-none focus:ring-0 dark:focus:ring-0 hover:bg-primary-50"
-							>
+						<div class="text-[#e9ecef] py-4 lg:py-0">
+							<button class="flex items-center focus:outline-none focus:ring-0 dark:focus:ring-0">
 								<Chevron>{page.title}</Chevron>
-							</Button>
+							</button>
 
 							<Dropdown>
 								{#each page.children as item}
@@ -74,17 +68,16 @@
 							</Dropdown>
 						</div>
 					{:else}
-						<div class="lg:py-3">
-							<NavLi
-								class="cursor-pointer text-white hover:text-gray-400"
-								on:click={() => {
-									updateActiveUrl(page.url);
-									goto(page.url);
-								}}
-								active={activeUrl == page.url}
-								style={activeUrl == page.url ? 'color: white;' : 'color:gray'}>{page.title}</NavLi
-							>
-						</div>
+						<NavLi
+							class="cursor-pointer"
+							on:click={() => {
+								updateActiveUrl(page.url);
+								goto(page.url);
+							}}
+							active={activeUrl == page.url}
+							style={activeUrl == page.url ? 'color: primary;' : 'color:#e9ecef'}
+							>{page.title}</NavLi
+						>
 					{/if}
 				{/each}
 			</NavUl>
