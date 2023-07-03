@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { contactData, getData, deleteData } from '../../../stores/contactStor';
 	import { goto } from '$app/navigation';
-	import { Button } from 'flowbite-svelte';
+	import { Button, Modal } from 'flowbite-svelte';
+	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
 	export let data;
 	let contactInfo_Data = [];
@@ -14,7 +15,7 @@
 		contactInfo_Data = result;
 
 		contactData.set(contactInfo_Data);
-		console.log('contact Information ///////', contactInfo_Data);
+		// console.log('contact Information ///////', contactInfo_Data);
 	}
 
 	onMount(fetchData);
@@ -27,8 +28,6 @@
 	async function handleDelete(contactInfo_id) {
 		try {
 			await deleteData(contactInfo_id, data.supabase);
-			alert('Information deleted successfully!');
-
 			await fetchData();
 		} catch (error) {
 			console.error('Error deleting Information:', error);
@@ -85,133 +84,132 @@
 	</div>
 
 	<!-- table data -->
-	<div class="overflow-x-auto">
-		<table class="border-collapse w-full">
-			<thead>
-				<tr>
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex justify-start items-center gap-2">
-							<span>Email</span>
-						</div>
-					</th>
+	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
+		<div class="overflow-x-auto">
+			<div class="min-w-full table-responsive">
+				<table class="min-w-full border-collapse">
+					<thead>
+						<tr>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex justify-start items-center gap-2">
+									<span>Email</span>
+								</div>
+							</th>
 
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex items-center gap-2">
-							<span>Location</span>
-						</div>
-					</th>
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex items-start gap-2">
-							<span>phoneNumber_relations</span>
-						</div>
-					</th>
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex items-center gap-2">
-							<span>phoneNumber_Technical</span>
-						</div>
-					</th>
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex items-center gap-2">
-							<span>phoneNumber_Administration</span>
-						</div>
-					</th>
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex items-center gap-2">
-							<span>phoneNumber_marketing</span>
-						</div>
-					</th>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Location</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex items-start gap-2">
+									<span>phoneNumber_relations</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>phoneNumber_Technical</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>phoneNumber_Administration</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>phoneNumber_marketing</span>
+								</div>
+							</th>
 
-					<th
-						class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
-					>
-						<div class="flex items-start gap-2">
-							<span>Actions</span>
-						</div>
-					</th>
-				</tr>
-			</thead>
+							<th
+								class="p-3 font-semibold uppercase bg-gray-100 text-gray-700 text-sm border border-gray-200 table-cell"
+							>
+								<div class="flex items-start gap-2">
+									<span>Actions</span>
+								</div>
+							</th>
+						</tr>
+					</thead>
 
-			<tbody>
-				{#each $contactData as item, index (item.id)}
-					<tr>
-						{#if item.contact_info_languages}
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								{#each item.contact_info_languages as lang}
-									<div>
-										{lang.email}
-									</div>
-								{/each}
-							</td>
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								{#each item.contact_info_languages as lang}
-									<div>
-										{lang.location}
-									</div>
-								{/each}
-							</td>
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								{#each item.contact_info_languages as lang}
-									<div>
-										{lang.phoneNumber_relations}
-									</div>
-								{/each}
-							</td>
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								{#each item.contact_info_languages as lang}
-									<div>
-										{lang.phoneNumber_Technical}
-									</div>
-								{/each}
-							</td>
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								{#each item.contact_info_languages as lang}
-									<div>
-										{lang.phoneNumber_Administration}
-									</div>
-								{/each}
-							</td>
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								{#each item.contact_info_languages as lang}
-									<div>
-										{lang.phoneNumber_marketing}
-									</div>
-								{/each}
-							</td>
-						{/if}
-						<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-							<div class="flex items-center">
-								<button
-									on:click={() => {
-										goto(`/dashboard/contactInfo/${item.id}`);
-									}}
-									class="text-green-400 hover:text-green-600 hover:underline"
-								>
-									Edit</button
-								>
+					<tbody>
+						{#each $contactData as item, index (item.id)}
+							<tr>
+								{#if item.contact_info_languages}
+									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+										{#each item.contact_info_languages as lang}
+											<div>
+												{lang.email}
+											</div>
+										{/each}
+									</td>
+									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+										{#each item.contact_info_languages as lang}
+											<div>
+												{lang.location}
+											</div>
+										{/each}
+									</td>
+									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+										{#each item.contact_info_languages as lang}
+											<div>
+												{lang.phoneNumber_relations}
+											</div>
+										{/each}
+									</td>
+									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+										{#each item.contact_info_languages as lang}
+											<div>
+												{lang.phoneNumber_Technical}
+											</div>
+										{/each}
+									</td>
+									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+										{#each item.contact_info_languages as lang}
+											<div>
+												{lang.phoneNumber_Administration}
+											</div>
+										{/each}
+									</td>
+									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+										{#each item.contact_info_languages as lang}
+											<div>
+												{lang.phoneNumber_marketing}
+											</div>
+										{/each}
+									</td>
+								{/if}
+								<td class="p-3 bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<div class="flex items-center">
+										<button
+											on:click={() => {
+												goto(`/dashboard/contactInfo/${item.id}`);
+											}}
+											class="text-green-400 hover:text-green-600 hover:underline"
+										>
+											Edit</button
+										>
 
-								<button
-									on:click={() => handleDelete(item.id)}
-									class="text-red-400 hover:text-red-600 hover:underline pl-6"
-								>
-									Remove</button
-								>
-							</div>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
+										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
+									</div>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		</div>
 	</div>
 </div>

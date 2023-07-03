@@ -96,7 +96,7 @@
 		const imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
 		// console.log('exhibitionsObject ::::', exhibitionsObject);
-
+		console.log('first', exhibitionsObject);
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
 
 		resetForm();
@@ -171,10 +171,6 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<span>Date</span>
-						<!-- <DateInput
-							bind:value={exhibitionsObject.exhibition_date}
-							format="yyyy-MM-dd HH:mm:ss"
-						/> -->
 
 						<Input type="date" bind:value={exhibitionsObject.exhibition_date} />
 					</Label>
@@ -281,13 +277,14 @@
 						<div class="flex justify-start items-start">
 							{#each exhibitionsDataLang as langData}
 								{#if langData.language === selectedLanguageTab}
+									<h1>{exhibitionsObject.exhibition_date}</h1>
 									<ExpoCard
 										cardType={CardType.Main}
 										title={langData.title}
 										short_description={langData.description}
 										thumbnail={exhibitionsObject.thumbnail}
 										primaryColor="bg-primary"
-										created_at={exhibitionsObject.exhibition_date}
+										date={exhibitionsObject.exhibition_date}
 									/>
 								{/if}
 							{/each}

@@ -55,38 +55,42 @@
 				<!-- Add 'flex items-center' class -->
 				{#each data.pages as page}
 					{#if page.children}
-						<Button
-							class="bg-primary-dark focus:outline-none focus:ring-0 dark:focus:ring-0 hover:bg-primary-50"
-						>
-							<Chevron>{page.title}</Chevron>
-						</Button>
+						<div class="py-2">
+							<Button
+								class="bg-primary-dark focus:outline-none focus:ring-0 dark:focus:ring-0 hover:bg-primary-50"
+							>
+								<Chevron>{page.title}</Chevron>
+							</Button>
 
-						<Dropdown>
-							{#each page.children as item}
-								<DropdownItem
-									on:click={() => {
-										updateActiveUrl(item.url);
-										goto(item.url);
-									}}>{item.title}</DropdownItem
-								>
-							{/each}
-						</Dropdown>
+							<Dropdown>
+								{#each page.children as item}
+									<DropdownItem
+										on:click={() => {
+											updateActiveUrl(item.url);
+											goto(item.url);
+										}}>{item.title}</DropdownItem
+									>
+								{/each}
+							</Dropdown>
+						</div>
 					{:else}
-						<NavLi
-							class="cursor-pointer text-white hover:text-gray-400"
-							on:click={() => {
-								updateActiveUrl(page.url);
-								goto(page.url);
-							}}
-							active={activeUrl == page.url}
-							style={activeUrl == page.url ? 'color: #c27803;' : 'color:white'}>{page.title}</NavLi
-						>
+						<div class="lg:py-3">
+							<NavLi
+								class="cursor-pointer text-white hover:text-gray-400"
+								on:click={() => {
+									updateActiveUrl(page.url);
+									goto(page.url);
+								}}
+								active={activeUrl == page.url}
+								style={activeUrl == page.url ? 'color: white;' : 'color:gray'}>{page.title}</NavLi
+							>
+						</div>
 					{/if}
 				{/each}
 			</NavUl>
 		</Navbar>
 	{/if}
-	<div class="flex-1 flex justify-center">
+	<div class="flex-1 justify-center">
 		<slot />
 	</div>
 </div>
