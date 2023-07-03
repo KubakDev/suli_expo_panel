@@ -3,9 +3,7 @@
 	import { contactData, getData, deleteData } from '../../../stores/contactStor';
 	import { goto } from '$app/navigation';
 	import { Button, Modal } from 'flowbite-svelte';
-	let open = false;
-	let color: any = '';
-	let itemIdToDelete: any = null;
+	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
 	export let data;
 	let contactInfo_Data = [];
@@ -86,7 +84,7 @@
 	</div>
 
 	<!-- table data -->
-	<div class="max-w-screen-2xl mx-auto">
+	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 		<div class="overflow-x-auto">
 			<div class="min-w-full table-responsive">
 				<table class="min-w-full border-collapse">
@@ -204,34 +202,7 @@
 											Edit</button
 										>
 
-										<button
-											color="red"
-											on:click={() => {
-												color = 'red';
-												open = true;
-												itemIdToDelete = item.id;
-											}}
-											class="text-red-400 hover:text-red-600 hover:underline pl-6"
-										>
-											Remove</button
-										>
-
-										<Modal
-											title="Are you sure?"
-											bind:open
-											{color}
-											class="bg-white max-w-sm mx-auto"
-											autoclose
-										>
-											<div class="text-base leading-relaxed">
-												Do you really want to delete these records? This process can not be undone.
-											</div>
-											<svelte:fragment slot="footer">
-												<Button on:click={() => handleDelete(itemIdToDelete)} {color}>Delete</Button
-												>
-												<Button color="alternative" class="hover:text-gray-700">Cancel</Button>
-											</svelte:fragment>
-										</Modal>
+										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									</div>
 								</td>
 							</tr>

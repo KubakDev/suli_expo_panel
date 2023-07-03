@@ -8,7 +8,9 @@
 	import { goto } from '$app/navigation';
 
 	export let data;
-
+	let submitted = false;
+	let showToast = false;
+	let errorMessages: any = {};
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let contactInfoDataLang: ContactModelLang[] = [];
@@ -34,14 +36,6 @@
 	let contactInfoObject: ContactModel = {
 		created_at: new Date()
 	};
-
-	let submitted = false;
-	let showToast = false;
-	let errorMessages = {};
-
-	function getErrorMessage(fieldName) {
-		return errorMessages[fieldName] || '';
-	}
 
 	async function formSubmit() {
 		const isEmpty = contactInfoDataLang.some((lang) => {
@@ -73,6 +67,22 @@
 					phoneNumber_marketing:
 						lang.phoneNumber_marketing.trim() === '' ? 'Please enter a marketing phone number.' : ''
 				};
+			} else {
+				errorMessages = {
+					...errorMessages,
+					location: '',
+					email: '',
+					phoneNumber_relations: '',
+					phoneNumber_Technical: '',
+					phoneNumber_Administration: '',
+					phoneNumber_marketing: ''
+				};
+			}
+
+			// If email is not empty and not valid, add an error message for invalid format
+			if (lang.email.trim() && !isValidEmail(lang.email.trim())) {
+				errorMessages.email = 'Please enter a valid email address.';
+				return true;
 			}
 
 			return isEmptyField;
@@ -89,6 +99,12 @@
 				showToast = false;
 			}, 1000);
 		}
+	}
+
+	function isValidEmail(email) {
+		// Use a regular expression to validate the email format
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(email);
 	}
 
 	function resetForm() {
@@ -121,7 +137,7 @@
 		</div>
 	{/if}
 
-	<div class="px-20 py-10 border m-10 bg-white shadow rounded-lg">
+	<div class="px-10 lg:px-20 py-10 border m-10 bg-white shadow rounded-lg">
 		<Form class="form " {submitted}>
 			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-700">
 				Contact Information Data
@@ -151,7 +167,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -159,13 +175,13 @@
 											{:else if langData.language === 'ckb'}
 												{`زیاد کردنی داتا بە زمانی کوردی`}
 											{:else}
-												{`Add data for ${langData.language} language`}
+												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
 										</h1>
-										<p>for other language navigate between tabs</p>
+										<p class="text-gray-400 text-base">for other language navigate between tabs</p>
 									</div>
-									<div class="flex items-center gap-2 py-10">
-										<div class="w-full">
+									<div class="lg:flex items-center gap-2 lg:py-10">
+										<div class="w-full h-16 mb-10">
 											<Label for="relations" class="mb-2">Relations</Label>
 											<Input
 												type="text"
@@ -174,9 +190,13 @@
 												id="phoneNumber_relations"
 												name="phoneNumber_relations"
 											/>
-											<!-- <Message name="title" /> -->
+
+											{#if !langData.phoneNumber_relations.trim() && errorMessages['phoneNumber_relations']}
+												<p class="error-message">{errorMessages['phoneNumber_relations']}</p>
+											{/if}
 										</div>
-										<div class="w-full">
+										<div class="w-full h-16 mb-10">
+											<!-- Set a fixed minimum height of 100 pixels -->
 											<Label for="administration" class="mb-2">Administration</Label>
 											<Input
 												type="text"
@@ -185,11 +205,13 @@
 												id="phoneNumber_Administration"
 												name="phoneNumber_Administration"
 											/>
-											<!-- <Message name="title" /> -->
+											{#if !langData.phoneNumber_Administration.trim() && errorMessages['phoneNumber_Administration']}
+												<p class="error-message">{errorMessages['phoneNumber_Administration']}</p>
+											{/if}
 										</div>
 									</div>
-									<div class="pb-10 flex items-center gap-2">
-										<div class="w-full">
+									<div class="pb-10 lg:flex items-center gap-2">
+										<div class="w-full h-16 mb-10">
 											<Label for="technical" class="mb-2">Technical</Label>
 											<Input
 												type="text"
@@ -198,9 +220,11 @@
 												id="phoneNumber_Technical"
 												name="phoneNumber_Technical"
 											/>
-											<!-- <Message name="title" /> -->
+											{#if !langData.phoneNumber_Technical.trim() && errorMessages['phoneNumber_Technical']}
+												<p class="error-message">{errorMessages['phoneNumber_Technical']}</p>
+											{/if}
 										</div>
-										<div class="w-full">
+										<div class="w-full h-16 mb-10">
 											<Label for="first_name" class="mb-2">Marketing</Label>
 											<Input
 												type="text"
@@ -209,25 +233,28 @@
 												id="phoneNumber_marketing"
 												name="phoneNumber_marketing"
 											/>
-											<!-- <Message name="title" /> -->
+											{#if !langData.phoneNumber_marketing.trim() && errorMessages['phoneNumber_marketing']}
+												<p class="error-message">{errorMessages['phoneNumber_marketing']}</p>
+											{/if}
 										</div>
 									</div>
-									<div class="pb-10">
+									<div class="pb-10 h-32">
 										<Label for="first_name" class="mb-2">Contact Email Address</Label>
 										<Input
-											id={`email-${index}`}
+											id="email"
 											type="text"
 											placeholder="Enter email address"
 											bind:value={langData.email}
 											name="email"
 										/>
-										<p class="error-message">
-											{#if langData.email.trim() === '' && getErrorMessage('email') !== ''}{getErrorMessage(
-													'email'
-												)}{/if}
-										</p>
+										{#if !langData.email.trim() && errorMessages['email']}
+											<p class="error-message">{errorMessages['email']}</p>
+										{/if}
+										{#if langData.email.trim() && !isValidEmail(langData.email.trim())}
+											<p class="error-message">Please enter a valid email address.</p>
+										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-10 h-32">
 										<Label for="location" class="mb-2">location</Label>
 										<Textarea
 											placeholder="Enter location"
@@ -236,7 +263,9 @@
 											id="location"
 											name="location"
 										/>
-										<!-- <Message name="subtitle" /> -->
+										{#if !langData.location.trim() && errorMessages['location']}
+											<p class="error-message">{errorMessages['location']}</p>
+										{/if}
 									</div>
 								</div>
 							</TabItem>
@@ -253,7 +282,7 @@
 					type="submit"
 					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 				>
-					Submit
+					Add
 				</button>
 			</div>
 		</Form>
