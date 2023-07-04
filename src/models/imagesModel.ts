@@ -4,5 +4,5 @@ export interface ImagesModel {
 	id: number;
 	imgurl: string;
 	imgSource: ImgSourceEnum;
-	fileName: File[] | string;
+	fileName?: File[] | string;
 }

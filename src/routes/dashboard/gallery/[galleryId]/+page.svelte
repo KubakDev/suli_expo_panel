@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../../models/galleryModel';
@@ -18,6 +16,8 @@
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -28,6 +28,7 @@
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let galleryDataLang: GalleryModelLang[] = [];
 	let galleryData: GalleryModel = {
@@ -107,6 +108,7 @@
 	});
 
 	//** for swapping between languages**//
+	console.log(LanguageEnum);
 	let selectedLanguageTab = LanguageEnum.EN;
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
@@ -151,46 +153,80 @@
 
 	//**Handle submit**//
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
-		galleryData.images = [];
-		if (imageFile) {
-			if (galleryData.thumbnail) {
-				await data.supabase.storage.from('image').remove([galleryData.thumbnail]);
-			}
+		let isValidGalleryLang = true; // Assume all languages have data
+		let isValidGalleryObject = false;
 
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			galleryData.thumbnail = response.data?.path;
-		} else {
-			galleryData.thumbnail = prevThumbnail;
+		for (let lang of galleryDataLang) {
+			if (
+				(isEmpty(lang.title.trim()) ||
+					isEmpty(lang.short_description.trim()) ||
+					isEmpty(lang.long_description.trim())) &&
+				!(
+					isEmpty(lang.title.trim()) &&
+					isEmpty(lang.short_description.trim()) &&
+					isEmpty(lang.long_description.trim())
+				)
+			) {
+				// If any field is empty and it's not the case that all fields are empty
+				isValidGalleryLang = false;
+				break;
+			}
 		}
 
-		if (sliderImagesFile.length > 0) {
-			for (let image of sliderImagesFile) {
-				const randomText = getRandomTextNumber();
-				const responseMultiple = await data.supabase.storage
-					.from('image')
-					.upload(`gallery/${randomText}_${image.name}`, image!);
-				// console.log('responseMultiple:', responseMultiple);
+		// Check if galleryObject has a valid thumbnail and at least one slider image
+		if (!isEmpty(galleryData.thumbnail) && galleryData.images.length > 0) {
+			isValidGalleryObject = true;
+		}
 
-				if (responseMultiple.data?.path) {
-					galleryData.images.push(responseMultiple.data?.path);
+		if (isValidGalleryLang && isValidGalleryObject) {
+			submitted = true;
+			showToast = true;
+			galleryData.images = [];
+
+			if (imageFile) {
+				if (galleryData.thumbnail) {
+					await data.supabase.storage.from('image').remove([galleryData.thumbnail]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				galleryData.thumbnail = response.data?.path;
+			} else {
+				galleryData.thumbnail = prevThumbnail;
+			}
+
+			if (sliderImagesFile.length > 0) {
+				for (let image of sliderImagesFile) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('image')
+						.upload(`gallery/${randomText}_${image.name}`, image!);
+
+					if (responseMultiple.data?.path) {
+						galleryData.images.push(responseMultiple.data?.path);
+					}
 				}
 			}
-		}
-		for (let image of existingImages) {
-			galleryData.images.push(image);
-		}
-		// Convert galleryObject.images to a valid array string format
-		const imagesArray = galleryData.images.map((image) => `"${image}"`);
-		galleryData.images = `{${imagesArray.join(',')}}`;
 
-		updateData(galleryData, galleryDataLang, data.supabase);
+			for (let image of existingImages) {
+				galleryData.images.push(image);
+			}
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/gallery');
+			// Convert galleryObject.images to a valid array string format
+			const imagesArray = galleryData.images.map((image) => `"${image}"`);
+			galleryData.images = `{${imagesArray.join(',')}}`;
+
+			updateData(galleryData, galleryDataLang, data.supabase);
+
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/gallery');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 
 	function imageChanges(e: any) {
@@ -198,11 +234,11 @@
 		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
-		console.log('%%%%%%%%%%%%');
+		// console.log('%%%%%%%%%%%%');
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
+				// console.log(image);
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -247,7 +283,7 @@
 			</div>
 		{/if}
 
-		<Form class="form py-10" {submitted}>
+		<form class="form py-10">
 			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
@@ -255,7 +291,7 @@
 				<div>
 					<Label class="space-y-2 mb-2">
 						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-						<Fileupload on:change={handleFileUpload} />
+						<Fileupload on:change={handleFileUpload} {existingImages} />
 					</Label>
 				</div>
 				<div>
@@ -315,6 +351,7 @@
 									</div>
 									<div class="pb-10">
 										<Label for="first_name" class="mb-2">Gallery Title</Label>
+
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -322,7 +359,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -333,12 +372,14 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
@@ -368,12 +409,12 @@
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 				>
-					Submit
+					Update
 				</button>
 			</div>
-		</Form>
+		</form>
 	</div>
 	<div class="h-full p-2 col-span-1 pt-20">
 		<Tabs style="underline">
@@ -412,3 +453,9 @@
 		</Tabs>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

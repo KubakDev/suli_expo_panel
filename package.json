@@ -85,6 +85,7 @@
 		"svelte-sidebar-menu": "^0.9.12",
 		"svelte-youtube-embed": "^0.1.20",
 		"swiper": "^9.4.1",
+		"validator": "^13.9.0",
 		"yup": "^1.2.0",
 		"zod": "^3.21.4",
 		"zoomist": "^1.1.1"

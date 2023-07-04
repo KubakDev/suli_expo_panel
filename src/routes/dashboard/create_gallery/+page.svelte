@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
@@ -15,6 +13,9 @@
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	//@ts-ignore
+
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 
@@ -25,7 +26,7 @@
 	let sliderImagesFile: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
-
+	let isFormSubmitted = false;
 	let galleryDataLang: GalleryModelLang[] = [];
 
 	let galleryObject: GalleryModel = {
@@ -46,7 +47,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
+			// console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -91,38 +92,68 @@
 	} //**dropzone**//
 
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		let isValidGalleryLang = true;
+		let isValidGalleryObject = false;
 
-		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		// console.log(response);
-		galleryObject.thumbnail = response.data?.path;
-
-		for (let image of sliderImagesFile) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('image')
-				.upload(`gallery/${randomText}_${image.name}`, image!)
-				.then((response) => {
-					if (response.data) {
-						galleryObject.images.push(response.data.path);
-						// console.log('response ::::', response);
-					}
-				});
+		for (let lang of galleryDataLang) {
+			if (
+				(isEmpty(lang.title.trim()) ||
+					isEmpty(lang.short_description.trim()) ||
+					isEmpty(lang.long_description.trim())) &&
+				!(
+					isEmpty(lang.title.trim()) &&
+					isEmpty(lang.short_description.trim()) &&
+					isEmpty(lang.long_description.trim())
+				)
+			) {
+				isValidGalleryLang = false;
+				break;
+			}
 		}
 
-		// Convert galleryObject.images to a valid array string format
-		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
-		galleryObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('galleryObject ::::', galleryObject);
+		// Check if galleryObject has a valid thumbnail and at least one slider image
+		if (!isEmpty(galleryObject.thumbnail) && sliderImagesFile.length > 0) {
+			isValidGalleryObject = true;
+		}
 
-		insertData(galleryObject, galleryDataLang, data.supabase);
+		if (!isValidGalleryLang) {
+			isFormSubmitted = true;
+			return;
+		} else if (!isValidGalleryObject) {
+			isFormSubmitted = true;
+			return;
+		} else {
+			submitted = true;
+			showToast = true;
 
-		resetForm();
-		goto('/dashboard/gallery');
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
+			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+			galleryObject.thumbnail = response.data?.path;
+
+			if (sliderImagesFile.length > 0) {
+				for (let image of sliderImagesFile) {
+					const randomText = getRandomTextNumber();
+					await data.supabase.storage
+						.from('image')
+						.upload(`gallery/${randomText}_${image.name}`, image!)
+						.then((response) => {
+							if (response.data) {
+								galleryObject.images.push(response.data.path);
+							}
+						});
+				}
+			}
+
+			const imagesArray = galleryObject.images.map((image) => `"${image}"`);
+			galleryObject.images = `{${imagesArray.join(',')}}`;
+
+			insertData(galleryObject, galleryDataLang, data.supabase);
+
+			resetForm();
+			goto('/dashboard/gallery');
+			setTimeout(() => {
+				showToast = false;
+			}, 1000);
+		}
 	}
 
 	function resetForm() {
@@ -178,11 +209,11 @@
 	<div class="w-full h-full col-span-2 flex justify-center items-center">
 		{#if showToast}
 			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				successfully submitted
+				New data has been inserted successfully
 			</div>
 		{/if}
 
-		<Form class="form py-10" {submitted}>
+		<form class="form py-10">
 			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
@@ -191,6 +222,9 @@
 					<Label class="space-y-2 mb-2">
 						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
 						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+						{#if isFormSubmitted && !galleryObject.thumbnail.trim()}
+							<p class="error-message">Please Upload an Image</p>
+						{/if}
 					</Label>
 				</div>
 				<div>
@@ -243,7 +277,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Gallery Title</Label>
+										<Label for="title" class="mb-2">Gallery Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -251,7 +285,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if isFormSubmitted && !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -262,13 +298,15 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if isFormSubmitted && !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">Gallery detail</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
@@ -286,6 +324,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="pdf_file" class="mb-2">Upload Gallery Image</Label>
 					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+					{#if isFormSubmitted && sliderImagesFile.length === 0}
+						<p class="error-message">Please upload at least one image for the slider</p>
+					{/if}
 				</Label>
 			</div>
 
@@ -294,12 +335,12 @@
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
+					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 				>
-					Submit
+					Add
 				</button>
 			</div>
-		</Form>
+		</form>
 	</div>
 
 	<div class="h-full p-2 col-span-1 pt-20">
@@ -341,3 +382,9 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>
