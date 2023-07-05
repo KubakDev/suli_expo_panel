@@ -286,18 +286,21 @@
 			<h1 class="text-2xl font-bold">Update Gallery Data</h1>
 		</div>
 
-		<div class="flex items-center gap-4 px-4">
-			<div>
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-					<Fileupload on:change={handleFileUpload} {existingImages} />
+					<Label for="thumbnail" class="mb-2">Upload Gallery Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !galleryData.thumbnail.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
 				</Label>
 			</div>
-			<div>
-				<label class="">
-					<label for="large-input" class="block">Exhibition Type</label>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
 					<select
-						class="border border-gray-300 rounded-md"
+						class="border border-gray-300 rounded-md w-full"
 						id="type"
 						name="type"
 						placeholder="Please select a valid type"
@@ -313,7 +316,7 @@
 							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
 						{/each}
 					</select>
-				</label>
+				</Label>
 			</div>
 		</div>
 
@@ -407,7 +410,7 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-gray-900 rounded-tl rounded-tr">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Gallery List">
 						<div
 							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"

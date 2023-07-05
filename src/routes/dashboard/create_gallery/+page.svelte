@@ -13,7 +13,6 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-
 	import { isLength, isEmpty } from 'validator';
 
 	export let data;
@@ -210,30 +209,32 @@
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold">Gallery Data</h1></div>
 
-		<div class="flex items-center gap-4 px-4">
-			<div>
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Gallery Image</Label>
+					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					{#if isFormSubmitted && !galleryObject.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
-			<div>
-				<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-				<select
-					class="border border-gray-300 rounded-md"
-					id="type"
-					name="type"
-					placeholder="Please select a valid type"
-					on:change={handleSelectChange}
-				>
-					<option disabled selected>Select type</option>
-					{#each exhibitionData as exhibition}
-						<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-					{/each}
-				</select>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<select
+						class="border border-gray-300 rounded-md w-full"
+						id="type"
+						name="type"
+						placeholder="Please select a valid type"
+						on:change={handleSelectChange}
+					>
+						<option disabled selected>Select type</option>
+						{#each exhibitionData as exhibition}
+							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+						{/each}
+					</select>
+				</Label>
 			</div>
 		</div>
 
@@ -326,7 +327,7 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-gray-900 rounded-tl rounded-tr">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Gallery List">
 						<div
 							class=" w-full rounded-md p-10 flex justify-center items-start"

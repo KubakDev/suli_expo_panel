@@ -74,13 +74,15 @@
 	}
 </script>
 
-<div class="w-full h-80 bg-[#e4e4e4] rounded-lg p-5 flex flex-wrap">
-	<Dropzone multiple id="dropzone" type="file" accept=".pdf" on:change={addImage}>
-		upload PDF file
-	</Dropzone>
+<Dropzone multiple id="dropzone" type="file" accept=".pdf" on:change={addImage} class="h-32">
+	upload PDF file
+</Dropzone>
 
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
 	{#each pdfFiles as image, index}
-		<div class="h-24 w-24 bg-[#f1f3f4] mx-2 rounded-lg relative">
+		<div
+			class="w-full h-32 border bg-[#f1f3f4] mx-2 rounded-lg relative flex flex-col justify-normal items-center"
+		>
 			<button
 				class="bg-red-700 absolute -top-2 -right-2 rounded-full border-2"
 				on:click={(event) => {
@@ -90,7 +92,7 @@
 			>
 				<XMark class="text-xs h-5 w-5 text-white" />
 			</button>
-			<span>
+			<span class="p-2">
 				<svg
 					version="1.1"
 					id="_x35_"
@@ -150,7 +152,7 @@
 				>
 			</span>
 
-			<span>
+			<span class="border">
 				{image.imgSource === ImgSourceEnum.PdfLocal ? `${image.fileName}` : 'pdf'}
 			</span>
 		</div>
