@@ -67,7 +67,7 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="py-5 flex justify-between">
+	<div class="flex justify-between">
 		<div class="py-5 px-4 lg:px-0 flex justify-end">
 			<input
 				class="rounded border-gray-300 focus:outline-none focus:ring-0 focus:border-gray-400"
