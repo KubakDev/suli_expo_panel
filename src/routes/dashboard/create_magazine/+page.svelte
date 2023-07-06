@@ -100,84 +100,85 @@
 
 	//**pdf files**//
 	async function formSubmit() {
-		let isValidMagazineLang = true;
+		let hasDataForLanguage = false;
 		let isValidMagazineObject = false;
 
 		for (let lang of magazineDataLang) {
-			if (
-				(isEmpty(lang.title.trim()) ||
-					isEmpty(lang.short_description.trim()) ||
-					isEmpty(lang.long_description.trim())) &&
-				!(
-					isEmpty(lang.title.trim()) &&
-					isEmpty(lang.short_description.trim()) &&
-					isEmpty(lang.long_description.trim())
-				)
-			) {
-				isValidMagazineLang = false;
-				break;
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
 		}
 
-		// Check if magazineObject has a valid thumbnail and at least one slider image
+		// Check if galleryObject has a valid thumbnail and at least one slider image
 		if (!isEmpty(magazineObject.thumbnail) && sliderImagesFile.length > 0) {
 			isValidMagazineObject = true;
 		}
 
-		if (!isValidMagazineLang) {
+		if (!hasDataForLanguage || !isValidMagazineObject) {
 			isFormSubmitted = true;
 			return;
-		} else if (!isValidMagazineObject) {
-			isFormSubmitted = true;
-			return;
-		} else {
-			submitted = true;
-			showToast = true;
-
-			// Upload magazine thumbnail image
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			magazineObject.thumbnail = response.data?.path;
-
-			// Upload PDF files
-			for (let pdf of pdfFiles) {
-				const randomText = getRandomTextNumber();
-				await data.supabase.storage
-					.from('PDF')
-					.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
-					.then((response) => {
-						if (response.data) {
-							magazineObject.pdf_files.push(response.data.path);
-						}
-					});
-			}
-
-			for (let image of sliderImagesFile) {
-				const randomText = getRandomTextNumber();
-				await data.supabase.storage
-					.from('image')
-					.upload(`magazine/${randomText}_${image.name}`, image!)
-					.then((response) => {
-						if (response.data) {
-							magazineObject.images.push(response.data.path);
-						}
-					});
-			}
-
-			// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
-			const imagesArray = magazineObject.images.map((image) => `"${image}"`);
-			const pdfFilesArray = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
-			magazineObject.images = `{${imagesArray.join(',')}}`;
-			magazineObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
-
-			// Insert data into Supabase
-			insertData(magazineObject, magazineDataLang, data.supabase);
-
-			resetForm();
-			goto('/dashboard/magazine');
-			setTimeout(() => {
-				showToast = false;
-			}, 1000);
 		}
+
+		submitted = true;
+		showToast = true;
+
+		// Upload magazine thumbnail image
+		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+		magazineObject.thumbnail = response.data?.path;
+
+		// Upload PDF files
+		for (let pdf of pdfFiles) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
+				.from('PDF')
+				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
+				.then((response) => {
+					if (response.data) {
+						magazineObject.pdf_files.push(response.data.path);
+					}
+				});
+		}
+
+		for (let image of sliderImagesFile) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
+				.from('image')
+				.upload(`magazine/${randomText}_${image.name}`, image!)
+				.then((response) => {
+					if (response.data) {
+						magazineObject.images.push(response.data.path);
+					}
+				});
+		}
+
+		// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
+		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
+		const pdfFilesArray = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+		magazineObject.images = `{${imagesArray.join(',')}}`;
+		magazineObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
+
+		// Insert data into Supabase
+		insertData(magazineObject, magazineDataLang, data.supabase);
+
+		resetForm();
+		goto('/dashboard/magazine');
+		setTimeout(() => {
+			showToast = false;
+		}, 1000);
 	}
 
 	function resetForm() {

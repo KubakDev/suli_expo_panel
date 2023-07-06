@@ -2,9 +2,11 @@ import type { LanguageEnum } from './languageEnum';
 
 export interface ExhibitionsModel {
 	id: number;
-	exhibition_id?: number;
 	images: string[];
+	pdf_files: string[];
 	thumbnail: string;
+	country_number: number;
+	company_number: number;
 	video_youtube_id: string;
 	exhibition_type: string;
 	exhibition_date: Date;

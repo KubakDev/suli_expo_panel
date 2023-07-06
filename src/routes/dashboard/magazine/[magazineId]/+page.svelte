@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/magazineStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { MagazineModel, MagazineModelLang } from '../../../../models/magazineModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -363,7 +360,7 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4">
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Gallery Image</Label>
+					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
 					{#if isFormSubmitted && !magazineData.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
@@ -520,7 +517,7 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem title="Gallery Detail">
+					<TabItem title="Magazine Detail">
 						{#each magazineDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage

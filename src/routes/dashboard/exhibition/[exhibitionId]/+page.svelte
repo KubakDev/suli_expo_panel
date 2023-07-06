@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../../models/exhibitionModel';
@@ -13,42 +11,41 @@
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
-	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
+	import type { PDFModel } from '../../../../models/pdfModel';
+	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
+	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
+	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
+	let pdfFiles: File[] = [];
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
 		id: 0,
 		images: [],
+		pdf_files: [],
 		thumbnail: '',
+		country_number: 0,
+		company_number: 0,
 		video_youtube_id: '',
 		exhibition_type: '',
 		exhibition_date: new Date()
 	};
 	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-			// console.log('exhibitionData//////', exhibitionData);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
+	let pdf_files: PDFModel[] = [];
 
 	//**** get data from db and put it into the fields ****//
 	async function getExhibitionData() {
@@ -60,18 +57,21 @@
 			.then((result) => {
 				exhibitionsData = {
 					id: result.data?.id,
-					exhibition_id: result.data?.exhibition_id,
 					images: result.data?.images,
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
-					video_youtube_id: result.data?.video_youtube_id,
+					pdf_files: result.data?.pdf_files,
 					exhibition_type: result.data?.exhibition_type,
-					exhibition_date: result.data?.exhibition_date
+					company_number: result.data?.company_number,
+					country_number: result.data?.country_number,
+					video_youtube_id: result.data?.video_youtube_id,
+					exhibition_date: new Date(result.data?.exhibition_date)
 				};
-				console.log('date value ///////', exhibitionsData.exhibition_date);
+
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
+				pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.exhibition_languages.findIndex(
 						(exhibitionLang: ExhibitionsModelLang) =>
@@ -82,6 +82,7 @@
 					exhibitionDataLang.push({
 						title: exhibitionLang?.title ?? '',
 						description: exhibitionLang?.description ?? '',
+
 						language:
 							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
@@ -103,7 +104,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload thumbnail image**//
+	//**for upload exhibition image**//
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -116,15 +117,24 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
+			// console.log(exhibitionsData);
 		};
 		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
+	} //**for upload exhibition image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		console.log(sliderImagesFile);
+		// console.log(sliderImagesFile);
 	}
+
+	//**pdf files**//
+
+	function getAllPDFFile(e: { detail: File[] }) {
+		sliderPDFFile = e.detail;
+	}
+
+	//**pdf files**//
 
 	//get image
 	function getImage() {
@@ -139,61 +149,133 @@
 		return result;
 	}
 
+	//get pdf File
+	function getPdfFile() {
+		let result = exhibitionsData.pdf_files.map((file, i) => {
+			return {
+				id: i,
+				imgurl: file,
+				imgSource: ImgSourceEnum.PdfRemote
+			};
+		});
+		// console.log('first pdf file ', result);
+		return result;
+	}
+
 	//**Handle submit**//
+
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
-		exhibitionsData.images = [];
-		if (imageFile) {
-			if (exhibitionsData.thumbnail) {
-				await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
-			}
+		let hasDataForLanguage = false;
+		let isValidExhibitionObject = false;
 
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			console.log(response.data);
-			exhibitionsData.thumbnail = response.data?.path;
-		} else {
-			exhibitionsData.thumbnail = prevThumbnail;
-		}
+		for (let lang of exhibitionDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.description.trim();
 
-		if (sliderImagesFile.length > 0) {
-			for (let image of sliderImagesFile) {
-				const randomText = getRandomTextNumber();
-				const responseMultiple = await data.supabase.storage
-					.from('image')
-					.upload(`exhibition/${randomText}_${image.name}`, image!);
-				// console.log('responseMultiple:', responseMultiple);
-
-				if (responseMultiple.data?.path) {
-					exhibitionsData.images.push(responseMultiple.data?.path);
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
 				}
 			}
 		}
-		for (let image of existingImages) {
-			exhibitionsData.images.push(image);
-		}
-		// Convert galleryObject.images to a valid array string format
-		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
-		exhibitionsData.images = `{${imagesArray.join(',')}}`;
-		console.log(exhibitionsData);
-		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/exhibition');
+		if (
+			!isEmpty(exhibitionsData.thumbnail) &&
+			exhibitionsData.images.length > 0 &&
+			exhibitionsData.country_number > 0 &&
+			exhibitionsData.company_number > 0 &&
+			!isEmpty(exhibitionsData.exhibition_type) &&
+			!isEmpty(exhibitionsData.video_youtube_id)
+		) {
+			isValidExhibitionObject = true;
+		}
+
+		if (hasDataForLanguage && isValidExhibitionObject) {
+			submitted = true;
+			showToast = true;
+			exhibitionsData.pdf_files = [];
+			exhibitionsData.images = [];
+			if (imageFile) {
+				if (exhibitionsData.thumbnail) {
+					await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				exhibitionsData.thumbnail = response.data?.path;
+			} else {
+				exhibitionsData.thumbnail = prevThumbnail;
+			}
+
+			if (sliderImagesFile.length > 0) {
+				for (let image of sliderImagesFile) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('image')
+						.upload(`exhibition/${randomText}_${image.name}`, image!);
+					// console.log('responseMultiple img:', responseMultiple);
+
+					if (responseMultiple.data?.path) {
+						exhibitionsData.images.push(responseMultiple.data?.path);
+					}
+				}
+			}
+			for (let image of existingImages) {
+				exhibitionsData.images.push(image);
+			}
+			// Convert exhibition.images to a valid array string format
+			const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
+			exhibitionsData.images = `{${imagesArray.join(',')}}`;
+
+			// ***insert pdf *****//
+			if (sliderPDFFile.length > 0) {
+				for (let PDFfile of sliderPDFFile) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('PDF')
+						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
+					// console.log('responseMultiple pdf:', responseMultiple);
+
+					if (responseMultiple.data?.path) {
+						exhibitionsData.pdf_files.push(responseMultiple.data.path);
+					}
+				}
+			}
+			for (let pdf of existingPDFfiles) {
+				exhibitionsData.pdf_files.push(pdf);
+			}
+			// Convert exhibition.images to a valid array string format
+			const pdfArray = exhibitionsData.pdf_files.map((file) => `"${file}"`);
+			exhibitionsData.pdf_files = `{${pdfArray.join(',')}}`;
+
+			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
+			console.log('result before store :', exhibitionsData);
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/exhibition');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 
+	//update images
 	function imageChanges(e: any) {
-		console.log(e.detail);
 		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
-
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
+				// console.log('///////', image);
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -206,7 +288,26 @@
 		// console.log('carouselImages data :::::', carouselImages);
 	}
 
-	//get thumbnail
+	//update pdf file
+	function pdfChanges(e: any) {
+		// console.log(e.detail);
+		let result: any = [];
+		let customImages: any = [];
+		e.detail.forEach((files: any) => {
+			if (files.imgSource === ImgSourceEnum.PdfRemote) {
+				result.push(files.imgurl);
+				const newFile = { ...files };
+				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
+				// customImages.push(newFile);
+				console.log('first');
+			} else {
+				// customImages.push(files);
+			}
+		});
+		existingPDFfiles = result;
+		// console.log('carouselImages data :::::', existingPDFfiles);
+	}
+
 	function getImagesObject() {
 		carouselImages = exhibitionsData.images.map((image, i) => {
 			return {
@@ -225,49 +326,87 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0 z-40">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update Exhibition Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4 py-2">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !exhibitionsData.thumbnail.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>Date</span>
+					<Input type="date" bind:value={exhibitionsData.exhibition_date} />
+				</Label>
+			</div>
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Exhibition Data</h1>
+		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
+			<div class="col-span-3">
+				<Label for="default-input" class="block mb-2">Exhibition Type</Label>
+				<Input bind:value={exhibitionsData.exhibition_type} placeholder="Enter Exhibition Type" />
+				{#if isFormSubmitted && !exhibitionsData.exhibition_type.trim()}
+					<p class="error-message">Please enter an exhibition type</p>
+				{/if}
+			</div>
+			<div class="col-span-3">
+				<Label class="space-y-2 mb-2">
+					<span>Link for youtube video</span>
+					<Input
+						type="text"
+						bind:value={exhibitionsData.video_youtube_id}
+						placeholder="Enter a link"
+					/>
+					{#if isFormSubmitted && !exhibitionsData.video_youtube_id}
+						<p class="error-message">Please enter a link for youtube video</p>
+					{/if}
+				</Label>
+			</div>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>Country No</span>
+					<Input
+						type="number"
+						bind:value={exhibitionsData.country_number}
+						placeholder="Enter a number"
+					/>
+					{#if isFormSubmitted && !exhibitionsData.country_number}
+						<p class="error-message">Required</p>
+					{/if}
+				</Label>
+			</div>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>Company No</span>
+					<Input
+						type="number"
+						bind:value={exhibitionsData.company_number}
+						placeholder="Enter a number"
+					/>
+					{#if isFormSubmitted && !exhibitionsData.company_number}
+						<p class="error-message">Required</p>
+					{/if}
+				</Label>
+			</div>
+		</div>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Exhibition Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
-						<Input type="date" bind:value={exhibitionsData.exhibition_date} />
-					</Label>
-				</div>
-				<br />
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="default-input" class="block mb-2">Exhibition Type</Label>
-						<Input bind:value={exhibitionsData.exhibition_type} />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="default-input" class="block mb-2">Video youtube link</Label>
-						<Input bind:value={exhibitionsData.video_youtube_id} />
-					</Label>
-				</div>
-
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -279,7 +418,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-10 py-10">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -294,6 +433,7 @@
 									</div>
 									<div class="pb-10">
 										<Label for="first_name" class="mb-2">Exhibition Title</Label>
+
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -301,10 +441,12 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Exhibition description</Label>
+										<Label for="textarea-id" class="mb-2">Description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
@@ -312,73 +454,92 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if !langData.description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
-			</div>
+					<div class="grid lg:grid-cols-2 gap-4 px-8 pt-5">
+						<!-- upload Exhibition image -->
 
-			<!-- upload Exhibition image -->
-			<div>
-				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload Exhibition Images</Label>
-					<FileUploadComponent
-						on:imageChanges={imageChanges}
-						on:imageFilesChanges={getAllImageFile}
-						data={{ images: images }}
-					/>
-				</Label>
-			</div>
+						<Label class="space-y-2 mb-2">
+							<Label for="first_name" class="mb-2">Upload Exhibition Images</Label>
+							<FileUploadComponent
+								on:imageChanges={imageChanges}
+								on:imageFilesChanges={getAllImageFile}
+								data={{ images: images }}
+							/>
+						</Label>
 
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="Exhibition List">
-				<div
-					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="flex justify-start items-start">
-						{#each exhibitionDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<ExpoCard
-									cardType={CardType.Square}
-									title={langData.title}
-									thumbnail={exhibitionsData.thumbnail}
-									primaryColor="bg-primary"
-									date={exhibitionsData.exhibition_date}
-								/>
-							{/if}
-						{/each}
+						<!-- upload pdf file -->
+
+						<Label class="space-y-2 mb-2">
+							<Label for="first_name" class="mb-2">Upload PDF Files</Label>
+							<PDFUploadComponent
+								on:imageChanges={pdfChanges}
+								on:imageFilesChanges={getAllPDFFile}
+								data={{ pdfFiles: pdf_files }}
+							/>
+						</Label>
 					</div>
 
-					<div />
-				</div>
-			</TabItem>
-			<TabItem title="Exhibition Detail">
-				{#each exhibitionDataLang as langData}
-					{#if langData.language === selectedLanguageTab}
-						<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
-					{/if}
-				{/each}
-			</TabItem>
-		</Tabs>
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</form>
+			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Exhibition List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each exhibitionDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.description}
+											thumbnail={exhibitionsData.thumbnail}
+											primaryColor="bg-primary"
+											date={exhibitionsData.exhibition_date}
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Exhibition Detail">
+						{#each exhibitionDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
+							{/if}
+						{/each}
+					</TabItem>
+				</Tabs>
+			</div>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

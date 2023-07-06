@@ -90,22 +90,26 @@
 	} //**dropzone**//
 
 	async function formSubmit() {
-		let isValidGalleryLang = true;
+		let hasDataForLanguage = false;
 		let isValidGalleryObject = false;
 
 		for (let lang of galleryDataLang) {
-			if (
-				(isEmpty(lang.title.trim()) ||
-					isEmpty(lang.short_description.trim()) ||
-					isEmpty(lang.long_description.trim())) &&
-				!(
-					isEmpty(lang.title.trim()) &&
-					isEmpty(lang.short_description.trim()) &&
-					isEmpty(lang.long_description.trim())
-				)
-			) {
-				isValidGalleryLang = false;
-				break;
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
 		}
 
@@ -114,44 +118,41 @@
 			isValidGalleryObject = true;
 		}
 
-		if (!isValidGalleryLang) {
+		if (!hasDataForLanguage || !isValidGalleryObject) {
 			isFormSubmitted = true;
 			return;
-		} else if (!isValidGalleryObject) {
-			isFormSubmitted = true;
-			return;
-		} else {
-			submitted = true;
-			showToast = true;
-
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			galleryObject.thumbnail = response.data?.path;
-
-			if (sliderImagesFile.length > 0) {
-				for (let image of sliderImagesFile) {
-					const randomText = getRandomTextNumber();
-					await data.supabase.storage
-						.from('image')
-						.upload(`gallery/${randomText}_${image.name}`, image!)
-						.then((response) => {
-							if (response.data) {
-								galleryObject.images.push(response.data.path);
-							}
-						});
-				}
-			}
-
-			const imagesArray = galleryObject.images.map((image) => `"${image}"`);
-			galleryObject.images = `{${imagesArray.join(',')}}`;
-
-			insertData(galleryObject, galleryDataLang, data.supabase);
-
-			resetForm();
-			goto('/dashboard/gallery');
-			setTimeout(() => {
-				showToast = false;
-			}, 1000);
 		}
+
+		submitted = true;
+		showToast = true;
+
+		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+		galleryObject.thumbnail = response.data?.path;
+
+		if (sliderImagesFile.length > 0) {
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('image')
+					.upload(`gallery/${randomText}_${image.name}`, image!)
+					.then((response) => {
+						if (response.data) {
+							galleryObject.images.push(response.data.path);
+						}
+					});
+			}
+		}
+
+		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
+		galleryObject.images = `{${imagesArray.join(',')}}`;
+
+		insertData(galleryObject, galleryDataLang, data.supabase);
+
+		resetForm();
+		goto('/dashboard/gallery');
+		setTimeout(() => {
+			showToast = false;
+		}, 1000);
 	}
 
 	function resetForm() {
