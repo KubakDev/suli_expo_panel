@@ -3,11 +3,11 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/seatServicesStore';
+	import { insertDataToSeatService } from '../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { seatServicesModel, seatServicesModelLang } from '../../../models/seatServicesModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 
 	export let data;
@@ -61,9 +61,9 @@
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
 		// console.log(response);
-		seatServicesObject.icon = response.data?.path;
+		seatServicesObject.icon = response.data?.path ?? '';
 
-		insertData(seatServicesObject, seatServicesDataLang, data.supabase);
+		insertDataToSeatService(seatServicesObject, seatServicesDataLang, data.supabase);
 
 		resetForm();
 		goto('/dashboard/seatServices');

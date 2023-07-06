@@ -1,6 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
-	import { seatServices, getData, deleteData } from '../../../stores/seatServicesStore';
+	import {
+		seatServices,
+		getSeatServices,
+		deleteSeatService
+	} from '../../../stores/seatServicesStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -8,18 +12,18 @@
 	export let data;
 	let currentPage = 1;
 	const pageSize = 10;
-	let seatservicesData = [];
+	let seatServicesData = [];
 	let totalPages = 1;
 
 	// console.log('seatServices//', seatServices);
 
 	async function fetchData() {
-		let result = await getData(data.supabase, currentPage, pageSize);
+		let result = await getSeatServices(data.supabase, currentPage, pageSize);
 
-		seatservicesData = result.data;
+		seatServicesData = result.data ?? [];
 
-		seatServices.set(seatservicesData);
-		console.log('seatServices data///////', seatservicesData);
+		seatServices.set(seatServicesData);
+		console.log('seatServices data///////', seatServicesData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -41,7 +45,7 @@
 	// delete data
 	async function handleDelete(seatServicesId) {
 		try {
-			await deleteData(seatServicesId, data.supabase);
+			await deleteSeatService(seatServicesId, data.supabase);
 			alert('seatServices deleted successfully!');
 			if (currentPage > totalPages) {
 				currentPage = totalPages;

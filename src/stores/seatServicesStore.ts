@@ -6,7 +6,7 @@ import type { ServiceModel, ServiceModelLang } from '../models/serviceModel';
 export const seatServices = writable<seatServicesModel[]>([]);
 
 //Create a new instance of the seat-services
-export const insertData = async (
+export const insertDataToSeatService = async (
 	seatServicesObject: seatServicesModel,
 	seatServicesDataLang: seatServicesModelLang[],
 	supabase: SupabaseClient
@@ -32,7 +32,7 @@ export const insertData = async (
 };
 
 //Get all seat-services data
-export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+export const getSeatServices = async (supabase: SupabaseClient, page: number, pageSize: number) => {
 	try {
 		const { data, error } = await supabase
 			.from('seat_services')
@@ -43,12 +43,12 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('seat_services').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
 		const result = {
 			data: data,
 			count: count
 		};
+
+		seatServices.set(data ?? []);
 		return result;
 	} catch (error) {
 		console.error(error);
@@ -57,7 +57,7 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 };
 
 //delete seat-services by id
-export const deleteData = async (seatServicesId: number, supabase: SupabaseClient) => {
+export const deleteSeatService = async (seatServicesId: number, supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase.rpc('delete_seatServices_and_seatServices_lang', {
 			data: { id: seatServicesId }
@@ -82,13 +82,12 @@ export const deleteData = async (seatServicesId: number, supabase: SupabaseClien
 };
 
 //update seat-services by id
-export const updateData = async (
+export const updateSeatService = async (
 	seatServicesObject: seatServicesModel,
 	seatServicesDataLang: seatServicesModelLang[],
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
 		const { data, error } = await supabase.rpc('update_seatServices_and_seatServices_lang', {
 			seatservices_data: seatServicesObject,
 			seatservices_lang_data: seatServicesDataLang
@@ -100,10 +99,8 @@ export const updateData = async (
 
 		seatServices.update((currentSeatServices) => {
 			if (data) {
-				// Find the index of the updated item
 				const index = currentSeatServices.findIndex((item) => item.id === seatServicesObject.id);
 
-				// Create a new array with the updated item
 				const updatedSeatServices = [
 					...currentSeatServices.slice(0, index),
 					data,
@@ -118,7 +115,7 @@ export const updateData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
 		throw error;
 	}
 };
+
