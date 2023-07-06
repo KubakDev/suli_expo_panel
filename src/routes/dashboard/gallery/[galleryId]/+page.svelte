@@ -153,32 +153,33 @@
 
 	//**Handle submit**//
 	async function formSubmit() {
-		let isValidGalleryLang = true; // Assume all languages have data
+		let hasDataForLanguage = false;
 		let isValidGalleryObject = false;
 
 		for (let lang of galleryDataLang) {
-			if (
-				(isEmpty(lang.title.trim()) ||
-					isEmpty(lang.short_description.trim()) ||
-					isEmpty(lang.long_description.trim())) &&
-				!(
-					isEmpty(lang.title.trim()) &&
-					isEmpty(lang.short_description.trim()) &&
-					isEmpty(lang.long_description.trim())
-				)
-			) {
-				// If any field is empty and it's not the case that all fields are empty
-				isValidGalleryLang = false;
-				break;
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
 		}
 
-		// Check if galleryObject has a valid thumbnail and at least one slider image
 		if (!isEmpty(galleryData.thumbnail) && galleryData.images.length > 0) {
 			isValidGalleryObject = true;
 		}
-
-		if (isValidGalleryLang && isValidGalleryObject) {
+		if (hasDataForLanguage && isValidGalleryObject) {
 			submitted = true;
 			showToast = true;
 			galleryData.images = [];

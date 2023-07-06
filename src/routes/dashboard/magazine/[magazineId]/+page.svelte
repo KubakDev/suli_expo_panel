@@ -185,33 +185,36 @@
 	}
 
 	//**Handle submit**//
+
 	async function formSubmit() {
-		let isValidGalleryLang = true; // Assume all languages have data
-		let isValidGalleryObject = false;
+		let hasDataForLanguage = false;
+		let isValidMagazineObject = false;
 
 		for (let lang of magazineDataLang) {
-			if (
-				(isEmpty(lang.title.trim()) ||
-					isEmpty(lang.short_description.trim()) ||
-					isEmpty(lang.long_description.trim())) &&
-				!(
-					isEmpty(lang.title.trim()) &&
-					isEmpty(lang.short_description.trim()) &&
-					isEmpty(lang.long_description.trim())
-				)
-			) {
-				// If any field is empty and it's not the case that all fields are empty
-				isValidGalleryLang = false;
-				break;
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
 		}
 
-		// Check if galleryObject has a valid thumbnail and at least one slider image
 		if (!isEmpty(magazineData.thumbnail) && magazineData.images.length > 0) {
-			isValidGalleryObject = true;
+			isValidMagazineObject = true;
 		}
 
-		if (isValidGalleryLang && isValidGalleryObject) {
+		if (hasDataForLanguage && isValidMagazineObject) {
 			submitted = true;
 			showToast = true;
 			magazineData.pdf_files = [];

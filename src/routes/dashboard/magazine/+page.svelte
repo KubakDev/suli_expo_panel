@@ -39,7 +39,7 @@
 	async function handleDelete(magazineId) {
 		try {
 			await deleteData(magazineId, data.supabase);
-			alert('Magazine deleted successfully!');
+			// alert('Magazine deleted successfully!');
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
