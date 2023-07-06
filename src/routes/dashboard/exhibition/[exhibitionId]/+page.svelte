@@ -448,14 +448,14 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">Description</Label>
 										<Textarea
-											placeholder="Enter short description"
+											placeholder="Enter a description"
 											rows="4"
 											bind:value={langData.description}
-											id="short_description"
-											name="short_description"
+											id="description"
+											name="description"
 										/>
 										{#if !langData.description.trim()}
-											<p class="error-message">Please enter a short description</p>
+											<p class="error-message">Please enter a description</p>
 										{/if}
 									</div>
 								</div>
