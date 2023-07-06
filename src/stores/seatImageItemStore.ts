@@ -33,7 +33,6 @@ const seatImageItemStore = () => {
             set(data as SeatImageItemModel[]);
             return data;
         }
-
     }
 }
 

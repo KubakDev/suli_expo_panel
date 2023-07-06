@@ -26,11 +26,13 @@
 	import uploadFileStore from '../../../../stores/uploadFileStore';
 	import { page } from '$app/stores';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import { seatServiceStore } from '../../../../stores/seatServicesStore';
+	import { getSeatServices, seatServices } from '../../../../stores/seatServicesStore';
 	import Sortable from 'sortablejs';
 	import { EditingMode } from '../../../../models/editingModeModel';
+	import { getImage } from '$lib/utils/getImage';
+	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 
-	let iconCanvas = new fabric.StaticCanvas();
+	let iconCanvas = new fabric.StaticCanvas('');
 	iconCanvas.setWidth(50);
 	iconCanvas.setHeight(50);
 
@@ -67,8 +69,18 @@
 	let topRightRadius = 0;
 	let exhibitionName: undefined | string = undefined;
 	let isAddingText = false;
-	let objects: any[] = []; // holds the objects on the canvas
+	let objects: any[] = [];
 
+	let objectDetail: {
+		selectable: boolean;
+		services: seatServicesModel[];
+		price: number;
+	} = {
+		selectable: false,
+		services: [],
+		price: 0
+	};
+	let isAnObjectSelected = false;
 	class MyGroup extends fabric.Group {
 		groupId: number;
 
@@ -138,16 +150,17 @@
 	$: {
 		images = $seatImageItemStore;
 	}
-	// const adjustCanvasSize = () => {
-	// 	console.log('adjustCanvasSize ', container.offsetWidth);
-	// 	if (canvas) {
-	// 		canvas.setDimensions({
-	// 			width: container.offsetWidth
-	// 		});
-	// 		// Create a rectangle with no fill, only a stroke (border)
-	// 		// Create a rectangle with no fill, only a stroke (border)
-	// 	}
-	// };
+	const adjustCanvasSize = () => {
+		console.log('adjustCanvasSize ', container.offsetWidth);
+		if (canvas) {
+			canvas.setDimensions({
+				width: container.offsetWidth,
+				height: container.offsetHeight
+			});
+			// Create a rectangle with no fill, only a stroke (border)
+			// Create a rectangle with no fill, only a stroke (border)
+		}
+	};
 	function createCustomRectangle() {
 		var pathData = [
 			`M ${topLeftRadius} 0`,
@@ -216,13 +229,13 @@
 		canvas.requestRenderAll();
 	}
 
-	onMount(() => {
-		seatServiceStore.get(data.supabase);
+	onMount(async () => {
 		seatImageItemStore.getAllSeatItems();
-
+		await getSeatServices(data.supabase, 1, 15);
 		// var customRect = createCustomRectangle();
 
 		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
+		adjustCanvasSize();
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
@@ -392,7 +405,7 @@
 					points[points.length - 1] = points[0];
 
 					// Close the shape
-					let polygon = new fabric.Polygon(points, {
+					let polygon: any = new fabric.Polygon(points, {
 						stroke: 'red',
 						fill: 'transparent',
 						strokeWidth: 1,
@@ -557,6 +570,7 @@
 		strokeWidth = null;
 		itemWidth = null;
 		itemHeight = null;
+		isAnObjectSelected = false;
 	}
 
 	function onObjectModified(selectedObject: any) {
@@ -577,6 +591,7 @@
 			// selectedObject.set({ scaleX: 1, scaleY: 1 }, { silent: true });
 			canvas.requestRenderAll();
 		}
+		console.log('else');
 	}
 
 	function setSelectedObjectValue(selectedObject: any) {
@@ -585,18 +600,9 @@
 		fillColor = selectedObject.fill;
 		itemWidth = selectedObject.width;
 		itemHeight = selectedObject.height;
+		isAnObjectSelected = true;
 		// canvas.bringToFront(selectedObject);
 	}
-
-	afterUpdate(() => {
-		// adjustCanvasSize();
-	});
-
-	onDestroy(() => {
-		if (typeof window !== 'undefined') {
-			// window.removeEventListener('resize', adjustCanvasSize);
-		}
-	});
 
 	async function convetToObject() {
 		let json = canvas.toObject([
@@ -608,15 +614,15 @@
 			'id',
 			'stroke',
 			'strokeWidth',
-			'icon'
+			'icon',
+			'selectable',
+			'objectDetail'
 		]);
-		console.log(json);
 		const supabase = data.supabase;
-		// convert canvas to image fil	e
+		console.log(json);
 		const randomImageName = getRandomTextNumber();
 		const canvasImage = await canvasToFile(canvas, randomImageName);
-		console.log(canvasImage);
-		// upload canvas image to supabase storage
+		//upload canvas image to supabase storage
 		const fileResult = await supabase.storage
 			.from('image')
 			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
@@ -651,7 +657,7 @@
 						name: 'text',
 						design: json,
 						is_active: true,
-						exhibition: 1,
+						exhibition: 74,
 						image_url: fileResult.data.path
 					}
 				])
@@ -673,7 +679,7 @@
 
 		fabric.Image.fromURL(
 			image?.image_url!,
-			function (img) {
+			function (img: any) {
 				// Adjust the properties of the image if needed
 				img.set({
 					left: 100,
@@ -756,6 +762,7 @@
 	}
 
 	function createItem() {
+		console.log('create new Item');
 		let rect = new fabric.Rect({
 			width: 100,
 			height: 50,
@@ -763,6 +770,7 @@
 			left: 0,
 			top: 0
 		});
+
 		canvas.add(rect);
 	}
 
@@ -1038,16 +1046,40 @@
 				break;
 		}
 	}
+	function addPropertiesToShape() {
+		console.log('add properties to shape');
+		let selectedObject = canvas.getActiveObject();
+		selectedObject.set({
+			selectable: !objectDetail.selectable
+		});
+		objectDetail.selectable = !objectDetail.selectable;
+		canvas.requestRenderAll();
+	}
+	function addServiceToActiveObject(service: seatServicesModel) {
+		let selectedObject = canvas.getActiveObject();
+		let index = objectDetail.services.findIndex((item) => item.id === service.id);
+		if (index === -1) {
+			objectDetail.services.push(service);
+		} else {
+			objectDetail.services.splice(index, 1);
+		}
+		objectDetail = { ...objectDetail };
+		selectedObject.set({
+			objectDetail: objectDetail
+		});
+		canvas.requestRenderAll();
+	}
 </script>
 
 <div class="flex flex-col w-full h-full flex-1">
 	<div class="flex justify-between bg-secondary border-b border-gray-500 h-16">
 		<div class="flex justify-between">
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<div on:click={() => createItem()} class="seat-design rounded cursor-move">Shape</div>
 			<Button
 				class="h-full border-none rounded-none"
 				size="lg"
-				color={canvas && canvas.isDrawingMode ? 'primary' : 'secondary'}
+				color={canvas && canvas.isDrawingMode ? 'primary' : 'none'}
 			>
 				<Pencil
 					on:click={() => selectEditingMode(EditingMode.Draw)}
@@ -1058,7 +1090,7 @@
 			<Button
 				class="h-full border-none rounded-none"
 				size="lg"
-				color={isDrawing ? 'primary' : 'secondary'}
+				color={isDrawing ? 'primary' : 'none'}
 			>
 				<Pencil
 					on:click={() => selectEditingMode(EditingMode.Line)}
@@ -1070,7 +1102,7 @@
 				id="group-button"
 				class="h-full border-none rounded-none"
 				size="lg"
-				color={isAddingText ? 'primary' : 'secondary'}
+				color={isAddingText ? 'primary' : 'none'}
 				on:click={() => selectEditingMode(EditingMode.Text)}
 				><ChatBubbleBottomCenter color="white" /></Button
 			>
@@ -1119,6 +1151,7 @@
 					<Plus class="w-full h-full" />
 				</Button>
 				{#each images as image, index}
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<div
 						on:click={() => onShapeSelected(image)}
 						class="w-full h-20 seat-design rounded cursor-move"
@@ -1127,40 +1160,6 @@
 					</div>
 				{/each}
 			</div>
-			<Button id="placements"><Chevron>Services</Chevron></Button>
-			<Dropdown class="overflow-y-auto px-3 pb-3 text-sm h-44">
-				<div slot="header" class="p-3">
-					<Search size="md" />
-				</div>
-				{#if $seatServiceStore}
-					{#each $seatServiceStore as service}
-						<li class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-							{#if service.languages}
-								<Checkbox>{service.languages[0].title}</Checkbox>
-							{/if}
-						</li>
-					{/each}
-				{/if}
-				<a
-					slot="footer"
-					href="/"
-					class="flex items-center p-3 -mb-1 text-sm font-medium text-red-600 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-red-500 hover:underline"
-				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-5 h-5 mr-1"
-						><path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
-						/></svg
-					>Delete user
-				</a>
-			</Dropdown>
 
 			<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
 				<Label class="space-y-2">
@@ -1206,7 +1205,7 @@
 			</Modal>
 			<div class="mt-4">
 				<div class="text-white text-xl my-4">Layers</div>
-				<ul id="layers" style="height: 30vh " class="overflow-y-scroll">
+				<ul id="layers" style="height: 30vh " class="overflow-y-auto">
 					{#each objects as object (object.id)}
 						<li
 							data-id={object.id}
@@ -1242,6 +1241,16 @@
 			</div>
 		</div>
 		<div class="p-4 bg-secondary">
+			{#if canvas && isAnObjectSelected}
+				<div class="pb-4 w-full">
+					<Button on:click={addPropertiesToShape} class="w-full" outline>
+						<Checkbox checked={objectDetail.selectable} />
+
+						selectable
+					</Button>
+				</div>
+			{/if}
+
 			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
 			<div class="grid grid-cols-2 gap-4 my-4">
 				<ButtonGroup class="w-full" size="sm">
@@ -1330,6 +1339,52 @@
 					>
 				</div>
 			</div>
+			{#if objectDetail.selectable}
+				<div class="w-full">
+					<ButtonGroup class="w-full mb-2" size="sm">
+						<InputAddon>Price</InputAddon><Input
+							type="number"
+							size="sm"
+							placeholder="select price"
+							bind:value={objectDetail.price}
+						/></ButtonGroup
+					>
+					<Button id="placements" class="w-full"><Chevron>Services</Chevron></Button>
+					<Dropdown class="overflow-y-auto px-3 pb-3 text-sm mx-3 ">
+						<div slot="header" class="p-3">
+							<Search size="md" />
+						</div>
+						{#if $seatServices}
+							{#each $seatServices as service}
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<li
+									class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+									on:click={() => {
+										addServiceToActiveObject(service);
+									}}
+								>
+									{#if service.seat_services_languages}
+										<div class="flex justify-between">
+											<Checkbox
+												disabled={true}
+												class="cursor-pointer"
+												checked={objectDetail.services.some((x) => x.id === service.id)}
+												>{service.seat_services_languages[0].title}</Checkbox
+											>
+
+											<img
+												src={getImage(service.icon)}
+												class="w-8 h-8 rounded-full mr-3"
+												alt="niaaaa"
+											/>
+										</div>
+									{/if}
+								</li>
+							{/each}
+						{/if}
+					</Dropdown>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

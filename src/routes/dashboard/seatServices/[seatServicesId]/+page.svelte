@@ -3,7 +3,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData } from '../../../../stores/seatServicesStore';
+	import { updateSeatService } from '../../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type {
 		seatServicesModel,
@@ -114,7 +114,7 @@
 			seatServicesData.icon = prevThumbnail;
 		}
 
-		updateData(seatServicesData, seatServicesDataLang, data.supabase);
+		updateSeatService(seatServicesData, seatServicesDataLang, data.supabase);
 
 		setTimeout(() => {
 			showToast = false;
