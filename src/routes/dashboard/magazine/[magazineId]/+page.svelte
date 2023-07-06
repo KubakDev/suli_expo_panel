@@ -188,7 +188,7 @@
 
 	async function formSubmit() {
 		let hasDataForLanguage = false;
-		let isValidGalleryObject = false;
+		let isValidMagazineObject = false;
 
 		for (let lang of magazineDataLang) {
 			const title = lang.title.trim();
@@ -211,10 +211,10 @@
 		}
 
 		if (!isEmpty(magazineData.thumbnail) && magazineData.images.length > 0) {
-			isValidGalleryObject = true;
+			isValidMagazineObject = true;
 		}
 
-		if (hasDataForLanguage && isValidGalleryObject) {
+		if (hasDataForLanguage && isValidMagazineObject) {
 			submitted = true;
 			showToast = true;
 			magazineData.pdf_files = [];
