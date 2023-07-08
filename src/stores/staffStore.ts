@@ -38,6 +38,7 @@ export const getDataStaff = async (supabase: SupabaseClient) => {
 			.select('*,staff_languages(*)')
 			.order('created_at', { ascending: false });
 
+		staff.set(data ?? []);
 		return data;
 	} catch (error) {
 		console.error(error);

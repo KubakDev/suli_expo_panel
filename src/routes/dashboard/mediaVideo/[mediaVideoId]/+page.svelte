@@ -1,31 +1,21 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../../models/media_VideoModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import FileUploadComponent from '$lib/components/fileUpload.svelte';
-	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
-	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import Editor from '@tinymce/tinymce-svelte';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isLength, isEmpty } from 'validator';
-	import type { PDFModel } from '../../../../models/pdfModel';
+	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
-	let sliderImagesFile: File[] = [];
-	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let imageFile: File | undefined;
 	let carouselImages: any = undefined;

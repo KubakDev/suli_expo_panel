@@ -49,6 +49,8 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 			data: data,
 			count: count
 		};
+
+		vedioStore.set(data ?? []);
 		return result;
 	} catch (error) {
 		console.error(error);

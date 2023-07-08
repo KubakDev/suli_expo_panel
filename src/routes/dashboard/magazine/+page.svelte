@@ -16,7 +16,6 @@
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
 		magazineData = result.data;
-		magazine.set(magazineData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;

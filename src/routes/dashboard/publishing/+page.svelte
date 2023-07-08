@@ -6,6 +6,7 @@
 	import Pagination from '../../../lib/components/pagination/Pagination.svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
+	
 	export let data;
 	let currentPage = 1;
 	const pageSize = 5;
@@ -16,7 +17,6 @@
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
 		publishingData = result.data;
-		publishing.set(publishingData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;

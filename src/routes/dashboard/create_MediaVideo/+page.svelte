@@ -20,7 +20,6 @@
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let sliderImagesFile: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 

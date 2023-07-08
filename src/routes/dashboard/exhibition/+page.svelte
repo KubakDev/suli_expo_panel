@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import { exhibition, getData, deleteData } from '../../../stores/exhibitionStore';
+	import { exhibitions, getData, deleteData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -9,18 +9,12 @@
 	export let data;
 	let currentPage = 1;
 	const pageSize = 10;
-	let exhibitionData = [];
 	let totalPages = 1;
 
 	// console.log('exhibition//', exhibition);
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-
-		exhibitionData = result.data;
-
-		exhibition.set(exhibitionData);
-		console.log('exhibition data///////', exhibitionData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -232,7 +226,7 @@
 					</thead>
 
 					<tbody>
-						{#each $exhibition as item, index (item.id)}
+						{#each $exhibitions as item, index (item.id)}
 							<tr>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 									<span class="flex justify-center text-gray-700 font-semibold"

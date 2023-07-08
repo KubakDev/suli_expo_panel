@@ -21,8 +21,7 @@
 
 		galleryData = result.data;
 
-		gallery.set(galleryData);
-		console.log('gallery data///////', galleryData);
+		// console.log('gallery data///////', galleryData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count;

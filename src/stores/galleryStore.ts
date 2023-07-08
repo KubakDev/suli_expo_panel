@@ -62,8 +62,8 @@ export const getData = async (
 			count: count || 0
 		};
 
-		console.log('Search Result:', result);
-
+		// console.log('Search Result:', result);
+		gallery.set(data ?? []);
 		return result;
 	} catch (error) {
 		console.error(error);

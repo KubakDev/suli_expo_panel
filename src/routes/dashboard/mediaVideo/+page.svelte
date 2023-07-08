@@ -16,7 +16,6 @@
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
 		mediaVideoData = result.data;
-		vedioStore.set(mediaVideoData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
