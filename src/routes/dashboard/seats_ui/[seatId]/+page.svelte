@@ -31,8 +31,10 @@
 	import { EditingMode } from '../../../../models/editingModeModel';
 	import { getImage } from '$lib/utils/getImage';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
+	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
 
 	let iconCanvas = new fabric.StaticCanvas('');
+	let addSeatModal = false;
 	iconCanvas.setWidth(50);
 	iconCanvas.setHeight(50);
 
@@ -605,66 +607,67 @@
 	}
 
 	async function convetToObject() {
-		let json = canvas.toObject([
-			'left',
-			'top',
-			'width',
-			'height',
-			'fill',
-			'id',
-			'stroke',
-			'strokeWidth',
-			'icon',
-			'selectable',
-			'objectDetail'
-		]);
-		const supabase = data.supabase;
-		console.log(json);
-		const randomImageName = getRandomTextNumber();
-		const canvasImage = await canvasToFile(canvas, randomImageName);
-		//upload canvas image to supabase storage
-		const fileResult = await supabase.storage
-			.from('image')
-			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
-		console.log(fileResult.data);
-		if (!fileResult.data) {
-			alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
-			return;
-		}
+		addSeatModal = true;
+		// let json = canvas.toObject([
+		// 	'left',
+		// 	'top',
+		// 	'width',
+		// 	'height',
+		// 	'fill',
+		// 	'id',
+		// 	'stroke',
+		// 	'strokeWidth',
+		// 	'icon',
+		// 	'selectable',
+		// 	'objectDetail'
+		// ]);
+		// const supabase = data.supabase;
+		// console.log(json);
+		// const randomImageName = getRandomTextNumber();
+		// const canvasImage = await canvasToFile(canvas, randomImageName);
+		// //upload canvas image to supabase storage
+		// const fileResult = await supabase.storage
+		// 	.from('image')
+		// 	.upload(`seats_layout/${canvasImage.name}`, canvasImage);
+		// console.log(fileResult.data);
+		// if (!fileResult.data) {
+		// 	alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
+		// 	return;
+		// }
 
-		const seatId = $page.params.seatId;
-		if (seatId !== 'create') {
-			const result = await supabase
-				.from('seat_layout ')
-				.update([
-					{
-						name: 'text',
-						design: json,
-						is_active: true,
-						exhibition: 1,
-						image_url: fileResult.data.path
-					}
-				])
-				.eq('id', seatId)
-				.then((res) => {
-					console.log(res);
-				});
-		} else {
-			const result = await supabase
-				.from('seat_layout ')
-				.insert([
-					{
-						name: 'text',
-						design: json,
-						is_active: true,
-						exhibition: 74,
-						image_url: fileResult.data.path
-					}
-				])
-				.then((res) => {
-					console.log(res);
-				});
-		}
+		// const seatId = $page.params.seatId;
+		// if (seatId !== 'create') {
+		// 	const result = await supabase
+		// 		.from('seat_layout ')
+		// 		.update([
+		// 			{
+		// 				name: 'text',
+		// 				design: json,
+		// 				is_active: true,
+		// 				exhibition: 1,
+		// 				image_url: fileResult.data.path
+		// 			}
+		// 		])
+		// 		.eq('id', seatId)
+		// 		.then((res) => {
+		// 			console.log(res);
+		// 		});
+		// } else {
+		// 	const result = await supabase
+		// 		.from('seat_layout ')
+		// 		.insert([
+		// 			{
+		// 				name: 'text',
+		// 				design: json,
+		// 				is_active: true,
+		// 				exhibition: 74,
+		// 				image_url: fileResult.data.path
+		// 			}
+		// 		])
+		// 		.then((res) => {
+		// 			console.log(res);
+		// 		});
+		// }
 	}
 
 	function addImages() {
@@ -1113,7 +1116,7 @@
 		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={selectImageForBackground}
 			>Add Image to background</Button
 		>
-		<ButtonGroup class="" size="sm">
+		<!-- <ButtonGroup class="" size="sm">
 			<InputAddon>Name</InputAddon><Input
 				type="text"
 				size="sm"
@@ -1121,7 +1124,7 @@
 				placeholder="Name"
 				let:props
 			/></ButtonGroup
-		>
+		> -->
 		<Button
 			id="group-button"
 			class="!p-2 mx-4 bg-red"
@@ -1152,6 +1155,7 @@
 				</Button>
 				{#each images as image, index}
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div
 						on:click={() => onShapeSelected(image)}
 						class="w-full h-20 seat-design rounded cursor-move"
@@ -1160,7 +1164,15 @@
 					</div>
 				{/each}
 			</div>
-
+			<Modal bind:open={addSeatModal} size="sm" autoclose={false} class="w-full">
+				<AddSeatModalComponent
+					{data}
+					seatInfo={{
+						canvas: canvas,
+						seatId:$page.params.seatId
+					}}
+				/>
+			</Modal>
 			<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
 				<Label class="space-y-2">
 					<span>Name</span>
@@ -1357,6 +1369,7 @@
 						{#if $seatServices}
 							{#each $seatServices as service}
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 								<li
 									class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
 									on:click={() => {
