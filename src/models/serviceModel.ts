@@ -5,7 +5,6 @@ export interface ServiceModel {
 	exhibition_id?: number;
 	thumbnail: string;
 	exhibition_type?: string;
-	created_at?: Date;
 	primaryColor?: string;
 	onPrimaryColor?: string;
 	service_languages?: ServiceModelLang[];
