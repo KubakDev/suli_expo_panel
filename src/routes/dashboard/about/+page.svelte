@@ -15,7 +15,7 @@
 		let staffResult = await getDataStaff(data.supabase);
 		aboutData = result;
 		staffData = staffResult;
-		about.set(aboutData);
+
 		staff.set(staffData);
 		// console.log('about data///////', aboutData);
 	}

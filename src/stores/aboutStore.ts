@@ -39,7 +39,7 @@ export const getData = async (supabase: SupabaseClient) => {
 			.select('*,about_languages(*)')
 			.order('created_at', { ascending: false });
 
-		return data;
+		about.set(data as AboutModel[]);
 	} catch (error) {
 		console.error(error);
 		throw error;

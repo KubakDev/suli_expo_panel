@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/publishingStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { PublishingModel, PublishingModelLang } from '../../../../models/publishingModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -20,6 +17,8 @@
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -33,6 +32,7 @@
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let publishingDataLang: PublishingModelLang[] = [];
 	let publishingData: PublishingModel = {
@@ -43,10 +43,12 @@
 		exhibition_type: '',
 		created_at: new Date()
 	};
+
 	const id = $page.params.publishingId;
 	let images: ImagesModel[] = [];
 	let pdf_files: PDFModel[] = [];
 	let exhibitionData: ExhibitionModel[] = [];
+
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
@@ -133,9 +135,8 @@
 		reader.onloadend = () => {
 			publishingData.thumbnail = reader.result as '';
 
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `publishing/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(publishingData);
+			const randomText = getRandomTextNumber();
+			fileName = `publishing/${randomText}_${file.name}`;
 		};
 		reader.readAsDataURL(file);
 	} //**for upload publishing image**//
@@ -181,69 +182,104 @@
 	}
 
 	//**Handle submit**//
+
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
-		publishingData.pdf_files = [];
-		publishingData.images = [];
-		if (imageFile) {
-			if (publishingData.thumbnail) {
-				await data.supabase.storage.from('image').remove([publishingData.thumbnail]);
-			}
+		let hasDataForLanguage = false;
+		let isValidPublishingObject = false;
 
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			publishingData.thumbnail = response.data?.path;
-		} else {
-			publishingData.thumbnail = prevThumbnail;
+		for (let lang of publishingDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
 		}
 
-		if (sliderImagesFile.length > 0) {
-			for (let image of sliderImagesFile) {
-				const randomText = getRandomTextNumber();
-				const responseMultiple = await data.supabase.storage
+		if (!isEmpty(publishingData.thumbnail) && publishingData.images.length > 0) {
+			isValidPublishingObject = true;
+		}
+
+		if (hasDataForLanguage && isValidPublishingObject) {
+			submitted = true;
+			showToast = true;
+			publishingData.pdf_files = [];
+			publishingData.images = [];
+			if (imageFile) {
+				if (publishingData.thumbnail) {
+					await data.supabase.storage.from('image').remove([publishingData.thumbnail]);
+				}
+
+				const response = await data.supabase.storage
 					.from('image')
-					.upload(`publishing/${randomText}_${image.name}`, image!);
-				// console.log('responseMultiple img:', responseMultiple);
+					.upload(`${fileName}`, imageFile!);
+				publishingData.thumbnail = response.data?.path;
+			} else {
+				publishingData.thumbnail = prevThumbnail;
+			}
 
-				if (responseMultiple.data?.path) {
-					publishingData.images.push(responseMultiple.data?.path);
+			if (sliderImagesFile.length > 0) {
+				for (let image of sliderImagesFile) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('image')
+						.upload(`publishing/${randomText}_${image.name}`, image!);
+					// console.log('responseMultiple img:', responseMultiple);
+
+					if (responseMultiple.data?.path) {
+						publishingData.images.push(responseMultiple.data?.path);
+					}
 				}
 			}
-		}
-		for (let image of existingImages) {
-			publishingData.images.push(image);
-		}
-		// Convert publishing images to a valid array string format
-		const imagesArray = publishingData.images.map((image) => `"${image}"`);
-		publishingData.images = `{${imagesArray.join(',')}}`;
+			for (let image of existingImages) {
+				publishingData.images.push(image);
+			}
+			// Convert publishing.images to a valid array string format
+			const imagesArray = publishingData.images.map((image) => `"${image}"`);
+			publishingData.images = `{${imagesArray.join(',')}}`;
 
-		// ***insert pdf *****//
-		if (sliderPDFFile.length > 0) {
-			for (let PDFfile of sliderPDFFile) {
-				const randomText = getRandomTextNumber();
-				const responseMultiple = await data.supabase.storage
-					.from('PDF')
-					.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
-				// console.log('responseMultiple pdf:', responseMultiple);
+			// ***insert pdf *****//
+			if (sliderPDFFile.length > 0) {
+				for (let PDFfile of sliderPDFFile) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('PDF')
+						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
+					// console.log('responseMultiple pdf:', responseMultiple);
 
-				if (responseMultiple.data?.path) {
-					publishingData.pdf_files.push(responseMultiple.data.path);
+					if (responseMultiple.data?.path) {
+						publishingData.pdf_files.push(responseMultiple.data.path);
+					}
 				}
 			}
-		}
-		for (let pdf of existingPDFfiles) {
-			publishingData.pdf_files.push(pdf);
-		}
-		// Convert publishing.images to a valid array string format
-		const pdfArray = publishingData.pdf_files.map((file) => `"${file}"`);
-		publishingData.pdf_files = `{${pdfArray.join(',')}}`;
+			for (let pdf of existingPDFfiles) {
+				publishingData.pdf_files.push(pdf);
+			}
+			// Convert publishing.images to a valid array string format
+			const pdfArray = publishingData.pdf_files.map((file) => `"${file}"`);
+			publishingData.pdf_files = `{${pdfArray.join(',')}}`;
 
-		updateData(publishingData, publishingDataLang, data.supabase);
-		console.log('result before store :', publishingData);
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/publishing');
+			updateData(publishingData, publishingDataLang, data.supabase);
+			console.log('result before store :', publishingData);
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/publishing');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 
 	//update images
@@ -310,56 +346,54 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update Publishing Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail" class="mb-2">Upload Publishing Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !publishingData.thumbnail.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<select
+						class="border border-gray-300 rounded-md w-full"
+						id="type"
+						name="type"
+						placeholder="Please select a valid type"
+						on:change={handleSelectChange}
+					>
+						<option disabled selected>
+							{publishingData.exhibition_id
+								? exhibitionData.find((item) => item.id == publishingData.exhibition_id)
+										?.exhibition_type
+								: 'Select type'}
+						</option>
+						{#each exhibitionData as exhibition}
+							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+						{/each}
+					</select>
+				</Label>
+			</div>
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">publishing Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload publishing Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={publishingData.created_at} />
-					</Label>
-				</div>
-				<div>
-					<label class="space-y-2 mb-2">
-						<label for="large-input" class="block">Exhibition Type</label>
-						<select
-							class="border border-gray-300 rounded-md"
-							id="type"
-							name="type"
-							placeholder="Please select a valid type"
-							on:change={handleSelectChange}
-						>
-							<option disabled selected>
-								{publishingData.exhibition_id
-									? exhibitionData.find((item) => item.id == publishingData.exhibition_id)
-											?.exhibition_type
-									: 'Select type'}
-							</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-					</label>
-				</div>
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -385,7 +419,8 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">publishing Title</Label>
+										<Label for="first_name" class="mb-2">Publishing Title</Label>
+
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -393,7 +428,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -404,96 +441,100 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
-			</div>
+					<div class="grid lg:grid-cols-2 gap-4 px-8 pt-5">
+						<!-- upload Publishing image -->
 
-			<!-- upload publishing image -->
-			<div>
-				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload publishing Images</Label>
-					<FileUploadComponent
-						on:imageChanges={imageChanges}
-						on:imageFilesChanges={getAllImageFile}
-						data={{ images: images }}
-					/>
-				</Label>
-			</div>
+						<Label class="space-y-2 mb-2">
+							<Label for="first_name" class="mb-2">Upload Publishing Images</Label>
+							<FileUploadComponent
+								on:imageChanges={imageChanges}
+								on:imageFilesChanges={getAllImageFile}
+								data={{ images: images }}
+							/>
+						</Label>
 
-			<!-- upload pdf file -->
-			<div class="py-20">
-				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Upload PDF Files</Label>
-					<PDFUploadComponent
-						on:imageChanges={pdfChanges}
-						on:imageFilesChanges={getAllPDFFile}
-						data={{ pdfFiles: pdf_files }}
-					/>
-				</Label>
-			</div>
+						<!-- upload pdf file -->
 
-			<!-- submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
+						<Label class="space-y-2 mb-2">
+							<Label for="first_name" class="mb-2">Upload PDF Files</Label>
+							<PDFUploadComponent
+								on:imageChanges={pdfChanges}
+								on:imageFilesChanges={getAllPDFFile}
+								data={{ pdfFiles: pdf_files }}
+							/>
+						</Label>
+					</div>
+
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</form>
 			</div>
-		</Form>
-	</div>
-	<!-- preview data -->
-	<!-- right section -->
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="publishing List">
-				<div
-					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="flex justify-start items-start">
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Publishing List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each publishingDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.short_description}
+											thumbnail={publishingData.thumbnail}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Publishing Detail">
 						{#each publishingDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
-								<ExpoCard
-									cardType={CardType.Main}
-									title={langData.title}
-									short_description={langData.short_description}
-									thumbnail={publishingData.thumbnail}
-									primaryColor="bg-primary"
+								<DetailPage
+									bind:imagesCarousel={carouselImages}
+									long_description={langData.long_description}
 								/>
 							{/if}
 						{/each}
-					</div>
-
-					<div />
-				</div>
-			</TabItem>
-			<TabItem title="publishing Detail">
-				{#each publishingDataLang as langData}
-					{#if langData.language === selectedLanguageTab}
-						<DetailPage
-							bind:imagesCarousel={carouselImages}
-							long_description={langData.long_description}
-						/>
-					{/if}
-				{/each}
-			</TabItem>
-		</Tabs>
+					</TabItem>
+				</Tabs>
+			</div>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>
