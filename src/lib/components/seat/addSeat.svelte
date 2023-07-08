@@ -11,7 +11,7 @@
 		Search
 	} from 'flowbite-svelte';
 	import { getData, exhibitions } from '../../../stores/exhibitionStore';
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { SeatServiceStatusEnum } from '../../../models/seatServiceStatusEnum';
 	import type { ExhibitionsModel } from '../../../models/exhibitionModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
@@ -19,6 +19,7 @@
 
 	export let data: any;
 	export let seatInfo: any;
+	const dispatch = createEventDispatcher();
 
 	console.log(seatInfo);
 	interface SeatServiceStatusEnum {
@@ -88,10 +89,7 @@
 						image_url: fileResult.data.path
 					}
 				])
-				.eq('id', seatId)
-				.then((res) => {
-					console.log(res);
-				});
+				.eq('id', seatId);
 		} else {
 			const result = await supabase
 				.from('seat_layout ')
@@ -104,8 +102,8 @@
 						image_url: fileResult.data.path
 					}
 				])
-				.then((res) => {
-					console.log(res);
+				.then(() => {
+					dispatch('closeModal');
 				});
 		}
 	}

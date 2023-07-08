@@ -16,9 +16,18 @@
 		Label,
 		Modal,
 		Search,
-		Spinner
+		Spinner,
+		Tooltip
 	} from 'flowbite-svelte';
-	import { ChatBubbleBottomCenter, Minus, Pencil, Plus, PlusCircle, Signal } from 'svelte-heros-v2';
+	import {
+		ChatBubbleBottomCenter,
+		Minus,
+		Pencil,
+		Plus,
+		PlusCircle,
+		Signal,
+		Photo
+	} from 'svelte-heros-v2';
 	import { canvasToDataUrl, canvasToFile } from '$lib/utils/canva_to_image';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import { alertStore } from '../../../../stores/alertStore';
@@ -32,6 +41,8 @@
 	import { getImage } from '$lib/utils/getImage';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
+	import { SeatCustomShapes } from '../../../../models/seatUi';
+	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 
 	let iconCanvas = new fabric.StaticCanvas('');
 	let addSeatModal = false;
@@ -83,18 +94,6 @@
 		price: 0
 	};
 	let isAnObjectSelected = false;
-	class MyGroup extends fabric.Group {
-		groupId: number;
-
-		constructor(items: fabric.Object[], options: fabric.IGroupOptions = {}) {
-			super(items, options);
-			this.groupId = options.groupId;
-		}
-	}
-
-	class MyObject extends fabric.Object {
-		groupId: number;
-	}
 
 	// Function to update layers
 	const updateLayers = () => {
@@ -606,68 +605,8 @@
 		// canvas.bringToFront(selectedObject);
 	}
 
-	async function convetToObject() {
+	async function openAddSeatModal() {
 		addSeatModal = true;
-		// let json = canvas.toObject([
-		// 	'left',
-		// 	'top',
-		// 	'width',
-		// 	'height',
-		// 	'fill',
-		// 	'id',
-		// 	'stroke',
-		// 	'strokeWidth',
-		// 	'icon',
-		// 	'selectable',
-		// 	'objectDetail'
-		// ]);
-		// const supabase = data.supabase;
-		// console.log(json);
-		// const randomImageName = getRandomTextNumber();
-		// const canvasImage = await canvasToFile(canvas, randomImageName);
-		// //upload canvas image to supabase storage
-		// const fileResult = await supabase.storage
-		// 	.from('image')
-		// 	.upload(`seats_layout/${canvasImage.name}`, canvasImage);
-		// console.log(fileResult.data);
-		// if (!fileResult.data) {
-		// 	alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
-		// 	return;
-		// }
-
-		// const seatId = $page.params.seatId;
-		// if (seatId !== 'create') {
-		// 	const result = await supabase
-		// 		.from('seat_layout ')
-		// 		.update([
-		// 			{
-		// 				name: 'text',
-		// 				design: json,
-		// 				is_active: true,
-		// 				exhibition: 1,
-		// 				image_url: fileResult.data.path
-		// 			}
-		// 		])
-		// 		.eq('id', seatId)
-		// 		.then((res) => {
-		// 			console.log(res);
-		// 		});
-		// } else {
-		// 	const result = await supabase
-		// 		.from('seat_layout ')
-		// 		.insert([
-		// 			{
-		// 				name: 'text',
-		// 				design: json,
-		// 				is_active: true,
-		// 				exhibition: 74,
-		// 				image_url: fileResult.data.path
-		// 			}
-		// 		])
-		// 		.then((res) => {
-		// 			console.log(res);
-		// 		});
-		// }
 	}
 
 	function addImages() {
@@ -762,19 +701,6 @@
 		} else {
 			alertStore.addAlert('error', 'Image Url is empty', 'error');
 		}
-	}
-
-	function createItem() {
-		console.log('create new Item');
-		let rect = new fabric.Rect({
-			width: 100,
-			height: 50,
-			fill: fillColor,
-			left: 0,
-			top: 0
-		});
-
-		canvas.add(rect);
 	}
 
 	function onItemRadiusChange(value: any, type: string) {
@@ -921,100 +847,6 @@
 		canvas.renderAll();
 	}
 
-	function groupObjects() {
-		let activeObjects = canvas.getActiveObjects();
-		if (activeObjects) {
-			console.log(activeObjects);
-
-			canvas.discardActiveObject();
-			const group = new MyGroup(activeObjects, { groupId: Date.now() });
-			group._objects.forEach((obj: any) => {
-				obj.groupId = group.groupId; // Add groupId to each object
-			});
-			canvas.add(group);
-			canvas.requestRenderAll();
-		}
-	}
-
-	function unGroupObjects() {
-		let group = canvas.getActiveObject();
-		if (group.type === 'group') {
-			// Ungroup
-
-			group.destroy();
-			canvas.remove(group);
-			// group.forEach(function (item: any) {
-			// 	item.groupId = undefined;
-			// 	item.set('dirty', true);
-			// });
-
-			// make groupId for each object undefined
-			//
-			group.forEachObject(function (obj: any) {
-				console.log(obj);
-				obj.groupId = undefined;
-			});
-			group.groupId = undefined;
-			canvas.add.apply(canvas, group);
-			canvas.renderAll();
-			updateLayers();
-		}
-	}
-
-	function selectImageForBackground() {
-		let input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'image/*';
-		input.onchange = (event: any) => {
-			let file = event.target.files[0];
-			let reader = new FileReader();
-			reader.onload = (event: any) => {
-				let imgObj = new Image();
-				imgObj.src = event.target.result;
-				imgObj.onload = () => {
-					let image = new fabric.Image(imgObj);
-					image.set({
-						left: 0,
-						top: 0,
-						angle: 0,
-						padding: 10
-					});
-					// set to object to null
-					// image.toObject() = () => null;
-					//image.scale(getRandomNum(0.1, 0.25)).setCoords();
-					const containerWidth = container.offsetWidth;
-
-					const imageRatio = image.width! / image.height!;
-
-					// change canvas size to fit container
-					canvas.setWidth(containerWidth);
-
-					// set image height to respect ratio
-
-					const canvasHeight = containerWidth / imageRatio;
-
-					canvas.setHeight(canvasHeight);
-
-					canvas.setBackgroundImage(image, canvas.renderAll.bind(canvas), {
-						scaleX: canvas.width / image!.width!,
-						scaleY: canvas.height / image!.height!
-					});
-				};
-			};
-			reader.readAsDataURL(file);
-		};
-		input.click();
-	}
-
-	function toggleBackgroundImage() {
-		// hide and show background image
-		let image = canvas.backgroundImage;
-		if (image) {
-			image.visible = !image.visible;
-			canvas.renderAll();
-		}
-	}
-
 	// Function to enable text adding mode
 	const enableTextMode = () => {
 		canvas.isDrawingMode = false;
@@ -1074,79 +906,22 @@
 	}
 </script>
 
+<TopBarComponent
+	data={{
+		fillColor: fillColor,
+		strokeColor: strokeColor,
+		canvas: canvas,
+		isDrawing: isDrawing,
+		isAddingText: isAddingText,
+		container: container
+	}}
+	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
+	on:updateLayers={() => updateLayers()}
+	on:openAddSeatModal={() => openAddSeatModal()}
+/>
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex flex-col w-full h-full flex-1">
-	<div class="flex justify-between bg-secondary border-b border-gray-500 h-16">
-		<div class="flex justify-between">
-			<!-- svelte-ignore a11y-click-events-have-key-events -->
-			<div on:click={() => createItem()} class="seat-design rounded cursor-move">Shape</div>
-			<Button
-				class="h-full border-none rounded-none"
-				size="lg"
-				color={canvas && canvas.isDrawingMode ? 'primary' : 'none'}
-			>
-				<Pencil
-					on:click={() => selectEditingMode(EditingMode.Draw)}
-					size="30"
-					class="text-white  outline-none"
-				/>
-			</Button>
-			<Button
-				class="h-full border-none rounded-none"
-				size="lg"
-				color={isDrawing ? 'primary' : 'none'}
-			>
-				<Pencil
-					on:click={() => selectEditingMode(EditingMode.Line)}
-					size="30"
-					class=" text-white dark:text-green-700 outline-none "
-				/>
-			</Button>
-			<Button
-				id="group-button"
-				class="h-full border-none rounded-none"
-				size="lg"
-				color={isAddingText ? 'primary' : 'none'}
-				on:click={() => selectEditingMode(EditingMode.Text)}
-				><ChatBubbleBottomCenter color="white" /></Button
-			>
-		</div>
-		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={toggleBackgroundImage}
-			>Toggle background</Button
-		>
-		<Button id="group-button" class="!p-2 mx-4 bg-red" size="lg" on:click={selectImageForBackground}
-			>Add Image to background</Button
-		>
-		<!-- <ButtonGroup class="" size="sm">
-			<InputAddon>Name</InputAddon><Input
-				type="text"
-				size="sm"
-				bind:value={exhibitionName}
-				placeholder="Name"
-				let:props
-			/></ButtonGroup
-		> -->
-		<Button
-			id="group-button"
-			class="!p-2 mx-4 bg-red"
-			size="lg"
-			color={isDrawing ? 'dark' : 'light'}
-			on:click={convetToObject}>Save</Button
-		>
-		<Button
-			id="group-button"
-			class="!p-2 mx-4 bg-red"
-			size="lg"
-			color={isDrawing ? 'dark' : 'light'}
-			on:click={groupObjects}>Group</Button
-		>
-		<Button
-			id="group-button"
-			class="!p-2 mx-4 bg-red"
-			size="lg"
-			color={isDrawing ? 'dark' : 'light'}
-			on:click={unGroupObjects}>UnGroup</Button
-		>
-	</div>
 	<div class="w-full grid grid-cols-6 h-full">
 		<div class="flex flex-col p-4 bg-secondary">
 			<div class="grid grid-cols-2 gap-2 rounded-md my-6">
@@ -1169,8 +944,9 @@
 					{data}
 					seatInfo={{
 						canvas: canvas,
-						seatId:$page.params.seatId
+						seatId: $page.params.seatId
 					}}
+					on:closeModal={() => (addSeatModal = false)}
 				/>
 			</Modal>
 			<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
@@ -1178,7 +954,7 @@
 					<span>Name</span>
 					<Input bind:value={itemName} type="text" name="Name" placeholder="Stairs" required />
 				</Label>
-				<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Upload Image</h3>
+				<h3 class="mb-4 text-xl font-medium text-gray-900 dark:">Upload Image</h3>
 				<Dropzone id="dropzone" on:change={onFileSelected} bind:files>
 					{#if !selectedImageToUpload}
 						<svg
@@ -1216,7 +992,7 @@
 				{/if}
 			</Modal>
 			<div class="mt-4">
-				<div class="text-white text-xl my-4">Layers</div>
+				<div class=" text-xl my-4">Layers</div>
 				<ul id="layers" style="height: 30vh " class="overflow-y-auto">
 					{#each objects as object (object.id)}
 						<li
@@ -1402,7 +1178,7 @@
 	</div>
 </div>
 
-<style>
+<style lang="scss">
 	canvas {
 		border: 1px solid black;
 		width: 100% !important;
