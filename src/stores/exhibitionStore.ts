@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 import type { ExhibitionsModel, ExhibitionsModelLang } from '../models/exhibitionModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export const exhibition = writable<ExhibitionsModel[]>([]);
+export const exhibitions = writable<ExhibitionsModel[]>([]);
 
 //Create a new instance of the exhibition
 export const insertData = async (
@@ -16,7 +16,7 @@ export const insertData = async (
 			exhibition_lang_data: exhibitionDataLang
 		});
 
-		exhibition.update((currentData) => {
+		exhibitions.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
 			}
@@ -48,6 +48,7 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 			data: data,
 			count: count
 		};
+		exhibitions.set(data || []);
 		return result;
 	} catch (error) {
 		console.error(error);
@@ -66,7 +67,7 @@ export const deleteData = async (exhibitionId: number, supabase: SupabaseClient)
 			throw error;
 		}
 
-		exhibition.update((currentExhibition) => {
+		exhibitions.update((currentExhibition) => {
 			if (data) {
 				return currentExhibition.filter((item) => item.id !== exhibitionId);
 			}
@@ -97,7 +98,7 @@ export const updateData = async (
 			throw error;
 		}
 
-		exhibition.update((currentExhibition) => {
+		exhibitions.update((currentExhibition) => {
 			if (data) {
 				// Find the index of the updated item
 				const index = currentExhibition.findIndex((item) => item.id === exhibitionObject.id);
