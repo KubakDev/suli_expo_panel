@@ -8,7 +8,7 @@
 
 	export let data;
 	let currentPage = 1;
-	const pageSize = 10;
+	const pageSize = 8;
 	let totalPages = 1;
 
 	// console.log('exhibition//', exhibition);

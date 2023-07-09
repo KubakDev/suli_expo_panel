@@ -146,8 +146,8 @@
 
 			setTimeout(() => {
 				showToast = false;
+				goto('/dashboard/seatServices');
 			}, 1000);
-			goto('/dashboard/seatServices');
 		} else {
 			isFormSubmitted = true;
 			return;

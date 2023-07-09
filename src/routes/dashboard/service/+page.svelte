@@ -8,7 +8,7 @@
 
 	export let data;
 	let currentPage = 1;
-	const pageSize = 5;
+	const pageSize = 8;
 	let serviceData = [];
 	let totalPages = 1;
 
@@ -42,7 +42,7 @@
 	async function handleDelete(serviceId) {
 		try {
 			await deleteData(serviceId, data.supabase);
-			alert('service deleted successfully!');
+			// alert('service deleted successfully!');
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
@@ -270,7 +270,7 @@
 									<div class="flex items-center">
 										<button
 											on:click={() => {
-												goto(`/dashboard/magazine/${item.id}`);
+												goto(`/dashboard/service/${item.id}`);
 											}}
 											class="text-green-400 hover:text-green-600 hover:underline"
 										>

@@ -25,6 +25,7 @@
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 	let isFormSubmitted = false;
+
 	let galleryDataLang: GalleryModelLang[] = [];
 
 	let galleryObject: GalleryModel = {

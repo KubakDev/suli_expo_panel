@@ -149,9 +149,10 @@
 			updateData(carouselData, carouselDataLang, data.supabase);
 
 			setTimeout(() => {
-				showToast = false;
+				showToast = false;	
+				goto('/dashboard/carousel');
 			}, 1000);
-			goto('/dashboard/carousel');
+		
 		} else {
 			isFormSubmitted = true;
 			return;

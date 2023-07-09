@@ -6,10 +6,9 @@
 	import Pagination from '../../../lib/components/pagination/Pagination.svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
-	
 	export let data;
 	let currentPage = 1;
-	const pageSize = 5;
+	const pageSize = 8;
 
 	let publishingData = [];
 	let totalPages = 1;

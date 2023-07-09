@@ -142,9 +142,10 @@
 			updateData(aboutData, aboutDataLang, data.supabase);
 
 			setTimeout(() => {
-				showToast = false;
+				showToast = false;	
+				goto('/dashboard/about');
 			}, 1000);
-			goto('/dashboard/about');
+		
 		} else {
 			isFormSubmitted = true;
 			return;

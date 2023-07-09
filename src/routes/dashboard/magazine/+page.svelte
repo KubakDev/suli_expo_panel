@@ -8,7 +8,7 @@
 
 	export let data;
 	let currentPage = 1;
-	const pageSize = 5;
+	const pageSize = 8;
 
 	let magazineData = [];
 	let totalPages = 1;
