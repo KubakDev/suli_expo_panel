@@ -19,8 +19,7 @@
 
 		newsData = result.data || [];
 
-		news.set(newsData);
-		console.log('news data///////', newsData);
+		// console.log('news data///////', newsData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;

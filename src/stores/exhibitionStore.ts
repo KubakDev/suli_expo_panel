@@ -48,7 +48,7 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 			data: data,
 			count: count
 		};
-		exhibitions.set(data || []);
+		exhibitions.set(data ?? []);
 		return result;
 	} catch (error) {
 		console.error(error);

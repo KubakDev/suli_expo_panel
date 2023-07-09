@@ -14,7 +14,6 @@
 		let result = await getData(data.supabase);
 		contactInfo_Data = result;
 
-		contactData.set(contactInfo_Data);
 		// console.log('contact Information ///////', contactInfo_Data);
 	}
 

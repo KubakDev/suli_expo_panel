@@ -38,6 +38,7 @@ export const getData = async (supabase: SupabaseClient) => {
 			.select('*,contact_info_languages(*)')
 			.order('created_at', { ascending: false });
 
+		contactData.set(data ?? []);
 		return data;
 	} catch (error) {
 		console.error(error);
