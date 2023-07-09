@@ -37,8 +37,7 @@
 		id: 0,
 		images: [],
 		thumbnail: '',
-		exhibition_type: '',
-		created_at: new Date()
+		news_date: new Date()
 	};
 	const id = $page.params.newsId;
 	let images: ImagesModel[] = [];
@@ -77,7 +76,7 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
-					created_at: new Date(result.data?.created_at)
+					news_date: result.data?.news_date
 				};
 
 				// console.log('news data get db thumbnail : ////////', newsData.thumbnail);
@@ -297,6 +296,7 @@
 					{/if}
 				</Label>
 			</div>
+
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
@@ -316,6 +316,13 @@
 							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
 						{/each}
 					</select>
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>Date</span>
+					<Input type="date" bind:value={newsData.news_date} />
 				</Label>
 			</div>
 		</div>
@@ -425,6 +432,7 @@
 											short_description={langData.short_description}
 											thumbnail={newsData.thumbnail}
 											primaryColor="bg-primary"
+											date={newsData.news_date}
 										/>
 									{/if}
 								{/each}

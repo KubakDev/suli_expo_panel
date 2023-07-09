@@ -31,8 +31,7 @@
 		id: 0,
 		thumbnail: '',
 		primaryColor: '#F5EFE7',
-		onPrimaryColor: '#D8C4B6',
-		created_at: new Date()
+		onPrimaryColor: '#D8C4B6'
 	};
 
 	let exhibitionData: ExhibitionModel[] = [];

@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/newsStore';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { NewsModel, NewsModelLang } from '../../../models/newsModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
@@ -34,7 +31,7 @@
 	let newsObject: NewsModel = {
 		images: [],
 		thumbnail: '',
-		created_at: new Date(),
+		news_date: new Date(),
 		id: 0
 	};
 
@@ -165,8 +162,7 @@
 		newsObject = {
 			images: [],
 			thumbnail: '',
-			exhibition_type: '',
-			created_at: new Date(),
+			news_date: new Date(),
 			id: 0
 		};
 
@@ -240,6 +236,13 @@
 							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
 						{/each}
 					</select>
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>Date</span>
+					<Input type="date" bind:value={newsObject.news_date} />
 				</Label>
 			</div>
 		</div>
@@ -348,6 +351,7 @@
 											short_description={langData.short_description}
 											thumbnail={newsObject.thumbnail}
 											primaryColor="bg-primary"
+											date={newsObject.news_date}
 										/>
 									{/if}
 								{/each}

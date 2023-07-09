@@ -42,7 +42,7 @@
 	async function handleDelete(newsId: number) {
 		try {
 			await deleteData(newsId, data.supabase);
-			alert('News deleted successfully!');
+			// alert('News deleted successfully!');
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
