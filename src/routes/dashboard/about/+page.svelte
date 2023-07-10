@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { about, getData } from '../../../stores/aboutStore';
 	import { staff, getDataStaff, deleteData } from '../../../stores/staffStore';
@@ -7,8 +7,8 @@
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
 	export let data;
-	let aboutData = [];
-	let staffData = [];
+	let aboutData: any = [];
+	let staffData: any = [];
 	// console.log('about//', about);
 
 	async function fetchData() {
@@ -17,13 +17,15 @@
 		aboutData = result;
 		staffData = staffResult;
 
+		console.log('About Data', result);
+
 		// console.log('about data///////', aboutData);
 	}
 
 	onMount(fetchData);
 
 	// convert html tag that return it from db to regular text
-	function extractText(html) {
+	function extractText(html: any) {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;
 		return tempElement.textContent || tempElement.innerText || '';
@@ -38,7 +40,7 @@
 	}
 
 	// delete data
-	async function handleDelete(staffId) {
+	async function handleDelete(staffId: number) {
 		try {
 			await deleteData(staffId, data.supabase);
 			// alert('member deleted successfully!');

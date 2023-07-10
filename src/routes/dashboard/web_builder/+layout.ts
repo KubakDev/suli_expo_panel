@@ -2,30 +2,30 @@
 export const load = (async () => {
     let sideBarPage = [
         {
-            "title": "news",
+            "title": "News",
             "url": "/dashboard/web_builder/news",
             "icon": 'svelte-icons-pack/bs/BsTrash'
         },
         {
-            "title": "service",
+            "title": "Service",
             "url": "/dashboard/web_builder/service",
             "icon": 'svelte-icons-pack/bs/BsTrash'
         },
 
         {
-            "title": "exhibition",
+            "title": "Exhibition",
             "url": "/dashboard/web_builder/exhibition",
             "icon": 'svelte-icons-pack/bs/BsTrash'
 
         },
         {
-            "title": "web builder",
+            "title": "Web Builder",
             "url": "/dashboard/web_builder/web",
             "icon": 'svelte-icons-pack/bs/BsTrash'
 
         },
         {
-            "title": "theme color",
+            "title": "Theme Color",
             "url": "/dashboard/web_builder/theme_color",
 
         },
