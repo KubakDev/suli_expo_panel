@@ -23,6 +23,7 @@
 	let seatServicesObject: seatServicesModel = {
 		id: 0,
 		icon: '',
+		price: 0,
 		created_at: new Date()
 	};
 
@@ -107,6 +108,7 @@
 
 		seatServicesObject = {
 			icon: '',
+			price: 0,
 			created_at: new Date(),
 			id: 0
 		};
@@ -141,6 +143,15 @@
 					{#if isFormSubmitted && !seatServicesObject.icon.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
+				</Label>
+			</div>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Enter price</Label>
+					<Input type="number" bind:value={seatServicesObject.price} placeholder="Enter a number" />
+					<p class="text-xs text-gray-500">
+						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
+					</p>
 				</Label>
 			</div>
 		</div>

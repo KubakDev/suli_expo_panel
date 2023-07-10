@@ -7,7 +7,6 @@
 		seatServicesModel,
 		seatServicesModelLang
 	} from '../../../../models/seatServicesModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -27,6 +26,7 @@
 	let seatServicesData: seatServicesModel = {
 		id: 0,
 		icon: '',
+		price: 0,
 		created_at: new Date()
 	};
 	const id = $page.params.seatServicesId;
@@ -42,7 +42,8 @@
 				seatServicesData = {
 					id: result.data?.id,
 					icon: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.icon}`,
-					created_at: new Date(result.data?.created_at)
+					created_at: new Date(result.data?.created_at),
+					price: result.data?.price
 				};
 
 				prevThumbnail = result.data?.icon;
@@ -174,6 +175,16 @@
 					{#if isFormSubmitted && !seatServicesData.icon.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Enter price</Label>
+					<Input type="number" bind:value={seatServicesData.price} placeholder="Enter a number" />
+					<p class="text-xs text-gray-500">
+						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
+					</p>
 				</Label>
 			</div>
 		</div>

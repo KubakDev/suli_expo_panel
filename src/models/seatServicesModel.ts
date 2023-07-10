@@ -3,6 +3,7 @@ import type { LanguageEnum } from './languageEnum';
 export interface seatServicesModel {
 	id: number;
 	icon: string;
+	price?: number;
 	created_at?: Date;
 	seat_services_languages?: seatServicesModelLang[];
 }
