@@ -71,8 +71,8 @@
 						<NavLi
 							class="cursor-pointer"
 							on:click={() => {
-								updateActiveUrl(page.url+"");
-								goto(page.url+"");
+								updateActiveUrl(page.url + '');
+								goto(page.url + '');
 							}}
 							active={activeUrl == page.url}
 							style={activeUrl == page.url ? 'color: primary;' : 'color:#e9ecef'}

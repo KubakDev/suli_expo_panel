@@ -19,7 +19,7 @@
 			color = 'red';
 			open = true;
 		}}
-		class="text-red-400 hover:text-red-600 hover:underline pl-6"
+		class="text-red-600 hover:text-red-400 hover:underline pl-6"
 	>
 		Remove
 	</button>

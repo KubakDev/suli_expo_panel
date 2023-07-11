@@ -45,6 +45,10 @@ export const load = async () => {
 				{
 					title: 'Build News',
 					url: '/dashboard/web_builder/news'
+				},
+				{
+					title: 'Create Theme',
+					url: '/dashboard/web_builder/theme_color'
 				}
 			]
 		},

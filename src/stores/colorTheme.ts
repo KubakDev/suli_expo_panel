@@ -1,22 +1,104 @@
-import { writable } from "svelte/store";
+import { writable } from 'svelte/store';
 import type { ColorTheme } from '../models/colorTheme';
-import { supabaseStore } from "./supabaseStore"
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { supabaseStore } from './supabaseStore';
 
-let colorTheme = writable<ColorTheme[]>([])
+export const theme = writable<ColorTheme[]>([]);
+
+//Create a new instance of the color theme
+export const insertData = async (colorThemeObject: ColorTheme, supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase.from('color_palette').insert(colorThemeObject);
+
+		// console.log(data);
+		theme.update((currentData) => {
+			if (data) {
+				return [...(currentData || []), ...data];
+			}
+			return currentData || [];
+		});
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+//Get all data
+export const getData = async (supabase: SupabaseClient) => {
+	const { data } = await supabase.from('color_palette').select('*').order('id');
+	theme.set(data as ColorTheme[]);
+
+	return data as ColorTheme[];
+};
+
+// Update data by ID
+export const updateData = async (colorThemeObject: ColorTheme, supabase: SupabaseClient) => {
+	try {
+		const responseData = await supabase
+			.from('color_palette')
+			.update({ active: null })
+			.match({ active: true });
+		if (responseData.error) return;
+
+		const { data, error } = await supabase
+			.from('color_palette')
+			.update(colorThemeObject)
+			.match({ id: colorThemeObject.id });
+
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		theme.update((currentData) => {
+			if (data) {
+				return currentData.map((item) =>
+					item.id === colorThemeObject.id ? colorThemeObject : item
+				);
+			}
+			return currentData || [];
+		});
+		getData(supabase);
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+// Delete data by ID
+export const deleteData = async (id: number, supabase: SupabaseClient) => {
+	try {
+		const { error } = await supabase.from('color_palette').delete().eq('id', id);
+
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		theme.update((currentData) => {
+			return currentData.filter((item) => item.id !== id);
+		});
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
 
 export async function getAllThemes() {
-  let supabase;
-  supabaseStore.subscribe(value => {
-    if (!value) {
-      return
-    }
-    supabase = value
-    supabase
-      .from('color_palette')
-      .select('*')
-      .then((res) => {
-        colorTheme.set(res.data as ColorTheme[]);
-      });
-  });
+	let supabase;
+	supabaseStore.subscribe((value) => {
+		if (!value) {
+			return;
+		}
+		supabase = value;
+		supabase
+			.from('color_palette')
+			.select('*')
+			.then((res) => {
+				theme.set(res.data as ColorTheme[]);
+			});
+	});
 }
-export default colorTheme;
+export default theme;
