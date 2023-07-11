@@ -48,7 +48,7 @@
 				</div>
 			</NavBrand>
 			<NavHamburger on:click={toggle} />
-			<NavUl {hidden} class="bg-[#14213d] ">
+			<NavUl {hidden} class="bg-[#14213d]" navDivClass="grid grid-rows-2">
 				{#each data.pages as page}
 					{#if page.children}
 						<div class="text-[#e9ecef] py-4 lg:py-0">
