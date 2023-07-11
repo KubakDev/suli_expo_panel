@@ -50,7 +50,7 @@
 			<NavHamburger btnClass="ml-3 lg:hidden" on:click={toggle} />
 			<NavUl
 				{hidden}
-				divClass="w-full lg:block lg:w-auto p-12"
+				divClass="w-full lg:block lg:w-auto"
 				nonActiveClass="text-gray-900 hover:bg-opacity-30 font-medium hover:bg-blue-400 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
 				activeClass="text-primary-700 font-medium bg-opacity-30 bg-blue-500 lg:bg-transparent lg:text-primary-700"
 				ulClass="bg-[#071229] lg:bg-transparent flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium "
