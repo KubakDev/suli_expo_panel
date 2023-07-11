@@ -41,14 +41,20 @@
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
 		<Navbar style="background-color: #14213d;" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
-				<div class="mr-3 h-6 sm:h-9">
-					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">
+				<div class="mr-3 h-6 sm:h-9 ">
+					<span class="self-center whitespace-nowrap text-xl font-semibold text-white ">
 						Sulaymaniyah Expedition
 					</span>
 				</div>
 			</NavBrand>
-			<NavHamburger on:click={toggle} />
-			<NavUl {hidden} class="bg-[#14213d]" navDivClass="grid grid-rows-2">
+			<NavHamburger btnClass="ml-3 lg:hidden" on:click={toggle} />
+			<NavUl
+				{hidden}
+				divClass="w-full lg:block lg:w-auto"
+				nonActiveClass="text-gray-900 hover:bg-opacity-30 font-medium hover:bg-blue-400 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700"
+				activeClass="text-primary-700 font-medium bg-opacity-30 bg-blue-400 lg:bg-transparent lg:text-primary-700"
+				ulClass="bg-[#071229] lg:bg-transparent flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium "
+			>
 				{#each data.pages as page}
 					{#if page.children}
 						<div class="text-[#e9ecef] py-4 lg:py-0">
@@ -56,7 +62,7 @@
 								<Chevron>{page.title}</Chevron>
 							</button>
 
-							<Dropdown>
+							<Dropdown class="font-medium bg-black">
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
@@ -71,8 +77,8 @@
 						<NavLi
 							class="cursor-pointer"
 							on:click={() => {
-								updateActiveUrl(page.url+"");
-								goto(page.url+"");
+								updateActiveUrl(page.url + '');
+								goto(page.url + '');
 							}}
 							active={activeUrl == page.url}
 							style={activeUrl == page.url ? 'color: primary;' : 'color:#e9ecef'}

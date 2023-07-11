@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { exhibitions, getData, deleteData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
@@ -24,7 +24,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page:number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -34,7 +34,7 @@
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId) {
+	async function handleDelete(exhibitionId:number) {
 		try {
 			await deleteData(exhibitionId, data.supabase);
 			// alert('exhibition deleted successfully!');
@@ -47,7 +47,7 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index:number) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 </script>
