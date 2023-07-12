@@ -1,9 +1,5 @@
+import type { PageLoad } from './$types';
 
-import { supabaseStore } from "../../../../stores/supabaseStore";
-export const prerender = false;
-export const ssr = false;
 export const load = (async () => {
-
-  return {
-  }
-});
+  return {};
+}) satisfies PageLoad;

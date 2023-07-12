@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/newsStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { NewsModel, NewsModelLang } from '../../../../models/newsModel';
@@ -140,7 +138,7 @@
 
 	//get image
 	function getImage() {
-		let result = newsData.images.map((image, i) => {
+		let result = newsData.images?.map((image, i) => {
 			return {
 				id: i,
 				imgurl: image,
@@ -176,11 +174,7 @@
 			}
 		}
 
-		if (!isEmpty(newsData.thumbnail) && newsData.images.length > 0) {
-			isValidNewsObject = true;
-		}
-
-		if (hasDataForLanguage && isValidNewsObject) {
+		if (hasDataForLanguage) {
 			submitted = true;
 			showToast = true;
 			newsData.images = [];
@@ -291,9 +285,6 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					{#if isFormSubmitted && !newsData.thumbnail.trim()}
-						<p class="error-message">Please Upload an Image</p>
-					{/if}
 				</Label>
 			</div>
 

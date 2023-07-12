@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { ColorTheme } from '../models/colorTheme';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { supabaseStore } from './supabaseStore';
 
 export const theme = writable<ColorTheme[]>([]);
 
@@ -85,20 +84,3 @@ export const deleteData = async (id: number, supabase: SupabaseClient) => {
 		throw error;
 	}
 };
-
-export async function getAllThemes() {
-	let supabase;
-	supabaseStore.subscribe((value) => {
-		if (!value) {
-			return;
-		}
-		supabase = value;
-		supabase
-			.from('color_palette')
-			.select('*')
-			.then((res) => {
-				theme.set(res.data as ColorTheme[]);
-			});
-	});
-}
-export default theme;

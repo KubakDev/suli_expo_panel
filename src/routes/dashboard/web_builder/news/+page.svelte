@@ -10,26 +10,28 @@
 		Input
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
-	import colorTheme, { getAllThemes } from '../../../../stores/colorTheme';
-	import type { ColorTheme } from '../../../../models/colorTheme';
+	import { getData, theme } from '../../../../stores/colorTheme';
 	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
-	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
-	import type { NewsModel } from '../../../../models/newsModel';
+	import { ExpoCard, CardType } from 'kubak-svelte-component';
 
 	export let data;
-	onMount(async () => {
-		await getAllThemes();
-	});
-	let currentRowId: number;
+
+	let colorData: any = [];
+
+	async function fetchData() {
+		let result = await getData(data.supabase);
+		colorData = result;
+	}
+
+	onMount(fetchData);
 	let CardComponent: any;
 	let loading = false;
-	$: component = CardComponent;
 	let selectedCard: string = 'MainCard';
-	let selectedColorTheme = $colorTheme[0];
-	let allCards: string[] = [];
+	let selectedColorTheme = $theme[0];
+	let cardShape = CardType.Simple;
+
 	let colors = [
 		'primaryColor',
 		'secondaryColor',
@@ -38,69 +40,14 @@
 		'backgroundColor',
 		'onBackgroundColor'
 	];
+
+	type customColorType = {
+		[key: string]: string;
+	};
+
 	let showCustomColor: boolean = false;
-	let customColors: ColorTheme = {} as ColorTheme;
-	let allNews: NewsModel[] = [];
-	const enum CardType {
-		Home = 'home',
-		News = 'news'
-	}
-	async function getUI() {
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		const response: any = await supabase
-			.from('page_builder')
-			.select(
-				`
-					id,
-			component_type:componentTypeId(
-				id,
-					type
-				),
-				component:componentId(
-					title
-				),
-				color_palette:color_palette(
-				*
-		  )
-			`
-			)
-			.eq('page', CardType.News);
-		selectedColorTheme = response.data[0].color_palette;
-		const cardIndex = response.data.findIndex((item: any) => item.component_type.type === 'card');
-		currentRowId = response.data[cardIndex].id;
-		let card = response.data[cardIndex].component.title;
-		const module = await import('kubak-svelte-component');
-		CardComponent = module[card as keyof typeof module];
-	}
-	async function getAllNews() {
-		const response = await data.supabase.from('news').select(
-			`*,
-			news_languages(*)
-			`
-		);
-		allNews = response.data as NewsModel[];
-		console.log(allNews);
-	}
-	onMount(async () => {
-		await getUI();
-		await getNews(0, 10, data.supabase);
-		await getAllNews();
-		component = CardComponent;
-		const images = import.meta.glob('../../../../../static/images/cards/*.{jpg,jpeg,png,gif}');
-		console.log(images);
-		Object.keys(images).forEach((key) => {
-			const fileName: string = key.split('/').pop()!;
-			allCards.push(fileName.split('.').shift()!);
-		});
-		console.log(allCards);
-	});
-	async function changeCardType(cardType: any) {
-		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
-		selectedCard = cardType;
-		const module = await import('kubak-svelte-component');
-		CardComponent = module[cardType as keyof typeof module];
-	}
+	let customColors: customColorType = {} as customColorType;
+
 	async function publish() {
 		loading = true;
 		let newColorPaletteId = 0;
@@ -153,6 +100,45 @@
 	function changeColorTheme(colorTheme: any) {
 		selectedColorTheme = colorTheme;
 	}
+
+	let cards = [
+		{
+			id: 0,
+			cardName: 'flat',
+			value: CardType.Flat,
+			imgUrl: '../../../../images/cards/flat.png'
+		},
+
+		{
+			id: 1,
+			cardName: 'main',
+			value: CardType.Main,
+			imgUrl: '../../../../images/cards/main.png'
+		},
+		{
+			id: 2,
+			cardName: 'simple',
+			value: CardType.Simple,
+			imgUrl: '../../../../images/cards/simple.png'
+		},
+		{
+			id: 3,
+			cardName: 'square',
+			value: CardType.Square,
+			imgUrl: '../../../../images/cards/square.png'
+		},
+		{
+			id: 4,
+			cardName: 'video',
+			value: CardType.Video,
+			imgUrl: '../../../../images/cards/video.png'
+		}
+	];
+
+	function changeCardType(cardType: any) {
+		cardShape = cardType;
+		// console.log(cardShape);
+	}
 </script>
 
 <div class="flex justify-between">
@@ -164,36 +150,34 @@
 					: selectedColorTheme?.backgroundColor
 			}`}
 		>
-			<div class=" flex justify-center pt-8">
+			<div class=" flex flex-col justify-center items-center pt-8 text-black">
 				<h1
 					style={`color:${
 						Object.keys(customColors).length > 0
 							? customColors.onBackgroundColor
 							: selectedColorTheme?.onBackgroundColor
 					}`}
-					class="text-lg font-bold"
+					class="text-lg font-bold text-center pt-5 pb-10"
 				>
-					NEWS
+					News
 				</h1>
-			</div>
-			<div class="flex flex-wrap justify-center">
-				{#each allNews as newsItem}
-					<div class="p-10 w-[600px]">
-						{#if component}
-							<svelte:component
-								this={component}
-								data={newsItem.news_languages[0]}
-								colors={Object.keys(customColors).length > 0 ? customColors : selectedColorTheme}
-								imageData={{
-									thumbnail: newsItem.thumbnail,
-									imgSource: ImgSourceEnum.remote
-								}}
-							/>
-						{:else}
-							<div />
-						{/if}
-					</div>
-				{/each}
+
+				<div class="grid grid-cols-3 gap-4 px-4">
+					{#each Array(6) as _, index}
+						<ExpoCard
+							cardType={cardShape}
+							title="title"
+							short_description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
+							thumbnail=""
+							primaryColor={Object.keys(customColors).length > 0
+								? customColors.primaryColor
+								: selectedColorTheme?.primaryColor}
+							overlayPrimaryColor={Object.keys(customColors).length > 0
+								? customColors.onPrimaryColor
+								: selectedColorTheme?.onPrimaryColor}
+						/>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -201,7 +185,7 @@
 		class="h-full bg-[#f9fafb] rounded-md flex flex-col items-center justify-between py-5"
 		style="height: calc(100vh - 80px)"
 	>
-		<Sidebar style="width:300px" class="h">
+		<Sidebar style="width:300px">
 			<SidebarWrapper>
 				<SidebarGroup>
 					<SidebarDropdownWrapper label="Cards">
@@ -251,19 +235,14 @@
 								/></svg
 							>
 						</svelte:fragment>
-						<div style="height: auto; width: 100%;">
-							<div class="grid grid-cols-2">
-								{#each allCards as card}
-									<!-- svelte-ignore a11y-click-events-have-key-events -->
-									<div
-										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
-										on:click={() => changeCardType(card)}
-									>
-										<!-- <img src={MainCardImg} alt="image" class="h-24 w-24" /> -->
-										<DynamicImage src="/images/cards/{card}.png" className={`w-[80px] h-[80px]`} />
-										<p class="text-black">{card}</p>
-									</div>
-									<!-- svelte-ignore a11y-click-events-have-key-events -->
+
+						<div class=" text-black">
+							<div class="grid grid-cols-3 gap-2">
+								{#each cards as item, i}
+									<button on:click={() => changeCardType(item.value)}>
+										<img src={item.imgUrl} alt="card type" class="w-32 h-28" />
+										<p>{item.cardName}</p>
+									</button>
 								{/each}
 							</div>
 						</div>
@@ -320,7 +299,7 @@
 						<div style="height: auto; width: 100%;">
 							<div class="grid grid-cols-3">
 								{#if !showCustomColor}
-									{#each $colorTheme as color}
+									{#each $theme as color}
 										<!-- svelte-ignore a11y-click-events-have-key-events -->
 										<div
 											class=" my-2 cursor-pointer h-24 w-20 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
@@ -337,7 +316,7 @@
 									on:click={() => {
 										if (showCustomColor) customColors = {};
 										showCustomColor = !showCustomColor;
-									}}>{showCustomColor ? 'Cancel' : 'Create new Palette'}</Button
+									}}>{showCustomColor ? 'Cancel' : 'Create new Theme'}</Button
 								>
 							</div>
 							{#if showCustomColor}
