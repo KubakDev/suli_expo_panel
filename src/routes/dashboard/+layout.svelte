@@ -62,7 +62,7 @@
 								<Chevron>{page.title}</Chevron>
 							</button>
 
-							<Dropdown class="font-medium bg-black">
+							<Dropdown class="font-medium ">
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
