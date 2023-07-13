@@ -8,41 +8,23 @@
 		Checkbox,
 		Chevron,
 		Dropdown,
-		DropdownItem,
-		Dropzone,
-		Helper,
 		Input,
 		InputAddon,
-		Label,
 		Modal,
-		Search,
-		Spinner,
-		Tooltip
+		Search
 	} from 'flowbite-svelte';
-	import {
-		ChatBubbleBottomCenter,
-		Minus,
-		Pencil,
-		Plus,
-		PlusCircle,
-		Signal,
-		Photo
-	} from 'svelte-heros-v2';
-	import { canvasToDataUrl, canvasToFile } from '$lib/utils/canva_to_image';
+	import { Minus, Plus } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
-	import { alertStore } from '../../../../stores/alertStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
-	import uploadFileStore from '../../../../stores/uploadFileStore';
 	import { page } from '$app/stores';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { getSeatServices, seatServices } from '../../../../stores/seatServicesStore';
 	import Sortable from 'sortablejs';
 	import { EditingMode } from '../../../../models/editingModeModel';
 	import { getImage } from '$lib/utils/getImage';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
-	import { SeatCustomShapes } from '../../../../models/seatUi';
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
+	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 
 	let iconCanvas = new fabric.StaticCanvas('');
 	let addSeatModal = false;
@@ -58,9 +40,7 @@
 	let points: any[] = [];
 	let lines: any[] = [];
 
-	let isDrawing = false; // Whether the mouse is down
-	let originX;
-	let originY;
+	let isDrawing = false;
 	let strokeWidth: null | string = null; // Width of the stroke
 	let strokeColor = '#000000';
 
@@ -68,19 +48,16 @@
 	let itemHeight: null | string = null;
 
 	let gridSize = 20; // size of grid squares in pixels
+	let exhibitionName: undefined | string = undefined;
 
-	let uploadImageModal = false;
 	let images: SeatImageItemModel[] = [];
-	let itemName: string = '';
 	let files: any;
-	let selectedImageToUpload: any;
-	let submittedImage = 'no';
+	let selectedObjectId: number = 0;
 
 	let bottomRightRadius = 0;
 	let bottomLeftRadius = 0;
 	let topLeftRadius = 0;
 	let topRightRadius = 0;
-	let exhibitionName: undefined | string = undefined;
 	let isAddingText = false;
 	let objects: any[] = [];
 
@@ -128,7 +105,6 @@
 		const sortable = Sortable.create(el, {
 			onEnd: (evt: any) => {
 				const id = evt.item.dataset.id;
-				console.log('id ', id);
 				const object = canvas.getObjects().find((obj: any) => obj.id == id);
 				if (object) {
 					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
@@ -136,9 +112,8 @@
 					// Ensure index is within array bounds.
 					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
 					// Move the object to the new position.
-					console.log('newIndex ', newIndex);
+
 					object.moveTo(newIndex);
-					console.log('object ', object);
 					// Rerender canvas.
 					canvas.renderAll();
 					// Update the layers in the UI.
@@ -152,32 +127,16 @@
 		images = $seatImageItemStore;
 	}
 	const adjustCanvasSize = () => {
-		console.log('adjustCanvasSize ', container.offsetWidth);
 		if (canvas) {
 			canvas.setDimensions({
 				width: container.offsetWidth,
 				height: container.offsetHeight
 			});
+			console.log(container.offsetWidth / container.offsetHeight);
 			// Create a rectangle with no fill, only a stroke (border)
 			// Create a rectangle with no fill, only a stroke (border)
 		}
 	};
-	function createCustomRectangle() {
-		var pathData = [
-			`M ${topLeftRadius} 0`,
-			`Q 0 0 0 ${topLeftRadius}`,
-			`L 0 ${200 - bottomRightRadius}`,
-			`Q 0 200 ${bottomLeftRadius} 200`,
-			`L ${200 - topRightRadius} 200`,
-			`Q 200 200 200 ${200 - topRightRadius}`,
-			`L 200 ${topRightRadius}`,
-			`Q 200 0 ${200 - topRightRadius} 0`,
-			`L ${topLeftRadius} 0`,
-			`Z`
-		];
-
-		return new fabric.Path(pathData.join(' '));
-	}
 
 	async function updateCustomRectangle(value: any, type: string) {
 		var activeObject = canvas.getActiveObject();
@@ -272,12 +231,10 @@
 					const data: any = result.data;
 					exhibitionName = data.name;
 					const design = data.design;
-					console.log(data);
 					if (data && data['design']) {
 						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
 					}
 
-					console.log('//////canvas.width', canvas.width);
 					for (var i = 0; i < canvas.width / gridSize; i++) {
 						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
 							stroke: '#ccc',
@@ -325,27 +282,6 @@
 				});
 			}
 		});
-
-		// canvas.on('object:rotating', function (options: fabric.IEvent) {
-		// 	if (!options.target) return;
-		// 	const object = options.target as fabric.Object;
-		// 	object.angle = Math.round(object.angle! / 10) * 10;
-		// });
-
-		// if (typeof window !== 'undefined') {
-		// 	window.addEventListener('resize', adjustCanvasSize);
-		// 	adjustCanvasSize();
-		// }
-
-		// canvas.bringToFront(rect);
-		// canvas.bringToFront(aa);
-		// add a mousedown event listener to the canvas
-		// canvas.on('mouse:down', function (options: any) {
-		// 	console.log(options);
-		// 	canvas.bringToFront(options.target);
-		// 	options.e.preventDefault();
-		// });
-
 		var panning = false;
 		var lastPosX: any, lastPosY: any;
 		let spacePressed = false; // state for tracking space key
@@ -380,8 +316,6 @@
 				isAddingText = false;
 			}
 			if (isDrawing) {
-				console.log('mouse down');
-
 				points.push({ x: pointer.x, y: pointer.y });
 
 				// Draw a line from the last point to this point
@@ -422,7 +356,6 @@
 
 					// Remove temporary lines
 					for (let line of lines) {
-						console.log('removing line');
 						canvas.remove(line);
 					}
 					lines = [];
@@ -430,10 +363,7 @@
 				}
 			}
 
-			console.log('mouse down');
 			if (spacePressed) {
-				console.log('Starting panning');
-
 				panning = true;
 				lastPosX = options.e.clientX;
 				lastPosY = options.e.clientY;
@@ -518,7 +448,6 @@
 		canvas.on('selection:created', function (event: any) {
 			var selectedObject = event.selected[0];
 			const index = canvas.getObjects().indexOf(selectedObject);
-			console.log("The object's layer order is", index);
 			setSelectedObjectValue(selectedObject);
 		});
 		canvas.on('selection:updated', function (event: any) {
@@ -532,14 +461,12 @@
 
 		canvas.on('object:modified', function (event: any) {
 			var modifiedObject = event.target;
-			console.log(modifiedObject);
 			onObjectModified(modifiedObject);
 		});
 
 		window.addEventListener('keydown', function (e) {
 			// keyCode 46 corresponds to the Delete key
 			const selectedObject = canvas.getActiveObject();
-			console.log(e);
 			if (e.key === 'Delete' || e.key === 'Backspace') {
 				removeSelectedObject();
 			}
@@ -564,7 +491,6 @@
 				selectedObject.left += movingPixel;
 				break;
 		}
-		console.log(selectedObject);
 		canvas.renderAll(); // Render changes
 	}
 	function clearAllInput() {
@@ -572,6 +498,7 @@
 		itemWidth = null;
 		itemHeight = null;
 		isAnObjectSelected = false;
+		selectedObjectId = 0;
 	}
 
 	function onObjectModified(selectedObject: any) {
@@ -580,7 +507,6 @@
 		if (selectedObject.scaleX !== 1 || selectedObject.scaleY !== 1) {
 			itemWidth = selectedObject.getScaledWidth();
 			itemHeight = selectedObject.getScaledHeight();
-			console.log(itemWidth, itemHeight);
 			selectedObject.set(
 				{
 					width: parseInt(itemWidth!) / selectedObject.scaleX - parseInt(strokeWidth!),
@@ -592,10 +518,10 @@
 			// selectedObject.set({ scaleX: 1, scaleY: 1 }, { silent: true });
 			canvas.requestRenderAll();
 		}
-		console.log('else');
 	}
 
 	function setSelectedObjectValue(selectedObject: any) {
+		selectedObjectId = selectedObject?.id;
 		strokeColor = selectedObject.stroke;
 		strokeWidth = selectedObject.strokeWidth;
 		fillColor = selectedObject.fill;
@@ -607,148 +533,6 @@
 
 	async function openAddSeatModal() {
 		addSeatModal = true;
-	}
-
-	function addImages() {
-		// alertStore.addAlert('error', 'Error', 'error');
-		uploadImageModal = true;
-	}
-
-	function onShapeSelected(image: SeatImageItemModel | null = null) {
-		let iconCanvas = new fabric.StaticCanvas(null);
-		iconCanvas.setWidth(50);
-		iconCanvas.setHeight(50);
-
-		fabric.Image.fromURL(
-			image?.image_url!,
-			function (img: any) {
-				// Adjust the properties of the image if needed
-				img.set({
-					left: 100,
-					top: 100,
-					scaleX: 0.5,
-					scaleY: 0.5
-				});
-				img.id = new Date().getTime();
-				// Add the image to the canvas
-
-				let scale = Math.max(
-					iconCanvas.getWidth() / img.width!,
-					iconCanvas.getHeight() / img.height!
-				);
-				const newImg = new fabric.Image(img.getElement(), {
-					scaleX: scale,
-					scaleY: scale,
-					left: iconCanvas.getWidth() / 2,
-					top: iconCanvas.getHeight() / 2,
-					originX: 'center',
-					originY: 'center'
-				});
-				iconCanvas.add(newImg);
-				iconCanvas.renderAll();
-
-				let iconDataURL = canvasToDataUrl(iconCanvas);
-				img.icon = iconDataURL;
-
-				canvas.add(img);
-				canvas.renderAll();
-				updateLayers();
-			},
-			{ crossOrigin: 'anonymous' }
-		);
-	}
-
-	async function onFileSelected(e: any) {
-		console.log(e);
-		console.log(files[0]);
-		if (files && files.length > 0) {
-			const file = files[0];
-			const reader = new FileReader();
-
-			reader.onload = (e: ProgressEvent<FileReader>) => {
-				if (e.target) {
-					const base64String = e.target.result as string;
-					selectedImageToUpload = base64String;
-				}
-			};
-
-			reader.readAsDataURL(file);
-		}
-	}
-
-	async function onSubmit() {
-		if (itemName === '') {
-			alertStore.addAlert('error', 'Please enter item name', 'error');
-			return;
-		}
-		submittedImage = 'loading';
-		const url = await uploadFileStore.uploadFile(files[0]);
-		console.log(url);
-		if (url) {
-			const image: SeatImageItemModel = {
-				image_url: url,
-				name: itemName
-			};
-
-			await seatImageItemStore.uploadSeatItem(image);
-			submittedImage = 'submitted';
-			submittedImage = 'no';
-			selectedImageToUpload = null;
-			files = null;
-			itemName = '';
-			uploadImageModal = false;
-			seatImageItemStore.getAllSeatItems();
-		} else {
-			alertStore.addAlert('error', 'Image Url is empty', 'error');
-		}
-	}
-
-	function onItemRadiusChange(value: any, type: string) {
-		const radius = parseInt(value.target.value);
-		let selectedObject = canvas.getObjects().pop();
-
-		// get selected object current radius and put it in a variable for all corners
-		topLeftRadius = selectedObject.get('tl') || 0;
-		topRightRadius = selectedObject.get('tr') || 0;
-		bottomLeftRadius = selectedObject.get('bl') || 0;
-		bottomRightRadius = selectedObject.get('br') || 0;
-		console.log(type);
-		// create a switch statement to check which corner radius to change
-		switch (type) {
-			case 'tl':
-				topLeftRadius = radius;
-				break;
-			case 'tr':
-				topRightRadius = radius;
-				break;
-			case 'bl':
-				bottomLeftRadius = radius;
-				break;
-			case 'br':
-				bottomRightRadius = radius;
-				break;
-			default:
-				break;
-		}
-
-		selectedObject.setOptions({
-			tl: topLeftRadius,
-			tr: topRightRadius,
-			bl: bottomLeftRadius,
-			br: bottomRightRadius,
-			rx: topLeftRadius,
-			aCoords: {
-				tl: { radius: topLeftRadius },
-				tr: { radius: topRightRadius },
-				bl: { radius: bottomLeftRadius },
-				br: { radius: bottomRightRadius }
-			}
-		});
-		console.log(topLeftRadius);
-
-		console.log(selectedObject);
-		// Trigger canvas rendering
-		canvas.renderAll();
 	}
 
 	function updateItemWidth(event: any) {
@@ -882,7 +666,6 @@
 		}
 	}
 	function addPropertiesToShape() {
-		console.log('add properties to shape');
 		let selectedObject = canvas.getActiveObject();
 		selectedObject.set({
 			selectable: !objectDetail.selectable
@@ -921,106 +704,29 @@
 />
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
+<Modal bind:open={addSeatModal} size="sm" autoclose={false} class="w-full">
+	<AddSeatModalComponent
+		{data}
+		seatInfo={{
+			canvas: canvas,
+			seatId: $page.params.seatId
+		}}
+		on:closeModal={() => (addSeatModal = false)}
+	/>
+</Modal>
 <div class="flex flex-col w-full h-full flex-1">
 	<div class="w-full grid grid-cols-6 h-full">
-		<div class="flex flex-col p-4 bg-secondary">
-			<div class="grid grid-cols-2 gap-2 rounded-md my-6">
-				<Button on:click={() => addImages()} class="w-20 h-20 seat-design   rounded cursor-move ">
-					<Plus class="w-full h-full" />
-				</Button>
-				{#each images as image, index}
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div
-						on:click={() => onShapeSelected(image)}
-						class="w-full h-20 seat-design rounded cursor-move"
-					>
-						<img class="w-full h-full object-cover" src={image.image_url} alt={image.name} />
-					</div>
-				{/each}
-			</div>
-			<Modal bind:open={addSeatModal} size="sm" autoclose={false} class="w-full">
-				<AddSeatModalComponent
-					{data}
-					seatInfo={{
-						canvas: canvas,
-						seatId: $page.params.seatId
-					}}
-					on:closeModal={() => (addSeatModal = false)}
-				/>
-			</Modal>
-			<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
-				<Label class="space-y-2">
-					<span>Name</span>
-					<Input bind:value={itemName} type="text" name="Name" placeholder="Stairs" required />
-				</Label>
-				<h3 class="mb-4 text-xl font-medium text-gray-900 dark:">Upload Image</h3>
-				<Dropzone id="dropzone" on:change={onFileSelected} bind:files>
-					{#if !selectedImageToUpload}
-						<svg
-							aria-hidden="true"
-							class="mb-3 w-10 h-10 text-gray-400"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-							xmlns="http://www.w3.org/2000/svg"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-							/></svg
-						>
-						<p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-							<span class="font-semibold">Click to upload</span> or drag and drop
-						</p>
-						<p class="text-xs text-gray-500 dark:text-gray-400">
-							SVG, PNG, JPG or GIF (MAX. 800x400px)
-						</p>
-					{:else}
-						<div class="w-full h-full">
-							<img src={selectedImageToUpload} class="w-full h-full object-cover rounded-md" />
-						</div>
-					{/if}
-				</Dropzone>
-				{#if submittedImage == 'no'}
-					<Button on:click={onSubmit} class="w-full1">Submit</Button>
-				{:else if submittedImage == 'submitted'}
-					<Signal />
-				{:else}
-					<Spinner />
-				{/if}
-			</Modal>
-			<div class="mt-4">
-				<div class=" text-xl my-4">Layers</div>
-				<ul id="layers" style="height: 30vh " class="overflow-y-auto">
-					{#each objects as object (object.id)}
-						<li
-							data-id={object.id}
-							class="layer mb-2 p-1 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 flex justify-start items-center {object.isGroup
-								? 'bg-blue-50'
-								: 'bg-gray-50'}"
-						>
-							<img src={object.icon} alt="Object icon" class="object-icon w-8 h-8" />
-							<div class="w-2 h-full" />
-							<span>{object.type}</span>
-							{#if object.isGroup}
-								<ul class="ml-4">
-									{#each object.children as child (child.id)}
-										<li
-											data-id={child.id}
-											class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 bg-gray-50"
-										>
-											<span>{child.type} {child.id + 1}</span>
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</li>
-					{/each}
-				</ul>
-			</div>
-		</div>
+		<DrawingBar
+			data={{
+				canvas: canvas,
+				files: files,
+				objects: objects,
+				selectedObjectId: selectedObjectId,
+				fabric: fabric
+			}}
+			on:updateLayers={() => updateLayers()}
+		/>
+
 		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
 			<canvas id="canvas" />
 			<div class="absolute bottom-10 right-10 w-40 flex justify-between">

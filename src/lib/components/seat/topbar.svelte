@@ -89,7 +89,9 @@
 				});
 				break;
 		}
+		customShape.id = new Date().getTime();
 		data?.canvas?.add(customShape);
+		dispatch('updateLayers');
 	}
 
 	function selectImageForBackground() {
@@ -110,9 +112,6 @@
 						angle: 0,
 						padding: 10
 					});
-					// set to object to null
-					// image.toObject() = () => null;
-					//image.scale(getRandomNum(0.1, 0.25)).setCoords();
 					const containerWidth = data.container?.offsetWidth;
 
 					const imageRatio = image.width! / image.height!;
@@ -277,7 +276,6 @@
 				Save Seat
 			</Button>
 		</div>
-		<Tooltip placement="bottom">{`remove background image`}</Tooltip>
 	</div>
 </div>
 

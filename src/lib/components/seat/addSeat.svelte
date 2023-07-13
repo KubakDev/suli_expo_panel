@@ -72,7 +72,6 @@
 			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
 		console.log(fileResult.data);
 		if (!fileResult.data) {
-			// alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
 			return;
 		}
 
@@ -82,10 +81,10 @@
 				.from('seat_layout ')
 				.update([
 					{
-						name: 'text',
+						name: seatInfoData.name,
 						design: json,
-						is_active: true,
-						exhibition: 1,
+						is_active: seatInfoData.isActive,
+						exhibition: seatInfoData.exhibition?.id,
 						image_url: fileResult.data.path
 					}
 				])
