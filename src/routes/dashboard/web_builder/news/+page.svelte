@@ -4,32 +4,43 @@
 		SidebarGroup,
 		SidebarWrapper,
 		SidebarDropdownWrapper,
-		Button,
-		Spinner,
 		Label,
 		Input
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import { getData, theme } from '../../../../stores/colorTheme';
-	import { supabaseStore } from '../../../../stores/supabaseStore';
+	import { insertData, getData, theme } from '../../../../stores/colorTheme';
+	import { insertPageData, fetchPageData, pageTheme } from '../../../../stores/pageStore';
+	import { ExpoCard, CardType } from 'kubak-svelte-component';
+	import type { ColorTheme } from '../../../../models/colorTheme';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
-	import { ExpoCard, CardType } from 'kubak-svelte-component';
+	import type { PageData } from '../../../..//models/pageType';
+	import { PageEnum } from '../../../../models/pageEnum';
 
 	export let data;
 
 	let colorData: any = [];
-
+	let componentTypeID = 0;
+	let colorThemeID = 0;
+	let componentData: any = [];
 	async function fetchData() {
 		let result = await getData(data.supabase);
 		colorData = result;
 	}
 
 	onMount(fetchData);
-	let CardComponent: any;
+
 	let loading = false;
-	let selectedCard: string = 'MainCard';
-	let selectedColorTheme = $theme[0];
+
+	let selectedColorTheme = {
+		name: '',
+		primaryColor: '',
+		secondaryColor: '',
+		onPrimaryColor: '',
+		onSecondaryColor: '',
+		backgroundColor: '',
+		onBackgroundColor: ''
+	};
 	let cardShape = CardType.Simple;
 
 	let colors = [
@@ -41,64 +52,30 @@
 		'onBackgroundColor'
 	];
 
-	type customColorType = {
-		[key: string]: string;
+	let showCustomColor: boolean = false;
+
+	let customColors: ColorTheme = {
+		name: '',
+		primaryColor: '',
+		secondaryColor: '',
+		onPrimaryColor: '',
+		onSecondaryColor: '',
+		backgroundColor: '',
+		onBackgroundColor: '',
+		active: null
 	};
 
-	let showCustomColor: boolean = false;
-	let customColors: customColorType = {} as customColorType;
-
-	async function publish() {
+	async function formSubmit() {
 		loading = true;
-		let newColorPaletteId = 0;
-		if (Object.keys(customColors).length > 0) {
-			const newColorData = await $supabaseStore!
-				.from('color_palette')
-				.insert([
-					{
-						name: customColors.name,
-						primaryColor: customColors.primaryColor,
-						secondaryColor: customColors.secondaryColor,
-						onPrimaryColor: customColors.onPrimaryColor,
-						onSecondaryColor: customColors.onSecondaryColor,
-						backgroundColor: customColors.backgroundColor,
-						onBackgroundColor: customColors.onBackgroundColor
-					}
-				])
-				.select();
-			newColorPaletteId = newColorData?.data![0].id;
-		}
-		const { data } = await $supabaseStore!
-			.from('component')
-			.select('id')
-			.eq('title', selectedCard)
-			.single();
-		const response = await $supabaseStore!
-			.from('page_builder')
-			.update({
-				componentId: data?.id,
-				color_palette:
-					Object.keys(customColors).length > 0 ? newColorPaletteId : selectedColorTheme?.id
-			})
-			.eq('id', 2);
-		if (response.error) {
-			addNewToast({
-				type: ToastTypeEnum.ERROR,
-				message: 'an error occured while publishing the page',
-				title: 'Error'
-			});
-		} else {
-			addNewToast({
-				type: ToastTypeEnum.SUCCESS,
-				message: 'page published successfully',
-				title: 'Success'
-			});
-		}
+		await insertData(customColors, data.supabase);
+		fetchData();
+		showCustomColor = !showCustomColor;
+		addNewToast({
+			type: ToastTypeEnum.SUCCESS,
+			message: 'New theme has been created successfully',
+			title: 'Success'
+		});
 		loading = false;
-	}
-
-	function changeColorTheme(colorTheme: any) {
-		selectedColorTheme = colorTheme;
 	}
 
 	let cards = [
@@ -135,10 +112,70 @@
 		}
 	];
 
+	// get component data
+	let supabase = data.supabase;
+
+	async function fetchComponentData() {
+		const { data, error } = await supabase.from('component_type').select('*');
+		if (error) {
+			console.error('Error fetching data:', error.message);
+			return;
+		}
+		componentData = data;
+
+		// console.log(componentData);
+	}
+	onMount(fetchComponentData);
+
+	// insert data into page builder table
+	let pageBuilder: PageData = {
+		id: 0,
+		componentId: 6,
+		componentTypeId: componentTypeID,
+		page: 'news',
+		color_palette_id: colorThemeID
+	};
+
+	async function insertThemePageData() {
+		for (let i = 0; i < componentData.length; i++) {
+			if (componentData[i].type.toLowerCase() === cardShape.toLowerCase()) {
+				pageBuilder.componentTypeId = componentData[i].id;
+				// console.log(pageBuilder);
+				componentTypeID = componentData[i].id;
+				break;
+			}
+		}
+
+		pageBuilder.color_palette_id = selectedColorTheme.id;
+
+		await insertPageData(pageBuilder, data.supabase);
+	}
+
 	function changeCardType(cardType: any) {
 		cardShape = cardType;
 		// console.log(cardShape);
 	}
+
+	function changePageTheme(colorTheme: any) {
+		selectedColorTheme = colorTheme;
+		customColors = {};
+		// console.log('???????????', selectedColorTheme);
+	}
+
+	// get page builder data
+	// get page builder data
+	async function fetchPageBuilderData() {
+		await fetchPageData(PageEnum.NEWS, supabase);
+	}
+
+	onMount(async () => {
+		await fetchPageBuilderData();
+		const unsubscribe = pageTheme.subscribe((data) => {
+			console.log('data:', data);
+		});
+
+		return unsubscribe; // Unsubscribe from the store when the component unmounts
+	});
 </script>
 
 <div class="flex justify-between">
@@ -162,7 +199,7 @@
 					News
 				</h1>
 
-				<div class="grid grid-cols-3 gap-4 px-4">
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 px-4">
 					{#each Array(6) as _, index}
 						<ExpoCard
 							cardType={cardShape}
@@ -300,10 +337,9 @@
 							<div class="grid grid-cols-3">
 								{#if !showCustomColor}
 									{#each $theme as color}
-										<!-- svelte-ignore a11y-click-events-have-key-events -->
 										<div
 											class=" my-2 cursor-pointer h-24 w-20 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
-											on:click={() => changeColorTheme(color)}
+											on:click={() => changePageTheme(color)}
 										>
 											<div class="h-14 w-14" style={`background-color:${color?.primaryColor}`} />
 											<p class="text-sm text-black">{color.name}</p>
@@ -311,14 +347,15 @@
 									{/each}
 								{/if}
 							</div>
-							<div class="py-5 text-center">
-								<Button
+							<div class="py-2 text-center">
+								<button
+									class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 									on:click={() => {
-										if (showCustomColor) customColors = {};
 										showCustomColor = !showCustomColor;
-									}}>{showCustomColor ? 'Cancel' : 'Create new Theme'}</Button
+									}}>{showCustomColor ? 'Cancel' : 'Create new Theme'}</button
 								>
 							</div>
+
 							{#if showCustomColor}
 								<div class="flex items-center justify-between py-2">
 									<Input
@@ -343,18 +380,30 @@
 									{/if}
 								</div>
 							{/if}
+
+							<div class="py-2 text-center">
+								{#if showCustomColor}
+									<button
+										on:click|preventDefault={formSubmit}
+										type="submit"
+										class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+									>
+										Add
+									</button>
+								{/if}
+							</div>
 						</div>
 					</SidebarDropdownWrapper>
 				</SidebarGroup>
 			</SidebarWrapper>
 		</Sidebar>
-		<div>
-			<Button class="w-52" on:click={() => publish()}>
-				{#if loading}
-					<Spinner class="mr-3" size="4" />
-				{/if}
-				Publish</Button
+		<div class="text-black">
+			<button
+				on:click={() => insertThemePageData()}
+				class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 			>
+				Add New Theme
+			</button>
 		</div>
 	</div>
 </div>
