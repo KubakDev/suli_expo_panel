@@ -41,7 +41,7 @@
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
 		<Navbar style="background-color: #14213d;" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
-				<div class="mr-3 h-6 sm:h-9 ">
+				<div class="mr-3 h-6 sm:h-9">
 					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">
 						Sulaymaniyah Expedition
 					</span>
