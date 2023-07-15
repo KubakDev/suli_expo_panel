@@ -7,7 +7,6 @@ export interface ExhibitionsModel {
 	thumbnail: string;
 	country_number: number;
 	company_number: number;
-	video_youtube_id: string;
 	exhibition_type: string;
 	exhibition_date: Date;
 	exhibition_languages?: ExhibitionsModelLang[];
@@ -15,6 +14,7 @@ export interface ExhibitionsModel {
 
 export interface ExhibitionsModelLang {
 	id?: number;
+	video_youtube_link: string;
 	title: string;
 	description: string;
 	language: LanguageEnum;

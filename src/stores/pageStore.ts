@@ -25,17 +25,34 @@ export const insertPageData = async (PageTypeObject: PageData, supabase: Supabas
 	}
 };
 
-export const fetchPageData = async (pageName: PageEnum, supabase: SupabaseClient) => {
+//update page Data by id
+export const updatePageData = async (pageName: PageEnum, supabase: SupabaseClient) => {
 	try {
-		const { data, error } = await supabase.from('page_builder').select('*').eq('page', pageName);
+		console.log('first');
+		const { data, error } = await supabase
+			.from('page_builder')
+			.update('page_builder')
+			.eq('page', pageName);
+
 		if (error) {
-			console.error('Error fetching page data:', error.message);
-			return;
+			throw error;
 		}
 
-		// console.log('/////////??????', data);
+		pageTheme.update((currentData) => {
+			if (data) {
+				// Find the index of the updated item
+				const index = currentData.findIndex((item) => item.id === PageDataID.id);
 
-		pageTheme.set(data || []);
+				// Create a new array with the updated item
+				const updatedData = [...currentData.slice(0, index), data, ...currentData.slice(index + 1)];
+
+				return updatedData;
+			}
+
+			return currentData;
+		});
+
+		return data;
 	} catch (error) {
 		console.error(error);
 		throw error;

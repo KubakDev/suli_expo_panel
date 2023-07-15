@@ -40,17 +40,7 @@ export const load = async () => {
 		},
 		{
 			title: 'Web Builder',
-			url: '/dashboard/web_builder',
-			children: [
-				{
-					title:'Build News',
-					url: '/dashboard/web_builder/news'
-				},
-				{
-					title: 'Create Theme',
-					url: '/dashboard/web_builder/theme_color'
-				}
-			]
+			url: '/dashboard/web_builder/buildThemeColor'
 		},
 		{
 			title: 'Media',

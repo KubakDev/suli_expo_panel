@@ -9,7 +9,7 @@
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { insertData, getData, theme } from '../../../../stores/colorTheme';
-	import { insertPageData, fetchPageData, pageTheme } from '../../../../stores/pageStore';
+	import { insertPageData, pageTheme, updatePageData } from '../../../../stores/pageStore';
 	import { ExpoCard, CardType } from 'kubak-svelte-component';
 	import type { ColorTheme } from '../../../../models/colorTheme';
 	import { addNewToast } from '../../../../stores/toastStore';
@@ -23,12 +23,6 @@
 	let componentTypeID = 0;
 	let colorThemeID = 0;
 	let componentData: any = [];
-	async function fetchData() {
-		let result = await getData(data.supabase);
-		colorData = result;
-	}
-
-	onMount(fetchData);
 
 	let loading = false;
 
@@ -41,7 +35,23 @@
 		backgroundColor: '',
 		onBackgroundColor: ''
 	};
-	let cardShape = CardType.Simple;
+
+	let pageBuilder: PageData = {
+		id: 0,
+		componentId: 0,
+		componentTypeId: 0,
+		page: '',
+		color_palette_id: 0
+	};
+
+	async function fetchData() {
+		let result = await getData(data.supabase);
+		colorData = result;
+	}
+
+	onMount(fetchData);
+
+	let cardShape: any = null;
 
 	let colors = [
 		'primaryColor',
@@ -128,13 +138,6 @@
 	onMount(fetchComponentData);
 
 	// insert data into page builder table
-	let pageBuilder: PageData = {
-		id: 0,
-		componentId: 6,
-		componentTypeId: componentTypeID,
-		page: 'news',
-		color_palette_id: colorThemeID
-	};
 
 	async function insertThemePageData() {
 		for (let i = 0; i < componentData.length; i++) {
@@ -162,20 +165,49 @@
 		// console.log('???????????', selectedColorTheme);
 	}
 
-	// get page builder data
-	// get page builder data
-	async function fetchPageBuilderData() {
-		await fetchPageData(PageEnum.NEWS, supabase);
+	async function getPageData() {
+		await data.supabase
+			.from('page_builder')
+			.select('*,color_palette(*),component_type(*),component(*)')
+			.eq('page', PageEnum.NEWS)
+			.single()
+			.then((result) => {
+				pageBuilder = {
+					id: result.data?.id,
+					componentId: result.data?.componentId,
+					componentTypeId: result.data?.componentTypeId,
+					page: PageEnum.NEWS,
+					color_palette_id: result.data?.color_palette_id
+				};
+
+				customColors = {
+					name: result.data?.name,
+					primaryColor: result.data?.color_palette?.primaryColor,
+					secondaryColor: result.data?.color_palette?.secondaryColor,
+					onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
+					onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
+					backgroundColor: result.data?.color_palette?.backgroundColor,
+					onBackgroundColor: result.data?.color_palette?.onBackgroundColor
+				};
+
+				cardShape = result.data?.component_type?.type;
+
+				pageBuilder = { ...pageBuilder };
+				customColors = { ...customColors };
+
+				console.log(result.data);
+				console.log('///', cardShape);
+				console.log(result.data);
+			});
 	}
 
-	onMount(async () => {
-		await fetchPageBuilderData();
-		const unsubscribe = pageTheme.subscribe((data) => {
-			console.log('data:', data);
-		});
+	onMount(getPageData);
 
-		return unsubscribe; // Unsubscribe from the store when the component unmounts
-	});
+	async function update() {
+		console.log(pageBuilder);
+
+		// updatePageData(pageBuilder.page, supabase);
+	}
 </script>
 
 <div class="flex justify-between">
@@ -404,6 +436,15 @@
 			>
 				Add New Theme
 			</button>
+
+			<div class="text-black py-5">
+				<button
+					on:click={() => update()}
+					class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+				>
+					Update Page Theme
+				</button>
+			</div>
 		</div>
 	</div>
 </div>

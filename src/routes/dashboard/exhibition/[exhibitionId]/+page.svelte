@@ -39,7 +39,6 @@
 		thumbnail: '',
 		country_number: 0,
 		company_number: 0,
-		video_youtube_id: '',
 		exhibition_type: '',
 		exhibition_date: new Date()
 	};
@@ -65,7 +64,6 @@
 					exhibition_type: result.data?.exhibition_type,
 					company_number: result.data?.company_number,
 					country_number: result.data?.country_number,
-					video_youtube_id: result.data?.video_youtube_id,
 					exhibition_date: new Date(result.data?.exhibition_date)
 				};
 
@@ -82,6 +80,7 @@
 					exhibitionDataLang.push({
 						title: exhibitionLang?.title ?? '',
 						description: exhibitionLang?.description ?? '',
+						video_youtube_link: exhibitionLang?.video_youtube_link ?? '',
 
 						language:
 							exhibitionLang?.language ??
@@ -171,13 +170,16 @@
 		for (let lang of exhibitionDataLang) {
 			const title = lang.title.trim();
 			const shortDescription = lang.description.trim();
+			const link = lang.video_youtube_link.trim();
 
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
-			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+			const isLinkEmpty = isEmpty(link);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
 				// At least one field is not empty
 				hasDataForLanguage = true;
-				if (isTitleEmpty || isShortDescriptionEmpty) {
+				if (isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -190,8 +192,7 @@
 			exhibitionsData.images.length > 0 &&
 			exhibitionsData.country_number > 0 &&
 			exhibitionsData.company_number > 0 &&
-			!isEmpty(exhibitionsData.exhibition_type) &&
-			!isEmpty(exhibitionsData.video_youtube_id)
+			!isEmpty(exhibitionsData.exhibition_type)
 		) {
 			isValidExhibitionObject = true;
 		}
@@ -356,27 +357,15 @@
 		</div>
 
 		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
-			<div class="col-span-3">
+			<div class="col-span-4">
 				<Label for="default-input" class="block mb-2">Exhibition Type</Label>
 				<Input bind:value={exhibitionsData.exhibition_type} placeholder="Enter Exhibition Type" />
 				{#if isFormSubmitted && !exhibitionsData.exhibition_type.trim()}
 					<p class="error-message">Please enter an exhibition type</p>
 				{/if}
 			</div>
-			<div class="col-span-3">
-				<Label class="space-y-2 mb-2">
-					<span>Link for youtube video</span>
-					<Input
-						type="text"
-						bind:value={exhibitionsData.video_youtube_id}
-						placeholder="Enter a link"
-					/>
-					{#if isFormSubmitted && !exhibitionsData.video_youtube_id}
-						<p class="error-message">Please enter a link for youtube video</p>
-					{/if}
-				</Label>
-			</div>
-			<div class="col-span-1">
+
+			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Country No</span>
 					<Input
@@ -389,7 +378,7 @@
 					{/if}
 				</Label>
 			</div>
-			<div class="col-span-1">
+			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Company No</span>
 					<Input
@@ -431,6 +420,21 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
+
+									<div class="col-span-3">
+										<Label class="space-y-2 mb-2">
+											<span>Link for youtube video</span>
+											<Input
+												type="text"
+												bind:value={langData.video_youtube_link}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.video_youtube_link}
+												<p class="error-message">Please enter a link for youtube video</p>
+											{/if}
+										</Label>
+									</div>
+
 									<div class="pb-10">
 										<Label for="first_name" class="mb-2">Exhibition Title</Label>
 

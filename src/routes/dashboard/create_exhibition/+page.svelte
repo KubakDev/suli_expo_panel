@@ -31,7 +31,6 @@
 		thumbnail: '',
 		country_number: 0,
 		company_number: 0,
-		video_youtube_id: '',
 		exhibition_type: '',
 		exhibition_date: new Date(),
 		id: 0
@@ -44,6 +43,7 @@
 	//for swapping between language
 	for (let i = 0; i < languageEnumLength; i++) {
 		exhibitionsDataLang.push({
+			video_youtube_link: '',
 			title: '',
 			description: '',
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
@@ -85,14 +85,16 @@
 		for (let lang of exhibitionsDataLang) {
 			const title = lang.title.trim();
 			const shortDescription = lang.description.trim();
+			const link = lang.video_youtube_link.trim();
 
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLinkEmpty = isEmpty(link);
 
-			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
 				// All fields are non-empty for this language
 				hasDataForLanguage = true;
-				if (isTitleEmpty || isShortDescriptionEmpty) {
+				if (isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -106,8 +108,7 @@
 			sliderImagesFile.length > 0 &&
 			!isEmpty(exhibitionsObject.company_number) &&
 			!isEmpty(exhibitionsObject.country_number) &&
-			!isEmpty(exhibitionsObject.exhibition_type) &&
-			!isEmpty(exhibitionsObject.video_youtube_id)
+			!isEmpty(exhibitionsObject.exhibition_type)
 		) {
 			isValidExhibitionsObject = true;
 		}
@@ -174,7 +175,6 @@
 			thumbnail: '',
 			country_number: 0,
 			company_number: 0,
-			video_youtube_id: '',
 			exhibition_type: '',
 			exhibition_date: new Date(),
 			id: 0
@@ -183,6 +183,7 @@
 		exhibitionsDataLang = []; // Resetting exhibitionDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
 			exhibitionsDataLang.push({
+				video_youtube_link: '',
 				title: '',
 				description: '',
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
@@ -236,27 +237,15 @@
 		</div>
 
 		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
-			<div class="col-span-3">
+			<div class="col-span-4">
 				<Label for="default-input" class="block mb-2">Exhibition Type</Label>
 				<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" />
 				{#if isFormSubmitted && !exhibitionsObject.exhibition_type.trim()}
 					<p class="error-message">Please enter an exhibition type</p>
 				{/if}
 			</div>
-			<div class="col-span-3">
-				<Label class="space-y-2 mb-2">
-					<span>Link for youtube video</span>
-					<Input
-						type="text"
-						bind:value={exhibitionsObject.video_youtube_id}
-						placeholder="Enter a link"
-					/>
-					{#if isFormSubmitted && !exhibitionsObject.video_youtube_id}
-						<p class="error-message">Please enter a link for youtube video</p>
-					{/if}
-				</Label>
-			</div>
-			<div class="col-span-1">
+
+			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Country No</span>
 					<Input
@@ -269,7 +258,7 @@
 					{/if}
 				</Label>
 			</div>
-			<div class="col-span-1">
+			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Company No</span>
 					<Input
@@ -308,6 +297,20 @@
 											{/if}
 										</h1>
 										<p>for other language navigate between tabs</p>
+									</div>
+
+									<div class="pb-10">
+										<Label class="space-y-2 mb-2">
+											<span>Link for youtube video</span>
+											<Input
+												type="text"
+												bind:value={langData.video_youtube_link}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.video_youtube_link}
+												<p class="error-message">Please enter a link for youtube video</p>
+											{/if}
+										</Label>
 									</div>
 									<div class="pb-10">
 										<Label for="title" class="mb-2">Exhibition Title</Label>
