@@ -44,6 +44,7 @@
 	//for swapping between language
 	for (let i = 0; i < languageEnumLength; i++) {
 		exhibitionsDataLang.push({
+			story: '',
 			video_youtube_link: '',
 			title: '',
 			description: '',
@@ -84,18 +85,20 @@
 		let isValidExhibitionsObject = false;
 
 		for (let lang of exhibitionsDataLang) {
+			const storyData = lang.story.trim();
 			const title = lang.title.trim();
 			const shortDescription = lang.description.trim();
 			const link = lang.video_youtube_link.trim();
 
+			const isStoryIsEmpty = isEmpty(storyData);
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
 			const isLinkEmpty = isEmpty(link);
 
-			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
+			if (!isStoryIsEmpty || !isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
 				// All fields are non-empty for this language
 				hasDataForLanguage = true;
-				if (isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
+				if (isStoryIsEmpty || isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -124,7 +127,7 @@
 
 		// Upload exhibition thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		exhibitionsObject.thumbnail = response.data?.path;
+		exhibitionsObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
 		for (let pdf of pdfFiles) {
@@ -185,6 +188,7 @@
 		exhibitionsDataLang = []; // Resetting exhibitionDataLang to an empty array
 		for (let i = 0; i < languageEnumLength; i++) {
 			exhibitionsDataLang.push({
+				story: '',
 				video_youtube_link: '',
 				title: '',
 				description: '',
@@ -333,6 +337,20 @@
 											<p class="error-message">Please enter a title</p>
 										{/if}
 									</div>
+									<div class="pb-10">
+										<Label for="story" class="mb-2">Exhibition Story</Label>
+										<Textarea
+											placeholder="Enter story"
+											rows="3"
+											bind:value={langData.story}
+											id="story"
+											name="story"
+										/>
+										{#if isFormSubmitted && !langData.story.trim()}
+											<p class="error-message">Please enter a story</p>
+										{/if}
+									</div>
+
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">Short description</Label>
 										<Textarea

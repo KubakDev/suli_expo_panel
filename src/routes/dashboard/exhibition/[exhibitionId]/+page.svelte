@@ -80,6 +80,7 @@
 					);
 					const exhibitionLang = result.data?.exhibition_languages[index];
 					exhibitionDataLang.push({
+						story: exhibitionLang?.story ?? '',
 						title: exhibitionLang?.title ?? '',
 						description: exhibitionLang?.description ?? '',
 						video_youtube_link: exhibitionLang?.video_youtube_link ?? '',
@@ -170,18 +171,20 @@
 		let isValidExhibitionObject = false;
 
 		for (let lang of exhibitionDataLang) {
+			const storyData = lang.story.trim();
 			const title = lang.title.trim();
 			const shortDescription = lang.description.trim();
 			const link = lang.video_youtube_link.trim();
 
+			const isStoryIsEmpty = isEmpty(storyData);
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
 			const isLinkEmpty = isEmpty(link);
 
-			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
+			if (!isStoryIsEmpty || !isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
 				// At least one field is not empty
 				hasDataForLanguage = true;
-				if (isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
+				if (isStoryIsEmpty || isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -455,6 +458,19 @@
 										/>
 										{#if !langData.title.trim()}
 											<p class="error-message">Please enter a title</p>
+										{/if}
+									</div>
+									<div class="pb-10">
+										<Label for="textarea-id" class="mb-2">story</Label>
+										<Textarea
+											placeholder="Enter a story"
+											rows="4"
+											bind:value={langData.story}
+											id="story"
+											name="story"
+										/>
+										{#if !langData.story.trim()}
+											<p class="error-message">Please enter a story</p>
 										{/if}
 									</div>
 									<div class="pb-10">

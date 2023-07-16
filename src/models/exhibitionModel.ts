@@ -15,6 +15,7 @@ export interface ExhibitionsModel {
 
 export interface ExhibitionsModelLang {
 	id?: number;
+	story: string;
 	video_youtube_link: string;
 	title: string;
 	description: string;
