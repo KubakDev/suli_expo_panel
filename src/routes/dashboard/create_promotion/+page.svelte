@@ -19,7 +19,6 @@
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let sliderImagesFile: File[] = [];
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let promoDataLang: PromoModelLang[] = [];

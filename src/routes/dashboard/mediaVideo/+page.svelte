@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { vedioStore, getData, deleteData } from '../../../stores/media_VideoStore';
 	import { goto } from '$app/navigation';
@@ -10,12 +10,10 @@
 	let currentPage = 1;
 	const pageSize = 8;
 
-	let mediaVideoData = [];
 	let totalPages = 1;
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-		mediaVideoData = result.data;
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -25,7 +23,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -35,7 +33,7 @@
 	}
 
 	// delete data
-	async function handleDelete(mediaVideoId) {
+	async function handleDelete(mediaVideoId: any) {
 		try {
 			await deleteData(mediaVideoId, data.supabase);
 
@@ -48,12 +46,12 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 
 	// convert html tag that return it from db to regular text
-	function extractText(html) {
+	function extractText(html: any) {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;
 		return tempElement.textContent || tempElement.innerText || '';

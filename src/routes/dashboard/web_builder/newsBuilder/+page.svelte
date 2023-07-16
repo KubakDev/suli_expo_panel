@@ -9,7 +9,7 @@
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
 	import { insertData, getData, theme } from '../../../../stores/colorTheme';
-	import { insertPageData, pageTheme, updatePageData } from '../../../../stores/pageStore';
+	import { pageTheme, updatePageData } from '../../../../stores/pageStore';
 	import { ExpoCard, CardType } from 'kubak-svelte-component';
 	import type { ColorTheme } from '../../../../models/colorTheme';
 	import { addNewToast } from '../../../../stores/toastStore';
@@ -20,13 +20,12 @@
 	export let data;
 
 	let colorData: any = [];
-	let componentTypeID = 0;
-	let colorThemeID = 0;
 	let componentData: any = [];
 
 	let loading = false;
 
 	let selectedColorTheme = {
+		id: 0,
 		name: '',
 		primaryColor: '',
 		secondaryColor: '',
@@ -44,9 +43,11 @@
 		color_palette_id: 0
 	};
 
+	// get color_palette data
 	async function fetchData() {
 		let result = await getData(data.supabase);
 		colorData = result;
+		// console.log('????', colorData);
 	}
 
 	onMount(fetchData);
@@ -126,33 +127,19 @@
 	let supabase = data.supabase;
 
 	async function fetchComponentData() {
-		const { data, error } = await supabase.from('component_type').select('*');
-		if (error) {
-			console.error('Error fetching data:', error.message);
-			return;
-		}
-		componentData = data;
-
-		// console.log(componentData);
-	}
-	onMount(fetchComponentData);
-
-	// insert data into page builder table
-
-	async function insertThemePageData() {
-		for (let i = 0; i < componentData.length; i++) {
-			if (componentData[i].type.toLowerCase() === cardShape.toLowerCase()) {
-				pageBuilder.componentTypeId = componentData[i].id;
-				// console.log(pageBuilder);
-				componentTypeID = componentData[i].id;
-				break;
+		try {
+			const { data, error } = await supabase.from('component_type').select('*');
+			if (error) {
+				console.error('Error fetching data:', error.message);
+				return;
 			}
+			componentData = data;
+		} catch (error) {
+			console.error('Error fetching component data:', error);
 		}
-
-		pageBuilder.color_palette_id = selectedColorTheme.id;
-
-		await insertPageData(pageBuilder, data.supabase);
 	}
+
+	onMount(fetchComponentData);
 
 	function changeCardType(cardType: any) {
 		cardShape = cardType;
@@ -162,51 +149,55 @@
 	function changePageTheme(colorTheme: any) {
 		selectedColorTheme = colorTheme;
 		customColors = {};
-		// console.log('???????????', selectedColorTheme);
+		// console.log('??????????? selected color theme', selectedColorTheme);
 	}
 
 	async function getPageData() {
-		await data.supabase
+		const result = await data.supabase
 			.from('page_builder')
 			.select('*,color_palette(*),component_type(*),component(*)')
 			.eq('page', PageEnum.NEWS)
-			.single()
-			.then((result) => {
-				pageBuilder = {
-					id: result.data?.id,
-					componentId: result.data?.componentId,
-					componentTypeId: result.data?.componentTypeId,
-					page: PageEnum.NEWS,
-					color_palette_id: result.data?.color_palette_id
-				};
+			.single();
 
-				customColors = {
-					name: result.data?.name,
-					primaryColor: result.data?.color_palette?.primaryColor,
-					secondaryColor: result.data?.color_palette?.secondaryColor,
-					onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
-					onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
-					backgroundColor: result.data?.color_palette?.backgroundColor,
-					onBackgroundColor: result.data?.color_palette?.onBackgroundColor
-				};
+		if (result) {
+			pageBuilder = {
+				id: result.data?.id,
+				componentId: result.data?.componentId,
+				componentTypeId: result.data?.componentTypeId,
+				page: PageEnum.NEWS,
+				color_palette_id: result.data?.color_palette_id
+			};
 
-				cardShape = result.data?.component_type?.type;
+			customColors = {
+				name: result.data?.name,
+				primaryColor: result.data?.color_palette?.primaryColor,
+				secondaryColor: result.data?.color_palette?.secondaryColor,
+				onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
+				onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
+				backgroundColor: result.data?.color_palette?.backgroundColor,
+				onBackgroundColor: result.data?.color_palette?.onBackgroundColor
+			};
 
-				pageBuilder = { ...pageBuilder };
-				customColors = { ...customColors };
+			cardShape = result.data?.component_type?.type;
 
-				console.log(result.data);
-				console.log('///', cardShape);
-				console.log(result.data);
-			});
+			pageBuilder = { ...pageBuilder };
+			customColors = { ...customColors };
+
+			// Update the pageTheme store with the fetched data
+			pageTheme.set([pageBuilder]);
+		}
 	}
 
 	onMount(getPageData);
 
 	async function update() {
-		console.log(pageBuilder);
-
-		// updatePageData(pageBuilder.page, supabase);
+		const componentID = componentData.find((item: any) => item.type === cardShape)?.id || null;
+		// console.log('??????? componentData ', componentData);
+		pageBuilder.color_palette_id = selectedColorTheme?.id;
+		pageBuilder.componentTypeId = componentID;
+		console.log('update', pageBuilder);
+		await updatePageData(pageBuilder, data.supabase);
+		alert('Updated');
 	}
 </script>
 
@@ -430,13 +421,6 @@
 			</SidebarWrapper>
 		</Sidebar>
 		<div class="text-black">
-			<button
-				on:click={() => insertThemePageData()}
-				class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-			>
-				Add New Theme
-			</button>
-
 			<div class="text-black py-5">
 				<button
 					on:click={() => update()}

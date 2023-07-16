@@ -128,7 +128,7 @@
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		galleryObject.thumbnail = response.data?.path;
+		galleryObject.thumbnail = response.data?.path || '';
 
 		if (sliderImagesFile.length > 0) {
 			for (let image of sliderImagesFile) {

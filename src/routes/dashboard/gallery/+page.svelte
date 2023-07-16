@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { gallery, getData, deleteData } from '../../../stores/galleryStore';
 	import { goto } from '$app/navigation';
@@ -31,7 +31,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -41,7 +41,7 @@
 	}
 
 	// delete data
-	async function handleDelete(galleryId) {
+	async function handleDelete(galleryId: any) {
 		try {
 			await deleteData(galleryId, data.supabase);
 			if (currentPage > totalPages) {
@@ -53,12 +53,12 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 
 	// convert html tag that return it from db to regular text
-	function extractText(html) {
+	function extractText(html: any) {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;
 		return tempElement.textContent || tempElement.innerText || '';

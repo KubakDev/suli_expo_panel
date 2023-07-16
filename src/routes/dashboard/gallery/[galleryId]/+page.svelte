@@ -191,7 +191,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				galleryData.thumbnail = response.data?.path;
+				galleryData.thumbnail = response.data?.path || '';
 			} else {
 				galleryData.thumbnail = prevThumbnail;
 			}

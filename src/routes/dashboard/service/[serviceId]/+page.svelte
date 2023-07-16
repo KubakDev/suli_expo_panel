@@ -27,7 +27,6 @@
 	let serviceData: ServiceModel = {
 		id: 0,
 		thumbnail: '',
-		exhibition_type: '',
 		primaryColor: '',
 		onPrimaryColor: ''
 	};
@@ -55,7 +54,7 @@
 
 	const shajwan = { x: 1 };
 
-	function test(param) {
+	function test(param: any) {
 		return param.x++;
 	}
 	console.log(test(shajwan));
@@ -165,7 +164,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				serviceData.thumbnail = response.data?.path;
+				serviceData.thumbnail = response.data?.path || '';
 			} else {
 				serviceData.thumbnail = prevThumbnail;
 			}

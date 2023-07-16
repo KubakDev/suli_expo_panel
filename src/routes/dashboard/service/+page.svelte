@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { service, getData, deleteData } from '../../../stores/serviceStore';
 	import { goto } from '$app/navigation';
@@ -9,17 +9,12 @@
 	export let data;
 	let currentPage = 1;
 	const pageSize = 8;
-	let serviceData = [];
 	let totalPages = 1;
 
 	// console.log('service//', service);
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-
-		serviceData = result.data;
-
-		// console.log('service data///////', serviceData);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -29,7 +24,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -39,7 +34,7 @@
 	}
 
 	// delete data
-	async function handleDelete(serviceId) {
+	async function handleDelete(serviceId: any) {
 		try {
 			await deleteData(serviceId, data.supabase);
 			// alert('service deleted successfully!');
@@ -52,7 +47,7 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 </script>

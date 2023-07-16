@@ -138,7 +138,7 @@
 
 		// Upload publishing thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		publishingObject.thumbnail = response.data?.path;
+		publishingObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
 		for (let pdf of pdfFiles) {

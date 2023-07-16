@@ -107,7 +107,7 @@
 		showToast = true;
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 		console.log(response);
-		carouselObject.image = response.data?.path;
+		carouselObject.image = response.data?.path || '';
 		insertData(carouselObject, carouselDataLang, data.supabase);
 
 		resetForm();

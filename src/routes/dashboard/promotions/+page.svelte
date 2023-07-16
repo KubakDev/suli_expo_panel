@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { promotion, getData, deleteData } from '../../../stores/promoStore';
 	import { goto } from '$app/navigation';
@@ -10,12 +10,10 @@
 	let currentPage = 1;
 	const pageSize = 8;
 
-	let promoData = [];
 	let totalPages = 1;
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-		promoData = result.data;
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -25,7 +23,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -35,7 +33,7 @@
 	}
 
 	// delete data
-	async function handleDelete(promoId) {
+	async function handleDelete(promoId: any) {
 		try {
 			await deleteData(promoId, data.supabase);
 
@@ -48,7 +46,7 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 </script>

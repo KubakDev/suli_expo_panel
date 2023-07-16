@@ -224,7 +224,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				magazineData.thumbnail = response.data?.path;
+				magazineData.thumbnail = response.data?.path || '';
 			} else {
 				magazineData.thumbnail = prevThumbnail;
 			}

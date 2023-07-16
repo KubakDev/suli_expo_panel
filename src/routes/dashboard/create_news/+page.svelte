@@ -145,7 +145,7 @@
 		// console.log('newsObject ::::', newsObject);
 
 		// console.log(response);
-		newsObject.thumbnail = response.data?.path;
+		newsObject.thumbnail = response.data?.path || '';
 
 		insertData(newsObject, newsDataLang, data.supabase);
 

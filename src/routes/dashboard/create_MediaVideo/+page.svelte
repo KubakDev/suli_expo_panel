@@ -117,7 +117,7 @@
 
 		// Upload video thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		videoObjectData.thumbnail = response.data?.path;
+		videoObjectData.thumbnail = response.data?.path || '';
 
 		// Insert data into Supabase
 		insertData(videoObjectData, videoDataLang, data.supabase);

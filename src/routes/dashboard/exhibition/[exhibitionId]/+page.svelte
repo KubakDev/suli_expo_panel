@@ -24,7 +24,6 @@
 	let existingImages: string[] = [];
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
-	let pdfFiles: File[] = [];
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
@@ -215,7 +214,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				exhibitionsData.thumbnail = response.data?.path;
+				exhibitionsData.thumbnail = response.data?.path || '';
 			} else {
 				exhibitionsData.thumbnail = prevThumbnail;
 			}

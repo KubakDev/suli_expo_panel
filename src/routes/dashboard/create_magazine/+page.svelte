@@ -138,7 +138,7 @@
 
 		// Upload magazine thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		magazineObject.thumbnail = response.data?.path;
+		magazineObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
 		for (let pdf of pdfFiles) {

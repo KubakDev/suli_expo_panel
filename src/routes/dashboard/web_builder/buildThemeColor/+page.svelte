@@ -65,7 +65,7 @@
 
 		resetForm();
 
-		goto('/dashboard/web_builder/theme_color');
+		goto('/dashboard/web_builder/buildThemeColor');
 		await fetchData();
 	}
 
@@ -240,7 +240,10 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 										<div class="flex justify-center">
-											<div class="w-20 p-2 rounded" style="background: {`${item.primaryColor}`};">
+											<div
+												class="w-20 p-2 rounded text-white"
+												style="background: {`${item.primaryColor}`};"
+											>
 												{item.primaryColor}
 											</div>
 										</div>
@@ -248,7 +251,10 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 										<div class="flex justify-center">
-											<div class="w-20 p-2 rounded" style="background: {`${item.secondaryColor}`};">
+											<div
+												class="w-20 p-2 rounded text-white"
+												style="background: {`${item.secondaryColor}`};"
+											>
 												{item.secondaryColor}
 											</div>
 										</div>
@@ -256,7 +262,10 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 										<div class="flex justify-center">
-											<div class="w-20 p-2 rounded" style="background: {`${item.onPrimaryColor}`};">
+											<div
+												class="w-20 p-2 rounded text-white"
+												style="background: {`${item.onPrimaryColor}`};"
+											>
 												{item.onPrimaryColor}
 											</div>
 										</div>
@@ -265,7 +274,7 @@
 									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 										<div class="flex justify-center">
 											<div
-												class="w-20 p-2 rounded"
+												class="w-20 p-2 rounded text-white"
 												style="background: {`${item.onSecondaryColor}`};"
 											>
 												{item.onSecondaryColor}
@@ -276,7 +285,7 @@
 									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 										<div class="flex justify-center">
 											<div
-												class="w-20 p-2 rounded"
+												class="w-20 p-2 rounded text-white"
 												style="background: {`${item.backgroundColor}`};"
 											>
 												{item.backgroundColor}
@@ -287,7 +296,7 @@
 									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 										<div class="flex justify-center">
 											<div
-												class="w-20 p-2 rounded"
+												class="w-20 p-2 rounded text-white"
 												style="background: {`${item.onBackgroundColor}`};"
 											>
 												{item.onBackgroundColor}
@@ -337,7 +346,7 @@
 							placeholder="Theme name"
 							bind:value={newColorPallet.name}
 						/>
-						{#if isFormSubmitted && !newColorPallet.name.trim()}
+						{#if isFormSubmitted && !newColorPallet?.name?.trim()}
 							<p class="error-message">Require</p>
 						{/if}
 					</div>
@@ -351,7 +360,7 @@
 								name="head"
 								bind:value={newColorPallet.primaryColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet.primaryColor.trim()}
+							{#if isFormSubmitted && !newColorPallet?.primaryColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
 							<Label for="color" class="text-gray-500 py-2">primaryColor</Label>
@@ -365,7 +374,7 @@
 								name="head"
 								bind:value={newColorPallet.secondaryColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet.secondaryColor.trim()}
+							{#if isFormSubmitted && !newColorPallet?.secondaryColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
 							<Label for="color" class="text-gray-500 py-2">secondaryColor</Label>
@@ -379,7 +388,7 @@
 								name="head"
 								bind:value={newColorPallet.onPrimaryColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet.onPrimaryColor.trim()}
+							{#if isFormSubmitted && !newColorPallet?.onPrimaryColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
 							<Label for="color" class="text-gray-500 py-2">onPrimaryColor</Label>
@@ -394,7 +403,7 @@
 								name="head"
 								bind:value={newColorPallet.onSecondaryColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet.onSecondaryColor.trim()}
+							{#if isFormSubmitted && !newColorPallet?.onSecondaryColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
 							<Label for="color" class="text-gray-500 py-2">onSecondaryColor</Label>
@@ -408,7 +417,7 @@
 								name="head"
 								bind:value={newColorPallet.backgroundColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet.backgroundColor.trim()}
+							{#if isFormSubmitted && !newColorPallet?.backgroundColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
 							<Label for="color" class="text-gray-500 py-2">backgroundColor</Label>
@@ -422,7 +431,7 @@
 								name="head"
 								bind:value={newColorPallet.onBackgroundColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet.onBackgroundColor.trim()}
+							{#if isFormSubmitted && !newColorPallet?.onBackgroundColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
 							<Label for="color" class="text-gray-500 py-2">onBackgroundColor</Label>

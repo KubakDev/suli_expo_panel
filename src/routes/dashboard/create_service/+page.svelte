@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/serviceStore';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ServiceModel, ServiceModelLang } from '../../../models/serviceModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -116,7 +113,7 @@
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		serviceObject.thumbnail = response.data?.path;
+		serviceObject.thumbnail = response.data?.path || '';
 
 		insertData(serviceObject, serviceDataLang, data.supabase);
 
@@ -133,7 +130,6 @@
 		serviceObject = {
 			id: 0,
 			thumbnail: '',
-			exhibition_type: '',
 			primaryColor: '#F5EFE7',
 			onPrimaryColor: '#D8C4B6'
 		};
