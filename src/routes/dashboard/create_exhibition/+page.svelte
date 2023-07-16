@@ -32,7 +32,8 @@
 		country_number: 0,
 		company_number: 0,
 		exhibition_type: '',
-		exhibition_date: new Date(),
+		start_date: new Date(),
+		end_date: new Date(),
 		id: 0
 	};
 
@@ -176,7 +177,8 @@
 			country_number: 0,
 			company_number: 0,
 			exhibition_type: '',
-			exhibition_date: new Date(),
+			start_date: new Date(),
+			end_date: new Date(),
 			id: 0
 		};
 
@@ -230,8 +232,14 @@
 			</div>
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<span>Date</span>
-					<Input type="date" bind:value={exhibitionsObject.exhibition_date} />
+					<span>Start Date</span>
+					<Input type="date" bind:value={exhibitionsObject.start_date} />
+				</Label>
+			</div>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>End Date</span>
+					<Input type="date" bind:value={exhibitionsObject.end_date} />
 				</Label>
 			</div>
 		</div>
@@ -389,7 +397,8 @@
 											short_description={langData.description}
 											thumbnail={exhibitionsObject.thumbnail}
 											primaryColor="bg-primary"
-											date={exhibitionsObject.exhibition_date}
+											startDate={exhibitionsObject.start_date}
+											endDate={exhibitionsObject.end_date}
 										/>
 									{/if}
 								{/each}

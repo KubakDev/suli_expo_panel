@@ -40,7 +40,8 @@
 		country_number: 0,
 		company_number: 0,
 		exhibition_type: '',
-		exhibition_date: new Date()
+		start_date: new Date(),
+		end_date: new Date()
 	};
 	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
@@ -64,7 +65,8 @@
 					exhibition_type: result.data?.exhibition_type,
 					company_number: result.data?.company_number,
 					country_number: result.data?.country_number,
-					exhibition_date: new Date(result.data?.exhibition_date)
+					start_date: new Date(result.data?.start_date),
+					end_date: new Date(result.data?.end_date)
 				};
 
 				prevThumbnail = result.data?.thumbnail;
@@ -350,8 +352,14 @@
 			</div>
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<span>Date</span>
-					<Input type="date" bind:value={exhibitionsData.exhibition_date} />
+					<span>Start Date</span>
+					<Input type="date" bind:value={exhibitionsData.start_date} />
+				</Label>
+			</div>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<span>End Date</span>
+					<Input type="date" bind:value={exhibitionsData.end_date} />
 				</Label>
 			</div>
 		</div>
@@ -520,7 +528,8 @@
 											short_description={langData.description}
 											thumbnail={exhibitionsData.thumbnail}
 											primaryColor="bg-primary"
-											date={exhibitionsData.exhibition_date}
+											startDate={exhibitionsData.start_date}
+											endDate={exhibitionsData.end_date}
 										/>
 									{/if}
 								{/each}

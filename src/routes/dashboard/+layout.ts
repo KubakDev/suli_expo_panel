@@ -5,6 +5,10 @@ export const load = async () => {
 			url: '/dashboard'
 		},
 		{
+			title: 'Promotions',
+			url: '/dashboard/promotions'
+		},
+		{
 			title: 'News',
 			url: '/dashboard/news'
 		},
