@@ -156,36 +156,38 @@
 		const result = await data.supabase
 			.from('page_builder')
 			.select('*,color_palette(*),component_type(*),component(*)')
-			.eq('page', PageEnum.NEWS)
+			.eq('page', PageEnum.VIDEO)
 			.single();
 
-		if (result) {
-			pageBuilder = {
-				id: result.data?.id,
-				componentId: result.data?.componentId,
-				componentTypeId: result.data?.componentTypeId,
-				page: PageEnum.NEWS,
-				color_palette_id: result.data?.color_palette_id
-			};
-
-			customColors = {
-				name: result.data?.name,
-				primaryColor: result.data?.color_palette?.primaryColor,
-				secondaryColor: result.data?.color_palette?.secondaryColor,
-				onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
-				onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
-				backgroundColor: result.data?.color_palette?.backgroundColor,
-				onBackgroundColor: result.data?.color_palette?.onBackgroundColor
-			};
-
-			cardShape = result.data?.component_type?.type;
-
-			pageBuilder = { ...pageBuilder };
-			customColors = { ...customColors };
-
-			// Update the pageTheme store with the fetched data
-			pageTheme.set([pageBuilder]);
+		if (result.error) {
+			console.error('Error fetching data:', result.error.message);
+			return;
 		}
+
+		console.log('???????????????///', result);
+
+		pageBuilder = {
+			id: result.data?.id,
+			componentId: result.data?.componentId,
+			componentTypeId: result.data?.componentTypeId,
+			page: PageEnum.VIDEO,
+			color_palette_id: result.data?.color_palette_id
+		};
+
+		customColors = {
+			name: result.data?.name,
+			primaryColor: result.data?.color_palette?.primaryColor,
+			secondaryColor: result.data?.color_palette?.secondaryColor,
+			onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
+			onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
+			backgroundColor: result.data?.color_palette?.backgroundColor,
+			onBackgroundColor: result.data?.color_palette?.onBackgroundColor
+		};
+
+		cardShape = result.data?.component_type?.type;
+
+		pageBuilder = { ...pageBuilder };
+		customColors = { ...customColors };
 	}
 
 	onMount(getPageData);
@@ -199,8 +201,6 @@
 		await updatePageData(pageBuilder, data.supabase);
 		alert('Updated');
 	}
-
-	let isSidebarOpen = false;
 </script>
 
 <div class="flex justify-between min-h-screen">
@@ -224,7 +224,7 @@
 						}`}
 						class="  text-base sm:text-4xl font-bold uppercase text-center my-1 px-4 ms:px-10"
 					>
-						News
+						Videos
 					</h1>
 					<div class="h-[1px] bg-yellow-400" />
 				</div>
