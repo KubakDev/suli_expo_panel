@@ -34,6 +34,11 @@ export const load = async () => {
 			title: 'Build Video',
 			url: '/dashboard/web_builder/media_videoBuilder',
 			icon: '../../../../images/icons/Frame.svg'
+		},
+		{
+			title: 'Build Exhibition',
+			url: '/dashboard/web_builder/exhibitionBuilder',
+			icon: '../../../../images/icons/Frame.svg'
 		}
 	];
 	return { sideBarPage };
