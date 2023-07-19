@@ -12,6 +12,7 @@
 
 	function onSubmit() {
 		loading = true;
+		console.log('jh');
 	}
 </script>
 
@@ -45,7 +46,6 @@
 
 		<div class="w-[400px] py-8">
 			<Input
-				
 				type="text"
 				id="email"
 				placeholder="example@example.com"
@@ -55,7 +55,6 @@
 		</div>
 		<div class="w-[400px]">
 			<Input
-				
 				type="password"
 				id="password"
 				placeholder="*********"
