@@ -11,7 +11,7 @@
 		Search
 	} from 'flowbite-svelte';
 	import { getData, exhibitions } from '../../../stores/exhibitionStore';
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { SeatServiceStatusEnum } from '../../../models/seatServiceStatusEnum';
 	import type { ExhibitionsModel } from '../../../models/exhibitionModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
@@ -19,6 +19,7 @@
 
 	export let data: any;
 	export let seatInfo: any;
+	const dispatch = createEventDispatcher();
 
 	console.log(seatInfo);
 	interface SeatServiceStatusEnum {
@@ -71,7 +72,6 @@
 			.upload(`seats_layout/${canvasImage.name}`, canvasImage);
 		console.log(fileResult.data);
 		if (!fileResult.data) {
-			// alertStore.addAlert('error', 'Could not convert canvas to image', 'error');
 			return;
 		}
 
@@ -81,17 +81,14 @@
 				.from('seat_layout ')
 				.update([
 					{
-						name: 'text',
+						name: seatInfoData.name,
 						design: json,
-						is_active: true,
-						exhibition: 1,
+						is_active: seatInfoData.isActive,
+						exhibition: seatInfoData.exhibition?.id,
 						image_url: fileResult.data.path
 					}
 				])
-				.eq('id', seatId)
-				.then((res) => {
-					console.log(res);
-				});
+				.eq('id', seatId);
 		} else {
 			const result = await supabase
 				.from('seat_layout ')
@@ -104,8 +101,8 @@
 						image_url: fileResult.data.path
 					}
 				])
-				.then((res) => {
-					console.log(res);
+				.then(() => {
+					dispatch('closeModal');
 				});
 		}
 	}
