@@ -34,6 +34,10 @@
 	}
 
 	let contactInfoObject: ContactModel = {
+		facebook_link: '',
+		instagram_link: '',
+		linkedin_link: '',
+		youtube_link: '',
 		created_at: new Date()
 	};
 
@@ -111,6 +115,10 @@
 		submitted = false;
 
 		contactInfoObject = {
+			facebook_link: '',
+			instagram_link: '',
+			linkedin_link: '',
+			youtube_link: '',
 			created_at: new Date()
 		};
 
@@ -140,9 +148,65 @@
 
 	<div class="px-10 lg:px-20 py-10 border m-10 bg-white rounded-lg">
 		<Form class="form " {submitted}>
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<br />
+			<div class="grid grid-cols-4 gap-3">
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Facebook link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.facebook_link}
+						id="facebook_link"
+						name="facebook_link"
+					/>
+					{#if !contactInfoObject.facebook_link.trim() && errorMessages['facebook_link']}
+						<p class="error-message">{errorMessages['facebook_link']}</p>
+					{/if}
+				</div>
 
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Instagram link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.instagram_link}
+						id="instagram_link"
+						name="instagram_link"
+					/>
+					{#if !contactInfoObject.instagram_link.trim() && errorMessages['instagram_link']}
+						<p class="error-message">{errorMessages['instagram_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">linkedIn link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.linkedin_link}
+						id="linkedin_link"
+						name="linkedin_link"
+					/>
+					{#if !contactInfoObject.linkedin_link.trim() && errorMessages['linkedin_link']}
+						<p class="error-message">{errorMessages['linkedin_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Youtube link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.youtube_link}
+						id="youtube_link"
+						name="youtube_link"
+					/>
+					{#if !contactInfoObject.youtube_link.trim() && errorMessages['youtube_link']}
+						<p class="error-message">{errorMessages['youtube_link']}</p>
+					{/if}
+				</div>
+			</div>
+
+			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<div class="col-span-3">
 					<Tabs>
 						{#each contactInfoDataLang as langData, index}

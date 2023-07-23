@@ -17,6 +17,10 @@
 	let contactDataLang: ContactModelLang[] = [];
 	let contactData: ContactModel = {
 		id: 0,
+		facebook_link: '',
+		instagram_link: '',
+		linkedin_link: '',
+		youtube_link: '',
 		created_at: new Date()
 	};
 	const id = $page.params.contactInfoId;
@@ -32,6 +36,10 @@
 			.then((result) => {
 				contactData = {
 					id: result.data?.id,
+					facebook_link: result.data?.facebook_link,
+					instagram_link: result.data?.instagram_link,
+					linkedin_link: result.data?.linkedin_link,
+					youtube_link: result.data?.youtube_link,
 					created_at: new Date(result.data?.created_at)
 				};
 
@@ -105,7 +113,7 @@
 			}, 1000);
 		}
 
-		console.log(errorMessages); // Optional: Check errorMessages object
+		console.log(errorMessages);
 	}
 
 	function isValidEmail(email: string) {
@@ -127,6 +135,64 @@
 			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-700">
 				Contact Information Data
 			</h1>
+
+			<div class="grid grid-cols-4 gap-3 pt-10">
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Facebook link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.facebook_link}
+						id="facebook_link"
+						name="facebook_link"
+					/>
+					{#if !contactData.facebook_link.trim() && errorMessages['facebook_link']}
+						<p class="error-message">{errorMessages['facebook_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Instagram link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.instagram_link}
+						id="instagram_link"
+						name="instagram_link"
+					/>
+					{#if !contactData.instagram_link.trim() && errorMessages['instagram_link']}
+						<p class="error-message">{errorMessages['instagram_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">linkedIn link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.linkedin_link}
+						id="linkedin_link"
+						name="linkedin_link"
+					/>
+					{#if !contactData.linkedin_link.trim() && errorMessages['linkedin_link']}
+						<p class="error-message">{errorMessages['linkedin_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Youtube link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.youtube_link}
+						id="youtube_link"
+						name="youtube_link"
+					/>
+					{#if !contactData.youtube_link.trim() && errorMessages['youtube_link']}
+						<p class="error-message">{errorMessages['youtube_link']}</p>
+					{/if}
+				</div>
+			</div>
 
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
 				<div class="col-span-3">
