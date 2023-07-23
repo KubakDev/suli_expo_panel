@@ -18,7 +18,7 @@
 	import SeatGround2 from './seatV2.svelte';
 	// import BsTrash from 'svelte-icons-pack/bs/BsTrash';
 	// import FiEdit from 'svelte-icons-pack/fi/FiEdit';
-	import Pagination from '$lib/components/reusables/pagination.svelte';
+	// import Pagination from '$lib/components/reusables/pagination.svelte';
 </script>
 
 <div class="w-full bg-white" style="min-height: calc(100vh - 300px);">
