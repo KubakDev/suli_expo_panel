@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ExpoCard } from 'kubak-svelte-component';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 
 	export let customColors: any;
 	export let selectedColorTheme: any;
@@ -21,13 +21,14 @@
 			<h1
 				style={`color:${
 					Object.keys(customColors).length > 0
-						? customColors.onBackgroundColor
-						: selectedColorTheme?.onBackgroundColor
+						? customColors.overlayBackgroundColor
+						: selectedColorTheme?.overlayBackgroundColor
 				}`}
 				class="  text-base sm:text-4xl font-bold uppercase text-center my-1 px-4 ms:px-10"
 			>
 				{title}
 			</h1>
+
 			<div class="h-[1px] bg-yellow-400" />
 		</div>
 
@@ -42,8 +43,8 @@
 						? customColors.primaryColor
 						: selectedColorTheme?.primaryColor}
 					overlayPrimaryColor={Object.keys(customColors).length > 0
-						? customColors.onPrimaryColor
-						: selectedColorTheme?.onPrimaryColor}
+						? customColors.overlayPrimaryColor
+						: selectedColorTheme?.overlayPrimaryColor}
 				/>
 			{/each}
 		</div>

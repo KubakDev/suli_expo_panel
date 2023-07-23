@@ -3,9 +3,9 @@ export interface ColorTheme {
 	name?: string;
 	primaryColor?: string;
 	secondaryColor?: string;
-	onPrimaryColor?: string;
-	onSecondaryColor?: string;
+	overlayPrimaryColor?: string;
+	overlaySecondaryColor?: string;
 	backgroundColor?: string;
-	onBackgroundColor?: string;
+	overlayBackgroundColor?: string;
 	active?: boolean | null;
 }

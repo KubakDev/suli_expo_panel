@@ -25,10 +25,10 @@
 		name: '',
 		primaryColor: '',
 		secondaryColor: '',
-		onPrimaryColor: '',
-		onSecondaryColor: '',
+		overlayPrimaryColor: '',
+		overlaySecondaryColor: '',
 		backgroundColor: '',
-		onBackgroundColor: '',
+		overlayBackgroundColor: '',
 		active: null
 	};
 
@@ -46,10 +46,10 @@
 			!isEmpty(newColorPallet.name) &&
 			!isEmpty(newColorPallet.primaryColor) &&
 			!isEmpty(newColorPallet.secondaryColor) &&
-			!isEmpty(newColorPallet.onPrimaryColor) &&
-			!isEmpty(newColorPallet.onSecondaryColor) &&
+			!isEmpty(newColorPallet.overlayPrimaryColor) &&
+			!isEmpty(newColorPallet.overlaySecondaryColor) &&
 			!isEmpty(newColorPallet.backgroundColor) &&
-			!isEmpty(newColorPallet.onBackgroundColor)
+			!isEmpty(newColorPallet.overlayBackgroundColor)
 		) {
 			isValidVideoObject = true;
 		}
@@ -76,10 +76,10 @@
 			name: '',
 			primaryColor: '',
 			secondaryColor: '',
-			onPrimaryColor: '',
-			onSecondaryColor: '',
+			overlayPrimaryColor: '',
+			overlaySecondaryColor: '',
 			backgroundColor: '',
-			onBackgroundColor: '',
+			overlayBackgroundColor: '',
 			active: null
 		};
 	}
@@ -263,9 +263,9 @@
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.onPrimaryColor}`};"
+										style="background: {`${item.overlayPrimaryColor}`};"
 									>
-										{item.onPrimaryColor}
+										{item.overlayPrimaryColor}
 									</div>
 								</div>
 							</td>
@@ -274,9 +274,9 @@
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.onSecondaryColor}`};"
+										style="background: {`${item.overlaySecondaryColor}`};"
 									>
-										{item.onSecondaryColor}
+										{item.overlaySecondaryColor}
 									</div>
 								</div>
 							</td>
@@ -296,9 +296,9 @@
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.onBackgroundColor}`};"
+										style="background: {`${item.overlayBackgroundColor}`};"
 									>
-										{item.onBackgroundColor}
+										{item.overlayBackgroundColor}
 									</div>
 								</div>
 							</td>
@@ -383,14 +383,14 @@
 								type="color"
 								id="head"
 								name="head"
-								bind:value={newColorPallet.onPrimaryColor}
+								bind:value={newColorPallet.overlayPrimaryColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet?.onPrimaryColor?.trim()}
+							{#if isFormSubmitted && !newColorPallet?.overlayPrimaryColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
-							<Label for="color" class="text-gray-500 py-2">onPrimaryColor</Label>
+							<Label for="color" class="text-gray-500 py-2">overlayPrimaryColor</Label>
 
-							<span class="pb-2">{newColorPallet.onPrimaryColor}</span>
+							<span class="pb-2">{newColorPallet.overlayPrimaryColor}</span>
 						</div>
 						<div class="flex flex-col items-center border rounded">
 							<input
@@ -398,13 +398,13 @@
 								type="color"
 								id="head"
 								name="head"
-								bind:value={newColorPallet.onSecondaryColor}
+								bind:value={newColorPallet.overlaySecondaryColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet?.onSecondaryColor?.trim()}
+							{#if isFormSubmitted && !newColorPallet?.overlaySecondaryColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
-							<Label for="color" class="text-gray-500 py-2">onSecondaryColor</Label>
-							<span class="pb-2">{newColorPallet.onSecondaryColor}</span>
+							<Label for="color" class="text-gray-500 py-2">overlaySecondaryColor</Label>
+							<span class="pb-2">{newColorPallet.overlaySecondaryColor}</span>
 						</div>
 						<div class="flex flex-col items-center border rounded">
 							<input
@@ -426,13 +426,13 @@
 								type="color"
 								id="head"
 								name="head"
-								bind:value={newColorPallet.onBackgroundColor}
+								bind:value={newColorPallet.overlayBackgroundColor}
 							/>
-							{#if isFormSubmitted && !newColorPallet?.onBackgroundColor?.trim()}
+							{#if isFormSubmitted && !newColorPallet?.overlayBackgroundColor?.trim()}
 								<p class="error-message">Require</p>
 							{/if}
-							<Label for="color" class="text-gray-500 py-2">onBackgroundColor</Label>
-							<span class="pb-2">{newColorPallet.onBackgroundColor}</span>
+							<Label for="color" class="text-gray-500 py-2">overlayBackgroundColor</Label>
+							<span class="pb-2">{newColorPallet.overlayBackgroundColor}</span>
 						</div>
 					</div>
 

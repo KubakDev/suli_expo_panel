@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 
 	let items = [
 		{ id: 0, name: 'item1', position: 1 },

@@ -3,33 +3,31 @@
 	import { service, getData, deleteData } from '../../../stores/serviceStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
-	import Pagination from '$lib/components/pagination/Pagination.svelte';
-	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
+	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
 	export let data;
-	let currentPage = 1;
-	const pageSize = 8;
-	let totalPages = 1;
 
-	async function fetchData(page: number) {
-		let result = await getData(data.supabase, page, pageSize);
-		// Recalculate the total number of pages
-		const totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
+	let items = $service;
+
+	async function fetchData() {
+		// Call the API or database to get the data
+		let result = await getData(data.supabase);
+		items = $service;
+		return items;
 	}
 
+	onMount(() => {
+		console.log('///', $service);
+	});
+
 	async function fetchDataOnMount() {
-		await fetchData(currentPage);
+		let items = await fetchData();
+		service.set(items); // Assuming `service` is a writable store
 	}
 
 	onMount(fetchDataOnMount);
-
-	async function goToPage(page: any) {
-		currentPage = page;
-		await fetchData(currentPage);
-	}
 
 	function createService() {
 		goto('/dashboard/create_service');
@@ -40,20 +38,11 @@
 		try {
 			await deleteData(serviceId, data.supabase);
 			// alert('service deleted successfully!');
-			if (currentPage > totalPages) {
-				currentPage = totalPages;
-			}
-			await fetchData(currentPage);
+			await fetchData(); // Fetch data again after deletion
 		} catch (error) {
 			console.error('Error deleting service:', error);
 		}
 	}
-
-	function calculateIndex(index: any) {
-		return index + 1 + (currentPage - 1) * pageSize;
-	}
-
-	let items = $service;
 
 	const flipDurationMs = 300;
 
@@ -69,7 +58,7 @@
 		});
 
 		await updatePositions();
-		await fetchData(currentPage); // Fetch data again after updating positions
+		await fetchData(); // Fetch data again after updating positions
 	}
 
 	let supabase = data.supabase;
@@ -270,9 +259,7 @@
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-									<span class="flex justify-center text-gray-700 font-semibold"
-										>{calculateIndex(index)}</span
-									>
+									<span class="flex justify-center text-gray-700 font-semibold">{index}</span>
 								</td>
 
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
@@ -323,9 +310,6 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- Add pagination -->
-	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
 
 <style>

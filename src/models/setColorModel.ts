@@ -2,8 +2,8 @@ export interface SetColorModel {
 	id?: number;
 	primaryColor?: string;
 	secondaryColor?: string;
-	onPrimaryColor?: string;
-	onSecondaryColor?: string;
+	overlayPrimaryColor?: string;
+	overlaySecondaryColor?: string;
 	backgroundColor?: string;
-	onBackgroundColor?: string;
+	overlayBackgroundColor?: string;
 }

@@ -55,10 +55,10 @@
 	let colors = [
 		'primaryColor',
 		'secondaryColor',
-		'onPrimaryColor',
-		'onSecondaryColor',
+		'overlayPrimaryColor',
+		'overlaySecondaryColor',
 		'backgroundColor',
-		'onBackgroundColor'
+		'overlayBackgroundColor'
 	];
 	// get color_palette data
 	async function fetchData() {
@@ -312,7 +312,12 @@
 													/>
 												</div>
 
-												<p class="text-sm text-black py-2">{color}</p>
+												<p
+													class="text-sm text-black py-2 flex flex-wrap px-2"
+													style="word-break: break-word;"
+												>
+													{color}
+												</p>
 											</div>
 										</div>
 									{/each}

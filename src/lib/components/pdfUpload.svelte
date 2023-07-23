@@ -7,6 +7,8 @@
 
 	export let data: { pdfFiles?: PDFModel[] } = {};
 	let pdfFiles: PDFModel[] = data.pdfFiles ?? [];
+	let isUploading = false;
+	let uploadCount = 0;
 
 	afterUpdate(() => {
 		if (pdfFiles.length === 0) {
@@ -19,6 +21,7 @@
 	function addImage(e: Event) {
 		// console.log('//////e', e);
 		const fileInput = e.target as HTMLInputElement;
+		const totalFiles = fileInput?.files?.length; // Total number of files being uploaded
 		for (let file of fileInput!.files!) {
 			imageFiles = [...imageFiles, file];
 
@@ -36,7 +39,15 @@
 						fileName: fileName
 					}
 				];
-				console.log('File name:', pdfFiles);
+
+				uploadCount++; // Increment the upload count for each uploaded image
+
+				if (uploadCount === totalFiles) {
+					isUploading = false; // Set isUploading to false when all images are uploaded
+					uploadCount = 0; // Reset the upload count after all images are uploaded
+				}
+
+				// console.log('File name:', pdfFiles);
 			};
 			reader.readAsDataURL(file);
 		}
@@ -101,9 +112,14 @@
 		on:change={addImage}
 		class="h-32 cursor-auto"
 	>
-		<span class="bg-primary-dark p-3 rounded-3xl font-semibold text-white cursor-pointer">
-			Upload PDF File</span
-		>
+		{#if isUploading}
+			<!-- Show the loading spinner while uploading images -->
+			<Shadow size="50" color="#FF3E00" unit="px" duration="1s" />
+		{:else}
+			<span class="bg-primary-dark p-3 rounded-3xl font-semibold text-white cursor-pointer"
+				>Upload PDF File</span
+			>
+		{/if}
 	</Dropzone>
 	<div class="pt-5" />
 	<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">

@@ -18,10 +18,10 @@
 		name: '',
 		primaryColor: '',
 		secondaryColor: '',
-		onPrimaryColor: '',
-		onSecondaryColor: '',
+		overlayPrimaryColor: '',
+		overlaySecondaryColor: '',
 		backgroundColor: '',
-		onBackgroundColor: ''
+		overlayBackgroundColor: ''
 	};
 
 	let pageBuilder: PageData = {
@@ -38,10 +38,10 @@
 		name: '',
 		primaryColor: '',
 		secondaryColor: '',
-		onPrimaryColor: '',
-		onSecondaryColor: '',
+		overlayPrimaryColor: '',
+		overlaySecondaryColor: '',
 		backgroundColor: '',
-		onBackgroundColor: '',
+		overlayBackgroundColor: '',
 		active: null
 	};
 
@@ -85,10 +85,10 @@
 				name: result.data?.name,
 				primaryColor: result.data?.color_palette?.primaryColor,
 				secondaryColor: result.data?.color_palette?.secondaryColor,
-				onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
-				onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
+				overlayPrimaryColor: result.data?.color_palette?.overlayPrimaryColor,
+				overlaySecondaryColor: result.data?.color_palette?.overlaySecondaryColor,
 				backgroundColor: result.data?.color_palette?.backgroundColor,
-				onBackgroundColor: result.data?.color_palette?.onBackgroundColor
+				overlayBackgroundColor: result.data?.color_palette?.overlayBackgroundColor
 			};
 
 			cardShape = result.data?.component_type?.type;
@@ -106,8 +106,9 @@
 	async function update() {
 		showToast = true;
 		const componentID = componentData.find((item: any) => item.type === cardShape)?.id || null;
-		pageBuilder.color_palette_id = selectedColorTheme?.id;
+		pageBuilder.color_palette_id = selectedColorTheme?.id || pageBuilder.color_palette_id;
 		pageBuilder.componentTypeId = componentID;
+		// console.log('/////////////', pageBuilder);
 		await updatePageData(pageBuilder, data.supabase);
 
 		setTimeout(() => {
@@ -119,9 +120,12 @@
 		// console.log(customColors);
 		// console.log('Updated color:', value);
 		customColors.backgroundColor = value?.backgroundColor || customColors?.backgroundColor;
-		customColors.onBackgroundColor = value?.onBackgroundColor || customColors?.onBackgroundColor;
-		customColors.onPrimaryColor = value?.onPrimaryColor || customColors?.onPrimaryColor;
-		customColors.onSecondaryColor = value?.onSecondaryColor || customColors?.onSecondaryColor;
+		customColors.overlayBackgroundColor =
+			value?.overlayBackgroundColor || customColors?.overlayBackgroundColor;
+		customColors.overlayPrimaryColor =
+			value?.overlayPrimaryColor || customColors?.overlayPrimaryColor;
+		customColors.overlaySecondaryColor =
+			value?.overlaySecondaryColor || customColors?.overlaySecondaryColor;
 		customColors.primaryColor = value?.primaryColor || customColors?.primaryColor;
 		customColors.secondaryColor = value?.secondaryColor || customColors?.secondaryColor;
 	});
@@ -136,7 +140,7 @@
 <div class="flex justify-between min-h-screen">
 	<!-- page content -->
 	<div class="w-full">
-		<PageContent {customColors} {selectedColorTheme} {cardShape} title="Exhibition" />
+		<PageContent {customColors} {selectedColorTheme} {cardShape} title="exhibition" />
 	</div>
 
 	<div class="h-full bg-[#f9fafb] rounded-md flex flex-col items-center justify-between py-5">
