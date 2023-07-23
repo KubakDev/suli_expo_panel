@@ -39,6 +39,7 @@
 		country_number: 0,
 		company_number: 0,
 		exhibition_type: '',
+		status: '',
 		start_date: new Date(),
 		end_date: new Date()
 	};
@@ -62,6 +63,7 @@
 					}`,
 					pdf_files: result.data?.pdf_files,
 					exhibition_type: result.data?.exhibition_type,
+					status: result.data?.status,
 					company_number: result.data?.company_number,
 					country_number: result.data?.country_number,
 					start_date: new Date(result.data?.start_date),

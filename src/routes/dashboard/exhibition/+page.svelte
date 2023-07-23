@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { exhibitions, getData, deleteData } from '../../../stores/exhibitionStore';
+	import { exhibitions, getData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -10,21 +10,20 @@
 	let currentPage = 1;
 	const pageSize = 8;
 	let totalPages = 1;
-
-	// console.log('exhibition//', exhibition);
+	let filteredExhibitions: any = [];
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
+		filteredExhibitions = result?.data?.filter((exhibition) => !exhibition.status);
+		// console.log(filteredExhibitions);
 	}
 
 	onMount(fetchData);
 
-	async function goToPage(page:number) {
+	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -34,10 +33,9 @@
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId:number) {
+	async function handleDelete(exhibitionId: any) {
 		try {
-			await deleteData(exhibitionId, data.supabase);
-			// alert('exhibition deleted successfully!');
+			await data.supabase.from('exhibition').update({ status: 'delete' }).eq('id', exhibitionId);
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
@@ -47,7 +45,7 @@
 		}
 	}
 
-	function calculateIndex(index:number) {
+	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 </script>
@@ -226,7 +224,7 @@
 					</thead>
 
 					<tbody>
-						{#each $exhibitions as item, index (item.id)}
+						{#each filteredExhibitions as item, index (item.id)}
 							<tr>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 									<span class="flex justify-center text-gray-700 font-semibold"

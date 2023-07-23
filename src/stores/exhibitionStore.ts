@@ -42,7 +42,7 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('exhibition').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
+		// console.log('/////////', count);
 		// console.log('data : ', data);
 		const result = {
 			data: data,
@@ -57,29 +57,29 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 };
 
 //delete exhibition by id
-export const deleteData = async (exhibitionId: number, supabase: SupabaseClient) => {
-	try {
-		const { data, error } = await supabase.rpc('delete_exhibition_and_exhibition_lang', {
-			data: { id: exhibitionId }
-		});
+// export const deleteData = async (exhibitionId: number, supabase: SupabaseClient) => {
+// 	try {
+// 		const { data, error } = await supabase.rpc('delete_exhibition_and_exhibition_lang', {
+// 			data: { id: exhibitionId }
+// 		});
 
-		if (error) {
-			throw error;
-		}
+// 		if (error) {
+// 			throw error;
+// 		}
 
-		exhibitions.update((currentExhibition) => {
-			if (data) {
-				return currentExhibition.filter((item) => item.id !== exhibitionId);
-			}
-			return currentExhibition;
-		});
+// 		exhibitions.update((currentExhibition) => {
+// 			if (data) {
+// 				return currentExhibition.filter((item) => item.id !== exhibitionId);
+// 			}
+// 			return currentExhibition;
+// 		});
 
-		return data;
-	} catch (error) {
-		console.error(error);
-		throw error;
-	}
-};
+// 		return data;
+// 	} catch (error) {
+// 		console.error(error);
+// 		throw error;
+// 	}
+// };
 
 //update exhibition by id
 export const updateData = async (
@@ -88,7 +88,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+		// console.log('first');
 		const { data, error } = await supabase.rpc('update_exhibition_and_exhibition_lang', {
 			exhibition_data: exhibitionObject,
 			exhibition_lang_data: exhibitionDataLang
