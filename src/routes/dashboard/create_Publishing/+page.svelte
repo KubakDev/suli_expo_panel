@@ -330,34 +330,34 @@
 					</Tabs>
 
 					<div class="border mb-2 border-gray-300 mx-10" />
-
-					<!-- upload Publishing image -->
-					<div class="grid lg:grid-cols-2 gap-4 px-8 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="pdf_file" class="mb-2">Upload Publishing Image</Label>
-							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-							{#if isFormSubmitted && sliderImagesFile.length === 0}
-								<p class="error-message">Please upload at least one image for the slider</p>
-							{/if}
-						</Label>
-						<!-- upload pdf file -->
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload PDF Files</Label>
-							<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
-						</Label>
-					</div>
-
-					<!-- submit Form -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Add
-						</button>
-					</div>
 				</form>
+
+				<!-- upload Publishing image -->
+				<div class="grid lg:grid-cols-2 pt-5">
+					<Label class="space-y-2 mb-2">
+						<Label for="image" class="mb-2 px-8">Upload Publishing Image</Label>
+						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+						{#if isFormSubmitted && sliderImagesFile.length === 0}
+							<p class="error-message px-8">Please upload at least one image for the slider</p>
+						{/if}
+					</Label>
+					<!-- upload pdf file -->
+					<Label class="space-y-2 mb-2">
+						<Label for="first_name" class="mb-2 px-8">Upload PDF Files</Label>
+						<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
+					</Label>
+				</div>
+
+				<!-- submit Form -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Add
+					</button>
+				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">

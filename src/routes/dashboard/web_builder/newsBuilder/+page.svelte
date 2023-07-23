@@ -1,24 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { insertData, getData, theme } from '../../../../stores/colorTheme';
 	import { getComponentData } from '../../../../stores/componentStor';
 	import { pageTheme, updatePageData } from '../../../../stores/pageStore';
-	import { ExpoCard, CardType } from 'kubak-svelte-component';
 	import type { ColorTheme } from '../../../../models/colorTheme';
-	import { addNewToast } from '../../../../stores/toastStore';
-	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
 	import type { PageData } from '../../../..//models/pageType';
 	import { PageEnum } from '../../../../models/pageEnum';
-	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
 	import SidebarPage from '$lib/components/webBuilder/SidebarPage.svelte';
 	import PageContent from '$lib/components/webBuilder/PageContent.svelte';
+	import { setColor } from '../../../../stores/setColorStore';
 
 	export let data;
 	let showToast = false;
 	let componentData: any = [];
-
-	let loading = false;
 
 	let selectedColorTheme = {
 		id: 0,
@@ -41,17 +34,6 @@
 
 	let cardShape: any = null;
 
-	let colors = [
-		'primaryColor',
-		'secondaryColor',
-		'onPrimaryColor',
-		'onSecondaryColor',
-		'backgroundColor',
-		'onBackgroundColor'
-	];
-
-	let showCustomColor: boolean = false;
-
 	let customColors: ColorTheme = {
 		name: '',
 		primaryColor: '',
@@ -62,75 +44,6 @@
 		onBackgroundColor: '',
 		active: null
 	};
-
-	// get color_palette data
-	async function fetchData() {
-		let result = await getData(data.supabase);
-		// console.log('????', result);
-	}
-	onMount(fetchData);
-
-	//insert new color_palette
-	async function formSubmit() {
-		loading = true;
-
-		// Validate the name field
-		if (typeof customColors.name !== 'string' || isEmpty(customColors.name.trim())) {
-			addNewToast({
-				type: ToastTypeEnum.ERROR,
-				message: 'Name field cannot be empty',
-				title: 'Error',
-				duration: 1000
-			});
-			loading = false;
-			return;
-		}
-
-		await insertData(customColors, data.supabase);
-		fetchData();
-		showCustomColor = !showCustomColor;
-		addNewToast({
-			type: ToastTypeEnum.SUCCESS,
-			message: 'New theme has been created successfully',
-			title: 'Success',
-			duration: 1000
-		});
-		loading = false;
-	}
-
-	let cards = [
-		{
-			id: 0,
-			cardName: 'flat',
-			value: CardType.Flat,
-			imgUrl: '../../../../images/cards/flat.png'
-		},
-
-		{
-			id: 1,
-			cardName: 'main',
-			value: CardType.Main,
-			imgUrl: '../../../../images/cards/main.png'
-		},
-		{
-			id: 2,
-			cardName: 'simple',
-			value: CardType.Simple,
-			imgUrl: '../../../../images/cards/simple.png'
-		},
-		{
-			id: 3,
-			cardName: 'square',
-			value: CardType.Square,
-			imgUrl: '../../../../images/cards/square.png'
-		},
-		{
-			id: 4,
-			cardName: 'video',
-			value: CardType.Video,
-			imgUrl: '../../../../images/cards/video.png'
-		}
-	];
 
 	// get component data
 	let supabase = data.supabase;
@@ -201,6 +114,17 @@
 			showToast = false;
 		}, 1000);
 	}
+
+	setColor.subscribe((value) => {
+		// console.log(customColors);
+		// console.log('Updated color:', value);
+		customColors.backgroundColor = value?.backgroundColor || customColors?.backgroundColor;
+		customColors.onBackgroundColor = value?.onBackgroundColor || customColors?.onBackgroundColor;
+		customColors.onPrimaryColor = value?.onPrimaryColor || customColors?.onPrimaryColor;
+		customColors.onSecondaryColor = value?.onSecondaryColor || customColors?.onSecondaryColor;
+		customColors.primaryColor = value?.primaryColor || customColors?.primaryColor;
+		customColors.secondaryColor = value?.secondaryColor || customColors?.secondaryColor;
+	});
 </script>
 
 {#if showToast}
@@ -212,21 +136,17 @@
 <div class="flex justify-between min-h-screen">
 	<!-- page content -->
 	<div class="w-full">
-		<PageContent {customColors} {selectedColorTheme} {cardShape} title="News" />
+		<PageContent {customColors} {selectedColorTheme} {cardShape} title="news" />
 	</div>
 
 	<div class="h-full bg-[#f9fafb] rounded-md flex flex-col items-center justify-between py-5">
 		<SidebarPage
 			{changeCardType}
-			{cards}
-			{showCustomColor}
-			{formSubmit}
 			{selectedColorTheme}
-			{colors}
 			{update}
 			{changePageTheme}
-			{theme}
 			{customColors}
+			{data}
 		/>
 	</div>
 </div>

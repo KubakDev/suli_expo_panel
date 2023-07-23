@@ -5,28 +5,30 @@
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	import { flip } from 'svelte/animate';
+	import { dndzone } from 'svelte-dnd-action';
 
 	export let data;
 	let currentPage = 1;
 	const pageSize = 8;
 	let totalPages = 1;
 
-	// console.log('service//', service);
-
-	async function fetchData() {
-		let result = await getData(data.supabase, currentPage, pageSize);
-
+	async function fetchData(page: number) {
+		let result = await getData(data.supabase, page, pageSize);
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
 	}
 
-	onMount(fetchData);
+	async function fetchDataOnMount() {
+		await fetchData(currentPage);
+	}
+
+	onMount(fetchDataOnMount);
 
 	async function goToPage(page: any) {
 		currentPage = page;
-		await fetchData();
+		await fetchData(currentPage);
 	}
 
 	function createService() {
@@ -41,7 +43,7 @@
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
-			await fetchData();
+			await fetchData(currentPage);
 		} catch (error) {
 			console.error('Error deleting service:', error);
 		}
@@ -49,6 +51,41 @@
 
 	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
+	}
+
+	let items = $service;
+
+	const flipDurationMs = 300;
+
+	function handleDndConsider(e: any) {
+		items = e.detail.items;
+	}
+
+	async function handleDndFinalize(e: any) {
+		items = e.detail.items;
+
+		items.forEach((item, index) => {
+			item.position = index + 1;
+		});
+
+		await updatePositions();
+		await fetchData(currentPage); // Fetch data again after updating positions
+	}
+
+	let supabase = data.supabase;
+
+	async function updatePositions() {
+		for (const item of items) {
+			// Update position in supabase
+			const { error } = await supabase
+				.from('service')
+				.update({ position: item.position })
+				.eq('id', item.id);
+
+			if (error) {
+				console.error('Error updating position:', error);
+			}
+		}
 	}
 </script>
 
@@ -225,9 +262,13 @@
 						</tr>
 					</thead>
 
-					<tbody>
-						{#each $service as item, index (item.id)}
-							<tr>
+					<tbody
+						use:dndzone={{ items, flipDurationMs }}
+						on:consider={handleDndConsider}
+						on:finalize={handleDndFinalize}
+					>
+						{#each items as item, index (item.id)}
+							<tr animate:flip={{ duration: flipDurationMs }}>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 									<span class="flex justify-center text-gray-700 font-semibold"
 										>{calculateIndex(index)}</span
@@ -286,3 +327,18 @@
 	<!-- Add pagination -->
 	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
+
+<style>
+	tbody {
+		cursor: grab;
+	}
+
+	/* Apply styles for dragging state */
+	tr[data-dnd-dragging] {
+		background-color: #ce1111;
+	}
+
+	tr.dnd-placeholder {
+		background-color: #f0f0f0;
+	}
+</style>

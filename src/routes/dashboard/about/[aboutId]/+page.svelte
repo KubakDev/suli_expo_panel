@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
-	import { about, updateData } from '../../../../stores/aboutStore';
+	import { updateData } from '../../../../stores/aboutStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { AboutModel, AboutModelLang } from '../../../../models/aboutModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -14,7 +11,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -134,7 +131,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				aboutData.image = response.data?.path;
+				aboutData.image = response?.data?.path;
 			} else {
 				aboutData.image = prevThumbnail;
 			}
@@ -142,10 +139,9 @@
 			updateData(aboutData, aboutDataLang, data.supabase);
 
 			setTimeout(() => {
-				showToast = false;	
+				showToast = false;
 				goto('/dashboard/about');
 			}, 1000);
-		
 		} else {
 			isFormSubmitted = true;
 			return;
@@ -155,7 +151,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}

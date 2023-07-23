@@ -1,24 +1,13 @@
 <script lang="ts">
 	import { NavLi, Sidebar, SidebarGroup, SidebarWrapper } from 'flowbite-svelte';
 	import { page } from '$app/stores';
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import {
-		Drawer,
-		Button,
-		CloseButton,
-		SidebarBrand,
-		SidebarCta,
-		SidebarDropdownItem,
-		SidebarDropdownWrapper,
-		SidebarItem
-	} from 'flowbite-svelte';
+	import { Drawer, CloseButton } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
 
 	export let data;
-
 	let hidden2 = true;
-	let spanClass = 'flex-1 ml-3 whitespace-nowrap';
+
 	let transitionParams = {
 		x: -320,
 		duration: 200,
@@ -30,28 +19,11 @@
 		activeUrl = $page.url.pathname;
 	}
 
-	let isSidebarOpen = true;
-	function toggleSidebar() {
-		isSidebarOpen = !isSidebarOpen;
-	}
-
-	window.addEventListener('resize', closeSidebarOnSmallScreen);
-
 	function updateActiveUrl(url: string) {
 		activeUrl = url;
 		goto('/');
 		console.log(activeUrl);
 	}
-
-	window.addEventListener('resize', closeSidebarOnSmallScreen);
-
-	function closeSidebarOnSmallScreen() {
-		if (window.innerWidth < 768) {
-			isSidebarOpen = false;
-		}
-	}
-
-	window.addEventListener('resize', closeSidebarOnSmallScreen);
 </script>
 
 <div class=" w-full">
@@ -105,20 +77,23 @@
 				<Sidebar>
 					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded dark:bg-gray-800 ">
 						<SidebarGroup>
+							<h1 class="text-gray-200 text-xl font-semibold pb-3 flex justify-center">
+								Page Builder
+							</h1>
+							<div class="border border-gray-400 border-opacity-60" />
+
 							{#each data.sideBarPage as pageData}
 								<button
 									on:click={() => {
 										updateActiveUrl(pageData.url + '');
 										goto(pageData.url + '');
 									}}
-									class="flex flex-col text-white py-2"
+									class="flex flex-col text-white py-3 hover:bg-gray-50 hover:bg-opacity-10 px-4 rounded"
 								>
-									<div class="flex items-center gap-3">
-										<img
-											src={pageData.icon}
-											alt="img"
-											class="icon object-cover w-10 h-10"
-										/>{pageData.title}
+									<div class="flex items-center gap-4 text-xl">
+										<img src={pageData.icon} alt="img" class="icon object-cover" />
+
+										{pageData.title}
 									</div>
 								</button>
 							{/each}
@@ -132,14 +107,17 @@
 			<Sidebar>
 				<SidebarWrapper class="bg-[#14213d] min-h-screen">
 					<SidebarGroup class="flex flex-col py-5">
+						<h1 class="text-gray-200 text-xl font-semibold pb-3 text-center">Page Builder</h1>
+						<div class="border border-gray-400 border-opacity-60" />
 						<!-- Sidebar content -->
+
 						{#each data.sideBarPage as pageData}
 							<div
-								class="flex gap-2 items-center py-1 hover:bg-gray-50 hover:bg-opacity-10 px-2 rounded"
+								class=" flex gap-4 items-center py-3 hover:bg-gray-50 hover:bg-opacity-10 px-2 rounded"
 							>
 								<img src={pageData.icon} alt="img" class="icon" />
 								<NavLi
-									class="cursor-pointer text-white"
+									class="cursor-pointer text-white text-lg"
 									on:click={() => {
 										updateActiveUrl(pageData.url + '');
 										goto(pageData.url + '');
@@ -158,7 +136,7 @@
 
 		<!-- Main Content -->
 		<div class="flex-1">
-			<div class={'w-full h-full overflow-auto' + (isSidebarOpen ? 'overlay open' : '')}>
+			<div class="w-full h-full overflow-auto">
 				<slot />
 			</div>
 		</div>

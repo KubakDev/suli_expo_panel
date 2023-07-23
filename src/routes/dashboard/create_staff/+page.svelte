@@ -217,10 +217,7 @@
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Staff List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class=" w-full bg-[#cfd3d63c] rounded-md flex justify-center items-start">
 							<div class="flex justify-start items-start">
 								{#each staffDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

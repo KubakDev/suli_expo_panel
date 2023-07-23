@@ -10,15 +10,12 @@
 	let currentPage = 1;
 	const pageSize = 8;
 	let totalPages = 1;
-	let filteredExhibitions: any = [];
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		filteredExhibitions = result?.data?.filter((exhibition) => !exhibition.status);
-		// console.log(filteredExhibitions);
 	}
 
 	onMount(fetchData);
@@ -35,11 +32,16 @@
 	// delete data
 	async function handleDelete(exhibitionId: any) {
 		try {
-			await data.supabase.from('exhibition').update({ status: 'delete' }).eq('id', exhibitionId);
+			await data.supabase
+				.from('exhibition')
+				.update({ deleted_status: 'delete' })
+				.eq('id', exhibitionId);
+
+			await fetchData();
+
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
-			await fetchData();
 		} catch (error) {
 			console.error('Error deleting exhibition:', error);
 		}
@@ -224,7 +226,7 @@
 					</thead>
 
 					<tbody>
-						{#each filteredExhibitions as item, index (item.id)}
+						{#each $exhibitions as item, index (item.id)}
 							<tr>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
 									<span class="flex justify-center text-gray-700 font-semibold"

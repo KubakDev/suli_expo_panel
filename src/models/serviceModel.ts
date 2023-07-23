@@ -6,6 +6,7 @@ export interface ServiceModel {
 	thumbnail: string;
 	primaryColor?: string;
 	onPrimaryColor?: string;
+	position?: number;
 	service_languages?: ServiceModelLang[];
 }
 

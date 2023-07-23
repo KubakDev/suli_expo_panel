@@ -163,7 +163,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			New data has been inserted successfully
 		</div>
 	{/if}
@@ -185,7 +185,7 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[700px]">
+			<div class="lg:col-span-2 border rounded-lg">
 				<form>
 					<Tabs>
 						{#each aboutDataLang as langData}
@@ -259,7 +259,7 @@
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
-					<TabItem open title="Gallery List">
+					<TabItem open title="About List">
 						<div
 							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 							style="min-height: calc(100vh - 300px);"
@@ -281,7 +281,7 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem title="Gallery Detail">
+					<TabItem title="About Detail">
 						{#each aboutDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage

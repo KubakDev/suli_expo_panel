@@ -1,44 +1,44 @@
 export const load = async () => {
 	let sideBarPage = [
 		{
-			title: 'Build ThemeColor',
+			title: 'ThemeColor',
 			url: '/dashboard/web_builder/buildThemeColor',
-			icon: '../../../../images/icons/Frame-1.svg'
+			icon: '../../../../images/icons/colorIcon.svg'
 		},
 		{
-			title: 'Build News',
+			title: 'News',
 			url: '/dashboard/web_builder/newsBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/newsIcon.svg'
 		},
 		{
-			title: 'Build Service',
+			title: 'Service',
 			url: '/dashboard/web_builder/serviceBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/serviceIcon.svg'
 		},
 		{
-			title: 'Build Gallery',
+			title: 'Gallery',
 			url: '/dashboard/web_builder/galleryBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/galleryIcon.svg'
 		},
 		{
-			title: 'Build Magazine',
+			title: 'Magazine',
 			url: '/dashboard/web_builder/magazineBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/magazineIcon.svg'
 		},
 		{
-			title: 'Build publishing',
+			title: 'publishing',
 			url: '/dashboard/web_builder/publishingBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/publishingIcon.svg'
 		},
 		{
-			title: 'Build Video',
+			title: 'Video',
 			url: '/dashboard/web_builder/media_videoBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/videoIcon.svg'
 		},
 		{
-			title: 'Build Exhibition',
+			title: 'Exhibition',
 			url: '/dashboard/web_builder/exhibitionBuilder',
-			icon: '../../../../images/icons/Frame.svg'
+			icon: '../../../../images/icons/exhibitionIcon.svg'
 		}
 	];
 	return { sideBarPage };

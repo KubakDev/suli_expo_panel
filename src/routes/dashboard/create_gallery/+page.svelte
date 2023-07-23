@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -13,7 +13,7 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 
@@ -204,7 +204,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			New data has been inserted successfully
 		</div>
 	{/if}
@@ -304,29 +304,29 @@
 					</Tabs>
 
 					<div class="border mb-2 border-gray-300 mx-10" />
-
-					<!-- upload gallery image -->
-					<div class="px-10 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="pdf_file" class="mb-2">Upload Gallery Image</Label>
-							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-							{#if isFormSubmitted && sliderImagesFile.length === 0}
-								<p class="error-message">Please upload at least one image for the slider</p>
-							{/if}
-						</Label>
-					</div>
-
-					<!-- submit Form -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Add
-						</button>
-					</div>
 				</form>
+
+				<!-- upload gallery image -->
+				<div class="px-4 pt-5">
+					<Label class="space-y-2 mb-2">
+						<Label for="image" class="mb-2 px-8">Upload Gallery Image</Label>
+						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+						{#if isFormSubmitted && sliderImagesFile.length === 0}
+							<p class="error-message px-8">Please upload at least one image for the slider</p>
+						{/if}
+					</Label>
+				</div>
+
+				<!-- submit Form -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Add
+					</button>
+				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">

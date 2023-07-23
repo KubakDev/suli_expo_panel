@@ -149,10 +149,9 @@
 			updateData(carouselData, carouselDataLang, data.supabase);
 
 			setTimeout(() => {
-				showToast = false;	
+				showToast = false;
 				goto('/dashboard/carousel');
 			}, 1000);
-		
 		} else {
 			isFormSubmitted = true;
 			return;
@@ -162,7 +161,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}

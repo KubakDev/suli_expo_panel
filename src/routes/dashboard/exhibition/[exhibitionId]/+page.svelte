@@ -13,7 +13,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
 	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 
@@ -25,7 +25,6 @@
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let carouselImages: any = undefined;
-	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let isFormSubmitted = false;
@@ -39,7 +38,7 @@
 		country_number: 0,
 		company_number: 0,
 		exhibition_type: '',
-		status: '',
+		deleted_status: '',
 		start_date: new Date(),
 		end_date: new Date()
 	};
@@ -63,7 +62,7 @@
 					}`,
 					pdf_files: result.data?.pdf_files,
 					exhibition_type: result.data?.exhibition_type,
-					status: result.data?.status,
+					deleted_status: result.data?.deleted_status,
 					company_number: result.data?.company_number,
 					country_number: result.data?.country_number,
 					start_date: new Date(result.data?.start_date),
@@ -204,7 +203,6 @@
 		}
 
 		if (hasDataForLanguage && isValidExhibitionObject) {
-			submitted = true;
 			showToast = true;
 			exhibitionsData.pdf_files = [];
 			exhibitionsData.images = [];
@@ -335,7 +333,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0 z-40">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -492,42 +490,41 @@
 						{/each}
 					</Tabs>
 					<div class="border mb-2 border-gray-300 mx-10" />
-
-					<div class="grid lg:grid-cols-2 gap-4 px-8 pt-5">
-						<!-- upload Exhibition image -->
-
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload Exhibition Images</Label>
-							<FileUploadComponent
-								on:imageChanges={imageChanges}
-								on:imageFilesChanges={getAllImageFile}
-								data={{ images: images }}
-							/>
-						</Label>
-
-						<!-- upload pdf file -->
-
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload PDF Files</Label>
-							<PDFUploadComponent
-								on:imageChanges={pdfChanges}
-								on:imageFilesChanges={getAllPDFFile}
-								data={{ pdfFiles: pdf_files }}
-							/>
-						</Label>
-					</div>
-
-					<!-- button for submitForm -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Update
-						</button>
-					</div>
 				</form>
+
+				<div class="grid lg:grid-cols-2 pt-5">
+					<!-- upload Exhibition image -->
+					<Label class="space-y-2 mb-2">
+						<Label for="image" class="mb-2 px-8">Upload Exhibition Images</Label>
+						<FileUploadComponent
+							on:imageChanges={imageChanges}
+							on:imageFilesChanges={getAllImageFile}
+							data={{ images: images }}
+						/>
+					</Label>
+
+					<!-- upload pdf file -->
+
+					<Label class="space-y-2 mb-2">
+						<Label for="pdf" class="mb-2 px-8">Upload PDF Files</Label>
+						<PDFUploadComponent
+							on:imageChanges={pdfChanges}
+							on:imageFilesChanges={getAllPDFFile}
+							data={{ pdfFiles: pdf_files }}
+						/>
+					</Label>
+				</div>
+
+				<!-- button for submitForm -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Update
+					</button>
+				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">

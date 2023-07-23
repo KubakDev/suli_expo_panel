@@ -189,8 +189,8 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
-				<form>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border">
 					<Tabs>
 						{#each promoDataLang as langData}
 							<TabItem
@@ -262,10 +262,7 @@
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Promotion List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class=" w-full rounded-md flex justify-center items-start min-h-full">
 							<div class="flex justify-start items-start">
 								{#each promoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

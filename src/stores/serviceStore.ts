@@ -38,11 +38,11 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 			.select('*,service_languages(*)')
 			.range((page - 1) * pageSize, page * pageSize - 1)
 			.limit(pageSize)
-			.order('created_at', { ascending: false });
+			.order('position', { ascending: true });
 
 		const { count } = await supabase.from('service').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
+		// console.log('/////////', count);
 		// console.log('data : ', data);
 		const result = {
 			data: data,

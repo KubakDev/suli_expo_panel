@@ -4,7 +4,6 @@
 	import { updateData } from '../../../../stores/newsStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { NewsModel, NewsModelLang } from '../../../../models/newsModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -17,7 +16,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -271,7 +270,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -382,30 +381,24 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 border-gray-300 mx-10" />
-					<!-- upload news image -->
-					<div class="px-10 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload News Images</Label>
-							<FileUploadComponent
-								on:imageChanges={imageChanges}
-								on:imageFilesChanges={getAllImageFile}
-								data={{ images: images }}
-							/>
-						</Label>
-					</div>
-
-					<!-- button for submitForm -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Update
-						</button>
-					</div>
 				</form>
+				<!-- upload news image -->
+				<FileUploadComponent
+					on:imageChanges={imageChanges}
+					on:imageFilesChanges={getAllImageFile}
+					data={{ images: images }}
+				/>
+				<!-- upload news image -->
+				<!-- button for submitForm -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Update
+					</button>
+				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
