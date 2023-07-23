@@ -13,11 +13,10 @@
 	import { goto } from '$app/navigation';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 
-	let submitted = false;
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
@@ -123,7 +122,6 @@
 			return;
 		}
 
-		submitted = true;
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
@@ -157,8 +155,6 @@
 	}
 
 	function resetForm() {
-		submitted = false;
-
 		newsObject = {
 			images: [],
 			thumbnail: '',
@@ -309,31 +305,26 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-
-					<div class="border mb-2 border-gray-300 mx-10" />
-
-					<!-- upload news image -->
-					<div class="px-10 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="pdf_file" class="mb-2">Upload News Image</Label>
-							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-							{#if isFormSubmitted && sliderImagesFile.length === 0}
-								<p class="error-message">Please upload at least one image for the slider</p>
-							{/if}
-						</Label>
-					</div>
-
-					<!-- submit Form -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Add
-						</button>
-					</div>
 				</form>
+				<!-- upload news image -->
+				<Label for="images" class="mb-2 px-8">Upload Image File</Label>
+				<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+				{#if isFormSubmitted && sliderImagesFile.length === 0}
+					<p class="error-message px-8">Please upload at least one image for the slider</p>
+				{/if}
+				<div class="py-10" />
+				<!-- upload news image -->
+
+				<!-- submit Form -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Add
+					</button>
+				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">

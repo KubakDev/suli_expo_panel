@@ -36,14 +36,18 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 		const { data, error } = await supabase
 			.from('exhibition')
 			.select('*,exhibition_languages(*)')
+			.is('deleted_status', null)
 			.range((page - 1) * pageSize, page * pageSize - 1)
 			.limit(pageSize)
 			.order('created_at', { ascending: false });
 
-		const { count } = await supabase.from('exhibition').select('count', { count: 'exact' });
+		const { count } = await supabase
+			.from('exhibition')
+			.select('count', { count: 'exact' })
+			.is('deleted_status', null);
 
-		// console.log('/////////', count);
-		// console.log('data : ', data);
+		// const filteredData = data?.filter((exhibition) => exhibition.deleted_status === null);
+
 		const result = {
 			data: data,
 			count: count

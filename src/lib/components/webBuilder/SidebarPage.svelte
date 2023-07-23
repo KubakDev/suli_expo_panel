@@ -1,16 +1,99 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Sidebar, SidebarDropdownWrapper, SidebarGroup, SidebarWrapper } from 'flowbite-svelte';
+	import { CardType } from 'kubak-svelte-component';
+	//@ts-ignore
+	import { isEmpty } from 'validator';
+	import { getSetColorData } from '../../../stores/setColorStore';
+	import { addNewToast } from '../../../stores/toastStore';
+	import { ToastTypeEnum } from '../../../models/toastTypeEnum';
+	import { insertData, getData, theme } from '../../../stores/colorTheme';
 
-	export let changeCardType: any;
-	export let cards: any;
-	export let showCustomColor: any;
-	export let formSubmit: any;
+	let loading = false;
+	export let data: any;
 	export let selectedColorTheme: any;
-	export let colors: any;
 	export let update: any;
-	export let theme: any;
 	export let changePageTheme: any;
 	export let customColors: any;
+	export let changeCardType: any;
+
+	let showCustomColor: boolean = false;
+	let cards = [
+		{
+			id: 0,
+			cardName: 'flat',
+			value: CardType.Flat,
+			imgUrl: '../../../../images/cards/flat.png'
+		},
+
+		{
+			id: 1,
+			cardName: 'main',
+			value: CardType.Main,
+			imgUrl: '../../../../images/cards/main.png'
+		},
+		{
+			id: 2,
+			cardName: 'simple',
+			value: CardType.Simple,
+			imgUrl: '../../../../images/cards/simple.png'
+		},
+		{
+			id: 3,
+			cardName: 'square',
+			value: CardType.Square,
+			imgUrl: '../../../../images/cards/square.png'
+		},
+		{
+			id: 4,
+			cardName: 'video',
+			value: CardType.Video,
+			imgUrl: '../../../../images/cards/video.png'
+		}
+	];
+
+	let colors = [
+		'primaryColor',
+		'secondaryColor',
+		'onPrimaryColor',
+		'onSecondaryColor',
+		'backgroundColor',
+		'onBackgroundColor'
+	];
+	// get color_palette data
+	async function fetchData() {
+		let result = await getData(data.supabase);
+		// console.log('????', result);
+	}
+	onMount(fetchData);
+
+	//insert new color_palette
+	async function formSubmit() {
+		loading = true;
+
+		// Validate the name field
+		if (typeof customColors.name !== 'string' || isEmpty(customColors.name.trim())) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Name field cannot be empty',
+				title: 'Error',
+				duration: 1000
+			});
+			loading = false;
+			return;
+		}
+
+		await insertData(customColors, data.supabase);
+		fetchData();
+		showCustomColor = !showCustomColor;
+		addNewToast({
+			type: ToastTypeEnum.SUCCESS,
+			message: 'New theme has been created successfully',
+			title: 'Success',
+			duration: 1000
+		});
+		loading = false;
+	}
 </script>
 
 <Sidebar style="width:300px">
@@ -225,6 +308,7 @@
 														id="head"
 														name="head"
 														bind:value={customColors[color]}
+														on:change={getSetColorData(customColors)}
 													/>
 												</div>
 

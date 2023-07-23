@@ -117,7 +117,7 @@
 
 <div style="min-height: calc(100vh - 160px);" class="max-w-screen-xl mx-auto">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			successfully submitted
 		</div>
 	{/if}

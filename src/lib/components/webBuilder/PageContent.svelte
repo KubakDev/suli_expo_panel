@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ExpoCard } from 'kubak-svelte-component';
+
 	export let customColors: any;
 	export let selectedColorTheme: any;
 	export let cardShape: any;
