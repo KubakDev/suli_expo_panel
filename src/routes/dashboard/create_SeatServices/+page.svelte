@@ -229,10 +229,7 @@
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Seat Service List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class=" w-full rounded-md p-10 flex justify-center items-start">
 							<div class="flex justify-start items-start">
 								{#each seatServicesDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

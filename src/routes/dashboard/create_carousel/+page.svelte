@@ -1,14 +1,5 @@
 <script lang="ts">
-	import {
-		Label,
-		Button,
-		Input,
-		Fileupload,
-		Textarea,
-		Select,
-		Tabs,
-		TabItem
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Select, Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/carouselStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import {
@@ -19,9 +10,8 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -107,7 +97,7 @@
 		showToast = true;
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 		console.log(response);
-		carouselObject.image = response.data?.path;
+		carouselObject.image = response.data?.path || '';
 		insertData(carouselObject, carouselDataLang, data.supabase);
 
 		resetForm();
@@ -139,7 +129,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			New data has been inserted successfully
 		</div>
 	{/if}
@@ -262,10 +252,7 @@
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Carousel List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class=" w-full rounded-md p-10 flex justify-center items-start">
 							<div class="flex justify-start items-start">
 								{#each carouselDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

@@ -10,7 +10,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -127,7 +127,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				staffData.image = response.data?.path;
+				staffData.image = response.data?.path || '';
 			} else {
 				staffData.image = prevThumbnail;
 			}
@@ -147,7 +147,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}

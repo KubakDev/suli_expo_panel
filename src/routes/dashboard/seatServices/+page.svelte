@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import {
 		seatServices,
@@ -34,7 +34,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -44,7 +44,7 @@
 	}
 
 	// delete data
-	async function handleDelete(seatServicesId) {
+	async function handleDelete(seatServicesId: any) {
 		try {
 			await deleteSeatService(seatServicesId, data.supabase);
 			// alert('seatServices deleted successfully!');
@@ -57,15 +57,8 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
-	}
-
-	// convert html tag that return it from db to regular text
-	function extractText(html) {
-		const tempElement = document.createElement('div');
-		tempElement.innerHTML = html;
-		return tempElement.textContent || tempElement.innerText || '';
 	}
 </script>
 

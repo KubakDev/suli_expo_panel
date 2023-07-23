@@ -1,5 +1,5 @@
 export interface PageData {
-	id: number;
+	id?: number;
 	componentId: number;
 	componentTypeId: number;
 	page: string;

@@ -191,7 +191,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				galleryData.thumbnail = response.data?.path;
+				galleryData.thumbnail = response.data?.path || '';
 			} else {
 				galleryData.thumbnail = prevThumbnail;
 			}
@@ -277,7 +277,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -385,29 +385,30 @@
 						{/each}
 					</Tabs>
 					<div class="border mb-2 border-gray-300 mx-10" />
-					<!-- upload gallery image -->
-					<div class="px-10 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload Gallery Images</Label>
-							<FileUploadComponent
-								on:imageChanges={imageChanges}
-								on:imageFilesChanges={getAllImageFile}
-								data={{ images: images }}
-							/>
-						</Label>
-					</div>
-
-					<!-- button for submitForm -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Update
-						</button>
-					</div>
 				</form>
+
+				<!-- upload gallery image -->
+				<div class="px-4 pt-5">
+					<Label class="space-y-2 mb-2">
+						<Label for="first_name" class="mb-2 px-8">Upload Gallery Images</Label>
+						<FileUploadComponent
+							on:imageChanges={imageChanges}
+							on:imageFilesChanges={getAllImageFile}
+							data={{ images: images }}
+						/>
+					</Label>
+				</div>
+
+				<!-- button for submitForm -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Update
+					</button>
+				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">

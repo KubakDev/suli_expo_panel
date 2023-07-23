@@ -31,26 +31,14 @@ export const insertData = async (
 };
 
 //Get all service data &&
-export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+export const getData = async (supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase
 			.from('service')
 			.select('*,service_languages(*)')
-			.range((page - 1) * pageSize, page * pageSize - 1)
-			.limit(pageSize)
-			.order('created_at', { ascending: false });
-
-		const { count } = await supabase.from('service').select('count', { count: 'exact' });
-
-		console.log('/////////', count);
-		// console.log('data : ', data);
-		const result = {
-			data: data,
-			count: count
-		};
+			.order('position', { ascending: true });
 
 		service.set(data ?? []);
-		return result;
 	} catch (error) {
 		console.error(error);
 		throw error;

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { exhibitions, getData, deleteData } from '../../../stores/exhibitionStore';
+	import { exhibitions, getData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
@@ -11,20 +11,16 @@
 	const pageSize = 8;
 	let totalPages = 1;
 
-	// console.log('exhibition//', exhibition);
-
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
 	}
 
 	onMount(fetchData);
 
-	async function goToPage(page:number) {
+	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -34,20 +30,24 @@
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId:number) {
+	async function handleDelete(exhibitionId: any) {
 		try {
-			await deleteData(exhibitionId, data.supabase);
-			// alert('exhibition deleted successfully!');
+			await data.supabase
+				.from('exhibition')
+				.update({ deleted_status: 'delete' })
+				.eq('id', exhibitionId);
+
+			await fetchData();
+
 			if (currentPage > totalPages) {
 				currentPage = totalPages;
 			}
-			await fetchData();
 		} catch (error) {
 			console.error('Error deleting exhibition:', error);
 		}
 	}
 
-	function calculateIndex(index:number) {
+	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 </script>

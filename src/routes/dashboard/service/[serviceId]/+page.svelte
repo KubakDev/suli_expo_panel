@@ -7,13 +7,12 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -27,7 +26,6 @@
 	let serviceData: ServiceModel = {
 		id: 0,
 		thumbnail: '',
-		exhibition_type: '',
 		primaryColor: '',
 		onPrimaryColor: ''
 	};
@@ -53,13 +51,6 @@
 
 	onMount(fetchData);
 
-	const shajwan = { x: 1 };
-
-	function test(param) {
-		return param.x++;
-	}
-	console.log(test(shajwan));
-	console.log(shajwan.x);
 	//**** get data from db and put it into the fields ****//
 	async function getServiceData() {
 		await data.supabase
@@ -165,7 +156,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				serviceData.thumbnail = response.data?.path;
+				serviceData.thumbnail = response.data?.path || '';
 			} else {
 				serviceData.thumbnail = prevThumbnail;
 			}

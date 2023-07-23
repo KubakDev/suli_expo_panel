@@ -43,8 +43,8 @@
 			<NavBrand href="/dashboard">
 				<div class="mr-3 h-6 sm:h-9">
 					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">
-						Sulaymaniyah Expedition
-					</span>
+						SulyExpo</span
+					>
 				</div>
 			</NavBrand>
 			<NavHamburger btnClass="ml-3 lg:hidden" on:click={toggle} />

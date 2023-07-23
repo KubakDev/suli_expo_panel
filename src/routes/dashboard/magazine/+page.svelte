@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { magazine, getData, deleteData } from '../../../stores/magazineStore';
 	import { goto } from '$app/navigation';
@@ -9,13 +9,10 @@
 	export let data;
 	let currentPage = 1;
 	const pageSize = 8;
-
-	let magazineData = [];
 	let totalPages = 1;
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-		magazineData = result.data;
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -25,7 +22,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -35,7 +32,7 @@
 	}
 
 	// delete data
-	async function handleDelete(magazineId) {
+	async function handleDelete(magazineId: any) {
 		try {
 			await deleteData(magazineId, data.supabase);
 			// alert('Magazine deleted successfully!');
@@ -48,12 +45,12 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 
 	// convert html tag that return it from db to regular text
-	function extractText(html) {
+	function extractText(html: any) {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;
 		return tempElement.textContent || tempElement.innerText || '';

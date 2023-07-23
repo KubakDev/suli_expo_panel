@@ -19,6 +19,7 @@
 
 	onMount(fetchData);
 
+	
 	function createContact() {
 		goto('/dashboard/create_contactInfo');
 	}

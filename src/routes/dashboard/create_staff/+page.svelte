@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/staffStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { StaffModel, StaffModelLang } from '../../../models/staffModel';
@@ -92,7 +90,7 @@
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
 		// console.log(response);
-		staffObject.image = response.data?.path;
+		staffObject.image = response.data?.path || '';
 
 		insertData(staffObject, staffDataLang, data.supabase);
 
@@ -219,10 +217,7 @@
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Staff List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class=" w-full bg-[#cfd3d63c] rounded-md flex justify-center items-start">
 							<div class="flex justify-start items-start">
 								{#each staffDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

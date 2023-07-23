@@ -7,7 +7,7 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { onMount } from 'svelte';
-	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
@@ -117,7 +117,7 @@
 
 		// Upload video thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		videoObjectData.thumbnail = response.data?.path;
+		videoObjectData.thumbnail = response.data?.path || '';
 
 		// Insert data into Supabase
 		insertData(videoObjectData, videoDataLang, data.supabase);
