@@ -86,6 +86,7 @@
 		"svelte-loading-spinners": "^0.3.4",
 		"svelte-sidebar-menu": "^0.9.12",
 		"svelte-toast": "^1.0.0",
+		"svelte-transitions": "^1.2.0",
 		"svelte-youtube-embed": "^0.1.20",
 		"swiper": "^9.4.1",
 		"tw-elements": "^1.0.0-beta2",
