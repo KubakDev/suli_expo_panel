@@ -38,10 +38,45 @@
 		instagram_link: '',
 		linkedin_link: '',
 		youtube_link: '',
+		twitter_link: '',
 		created_at: new Date()
 	};
 
 	async function formSubmit() {
+		/** Add validation for contactInfoObject  **/
+		const isEmptyContactInfoObject =
+			contactInfoObject?.facebook_link?.trim() === '' &&
+			contactInfoObject?.instagram_link?.trim() === '' &&
+			contactInfoObject?.linkedin_link?.trim() === '' &&
+			contactInfoObject?.youtube_link?.trim() === '' &&
+			contactInfoObject?.twitter_link?.trim() === '';
+		if (isEmptyContactInfoObject) {
+			errorMessages = {
+				...errorMessages,
+				facebook_link:
+					contactInfoObject.facebook_link.trim() === '' ? 'Please enter a Facebook link.' : '',
+				instagram_link:
+					contactInfoObject.instagram_link.trim() === '' ? 'Please enter an Instagram link.' : '',
+				linkedin_link:
+					contactInfoObject.linkedin_link.trim() === '' ? 'Please enter a LinkedIn link.' : '',
+				youtube_link:
+					contactInfoObject.youtube_link.trim() === '' ? 'Please enter a YouTube link.' : '',
+				twitter_link:
+					contactInfoObject.twitter_link.trim() === '' ? 'Please enter a Twitter link.' : ''
+			};
+		} else {
+			errorMessages = {
+				...errorMessages,
+				facebook_link: '',
+				instagram_link: '',
+				linkedin_link: '',
+				youtube_link: '',
+				twitter_link: ''
+			};
+		}
+		/** Add validation for contactInfoObject  **/
+
+		/**Add validation for contactInfoDataLang **/
 		const isEmpty = contactInfoDataLang.some((lang) => {
 			const isEmptyField =
 				lang?.location?.trim() === '' &&
@@ -91,8 +126,9 @@
 
 			return isEmptyField;
 		});
+		/**Add validation for contactInfoDataLang **/
 
-		if (!isEmpty) {
+		if (!isEmptyContactInfoObject && !isEmpty) {
 			submitted = true;
 			showToast = true;
 
@@ -119,6 +155,7 @@
 			instagram_link: '',
 			linkedin_link: '',
 			youtube_link: '',
+			twitter_link: '',
 			created_at: new Date()
 		};
 
@@ -148,9 +185,9 @@
 
 	<div class="px-10 lg:px-20 py-10 border m-10 bg-white rounded-lg">
 		<Form class="form " {submitted}>
-			<div class="grid grid-cols-4 gap-3">
+			<div class="grid grid-cols-3 gap-x-2 gap-y-8">
 				<div class="w-full h-16 mb-8 lg:mb-0">
-					<Label for="administration" class="mb-2">Facebook link</Label>
+					<Label for="administration" class="mb-2">Facebook</Label>
 					<Input
 						type="text"
 						placeholder="Enter Link"
@@ -164,7 +201,7 @@
 				</div>
 
 				<div class="w-full h-16 mb-8 lg:mb-0">
-					<Label for="administration" class="mb-2">Instagram link</Label>
+					<Label for="administration" class="mb-2">Instagram</Label>
 					<Input
 						type="text"
 						placeholder="Enter Link"
@@ -178,7 +215,7 @@
 				</div>
 
 				<div class="w-full h-16 mb-8 lg:mb-0">
-					<Label for="administration" class="mb-2">linkedIn link</Label>
+					<Label for="administration" class="mb-2">linkedIn</Label>
 					<Input
 						type="text"
 						placeholder="Enter Link"
@@ -192,7 +229,7 @@
 				</div>
 
 				<div class="w-full h-16 mb-8 lg:mb-0">
-					<Label for="administration" class="mb-2">Youtube link</Label>
+					<Label for="administration" class="mb-2">Youtube</Label>
 					<Input
 						type="text"
 						placeholder="Enter Link"
@@ -202,6 +239,20 @@
 					/>
 					{#if !contactInfoObject.youtube_link.trim() && errorMessages['youtube_link']}
 						<p class="error-message">{errorMessages['youtube_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Twitter</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.twitter_link}
+						id="twitter_link"
+						name="twitter_link"
+					/>
+					{#if !contactInfoObject.twitter_link.trim() && errorMessages['twitter_link']}
+						<p class="error-message">{errorMessages['twitter_link']}</p>
 					{/if}
 				</div>
 			</div>

@@ -14,6 +14,7 @@
 	let submitted = false;
 	let showToast = false;
 	let errorMessages: any = {};
+
 	let contactDataLang: ContactModelLang[] = [];
 	let contactData: ContactModel = {
 		id: 0,
@@ -21,6 +22,7 @@
 		instagram_link: '',
 		linkedin_link: '',
 		youtube_link: '',
+		twitter_link: '',
 		created_at: new Date()
 	};
 	const id = $page.params.contactInfoId;
@@ -40,6 +42,7 @@
 					instagram_link: result.data?.instagram_link,
 					linkedin_link: result.data?.linkedin_link,
 					youtube_link: result.data?.youtube_link,
+					twitter_link: result.data?.twitter_link,
 					created_at: new Date(result.data?.created_at)
 				};
 
@@ -80,6 +83,7 @@
 	//**Handle submit**//
 	async function formSubmit() {
 		let isEmpty = false;
+		// Validate contactDataLang
 		for (let i = 0; i < contactDataLang.length; i++) {
 			const lang = contactDataLang[i];
 			const isEmptyField =
@@ -98,7 +102,38 @@
 			}
 
 			isEmpty = isEmpty || isEmptyField;
-			console.log(isEmptyField);
+		}
+
+		// Validate contactData
+		const isEmptyContactData =
+			contactData?.facebook_link?.trim() === '' ||
+			contactData?.instagram_link?.trim() === '' ||
+			contactData?.linkedin_link?.trim() === '' ||
+			contactData?.youtube_link?.trim() === '' ||
+			contactData?.twitter_link?.trim() === '';
+
+		if (isEmptyContactData) {
+			errorMessages = {
+				...errorMessages,
+				facebook_link:
+					contactData.facebook_link.trim() === '' ? 'Please enter a Facebook link.' : '',
+				instagram_link:
+					contactData.instagram_link.trim() === '' ? 'Please enter an Instagram link.' : '',
+				linkedin_link:
+					contactData.linkedin_link.trim() === '' ? 'Please enter a LinkedIn link.' : '',
+				youtube_link: contactData.youtube_link.trim() === '' ? 'Please enter a YouTube link.' : '',
+				twitter_link: contactData.twitter_link.trim() === '' ? 'Please enter a Twitter link.' : ''
+			};
+			isEmpty = true;
+		} else {
+			errorMessages = {
+				...errorMessages,
+				facebook_link: '',
+				instagram_link: '',
+				linkedin_link: '',
+				youtube_link: '',
+				twitter_link: ''
+			};
 		}
 
 		if (!isEmpty) {
@@ -112,8 +147,6 @@
 				goto('/dashboard/contactInfo');
 			}, 1000);
 		}
-
-		console.log(errorMessages);
 	}
 
 	function isValidEmail(email: string) {
@@ -136,7 +169,7 @@
 				Contact Information Data
 			</h1>
 
-			<div class="grid grid-cols-4 gap-3 pt-10">
+			<div class="grid grid-cols-3 gap-x-2 gap-y-8 pt-10">
 				<div class="w-full h-16 mb-8 lg:mb-0">
 					<Label for="administration" class="mb-2">Facebook link</Label>
 					<Input
@@ -190,6 +223,20 @@
 					/>
 					{#if !contactData.youtube_link.trim() && errorMessages['youtube_link']}
 						<p class="error-message">{errorMessages['youtube_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Twitter link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.twitter_link}
+						id="twitter_link"
+						name="twitter_link"
+					/>
+					{#if !contactData.twitter_link.trim() && errorMessages['twitter_link']}
+						<p class="error-message">{errorMessages['twitter_link']}</p>
 					{/if}
 				</div>
 			</div>

@@ -7,6 +7,7 @@ export interface ContactModel {
 	instagram_link: string;
 	linkedin_link: string;
 	youtube_link: string;
+	twitter_link: string;
 	contact_info_languages?: ContactModelLang[];
 }
 
