@@ -8,26 +8,17 @@
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 
 	export let data;
-
-	let items = $service;
+	let items: any = [];
 
 	async function fetchData() {
-		// Call the API or database to get the data
-		let result = await getData(data.supabase);
+		await getData(data.supabase);
 		items = $service;
-		return items;
+
+		// console.log($service);
+		// console.log(items);
 	}
 
-	onMount(() => {
-		console.log('///', $service);
-	});
-
-	async function fetchDataOnMount() {
-		let items = await fetchData();
-		service.set(items); // Assuming `service` is a writable store
-	}
-
-	onMount(fetchDataOnMount);
+	onMount(fetchData);
 
 	function createService() {
 		goto('/dashboard/create_service');
@@ -259,7 +250,7 @@
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-									<span class="flex justify-center text-gray-700 font-semibold">{index}</span>
+									<span class="flex justify-center text-gray-700 font-semibold">{index + 1}</span>
 								</td>
 
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">

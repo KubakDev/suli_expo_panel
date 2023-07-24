@@ -39,6 +39,7 @@ export const getData = async (supabase: SupabaseClient) => {
 			.order('position', { ascending: true });
 
 		service.set(data ?? []);
+		// console.log(data);
 	} catch (error) {
 		console.error(error);
 		throw error;

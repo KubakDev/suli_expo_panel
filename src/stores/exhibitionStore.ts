@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { ExhibitionsModel, ExhibitionsModelLang } from '../models/exhibitionModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { exhibition } from './exhibitionTypeStore';
 
 export const exhibitions = writable<ExhibitionsModel[]>([]);
 
@@ -31,29 +32,14 @@ export const insertData = async (
 };
 
 //Get all exhibition data
-export const getData = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+export const getData = async (supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase
 			.from('exhibition')
 			.select('*,exhibition_languages(*)')
-			.is('deleted_status', null)
-			.range((page - 1) * pageSize, page * pageSize - 1)
-			.limit(pageSize)
-			.order('created_at', { ascending: false });
+			.order('position', { ascending: true });
 
-		const { count } = await supabase
-			.from('exhibition')
-			.select('count', { count: 'exact' })
-			.is('deleted_status', null);
-
-		// const filteredData = data?.filter((exhibition) => exhibition.deleted_status === null);
-
-		const result = {
-			data: data,
-			count: count
-		};
 		exhibitions.set(data ?? []);
-		return result;
 	} catch (error) {
 		console.error(error);
 		throw error;
