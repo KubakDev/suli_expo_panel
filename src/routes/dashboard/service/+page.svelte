@@ -39,12 +39,13 @@
 
 	function handleDndConsider(e: any) {
 		items = e.detail.items;
+		// console.log(items);
 	}
 
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
 
-		items.forEach((item, index) => {
+		items.forEach((item: any, index: any) => {
 			item.position = index + 1;
 		});
 
@@ -100,7 +101,6 @@
 	</div>
 
 	<!-- table data -->
-
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">

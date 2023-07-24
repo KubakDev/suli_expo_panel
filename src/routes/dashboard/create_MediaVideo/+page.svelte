@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
+	import {
+		Label,
+		Button,
+		Input,
+		Fileupload,
+		Textarea,
+		Select,
+		InputAddon,
+		ButtonGroup
+	} from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -151,7 +160,13 @@
 	}
 
 	function handleSelectChange(event: any) {
-		videoObjectData.exhibition_id = event.target.value;
+		const selectedValue = event.target.value;
+		console.log(event.target);
+		if (selectedValue === 'Select Type') {
+			delete videoObjectData.exhibition_id;
+		} else {
+			videoObjectData.exhibition_id = selectedValue;
+		}
 	}
 </script>
 
@@ -175,21 +190,30 @@
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<select
-						class="border border-gray-300 rounded-md w-full"
-						id="type"
-						name="type"
-						placeholder="Please select a valid type"
-						on:change={handleSelectChange}
-					>
-						<option disabled selected>Select type</option>
-						{#each exhibitionData as exhibition}
-							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-						{/each}
-					</select>
-				</Label>
+				<div class="mb-6">
+					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
+					<ButtonGroup class="w-full">
+						<select
+							class="border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							id="type"
+							name="type"
+							on:change={handleSelectChange}
+						>
+							<option>Select Type</option>
+							{#each exhibitionData as exhibition}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+							{/each}
+						</select>
+						<InputAddon class="bg-white">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+								<path d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+								/>
+							</svg>
+						</InputAddon>
+					</ButtonGroup>
+				</div>
 			</div>
 
 			<div class="col-span-1">

@@ -46,7 +46,7 @@
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
 
-		items.forEach((item, index) => {
+		items.forEach((item: any, index: any) => {
 			item.position = index + 1;
 		});
 
