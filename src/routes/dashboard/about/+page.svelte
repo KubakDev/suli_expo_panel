@@ -5,6 +5,8 @@
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
 	export let data;
 	let aboutData: any = [];
@@ -247,16 +249,27 @@
 											{/each}
 										</td>
 									{/if}
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-										<div class="flex items-center">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32"
+									>
+										<div class="flex justify-center items-center gap-2">
 											<button
 												on:click={() => {
 													goto(`/dashboard/about/${item.id}`);
 												}}
-												class="text-green-400 hover:text-green-600 hover:underline"
+												class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 											>
-												Edit</button
-											>
+												Edit
+												<span
+													><Icon
+														src={AiFillEdit}
+														color="green"
+														size="20"
+														className="custom-icon"
+														title="Custom icon params"
+													/></span
+												>
+											</button>
 										</div>
 									</td>
 								</tr>
@@ -477,16 +490,27 @@
 											{/each}
 										</td>
 									{/if}
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-										<div class="flex items-center">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32"
+									>
+										<div class="flex justify-center items-center gap-2">
 											<button
 												on:click={() => {
 													goto(`/dashboard/staff/${item.id}`);
 												}}
-												class="text-green-400 hover:text-green-600 hover:underline"
+												class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 											>
-												Edit</button
-											>
+												Edit
+												<span
+													><Icon
+														src={AiFillEdit}
+														color="green"
+														size="20"
+														className="custom-icon"
+														title="Custom icon params"
+													/></span
+												>
+											</button>
 
 											<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 										</div>

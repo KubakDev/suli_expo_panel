@@ -303,8 +303,8 @@
 								</div>
 							</td>
 
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-								<div class="flex justify-center items-center divide-x-2">
+							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32">
+								<div class="flex justify-between items-center">
 									<div class="flex gap-2 px-2">
 										<div>
 											{#if item.active}
