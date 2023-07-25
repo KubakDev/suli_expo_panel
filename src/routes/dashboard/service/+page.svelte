@@ -6,28 +6,19 @@
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
 	export let data;
-
-	let items = $service;
+	let items: any = [];
+	let flag = false;
 
 	async function fetchData() {
-		// Call the API or database to get the data
-		let result = await getData(data.supabase);
+		await getData(data.supabase);
 		items = $service;
-		return items;
+		flag = false;
 	}
-
-	onMount(() => {
-		console.log('///', $service);
-	});
-
-	async function fetchDataOnMount() {
-		let items = await fetchData();
-		service.set(items); // Assuming `service` is a writable store
-	}
-
-	onMount(fetchDataOnMount);
+	onMount(fetchData);
 
 	function createService() {
 		goto('/dashboard/create_service');
@@ -37,7 +28,6 @@
 	async function handleDelete(serviceId: any) {
 		try {
 			await deleteData(serviceId, data.supabase);
-			// alert('service deleted successfully!');
 			await fetchData(); // Fetch data again after deletion
 		} catch (error) {
 			console.error('Error deleting service:', error);
@@ -48,24 +38,25 @@
 
 	function handleDndConsider(e: any) {
 		items = e.detail.items;
+		// console.log(items);
 	}
 
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
-
-		items.forEach((item, index) => {
+		flag = true;
+		items.forEach((item: any, index: any) => {
 			item.position = index + 1;
 		});
 
 		await updatePositions();
 		await fetchData(); // Fetch data again after updating positions
+		flag = false; // Set flag to false after data is fetched
 	}
-
 	let supabase = data.supabase;
 
 	async function updatePositions() {
 		for (const item of items) {
-			// Update position in supabase
+			// Update position in table
 			const { error } = await supabase
 				.from('service')
 				.update({ position: item.position })
@@ -109,7 +100,6 @@
 	</div>
 
 	<!-- table data -->
-
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">
@@ -252,14 +242,14 @@
 					</thead>
 
 					<tbody
-						use:dndzone={{ items, flipDurationMs }}
+						use:dndzone={{ items, flipDurationMs, dragDisabled: flag }}
 						on:consider={handleDndConsider}
 						on:finalize={handleDndFinalize}
 					>
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-									<span class="flex justify-center text-gray-700 font-semibold">{index}</span>
+									<span class="flex justify-center text-gray-700 font-semibold">{index + 1}</span>
 								</td>
 
 								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
@@ -289,16 +279,27 @@
 										{/each}
 									</td>
 								{/if}
-								<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-									<div class="flex items-center">
+								<td
+									class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32"
+								>
+									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {
 												goto(`/dashboard/service/${item.id}`);
 											}}
-											class="text-green-400 hover:text-green-600 hover:underline"
+											class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 										>
-											Edit</button
-										>
+											Edit
+											<span
+												><Icon
+													src={AiFillEdit}
+													color="green"
+													size="20"
+													className="custom-icon"
+													title="Custom icon params"
+												/></span
+											>
+										</button>
 
 										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									</div>

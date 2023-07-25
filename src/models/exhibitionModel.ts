@@ -11,6 +11,7 @@ export interface ExhibitionsModel {
 	deleted_status: string | null;
 	start_date: Date;
 	end_date: Date;
+	position?: number;
 	exhibition_languages?: ExhibitionsModelLang[];
 }
 
