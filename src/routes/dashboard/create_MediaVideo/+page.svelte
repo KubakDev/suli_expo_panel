@@ -1,14 +1,7 @@
 <script lang="ts">
-	import {
-		Label,
-		Button,
-		Input,
-		Fileupload,
-		Textarea,
-		Select,
-		InputAddon,
-		ButtonGroup
-	} from 'flowbite-svelte';
+
+	import { Label, Input, Fileupload, Textarea, InputAddon, ButtonGroup } from 'flowbite-svelte';
+
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -112,7 +105,11 @@
 			}
 		}
 
-		if (!isEmpty(videoObjectData.thumbnail) && !isEmpty(videoObjectData.link)) {
+		if (!isEmpty(videoObjectData.link)) {
+			isValidVideoObject = true;
+		}
+
+		if (!isEmpty(videoObjectData.link)) {
 			isValidVideoObject = true;
 		}
 
@@ -184,9 +181,6 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
 					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					{#if isFormSubmitted && !videoObjectData.thumbnail.trim()}
-						<p class="error-message">Please Upload an Image</p>
-					{/if}
 				</Label>
 			</div>
 			<div class="col-span-1">

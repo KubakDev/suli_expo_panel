@@ -140,7 +140,11 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Carousel Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !carouselObject.image.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
@@ -180,9 +184,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[700px]">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each carouselDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -193,7 +197,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -204,7 +208,7 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-									<div class="pb-10">
+									<div class="pb-10 px-4">
 										<Label for="title" class="mb-2">Carousel Title</Label>
 										<Input
 											type="text"
@@ -217,7 +221,7 @@
 											<p class="error-message">Please enter a title</p>
 										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-10 px-4">
 										<Label for="textarea-id" class="mb-2">Subtitle</Label>
 										<Textarea
 											placeholder="Enter Subtitle"
@@ -235,7 +239,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">

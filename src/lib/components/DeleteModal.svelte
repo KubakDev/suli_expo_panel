@@ -35,8 +35,8 @@
 		>
 	</button>
 
-	<Modal title="Are you sure?" bind:open {color} class="bg-white max-w-sm mx-auto" autoclose>
-		<div class="text-base leading-relaxed">
+	<Modal title="Are you sure?" bind:open {color} class="bg-white max-w-sm mx-auto " autoclose>
+		<div class="text-base leading-relaxed dark:text-red-600 text-red-600">
 			Do you really want to delete this record? This process cannot be undone.
 		</div>
 		<svelte:fragment slot="footer">

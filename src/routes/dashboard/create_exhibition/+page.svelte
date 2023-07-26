@@ -222,23 +222,27 @@
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold">Exhibition Data</h1></div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4 py-2">
-			<div class="col-span-1">
+		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
+			<div class="col-span-4">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
-			<div class="col-span-1">
+			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Start Date</span>
 					<Input type="date" bind:value={exhibitionsObject.start_date} />
 				</Label>
 			</div>
-			<div class="col-span-1">
+			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>End Date</span>
 					<Input type="date" bind:value={exhibitionsObject.end_date} />
@@ -284,9 +288,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form>
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900 px-4">
 						{#each exhibitionsDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -297,7 +301,7 @@
 							>
 								<div class="px-5 py-10">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -367,8 +371,9 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 				</form>
+
 				<div class="grid lg:grid-cols-2 pt-5">
 					<Label class="space-y-2 mb-2">
 						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
@@ -386,11 +391,11 @@
 				</div>
 				<!-- upload news image -->
 
-				<div class="py-10" />
+				<div class="py-2" />
 				<!-- upload news image -->
 
 				<!-- submit Form -->
-				<div class="w-full flex justify-end py-5 px-10">
+				<div class="w-full flex justify-end pb-5 px-10">
 					<button
 						on:click|preventDefault={formSubmit}
 						type="submit"
@@ -400,13 +405,10 @@
 					</button>
 				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
-					<TabItem open title="Exhibition List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+					<TabItem open title="Promotion List">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each exhibitionsDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

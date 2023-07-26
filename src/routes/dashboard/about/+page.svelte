@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	//@ts-ignore
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
@@ -60,7 +61,7 @@
 		<div class="py-5 px-4 lg:px-0 flex justify-end">
 			<Button
 				on:click={createAbout}
-				class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
 			>
 				<svg
 					width="20px"
@@ -93,7 +94,7 @@
 						<thead>
 							<tr>
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span
@@ -132,7 +133,7 @@
 								</th>
 
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span>
@@ -160,7 +161,7 @@
 									</div>
 								</th>
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span>
@@ -189,7 +190,7 @@
 									</div>
 								</th>
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span
@@ -218,7 +219,9 @@
 						<tbody>
 							{#each $about as item, index (item.id)}
 								<tr>
-									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										<div class="flex justify-center">
 											<img
 												class="w-20 h-20 object-cover rounded"
@@ -231,7 +234,7 @@
 									</td>
 									{#if item.about_languages}
 										<td
-											class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell"
+											class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
 										>
 											{#each item.about_languages as lang}
 												<div>
@@ -240,7 +243,7 @@
 											{/each}
 										</td>
 										<td
-											class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell"
+											class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
 										>
 											{#each item.about_languages as lang}
 												<div>
@@ -250,7 +253,9 @@
 										</td>
 									{/if}
 									<td
-										class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32"
+
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+
 									>
 										<div class="flex justify-center items-center gap-2">
 											<button
@@ -286,7 +291,7 @@
 		<div class="py-5 px-4 lg:px-0 flex justify-end">
 			<Button
 				on:click={createStaff}
-				class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
 			>
 				<svg
 					width="20px"
@@ -318,15 +323,15 @@
 						<thead>
 							<tr>
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 								>
-									<div class="flex justify-start items-center gap-2">
+									<div class="flex justify-center items-center gap-2">
 										<span>#</span>
 									</div>
 								</th>
 
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span
@@ -364,7 +369,7 @@
 									</div>
 								</th>
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-start gap-2">
 										<span
@@ -397,7 +402,7 @@
 									</div>
 								</th>
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span>
@@ -426,7 +431,7 @@
 								</th>
 
 								<th
-									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+									class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div class="flex items-center gap-2">
 										<span
@@ -455,11 +460,19 @@
 						<tbody>
 							{#each $staff as item, index (item.id)}
 								<tr>
-									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-										<span class="flex justify-center text-gray-700 font-semibold">{index + 1}</span>
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<span
+											class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
+										>
+											{index + 1}</span
+										>
 									</td>
 
-									<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										<div class="flex justify-center">
 											<img
 												class="w-20 h-20 object-cover rounded"
@@ -472,7 +485,7 @@
 									</td>
 									{#if item.staff_languages}
 										<td
-											class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell"
+											class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
 										>
 											{#each item.staff_languages as lang}
 												<div>
@@ -481,7 +494,7 @@
 											{/each}
 										</td>
 										<td
-											class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell"
+											class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
 										>
 											{#each item.staff_languages as lang}
 												<div>
@@ -491,7 +504,8 @@
 										</td>
 									{/if}
 									<td
-										class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32"
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+
 									>
 										<div class="flex justify-center items-center gap-2">
 											<button
