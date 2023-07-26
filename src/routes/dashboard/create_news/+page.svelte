@@ -230,6 +230,7 @@
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 					/>
+
 					{#if isFormSubmitted && !newsObject.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
@@ -242,6 +243,7 @@
 					<ButtonGroup class="w-full">
 						<select
 							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+
 							id="type"
 							name="type"
 							on:change={handleSelectChange}

@@ -5,6 +5,7 @@
 	import { Button, Modal } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	//@ts-ignore
+
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
@@ -365,6 +366,7 @@
 								{/if}
 								<td
 									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button
