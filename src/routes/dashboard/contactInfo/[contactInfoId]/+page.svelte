@@ -163,11 +163,9 @@
 		</div>
 	{/if}
 
-	<div class="px-5 lg:px-20 py-10 border m-10 bg-white shadow rounded-lg">
-		<Form class="form " {submitted}>
-			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-700">
-				Contact Information Data
-			</h1>
+	<div class="px-5 lg:px-20 py-10 m-10">
+		<Form class="form" {submitted}>
+			<h1 class="text-2xl font-bold py-2 flex justify-center">Contact Information Data</h1>
 
 			<div class="grid grid-cols-3 gap-x-2 gap-y-8 pt-10">
 				<div class="w-full h-16 mb-8 lg:mb-0">
@@ -241,9 +239,9 @@
 				</div>
 			</div>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
+			<div class="grid gap-4 md:grid-cols-3 mt-8 rounded-lg border dark:border-gray-600">
 				<div class="col-span-3">
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900 px-4">
 						{#each contactDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -354,19 +352,20 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
-				<br />
-			</div>
 
-			<div class="w-full flex justify-end">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				>
-					Update
-				</button>
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
+
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</div>
 			</div>
 		</Form>
 	</div>

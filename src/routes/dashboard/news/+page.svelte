@@ -5,6 +5,7 @@
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	//@ts-ignore
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
@@ -68,7 +69,10 @@
 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
-		<Button on:click={createNews} class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2">
+		<Button
+			on:click={createNews}
+			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
+		>
 			<svg
 				width="20px"
 				height="20px"
@@ -100,15 +104,15 @@
 					<thead>
 						<tr>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 							>
-								<div class="flex justify-start items-center gap-2">
+								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -146,7 +150,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -179,7 +183,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>
@@ -207,7 +211,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>
@@ -236,7 +240,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -265,13 +269,13 @@
 					<tbody>
 						{#each $news as item, index (item.id)}
 							<tr>
-								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-									<span class="flex justify-center text-gray-700 font-semibold"
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
 										>{calculateIndex(index)}</span
 									>
 								</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
 											class="w-20 h-20 object-cover rounded"
@@ -283,21 +287,27 @@
 									</div>
 								</td>
 								{#if item.news_languages}
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.news_languages as lang}
 											<div>
 												{lang.title?.slice(0, 50)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.news_languages as lang}
 											<div>
 												{lang.short_description?.slice(0, 40)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.news_languages as lang}
 											<div>
 												{extractText(lang.long_description)?.slice(0, 40)}
@@ -306,7 +316,7 @@
 									</td>
 								{/if}
 								<td
-									class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32"
+									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button

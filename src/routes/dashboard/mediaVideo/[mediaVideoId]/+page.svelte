@@ -325,7 +325,7 @@
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
-					<TabItem open title="Magazine List">
+					<TabItem open title="Video List">
 						<div
 							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
 							style="min-height: calc(100vh - 300px);"
@@ -347,7 +347,7 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem title="Magazine Detail">
+					<TabItem title="Video Detail">
 						{#each mediaVideoDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage

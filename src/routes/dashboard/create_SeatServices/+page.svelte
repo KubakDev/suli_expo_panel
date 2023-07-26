@@ -139,7 +139,11 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="icon" class="mb-2">Upload SeatServices Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !seatServicesObject.icon.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
@@ -157,9 +161,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[700px]">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each seatServicesDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -170,7 +174,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -211,8 +215,7 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -226,10 +229,10 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
-					<TabItem open title="Seat Service List">
-						<div class=" w-full rounded-md p-10 flex justify-center items-start">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg">
+					<TabItem open title="Seat_services List">
+						<div class=" w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each seatServicesDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

@@ -5,7 +5,7 @@ export interface NewsModel {
 	exhibition_id?: number;
 	images: string[];
 	thumbnail: string;
-	news_date: Date;
+	created_at: Date;
 	news_languages?: NewsModelLang[];
 }
 

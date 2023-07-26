@@ -175,7 +175,7 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="max-w-screen-xl mx-auto">
+<div class="max-w-screen-xl mx-auto">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			successfully submitted
@@ -183,8 +183,8 @@
 	{/if}
 	<h1 class="pt-20 text-2xl font-bold flex justify-center">Contact Information Data</h1>
 
-	<div class="px-10 lg:px-20 py-10 border m-10 bg-white rounded-lg">
-		<Form class="form " {submitted}>
+	<div class="px-0 lg:px-10 py-10 m-10">
+		<Form class="form" {submitted}>
 			<div class="grid grid-cols-3 gap-x-2 gap-y-8">
 				<div class="w-full h-16 mb-8 lg:mb-0">
 					<Label for="administration" class="mb-2">Facebook</Label>
@@ -257,9 +257,9 @@
 				</div>
 			</div>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
+			<div class="grid gap-4 md:grid-cols-3 mt-8 rounded-lg border dark:border-gray-600">
 				<div class="col-span-3">
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900 px-8 py-10">
 						{#each contactInfoDataLang as langData, index}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -270,7 +270,7 @@
 							>
 								<div class="py-5">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -372,19 +372,19 @@
 							</TabItem>
 						{/each}
 					</Tabs>
+
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Add
+						</button>
+					</div>
 				</div>
-
-				<br />
-			</div>
-
-			<div class="w-full flex justify-end px-4">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				>
-					Add
-				</button>
 			</div>
 		</Form>
 	</div>
