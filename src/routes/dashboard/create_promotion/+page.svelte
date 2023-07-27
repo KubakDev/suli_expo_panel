@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, InputAddon, ButtonGroup } from 'flowbite-svelte';
+
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/promoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -183,7 +184,9 @@
 					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
 					<ButtonGroup class="w-full">
 						<select
+
 							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+
 							id="type"
 							name="type"
 							on:change={handleSelectChange}
@@ -194,6 +197,7 @@
 							{/each}
 						</select>
 						<InputAddon class="bg-white ">
+
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
 								<path d="M0 0h24v24H0z" fill="none" />
 								<path
