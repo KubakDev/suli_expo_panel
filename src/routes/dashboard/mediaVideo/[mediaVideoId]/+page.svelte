@@ -343,6 +343,7 @@
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="Video List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+
 							<div class="flex justify-start items-start">
 								{#each mediaVideoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

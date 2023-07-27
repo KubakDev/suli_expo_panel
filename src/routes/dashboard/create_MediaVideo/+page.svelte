@@ -185,6 +185,7 @@
 						accept=".jpg, .jpeg, .png .svg"
 						class="dark:bg-white"
 					/>
+
 				</Label>
 			</div>
 			<div class="col-span-1">
