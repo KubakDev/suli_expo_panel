@@ -102,6 +102,7 @@
 				</Sidebar>
 			</Drawer>
 		</div>
+
 		<!-- Sidebar for desktop  -->
 		<div class="sidebar-drawer bg-gray-900 min-h-screen rounded-none border lg:block hidden">
 			<Sidebar>

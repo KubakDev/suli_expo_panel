@@ -4,7 +4,7 @@
 	export let goToPage: any;
 </script>
 
-<div class="flex justify-end items-center">
+<div class="flex justify-end items-center px-4 lg:px-0">
 	<div class="flex items-center justify-center">
 		<span class="text-gray-700 mx-2">{currentPage} </span> of
 		<span class="text-gray-400 mx-2"> {totalPages}</span>

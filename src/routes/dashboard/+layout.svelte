@@ -56,18 +56,18 @@
 			<NavUl
 				{hidden}
 				divClass="w-full lg:block lg:w-auto"
-				nonActiveClass="text-gray-900 hover:bg-opacity-30 font-medium hover:bg-blue-400 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
-				activeClass="text-primary-700 font-medium bg-opacity-30 bg-blue-500 lg:bg-transparent lg:text-primary-700"
-				ulClass="flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium"
+				nonActiveClass="text-gray-900 hover:bg-gray-50 hover:bg-opacity-10 font-medium  lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
+				activeClass="text-primary-700 font-medium bg-gray-50 bg-opacity-10 lg:bg-transparent lg:text-primary-700"
+				ulClass="flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium dark:bg-gray-900 bg-gray-900 "
 			>
 				{#each data.pages as page}
 					{#if page.children}
-						<div class="text-[#e9ecef] py-4 lg:py-0">
+						<div class="text-[#e9ecef] pl-4 md:pl-0 py-4 lg:py-0">
 							<button class="flex items-center focus:outline-none focus:ring-0 dark:focus:ring-0">
 								<Chevron>{page.title}</Chevron>
 							</button>
 
-							<Dropdown class="font-medium ">
+							<Dropdown class="font-medium">
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
