@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		Label,
-		Input,
-		Fileupload,
-		Textarea,
-		Img,
-		ButtonGroup,
-		InputAddon
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/newsStore';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
@@ -273,8 +265,8 @@
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
-				<form>
-					<Tabs contentClass="dark:bg-gray-900 px-4">
+				<form class="">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each newsDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}

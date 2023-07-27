@@ -12,7 +12,7 @@
 	import { onMount } from 'svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -103,13 +103,13 @@
 	}
 </script>
 
-<div class="max-w-screen-2xl mx-auto py-10">
+<div class="max-w-screen-2xl mx-auto py-10 px-4">
 	<!-- show data on the table -->
 
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
 		<Button
 			on:click={() => (showModal = true)}
-			class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
 		>
 			<svg
 				width="20px"
@@ -140,7 +140,7 @@
 				<thead>
 					<tr>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 						>
 							<div class="flex justify-center items-center gap-2">
 								<span>No</span>
@@ -148,56 +148,56 @@
 						</th>
 
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>Name Of Theme</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>#</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>#</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>#</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>#</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>#</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>#</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span
@@ -226,18 +226,18 @@
 				<tbody>
 					{#each $theme as item, index (item.id)}
 						<tr>
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center text-gray-500">{index + 1}</div>
 							</td>
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
-									<p class="w-20 p-2 rounded text-white font-sans">
+									<p class="w-20 p-2 rounded dark:text-white font-sans">
 										{item.name}
 									</p>
 								</div>
 							</td>
 
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
@@ -248,7 +248,7 @@
 								</div>
 							</td>
 
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
@@ -259,7 +259,7 @@
 								</div>
 							</td>
 
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
@@ -270,7 +270,7 @@
 								</div>
 							</td>
 
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
@@ -281,7 +281,7 @@
 								</div>
 							</td>
 
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
@@ -292,7 +292,7 @@
 								</div>
 							</td>
 
-							<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div
 										class="w-20 p-2 rounded text-white border-4"
@@ -303,21 +303,25 @@
 								</div>
 							</td>
 
-							<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell w-32">
+							<td
+								class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+							>
 								<div class="flex justify-between items-center">
-									<div class="flex gap-2 px-2">
+									<div class="flex justify-between items-center gap-4 px-2">
 										<div>
 											{#if item.active}
-												<span class="text-green-600">Active</span>
+												<span class="text-green-600 font-bold">Active</span>
 											{:else}
 												<span class="text-red-600">Inactive</span>
 											{/if}
 										</div>
-										<Toggle
-											class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600"
-											checked={item.active}
-											on:change={() => toggleChanged(item)}
-										/>
+										<div>
+											<Toggle
+												class="rounded px-2   hover:bg-gray-100 dark:hover:bg-gray-600"
+												checked={item.active}
+												on:change={() => toggleChanged(item)}
+											/>
+										</div>
 									</div>
 
 									<DeleteModal itemIdToDelete={item.id} {handleDelete} />
@@ -334,7 +338,7 @@
 	<div class="text-black h-full flex justify-center">
 		<Modal bind:open={showModal} size="lg" backdropClose={false}>
 			<form>
-				<div class="bg-[#f9fafb] px-10 py-10">
+				<div class="  px-10 py-10">
 					<h1 class="text-xl font-medium">Create a new theme color</h1>
 					<div class="py-3">
 						<Input

@@ -12,7 +12,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -42,7 +42,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
+			// console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -178,7 +178,11 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class="dark:bg-white"
+					/>
 				</Label>
 			</div>
 			<div class="col-span-1">
@@ -186,7 +190,7 @@
 					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
 					<ButtonGroup class="w-full">
 						<select
-							class="border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 							id="type"
 							name="type"
 							on:change={handleSelectChange}
@@ -226,9 +230,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
+				<form class="">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each videoDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -288,7 +292,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-800 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -302,18 +306,15 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Video List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each videoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
-											cardType={CardType.Main}
+											cardType={CardType.Video}
 											title={langData.title}
 											short_description={langData.short_description}
 											thumbnail={videoObjectData.thumbnail}
