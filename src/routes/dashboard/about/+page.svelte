@@ -55,10 +55,10 @@
 	}
 </script>
 
-<div class="max-w-screen-2xl mx-auto py-10">
+<div class="max-w-screen-2xl mx-auto py-10 px-4 lg:px-0">
 	<!-- About Section  -->
 	<div>
-		<div class="py-5 px-4 lg:px-0 flex justify-end">
+		<div class="py-5 flex justify-end">
 			<Button
 				on:click={createAbout}
 				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
@@ -87,7 +87,7 @@
 
 		<!-- table data -->
 
-		<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
+		<div class="max-w-screen-2xl mx-auto">
 			<div class="overflow-x-auto rounded">
 				<div class="min-w-full table-responsive">
 					<table class="min-w-full border-collapse">
@@ -253,9 +253,7 @@
 										</td>
 									{/if}
 									<td
-
 										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-
 									>
 										<div class="flex justify-center items-center gap-2">
 											<button
@@ -288,7 +286,7 @@
 
 	<!-- Staff Section  -->
 	<div class="py-10">
-		<div class="py-5 px-4 lg:px-0 flex justify-end">
+		<div class="py-5 flex justify-end">
 			<Button
 				on:click={createStaff}
 				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
@@ -505,7 +503,6 @@
 									{/if}
 									<td
 										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-
 									>
 										<div class="flex justify-center items-center gap-2">
 											<button
