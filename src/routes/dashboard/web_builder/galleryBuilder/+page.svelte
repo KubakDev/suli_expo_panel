@@ -143,7 +143,7 @@
 		<PageContent {customColors} {selectedColorTheme} {cardShape} title="gallery" />
 	</div>
 
-	<div class="h-full bg-[#f9fafb] rounded-md flex flex-col items-center justify-between py-5">
+	<div class="h-full rounded-md flex flex-col items-center justify-between py-5">
 		<SidebarPage
 			{changeCardType}
 			{selectedColorTheme}
