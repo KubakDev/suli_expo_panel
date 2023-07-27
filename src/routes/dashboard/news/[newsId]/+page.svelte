@@ -18,6 +18,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
+	
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
@@ -150,7 +151,6 @@
 	//**Handle submit**//
 	async function formSubmit() {
 		let hasDataForLanguage = false;
-		let isValidNewsObject = false;
 
 		for (let lang of newsDataLang) {
 			const title = lang.title.trim();

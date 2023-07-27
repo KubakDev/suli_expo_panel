@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		Label,
-		Input,
-		Fileupload,
-		Textarea,
-		Select,
-		ButtonGroup,
-		InputAddon
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -217,7 +209,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			New data has been inserted successfully
 		</div>
 	{/if}
@@ -227,19 +219,24 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4">
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Label for="thumbnail" class="mb-2">Upload Gallery Image</Label>
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !galleryObject.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
+
 			<div class="col-span-1">
 				<div class="mb-6">
 					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
 					<ButtonGroup class="w-full">
 						<select
-							class="border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 							id="type"
 							name="type"
 							on:change={handleSelectChange}
@@ -263,9 +260,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
+				<form class="">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each galleryDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -276,7 +273,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -324,20 +321,15 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-
-					<div class="border mb-2 border-gray-300 mx-10" />
 				</form>
+				<!-- upload Gallery image -->
+				<Label for="images" class="mb-2 px-8">Upload Image File</Label>
+				<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+				{#if isFormSubmitted && sliderImagesFile.length === 0}
+					<p class="error-message px-8">Please upload at least one image for the slider</p>
+				{/if}
 
-				<!-- upload gallery image -->
-				<div class="px-4 pt-5">
-					<Label class="space-y-2 mb-2">
-						<Label for="image" class="mb-2 px-8">Upload Gallery Image</Label>
-						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-						{#if isFormSubmitted && sliderImagesFile.length === 0}
-							<p class="error-message px-8">Please upload at least one image for the slider</p>
-						{/if}
-					</Label>
-				</div>
+				<!-- upload Gallery image -->
 
 				<!-- submit Form -->
 				<div class="w-full flex justify-end py-5 px-10">
@@ -350,13 +342,10 @@
 					</button>
 				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Gallery List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each galleryDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
@@ -389,6 +378,7 @@
 		</div>
 	</div>
 </div>
+s
 
 <style>
 	.error-message {

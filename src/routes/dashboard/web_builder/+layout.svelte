@@ -31,7 +31,7 @@
 		<!-- sidebar for mobile devices -->
 		<div class="lg:hidden block">
 			<div class="flex justify-end">
-				<button class="bg-primary-50 p-4 shadow-lg" on:click={() => (hidden2 = false)}>
+				<button class="bg-primary-50 p-4 shadow-lg border" on:click={() => (hidden2 = false)}>
 					<svg
 						width="20px"
 						height="20px"
@@ -65,17 +65,17 @@
 				>
 			</div>
 			<Drawer
+				divClass="bg-gray-900 z-[100]"
 				transitionType="fly"
 				{transitionParams}
 				bind:hidden={hidden2}
 				id="sidebar2"
-				class="bg-[#14213d]"
 			>
 				<div class="flex items-center">
 					<CloseButton on:click={() => (hidden2 = true)} class="mb-4 dark:text-white" />
 				</div>
 				<Sidebar>
-					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded dark:bg-gray-800 ">
+					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded dark:bg-gray-900  ">
 						<SidebarGroup>
 							<h1 class="text-gray-200 text-xl font-semibold pb-3 flex justify-center">
 								Page Builder
@@ -103,31 +103,31 @@
 			</Drawer>
 		</div>
 		<!-- Sidebar for desktop  -->
-		<div class="sidebar-drawer bg-[#14213d] min-h-screen rounded-none border lg:block hidden">
+		<div class="sidebar-drawer bg-gray-900 min-h-screen rounded-none border lg:block hidden">
 			<Sidebar>
-				<SidebarWrapper class="bg-[#14213d] min-h-screen">
+				<SidebarWrapper divClass="bg-gray-900 min-h-screen px-4">
 					<SidebarGroup class="flex flex-col py-5">
 						<h1 class="text-gray-200 text-xl font-semibold pb-3 text-center">Page Builder</h1>
-						<div class="border border-gray-400 border-opacity-60" />
+						<div class="border border-gray-700 border-opacity-60" />
 						<!-- Sidebar content -->
 
 						{#each data.sideBarPage as pageData}
-							<div
+							<button
+								on:click={() => {
+									updateActiveUrl(pageData.url + '');
+									goto(pageData.url + '');
+								}}
 								class=" flex gap-4 items-center py-3 hover:bg-gray-50 hover:bg-opacity-10 px-2 rounded"
 							>
 								<img src={pageData.icon} alt="img" class="icon" />
 								<NavLi
 									class="cursor-pointer text-white text-lg"
-									on:click={() => {
-										updateActiveUrl(pageData.url + '');
-										goto(pageData.url + '');
-									}}
 									active={activeUrl == pageData.url}
-									style={activeUrl == pageData.url ? 'color: primary;' : 'color:#e9ecef'}
+									style={activeUrl == pageData.url ? 'color:E1B168' : 'color:white'}
 								>
 									{pageData.title}
 								</NavLi>
-							</div>
+							</button>
 						{/each}
 					</SidebarGroup>
 				</SidebarWrapper>

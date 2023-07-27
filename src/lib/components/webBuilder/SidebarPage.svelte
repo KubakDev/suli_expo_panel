@@ -75,7 +75,7 @@
 		if (typeof customColors.name !== 'string' || isEmpty(customColors.name.trim())) {
 			addNewToast({
 				type: ToastTypeEnum.ERROR,
-				message: 'Name field cannot be empty',
+				message: 'Theme Name cannot be empty',
 				title: 'Error',
 				duration: 1000
 			});
@@ -96,10 +96,13 @@
 	}
 </script>
 
-<Sidebar style="width:300px">
-	<SidebarWrapper>
-		<SidebarGroup>
-			<SidebarDropdownWrapper label="Choose Card Type">
+<Sidebar style="width:300px" asideClass="px-4">
+	<SidebarWrapper divClass="dark:bg-dark">
+		<SidebarGroup ulClass="flex flex-col items-center gap-2">
+			<SidebarDropdownWrapper
+				label="Choose Card Type"
+				btnClass="flex gap-5 py-2 px-4 rounded border border-gray-700 w-full"
+			>
 				<svelte:fragment slot="icon">
 					<svg
 						width="24"
@@ -147,7 +150,7 @@
 					>
 				</svelte:fragment>
 
-				<div class=" text-black">
+				<div class=" text-black dark:text-gray-400">
 					<div class="grid grid-cols-2 gap-2">
 						{#each cards as item, i}
 							<button on:click={() => changeCardType(item.value)}>
@@ -158,7 +161,10 @@
 					</div>
 				</div>
 			</SidebarDropdownWrapper>
-			<SidebarDropdownWrapper label="Choose Color Theme">
+			<SidebarDropdownWrapper
+				label="Choose Color Theme"
+				btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full"
+			>
 				<svelte:fragment slot="icon">
 					<svg
 						width="24"
@@ -210,7 +216,7 @@
 				<div style="height: auto; width: 100%;">
 					<div class="py-2 text-center">
 						<button
-							class="font-normal w-full flex justify-center items-center transition-all ease-in-out border-primary-dark bg-gray-50 text-black py-2 px-4 border hover:bg-primary-50 rounded"
+							class="font-normal w-full flex justify-center items-center transition-all ease-in-out border-primary-dark bg-gray-50 dark:bg-gray-900 text-black dark:text-white py-2 px-4 border hover:bg-primary-50 rounded"
 							on:click={() => {
 								showCustomColor = !showCustomColor;
 							}}>{showCustomColor ? 'Cancel' : 'Add New Theme'}</button
@@ -221,14 +227,14 @@
 						{#if !showCustomColor}
 							{#each $theme as color}
 								<button
-									class="shadow cursor-pointer border my-2 h-24 w-full bg-background rounded-md flex flex-col items-center justify-between"
+									class="shadow cursor-pointer border my-2 h-24 w-full rounded-md flex flex-col items-center justify-between"
 									on:click={() => changePageTheme(color)}
 								>
 									<div
 										class=" h-full w-full rounded border"
 										style={`background-color:${color?.primaryColor}`}
 									/>
-									<p class="text-sm text-black py-2">{color.name}</p>
+									<p class="text-sm text-black dark:text-gray-400 py-2">{color.name}</p>
 								</button>
 							{/each}
 						{/if}
@@ -313,7 +319,7 @@
 												</div>
 
 												<p
-													class="text-sm text-black py-2 flex flex-wrap px-2"
+													class="text-sm text-black dark:text-gray-400 py-2 flex flex-wrap px-2"
 													style="word-break: break-word;"
 												>
 													{color}
@@ -330,10 +336,10 @@
 		</SidebarGroup>
 	</SidebarWrapper>
 
-	<div class="px-4">
+	<div class="py-5">
 		<button
 			on:click={() => update()}
-			class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+			class="w-full flex justify-center items-center transition-all ease-in-out text-white bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-gray-400 font-bold py-2 px-4 border border-primary-50 rounded"
 		>
 			Update Page Theme
 		</button>
