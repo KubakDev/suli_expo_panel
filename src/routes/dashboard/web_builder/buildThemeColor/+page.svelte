@@ -232,6 +232,7 @@
 							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<p class="w-20 p-2 rounded dark:text-white font-sans">
+
 										{item.name}
 									</p>
 								</div>
