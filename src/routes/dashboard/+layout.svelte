@@ -7,8 +7,6 @@
 		NavLi,
 		Dropdown,
 		DropdownItem,
-		DropdownDivider,
-		Button,
 		Chevron
 	} from 'flowbite-svelte';
 
@@ -17,7 +15,6 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import { FeDropShadowElement } from 'canvg';
 	export let data: PageData;
 	let activeUrl: string;
 
@@ -43,26 +40,29 @@
 <div class="app h-screen flex flex-col" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
 		<Navbar style="background-color: #14213d;" let:hidden let:toggle>
-			<NavBrand href="/">
+			<NavBrand href="/dashboard">
 				<div class="mr-3 h-6 sm:h-9">
 					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">
-						SuliExpo
+						Sulaymaniyah Expedition
 					</span>
 				</div>
 			</NavBrand>
-			<NavHamburger on:click={toggle} />
-			<NavUl {hidden} class="bg-[#14213d] lg:flex lg:items-center lg:justify-center">
-				<!-- Add 'flex items-center' class -->
+			<NavHamburger btnClass="ml-3 lg:hidden" on:click={toggle} />
+			<NavUl
+				{hidden}
+				divClass="w-full lg:block lg:w-auto"
+				nonActiveClass="text-gray-900 hover:bg-opacity-30 font-medium hover:bg-blue-400 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
+				activeClass="text-primary-700 font-medium bg-opacity-30 bg-blue-500 lg:bg-transparent lg:text-primary-700"
+				ulClass="bg-[#071229] lg:bg-transparent flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium "
+			>
 				{#each data.pages as page}
 					{#if page.children}
-						<div class="py-2">
-							<Button
-								class="bg-primary-dark focus:outline-none focus:ring-0 dark:focus:ring-0 hover:bg-primary-50"
-							>
+						<div class="text-[#e9ecef] py-4 lg:py-0">
+							<button class="flex items-center focus:outline-none focus:ring-0 dark:focus:ring-0">
 								<Chevron>{page.title}</Chevron>
-							</Button>
+							</button>
 
-							<Dropdown>
+							<Dropdown class="font-medium ">
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
@@ -74,17 +74,16 @@
 							</Dropdown>
 						</div>
 					{:else}
-						<div class="lg:py-3">
-							<NavLi
-								class="cursor-pointer text-white hover:text-gray-400"
-								on:click={() => {
-									updateActiveUrl(page.url);
-									goto(page.url);
-								}}
-								active={activeUrl == page.url}
-								style={activeUrl == page.url ? 'color: white;' : 'color:gray'}>{page.title}</NavLi
-							>
-						</div>
+						<NavLi
+							class="cursor-pointer"
+							on:click={() => {
+								updateActiveUrl(page.url + '');
+								goto(page.url + '');
+							}}
+							active={activeUrl == page.url}
+							style={activeUrl == page.url ? 'color: primary;' : 'color:#e9ecef'}
+							>{page.title}</NavLi
+						>
 					{/if}
 				{/each}
 			</NavUl>

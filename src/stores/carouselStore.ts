@@ -48,6 +48,8 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 			data: data,
 			count: count
 		};
+
+		carousel.set(data ?? []);
 		return result;
 	} catch (error) {
 		console.error(error);

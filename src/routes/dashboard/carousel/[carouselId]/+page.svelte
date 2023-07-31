@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/carouselStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
@@ -15,6 +13,8 @@
 		type CarouselModel,
 		type CarouselModelLang
 	} from '../../../../models/carouselModel';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -22,6 +22,7 @@
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let carouselDataLang: CarouselModelLang[] = [];
 	let carouselData: CarouselModel = {
@@ -51,7 +52,7 @@
 
 				// console.log('carousel data get db thumbnail : ////////', carouselData.thumbnail);
 				// console.log('carousel data get db images: ////////', carouselData.images);
-				prevThumbnail = result.data?.thumbnail;
+				prevThumbnail = result.data?.image;
 
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.carousel_languages.findIndex(
@@ -103,77 +104,113 @@
 
 	//**Handle submit**//
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		let hasDataForLanguage = false;
+		let isValidVideoObject = false;
 
-		if (imageFile) {
-			if (carouselData.image) {
-				await data.supabase.storage.from('image').remove([carouselData.image]);
+		for (let lang of carouselDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.subtitle.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
-
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			carouselData.image = response.data?.path;
-		} else {
-			carouselData.image = prevThumbnail;
 		}
 
-		updateData(carouselData, carouselDataLang, data.supabase);
+		if (!isEmpty(carouselData.image) && !isEmpty(carouselData.link)) {
+			isValidVideoObject = true;
+		}
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/carousel');
+		if (hasDataForLanguage && isValidVideoObject) {
+			submitted = true;
+			showToast = true;
+
+			if (imageFile) {
+				if (carouselData.image) {
+					await data.supabase.storage.from('image').remove([carouselData.image]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				carouselData.image = response.data?.path;
+			} else {
+				carouselData.image = prevThumbnail;
+			}
+
+			updateData(carouselData, carouselDataLang, data.supabase);
+
+			setTimeout(() => {
+				showToast = false;	
+				goto('/dashboard/carousel');
+			}, 1000);
+		
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update Carousel Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !carouselData.image.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<Select
+						bind:value={carouselData.type}
+						id="type"
+						name="type"
+						size="md"
+						placeholder="Please select a valid type"
+					>
+						<option value="Internal">Internal</option>
+						<option value="External">External</option>
+					</Select>
+				</Label>
+			</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Carousel Data</h1>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="first_name" class="mb-2">Enter a link</Label>
+					<Input bind:value={carouselData.link} />
+					{#if isFormSubmitted && !carouselData.link}
+						<p class="error-message">Please Enter a link for video</p>
+					{/if}
+				</Label>
+			</div>
+		</div>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Carousel Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Enter a link</Label>
-						<Input bind:value={carouselData.link} />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<div class="mb-6">
-							<Label for="large-input" class="block mb-2">Type</Label>
-							<Select
-								bind:value={carouselData.type}
-								id="type"
-								name="type"
-								size="md"
-								placeholder="Please select a valid type"
-							>
-								<option value="Internal">Internal</option>
-								<option value="External">External</option>
-							</Select>
-
-							<!-- <Message name="type" /> -->
-						</div>
-					</Label>
-				</div>
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg h-[660px]">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -185,7 +222,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-10 py-10">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -199,7 +236,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Carousel Title</Label>
+										<Label for="title" class="mb-2">Carousel Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -207,7 +244,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">Subtitle</Label>
@@ -218,54 +257,60 @@
 											id="subtitle"
 											name="subtitle"
 										/>
-										<!-- <Message name="subtitle" /> -->
+										{#if !langData.subtitle.trim()}
+											<p class="error-message">Please enter a subtitle</p>
+										{/if}
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
-			</div>
-
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="Carousel List">
-				<div
-					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="flex justify-start items-start">
-						{#each carouselDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<ExpoCard
-									cardType={CardType.Main}
-									title={langData.title}
-									short_description={langData.subtitle}
-									thumbnail={carouselData.image}
-									primaryColor="bg-primary"
-								/>
-							{/if}
-						{/each}
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
 					</div>
+				</form>
+			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Magazine List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each carouselDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.subtitle}
+											thumbnail={carouselData.image}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
 
-					<div />
-				</div>
-			</TabItem>
-		</Tabs>
+							<div />
+						</div>
+					</TabItem>
+				</Tabs>
+			</div>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

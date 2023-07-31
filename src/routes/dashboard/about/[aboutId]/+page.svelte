@@ -3,7 +3,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import * as yup from 'yup';
 	import { Form, Message } from 'svelte-yup';
-	import { updateData } from '../../../../stores/aboutStore';
+	import { about, updateData } from '../../../../stores/aboutStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { AboutModel, AboutModelLang } from '../../../../models/aboutModel';
 	import { DateInput } from '$lib/components/DateTimePicker';
@@ -13,6 +13,8 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -21,6 +23,7 @@
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let aboutDataLang: AboutModelLang[] = [];
 	let aboutData: AboutModel = {
@@ -94,58 +97,88 @@
 
 	//**Handle submit**//
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		let hasDataForLanguage = false;
+		let isValidAboutObject = false;
 
-		if (imageFile) {
-			if (aboutData.image) {
-				await data.supabase.storage.from('image').remove([aboutData.image]);
+		for (let lang of aboutDataLang) {
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
-
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			aboutData.image = response.data?.path;
-		} else {
-			aboutData.image = prevThumbnail;
 		}
-		// console.log('////data before submission :', aboutData, 'language :', aboutDataLang);
-		updateData(aboutData, aboutDataLang, data.supabase);
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/about');
+		if (!isEmpty(aboutData.image)) {
+			isValidAboutObject = true;
+		}
+
+		if (hasDataForLanguage && isValidAboutObject) {
+			submitted = true;
+			showToast = true;
+
+			if (imageFile) {
+				if (aboutData.image) {
+					await data.supabase.storage.from('image').remove([aboutData.image]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				aboutData.image = response.data?.path;
+			} else {
+				aboutData.image = prevThumbnail;
+			}
+			// console.log('////data before submission :', aboutData, 'language :', aboutDataLang);
+			updateData(aboutData, aboutDataLang, data.supabase);
+
+			setTimeout(() => {
+				showToast = false;	
+				goto('/dashboard/about');
+			}, 1000);
+		
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update About Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="image" class="mb-2">Upload About Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !aboutData.image.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">About Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload image image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload About Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={aboutData.created_at} />
-					</Label>
-				</div>
-
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -170,80 +203,87 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
+										<Label for="first_name" class="mb-2">About Short description</Label>
+
 										<Textarea
 											placeholder="Enter short description"
-											rows="4"
+											rows="5"
 											bind:value={langData.short_description}
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
+
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</form>
 			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Magazine List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each aboutDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title=""
+											short_description={langData.short_description}
+											thumbnail={aboutData.image}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
 
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="About List">
-				<div
-					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="flex justify-start items-start">
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Magazine Detail">
 						{#each aboutDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
-								<ExpoCard
-									cardType={CardType.Main}
-									title=""
-									short_description={langData.short_description}
-									thumbnail={aboutData.image}
-									primaryColor="bg-primary"
+								<DetailPage
+									bind:imagesCarousel={carouselImages}
+									long_description={langData.long_description}
 								/>
 							{/if}
 						{/each}
-					</div>
-
-					<div />
-				</div>
-			</TabItem>
-			<TabItem title="About Detail">
-				{#each aboutDataLang as langData}
-					{#if langData.language === selectedLanguageTab}
-						<DetailPage
-							bind:imagesCarousel={carouselImages}
-							long_description={langData.long_description}
-						/>
-					{/if}
-				{/each}
-			</TabItem>
-		</Tabs>
+					</TabItem>
+				</Tabs>
+			</div>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

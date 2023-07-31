@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/serviceStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ServiceModel, ServiceModelLang } from '../../../../models/serviceModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -14,7 +11,9 @@
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
-	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -22,6 +21,7 @@
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let serviceDataLang: ServiceModelLang[] = [];
 	let serviceData: ServiceModel = {
@@ -29,13 +29,12 @@
 		thumbnail: '',
 		exhibition_type: '',
 		primaryColor: '',
-		onPrimaryColor: '',
-		created_at: new Date()
+		onPrimaryColor: ''
 	};
 	const id = $page.params.serviceId;
-	let images: ImagesModel[] = [];
 
 	let exhibitionData: ExhibitionModel[] = [];
+
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
@@ -54,6 +53,13 @@
 
 	onMount(fetchData);
 
+	const shajwan = { x: 1 };
+
+	function test(param) {
+		return param.x++;
+	}
+	console.log(test(shajwan));
+	console.log(shajwan.x);
 	//**** get data from db and put it into the fields ****//
 	async function getServiceData() {
 		await data.supabase
@@ -67,10 +73,7 @@
 					exhibition_id: result.data?.exhibition_id,
 					primaryColor: result.data?.primaryColor,
 					onPrimaryColor: result.data?.onPrimaryColor,
-					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
-						result.data?.thumbnail
-					}`,
-					created_at: new Date(result.data?.created_at)
+					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
 				};
 
 				// console.log('service data get db thumbnail : ////////', serviceData.thumbnail);
@@ -125,26 +128,58 @@
 
 	//**Handle submit**//
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		let hasDataForLanguage = false;
+		let isValidServiceObject = false;
 
-		if (imageFile) {
-			if (serviceData.thumbnail) {
-				await data.supabase.storage.from('image').remove([serviceData.thumbnail]);
+		for (let lang of serviceDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
-
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			serviceData.thumbnail = response.data?.path;
-		} else {
-			serviceData.thumbnail = prevThumbnail;
 		}
 
-		updateData(serviceData, serviceDataLang, data.supabase);
+		if (!isEmpty(serviceData.thumbnail)) {
+			isValidServiceObject = true;
+		}
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/service');
+		if (hasDataForLanguage && isValidServiceObject) {
+			submitted = true;
+			showToast = true;
+
+			if (imageFile) {
+				if (serviceData.thumbnail) {
+					await data.supabase.storage.from('image').remove([serviceData.thumbnail]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				serviceData.thumbnail = response.data?.path;
+			} else {
+				serviceData.thumbnail = prevThumbnail;
+			}
+
+			updateData(serviceData, serviceDataLang, data.supabase);
+
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/service');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 
 	function handleSelectChange(event: any) {
@@ -153,56 +188,54 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update Service Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail" class="mb-2">Upload Service Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !serviceData.thumbnail.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<select
+						class="border border-gray-300 rounded-md w-full"
+						id="type"
+						name="type"
+						placeholder="Please select a valid type"
+						on:change={handleSelectChange}
+					>
+						<option disabled selected>
+							{serviceData.exhibition_id
+								? exhibitionData.find((item) => item.id == serviceData.exhibition_id)
+										?.exhibition_type
+								: 'Select type'}
+						</option>
+						{#each exhibitionData as exhibition}
+							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+						{/each}
+					</select>
+				</Label>
+			</div>
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Service Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Service Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={serviceData.created_at} />
-					</Label>
-				</div>
-				<div>
-					<label class="space-y-2 mb-2">
-						<label for="large-input" class="block">Exhibition Type</label>
-						<select
-							class="border border-gray-300 rounded-md"
-							id="type"
-							name="type"
-							placeholder="Please select a valid type"
-							on:change={handleSelectChange}
-						>
-							<option disabled selected>
-								{serviceData.exhibition_id
-									? exhibitionData.find((item) => item.id == serviceData.exhibition_id)
-											?.exhibition_type
-									: 'Select type'}
-							</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-					</label>
-				</div>
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg h-[660px]">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -214,7 +247,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-10 py-10">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -229,6 +262,7 @@
 									</div>
 									<div class="pb-10">
 										<Label for="first_name" class="mb-2">Service Title</Label>
+
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -236,7 +270,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -247,78 +283,85 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</form>
 			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<div class="flex justify-between items-center w-full">
+						<div class=" w-1/4">
+							<TabItem open title="Service List">
+								<div
+									class="w-full rounded-md p-10 flex justify-center items-start"
+									style="min-height: calc(100vh - 300px);"
+								>
+									<div class="flex justify-start items-start">
+										{#each serviceDataLang as langData}
+											{#if langData.language === selectedLanguageTab}
+												<ExpoCard
+													cardType={CardType.Main}
+													title={langData.title}
+													short_description={langData.short_description}
+													thumbnail={serviceData.thumbnail}
+													primaryColor={serviceData.primaryColor}
+													overlayPrimaryColor={serviceData.onPrimaryColor}
+												/>
+											{/if}
+										{/each}
+									</div>
 
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<div class="flex justify-between items-center">
-				<TabItem open title="Service List">
-					<div
-						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-						style="min-height: calc(100vh - 300px);"
-					>
-						<div class="flex justify-start items-start">
-							{#each serviceDataLang as langData}
-								{#if langData.language === selectedLanguageTab}
-									<ExpoCard
-										cardType={CardType.Main}
-										title={langData.title}
-										short_description={langData.short_description}
-										thumbnail={serviceData.thumbnail}
-										primaryColor={serviceData.primaryColor}
-										overlayPrimaryColor={serviceData.onPrimaryColor}
-									/>
-								{/if}
-							{/each}
+									<div />
+								</div>
+							</TabItem>
 						</div>
+						<!-- color picker -->
+						<div class="w-3/4">
+							<div class="flex justify-center items-center w-full">
+								<input
+									type="color"
+									id="colorInput1"
+									name="favcolor1"
+									bind:value={serviceData.primaryColor}
+									class="w-full h-14 border-none"
+								/>
 
-						<div />
+								<input
+									type="color"
+									id="colorInput2"
+									name="favcolor2"
+									bind:value={serviceData.onPrimaryColor}
+									class="w-full h-14 border-none"
+								/>
+							</div>
+						</div>
 					</div>
-				</TabItem>
-
-				<!-- color picker -->
-				<div class="flex justify-center items-center">
-					<div class="flex px-4 -mb-2">
-						<input
-							type="color"
-							id="colorInput1"
-							name="favcolor1"
-							bind:value={serviceData.primaryColor}
-							class="w-32 h-14 border-none"
-						/>
-
-						<input
-							type="color"
-							id="colorInput2"
-							name="favcolor2"
-							bind:value={serviceData.onPrimaryColor}
-							class="w-32 h-14 border-none"
-						/>
-					</div>
-				</div>
+				</Tabs>
 			</div>
-		</Tabs>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

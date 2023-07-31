@@ -2,69 +2,67 @@ export const load = async () => {
 	const pages = [
 		{
 			title: 'Home',
-			url: '/'
+			url: '/dashboard'
 		},
 		{
-			title: 'news',
+			title: 'Promotions',
+			url: '/dashboard/promotions'
+		},
+		{
+			title: 'News',
 			url: '/dashboard/news'
 		},
 		{
-			title: 'services',
+			title: 'Services',
 			url: '/dashboard/service'
 		},
 		{
-			title: 'exhibition',
+			title: 'Exhibition',
 			url: '/dashboard/exhibition'
 		},
 
 		{
-			title: 'seats-ui',
+			title: 'Seats-UI',
 			url: '/dashboard/seats_ui'
 		},
 		{
-			title: 'carousel',
+			title: 'Carousel',
 			url: '/dashboard/carousel'
 		},
 		{
-			title: 'about',
+			title: 'About',
 			url: '/dashboard/about'
 		},
 
 		{
-			title: 'contact',
+			title: 'Contact',
 			url: '/dashboard/contactInfo'
 		},
 		{
-			title: 'seatServices',
+			title: 'Seat Services',
 			url: '/dashboard/seatServices'
 		},
 		{
-			title: 'web builder',
-			url: '/dashboard/web_builder',
-			children: [
-				{
-					title: 'Build News',
-					url: '/dashboard/web_builder/news'
-				}
-			]
+			title: 'Web Builder',
+			url: '/dashboard/web_builder/buildThemeColor'
 		},
 		{
-			title: 'media',
+			title: 'Media',
 			children: [
 				{
-					title: 'publishing',
+					title: 'Publishing',
 					url: '/dashboard/publishing'
 				},
 				{
-					title: 'video',
+					title: 'Video',
 					url: '/dashboard/mediaVideo'
 				},
 				{
-					title: 'magazine',
+					title: 'Magazine',
 					url: '/dashboard/magazine'
 				},
 				{
-					title: 'gallery',
+					title: 'Gallery',
 					url: '/dashboard/gallery'
 				}
 			]

@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/staffStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { StaffModel, StaffModelLang } from '../../../../models/staffModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -19,6 +18,7 @@
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let staffDataLang: StaffModelLang[] = [];
 	let staffData: StaffModel = {
@@ -90,52 +90,87 @@
 
 	//**Handle submit**//
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		let hasDataForLanguage = false;
+		let isValidStaffObject = false;
 
-		if (imageFile) {
-			if (staffData.image) {
-				await data.supabase.storage.from('image').remove([staffData.image]);
+		for (let lang of staffDataLang) {
+			const title = lang.title.trim();
+			const name = lang.name.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isNameEmpty = isEmpty(name);
+
+			if (!isTitleEmpty || !isNameEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isNameEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
-
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			staffData.image = response.data?.path;
-		} else {
-			staffData.image = prevThumbnail;
 		}
 
-		updateData(staffData, staffDataLang, data.supabase);
+		if (!isEmpty(staffData.image)) {
+			isValidStaffObject = true;
+		}
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/about');
+		if (hasDataForLanguage && isValidStaffObject) {
+			submitted = true;
+			showToast = true;
+
+			if (imageFile) {
+				if (staffData.image) {
+					await data.supabase.storage.from('image').remove([staffData.image]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				staffData.image = response.data?.path;
+			} else {
+				staffData.image = prevThumbnail;
+			}
+
+			updateData(staffData, staffDataLang, data.supabase);
+
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/about');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update Staff Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="image" class="mb-2">Upload Staff Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !staffData.image.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Staff Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload member Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg h-[650px]">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -161,7 +196,7 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Title</Label>
+										<Label for="title" class="mb-2">Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -169,11 +204,13 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter title</p>
+										{/if}
 									</div>
 
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">name</Label>
+										<Label for="name" class="mb-2">Full Name of member</Label>
 										<Input
 											type="text"
 											placeholder="Enter name"
@@ -181,54 +218,60 @@
 											id="name"
 											name="name"
 										/>
-										<!-- <Message name="name" /> -->
+										{#if !langData.name.trim()}
+											<p class="error-message">Please enter a name</p>
+										{/if}
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
-			</div>
-
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="Staff List">
-				<div
-					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="flex justify-start items-start">
-						{#each staffDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<ExpoCard
-									cardType={CardType.Main}
-									title={langData.title}
-									short_description={langData.name}
-									thumbnail={staffData.image}
-									primaryColor="bg-primary"
-								/>
-							{/if}
-						{/each}
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
 					</div>
+				</form>
+			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Staff List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each staffDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description=""
+											thumbnail={staffData.image}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
 
-					<div />
-				</div>
-			</TabItem>
-		</Tabs>
+							<div />
+						</div>
+					</TabItem>
+				</Tabs>
+			</div>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

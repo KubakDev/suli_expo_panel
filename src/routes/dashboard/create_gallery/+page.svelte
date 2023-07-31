@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/galleryStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { GalleryModel, GalleryModelLang } from '../../../models/galleryModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -15,6 +12,8 @@
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
 
@@ -25,6 +24,7 @@
 	let sliderImagesFile: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
+	let isFormSubmitted = false;
 
 	let galleryDataLang: GalleryModelLang[] = [];
 
@@ -46,7 +46,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
+			// console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -91,30 +91,61 @@
 	} //**dropzone**//
 
 	async function formSubmit() {
+		let hasDataForLanguage = false;
+		let isValidGalleryObject = false;
+
+		for (let lang of galleryDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
+		}
+
+		// Check if galleryObject has a valid thumbnail and at least one slider image
+		if (!isEmpty(galleryObject.thumbnail) && sliderImagesFile.length > 0) {
+			isValidGalleryObject = true;
+		}
+
+		if (!hasDataForLanguage || !isValidGalleryObject) {
+			isFormSubmitted = true;
+			return;
+		}
+
 		submitted = true;
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		// console.log(response);
 		galleryObject.thumbnail = response.data?.path;
 
-		for (let image of sliderImagesFile) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('image')
-				.upload(`gallery/${randomText}_${image.name}`, image!)
-				.then((response) => {
-					if (response.data) {
-						galleryObject.images.push(response.data.path);
-						// console.log('response ::::', response);
-					}
-				});
+		if (sliderImagesFile.length > 0) {
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('image')
+					.upload(`gallery/${randomText}_${image.name}`, image!)
+					.then((response) => {
+						if (response.data) {
+							galleryObject.images.push(response.data.path);
+						}
+					});
+			}
 		}
 
-		// Convert galleryObject.images to a valid array string format
 		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
 		galleryObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('galleryObject ::::', galleryObject);
 
 		insertData(galleryObject, galleryDataLang, data.supabase);
 
@@ -171,55 +202,47 @@
 	}
 </script>
 
-<div
-	style="min-height: calc(100vh - 160px);"
-	class="grid sm:grid-col-2 xl:grid-cols-3 bg-[#f1f3f4]"
->
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				successfully submitted
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			New data has been inserted successfully
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold">Gallery Data</h1></div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !galleryObject.thumbnail.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<select
+						class="border border-gray-300 rounded-md w-full"
+						id="type"
+						name="type"
+						placeholder="Please select a valid type"
+						on:change={handleSelectChange}
+					>
+						<option disabled selected>Select type</option>
+						{#each exhibitionData as exhibition}
+							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+						{/each}
+					</select>
+				</Label>
+			</div>
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Gallery Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Gallery Image</Label>
-						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={galleryObject.created_at} format="yyyy/MM/dd" />
-					</Label>
-				</div>
-				<div>
-					<label class="space-y-2 mb-2">
-						<label for="large-input" class="block">Exhibition Type</label>
-						<select
-							class="border border-gray-300 rounded-md"
-							id="type"
-							name="type"
-							placeholder="Please select a valid type"
-							on:change={handleSelectChange}
-						>
-							<option disabled selected>Select type</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-					</label>
-				</div>
-
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg">
+				<form>
 					<Tabs>
 						{#each galleryDataLang as langData}
 							<TabItem
@@ -229,21 +252,21 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
+										<h1 class="text-xl text-gray-700 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
 												{`زیاد کردنی داتا بە زمانی کوردی`}
 											{:else}
-												{`Add data for ${langData.language} language`}
+												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Gallery Title</Label>
+										<Label for="title" class="mb-2">Gallery Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -251,7 +274,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if isFormSubmitted && !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -262,82 +287,89 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if isFormSubmitted && !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 
-									<div class="pb-10">
+									<div class="">
 										<Label for="textarea-id" class="mb-2">Gallery detail</Label>
-										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+										<div class="w-full" style="height: 400px;">
+											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
 
-				<br />
-			</div>
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-			<!-- upload gallery image -->
-			<div>
-				<Label class="space-y-2 mb-2">
-					<Label for="pdf_file" class="mb-2">Upload Gallery Image</Label>
-					<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-				</Label>
-			</div>
-
-			<!-- submit Form -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-
-	<div class="h-full p-2 col-span-1 pt-20">
-		<div>
-			<Tabs style="underline">
-				<TabItem open title="Gallery List">
-					<div
-						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-						style="min-height: calc(100vh - 300px);"
-					>
-						<div class="flex justify-start items-start">
-							{#each galleryDataLang as langData}
-								{#if langData.language === selectedLanguageTab}
-									<ExpoCard
-										cardType={CardType.Main}
-										title={langData.title}
-										short_description={langData.short_description}
-										thumbnail={galleryObject.thumbnail}
-										primaryColor="bg-primary"
-									/>
-								{/if}
-							{/each}
-						</div>
-
-						<div />
+					<!-- upload gallery image -->
+					<div class="px-10 pt-5">
+						<Label class="space-y-2 mb-2">
+							<Label for="pdf_file" class="mb-2">Upload Gallery Image</Label>
+							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+							{#if isFormSubmitted && sliderImagesFile.length === 0}
+								<p class="error-message">Please upload at least one image for the slider</p>
+							{/if}
+						</Label>
 					</div>
-				</TabItem>
-				<TabItem title="Gallery Detail">
-					{#each galleryDataLang as langData}
-						{#if langData.language === selectedLanguageTab}
-							<DetailPage
-								imagesCarousel={carouselImages}
-								long_description={langData.long_description}
-							/>
-						{/if}
-					{/each}
-				</TabItem>
-			</Tabs>
+
+					<!-- submit Form -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Add
+						</button>
+					</div>
+				</form>
+			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Gallery List">
+						<div
+							class=" w-full rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each galleryDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.short_description}
+											thumbnail={galleryObject.thumbnail}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Gallery Detail">
+						{#each galleryDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<DetailPage
+									imagesCarousel={carouselImages}
+									long_description={langData.long_description}
+								/>
+							{/if}
+						{/each}
+					</TabItem>
+				</Tabs>
+			</div>
 		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

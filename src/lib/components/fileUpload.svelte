@@ -3,12 +3,16 @@
 	import { afterUpdate, createEventDispatcher } from 'svelte';
 	import { Photo, XMark } from 'svelte-heros-v2';
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
-	import { onMount } from 'svelte';
 	import type { ImagesModel } from '../../models/imagesModel';
+
+	// Import a loading spinner component (you can use an existing library or create your own)
+	import { Shadow } from 'svelte-loading-spinners';
 
 	export let data: { images?: ImagesModel[] } = {};
 	let images: ImagesModel[] = data.images ?? [];
-
+	let isLoading = false;
+	let isUploading = false; // Add the isUploading variable to track the upload status
+	let uploadCount = 0;
 	afterUpdate(() => {
 		if (images.length === 0) {
 			images = data.images ?? [];
@@ -18,8 +22,9 @@
 	let imageFiles: File[] = [];
 
 	function addImage(e: Event) {
-		console.log('//////e', e);
 		const fileInput = e.target as HTMLInputElement;
+		const totalFiles = fileInput.files.length; // Total number of files being uploaded
+
 		for (let file of fileInput!.files!) {
 			imageFiles = [...imageFiles, file];
 
@@ -35,9 +40,18 @@
 						fileName: fileName
 					}
 				];
+
+				uploadCount++; // Increment the upload count for each uploaded image
+
+				if (uploadCount === totalFiles) {
+					isUploading = false; // Set isUploading to false when all images are uploaded
+					uploadCount = 0; // Reset the upload count after all images are uploaded
+				}
 			};
 			reader.readAsDataURL(file);
 		}
+
+		isUploading = true; // Set isUploading to true when images start uploading
 	}
 
 	function deleteImage(index: number) {
@@ -45,7 +59,6 @@
 		updatedImages.splice(index, 1);
 		imageFiles.splice(index, 1);
 		images = updatedImages;
-		console.log('//////i', images);
 	}
 
 	$: {
@@ -57,16 +70,29 @@
 	function runEvent() {
 		dispatch('imageChanges', images);
 		dispatch('imageFilesChanges', imageFiles);
+		isUploading = false; // Set isLoading to false after the image is uploaded
 	}
 </script>
 
-<div class="w-full h-80 bg-[#e4e4e4] rounded-lg p-5 flex flex-wrap">
-	<Dropzone multiple id="dropzone" type="file" accept=".jpg, .jpeg, .png .svg" on:change={addImage}
-		>upload image</Dropzone
-	>
+<Dropzone
+	multiple
+	id="dropzone"
+	type="file"
+	accept=".jpg, .jpeg, .png, .svg"
+	on:change={addImage}
+	class="h-32"
+>
+	{#if isUploading}
+		<!-- Show the loading spinner while uploading images -->
+		<Shadow size="50" color="#FF3E00" unit="px" duration="1s" />
+	{:else}
+		upload image
+	{/if}
+</Dropzone>
 
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
 	{#each images as image, index}
-		<div class="h-24 w-24 bg-[#f1f3f4] mx-2 rounded-lg relative">
+		<div class="w-full h-32 bg-[#f1f3f4] rounded-lg relative">
 			<button
 				class="bg-red-700 absolute -top-2 -right-2 rounded-full border-2 cursor-pointer"
 				on:click={(event) => {
@@ -74,14 +100,14 @@
 					deleteImage(index);
 				}}
 			>
-				<XMark class="text-xs h-5 w-5 text-white" />
+				<XMark class="text-xs text-white" />
 			</button>
 			<img
 				src={image.imgSource == ImgSourceEnum.remote
 					? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`
 					: image.imgurl}
 				alt=""
-				class="rounded-lg object-cover h-full w-full"
+				class="rounded-lg object-cover h-full w-full border"
 			/>
 		</div>
 	{/each}

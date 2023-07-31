@@ -23,9 +23,9 @@
 </script>
 
 <div class=" flex h-full w-full text-white">
-	<div class="">
+	<div>
 		<Sidebar>
-			<SidebarWrapper style="min-height: calc(100vh - 75px);">
+			<SidebarWrapper style="min-height: calc(100vh - 75px);background: #e9ecef; ">
 				<SidebarGroup>
 					{#each data.sideBarPage as pageData}
 						<SidebarItem href={pageData.url} label={pageData.title}>

@@ -19,14 +19,14 @@
 			color = 'red';
 			open = true;
 		}}
-		class="text-red-400 hover:text-red-600 hover:underline pl-6"
+		class="text-red-600 hover:text-red-400 hover:underline pl-6"
 	>
 		Remove
 	</button>
 
 	<Modal title="Are you sure?" bind:open {color} class="bg-white max-w-sm mx-auto" autoclose>
 		<div class="text-base leading-relaxed">
-			Do you really want to delete these records? This process cannot be undone.
+			Do you really want to delete this record? This process cannot be undone.
 		</div>
 		<svelte:fragment slot="footer">
 			<Button on:click={handleDeleteClick} {color}>Delete</Button>

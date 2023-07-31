@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
-	import { insertData } from '../../../stores/seatServicesStore';
+	import { insertDataToSeatService } from '../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { seatServicesModel, seatServicesModelLang } from '../../../models/seatServicesModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
-
+	let isFormSubmitted = false;
 	let submitted = false;
 	let showToast = false;
 	let fileName: string;
@@ -23,6 +23,7 @@
 	let seatServicesObject: seatServicesModel = {
 		id: 0,
 		icon: '',
+		price: 0,
 		created_at: new Date()
 	};
 
@@ -55,15 +56,45 @@
 	}
 
 	async function formSubmit() {
+		let hasDataForLanguage = false;
+		let isValidServiceObject = false;
+
+		for (let lang of seatServicesDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
+		}
+
+		if (!isEmpty(seatServicesObject.icon)) {
+			isValidServiceObject = true;
+		}
+
+		if (!hasDataForLanguage || !isValidServiceObject) {
+			isFormSubmitted = true;
+			return;
+		}
+
 		submitted = true;
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
 		// console.log(response);
-		seatServicesObject.icon = response.data?.path;
+		seatServicesObject.icon = response.data?.path ?? '';
 
-		insertData(seatServicesObject, seatServicesDataLang, data.supabase);
+		insertDataToSeatService(seatServicesObject, seatServicesDataLang, data.supabase);
 
 		resetForm();
 		goto('/dashboard/seatServices');
@@ -77,6 +108,7 @@
 
 		seatServicesObject = {
 			icon: '',
+			price: 0,
 			created_at: new Date(),
 			id: 0
 		};
@@ -92,29 +124,41 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				successfully submitted
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			New data has been inserted successfully
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">SeatServices Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Upload SeatServices Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !seatServicesObject.icon.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Enter price</Label>
+					<Input type="number" bind:value={seatServicesObject.price} placeholder="Enter a number" />
+					<p class="text-xs text-gray-500">
+						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
+					</p>
+				</Label>
+			</div>
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">SeatServices Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload icon image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload seatServices Icon</Label>
-						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					</Label>
-				</div>
-
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg h-[700px]">
+				<form>
 					<Tabs>
 						{#each seatServicesDataLang as langData}
 							<TabItem
@@ -124,21 +168,21 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
+										<h1 class="text-xl text-gray-700 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
 												{`زیاد کردنی داتا بە زمانی کوردی`}
 											{:else}
-												{`Add data for ${langData.language} language`}
+												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
-										<Label for="first_name" class="mb-2">seatServices Title</Label>
+										<Label for="title" class="mb-2">Seat Service Title</Label>
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -146,67 +190,74 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if isFormSubmitted && !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Description</Label>
+										<Label for="textarea-id" class="mb-2">short description</Label>
 										<Textarea
 											placeholder="Enter short description"
 											rows="4"
 											bind:value={langData.description}
-											id="short_description"
-											name="short_description"
+											id="description"
+											name="description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if isFormSubmitted && !langData.description.trim()}
+											<p class="error-message">Please enter a description</p>
+										{/if}
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
 
-				<br />
-			</div>
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<div>
-			<Tabs style="underline">
-				<TabItem open title="News List">
-					<div
-						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-						style="min-height: calc(100vh - 300px);"
-					>
-						<div class="flex justify-start items-start">
-							{#each seatServicesDataLang as langData}
-								{#if langData.language === selectedLanguageTab}
-									<ExpoCard
-										cardType={CardType.Main}
-										title={langData.title}
-										short_description={langData.description}
-										thumbnail={seatServicesObject.icon}
-										primaryColor="bg-primary"
-									/>
-								{/if}
-							{/each}
-						</div>
-
-						<div />
+					<!-- submit Form -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Add
+						</button>
 					</div>
-				</TabItem>
-			</Tabs>
+				</form>
+			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Seat Service List">
+						<div
+							class=" w-full rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each seatServicesDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.description}
+											thumbnail={seatServicesObject.icon}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+				</Tabs>
+			</div>
 		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

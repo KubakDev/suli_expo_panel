@@ -30,26 +30,26 @@
 		goto(`seats_ui/${design.id}`);
 	}
 
-	function creatNewSeatDesign() {
+	function createNewDesign() {
 		goto(`seats_ui/create`);
 	}
 </script>
 
 <div class="flex flex-col justify-start items-center bg-secondary w-full pt-10">
 	<div>
-		<Button on:click={creatNewSeatDesign}>
-			<a>Create New Seat Design</a>
-		</Button>
+		<Button on:click={createNewDesign}>Create New Seat Design</Button>
 	</div>
 
 	<div class="px-4 grid grid-cols-3 gap-4 mt-10">
 		{#if designs}
 			{#each designs as design}
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div
 					on:click={() => openSeatDesignEditor(design)}
 					class="w-52 hover:shadow-sm duration-300 cursor-pointer h-40 flex flex-col p-0 border rounded-2xl border-gray-300"
 				>
 					<div class="h-20 w-full bg-black rounded-tl-2xl rounded-tr-2xl">
+						<!-- svelte-ignore a11y-missing-attribute -->
 						<img
 							class="object-cover w-full h-full rounded-tl-2xl rounded-tr-2xl"
 							src={import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + design.image_url}

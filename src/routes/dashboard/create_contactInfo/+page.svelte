@@ -136,25 +136,11 @@
 			successfully submitted
 		</div>
 	{/if}
+	<h1 class="pt-20 text-2xl font-bold flex justify-center">Contact Information Data</h1>
 
-	<div class="px-10 lg:px-20 py-10 border m-10 bg-white shadow rounded-lg">
+	<div class="px-10 lg:px-20 py-10 border m-10 bg-white rounded-lg">
 		<Form class="form " {submitted}>
-			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-700">
-				Contact Information Data
-			</h1>
-
 			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<div>
-					<Label class="space-y-2 mb-2">
-						<div>
-							<Label class="space-y-2 mb-2">
-								<span>Date</span>
-								<DateInput bind:value={contactInfoObject.created_at} format="yyyy/MM/dd" />
-							</Label>
-						</div>
-					</Label>
-				</div>
-
 				<br />
 
 				<div class="col-span-3">
@@ -167,9 +153,9 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-5 py-16">
+								<div class="py-5">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
+										<h1 class="text-xl text-gray-700 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -181,7 +167,7 @@
 										<p class="text-gray-400 text-base">for other language navigate between tabs</p>
 									</div>
 									<div class="lg:flex items-center gap-2 lg:py-10">
-										<div class="w-full h-16 mb-10">
+										<div class="w-full h-16 mb-8 lg:mb-0">
 											<Label for="relations" class="mb-2">Relations</Label>
 											<Input
 												type="text"
@@ -195,7 +181,7 @@
 												<p class="error-message">{errorMessages['phoneNumber_relations']}</p>
 											{/if}
 										</div>
-										<div class="w-full h-16 mb-10">
+										<div class="w-full h-16 mb-8 lg:mb-0">
 											<!-- Set a fixed minimum height of 100 pixels -->
 											<Label for="administration" class="mb-2">Administration</Label>
 											<Input
@@ -211,7 +197,7 @@
 										</div>
 									</div>
 									<div class="pb-10 lg:flex items-center gap-2">
-										<div class="w-full h-16 mb-10">
+										<div class="w-full h-16 mb-8 lg:mb-0">
 											<Label for="technical" class="mb-2">Technical</Label>
 											<Input
 												type="text"
@@ -224,7 +210,7 @@
 												<p class="error-message">{errorMessages['phoneNumber_Technical']}</p>
 											{/if}
 										</div>
-										<div class="w-full h-16 mb-10">
+										<div class="w-full h-16 mb-8 lg:mb-0">
 											<Label for="first_name" class="mb-2">Marketing</Label>
 											<Input
 												type="text"
@@ -272,11 +258,11 @@
 						{/each}
 					</Tabs>
 				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+
 				<br />
 			</div>
 
-			<div class="w-full flex justify-end">
+			<div class="w-full flex justify-end px-4">
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"

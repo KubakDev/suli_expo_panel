@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
+	//@ts-ignore
 	import { Form } from 'svelte-yup';
 	import { updateData } from '../../../../stores/contactStor';
 	import { LanguageEnum } from '../../../../models/languageEnum';
@@ -107,7 +108,7 @@
 		console.log(errorMessages); // Optional: Check errorMessages object
 	}
 
-	function isValidEmail(email) {
+	function isValidEmail(email: string) {
 		// Use a regular expression to validate the email format
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(email);

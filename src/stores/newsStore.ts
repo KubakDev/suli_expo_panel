@@ -42,15 +42,14 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('news').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
 		const result = {
 			data: data,
 			count: count
 		};
+
+		news.set(data ?? []);
 		return result;
 	} catch (error) {
-		console.error(error);
 		throw error;
 	}
 };

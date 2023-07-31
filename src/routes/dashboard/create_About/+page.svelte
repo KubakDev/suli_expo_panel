@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/aboutStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { AboutModel, AboutModelLang } from '../../../models/aboutModel';
@@ -10,10 +8,11 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import Editor from '@tinymce/tinymce-svelte';
-	import { DateInput } from '$lib/components/DateTimePicker';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 
 	export let data;
-
+	let isFormSubmitted = false;
 	let submitted = false;
 	let showToast = false;
 	let fileName: string;
@@ -62,13 +61,43 @@
 	}
 
 	async function formSubmit() {
+		let hasDataForLanguage = false;
+		let isValidAboutObject = false;
+
+		for (let lang of aboutDataLang) {
+			const short_description = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isShortDescriptionEmpty = isEmpty(short_description);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
+		}
+
+		if (!isEmpty(aboutObject.image)) {
+			isValidAboutObject = true;
+		}
+
+		if (!hasDataForLanguage || !isValidAboutObject) {
+			isFormSubmitted = true;
+			return;
+		}
+
 		submitted = true;
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
 		// console.log(response);
-		aboutObject.image = response.data?.path;
+		aboutObject.image = response.data?.path || '';
 
 		insertData(aboutObject, aboutDataLang, data.supabase);
 
@@ -132,35 +161,32 @@
 	};
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				successfully submitted
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			New data has been inserted successfully
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">About Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Upload About Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !aboutObject.image.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+		</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">About Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Image</Label>
-						<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={aboutObject.created_at} format="yyyy/MM/dd" />
-					</Label>
-				</div>
-
-				<br />
-
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg h-[700px]">
+				<form>
 					<Tabs>
 						{#each aboutDataLang as langData}
 							<TabItem
@@ -170,31 +196,33 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16">
+								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
+										<h1 class="text-xl text-gray-700 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
 												{`زیاد کردنی داتا بە زمانی کوردی`}
 											{:else}
-												{`Add data for ${langData.language} language`}
+												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Short description</Label>
+										<Label for="short_description" class="mb-2">Description</Label>
 										<Textarea
 											placeholder="Enter short description"
-											rows="4"
+											rows="5"
 											bind:value={langData.short_description}
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if isFormSubmitted && !langData.short_description.trim()}
+											<p class="error-message">Please enter a short_description</p>
+										{/if}
 									</div>
+
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">About Paragraph</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
@@ -205,66 +233,72 @@
 												bind:value={langData.long_description}
 												{conf}
 											/>
+											{#if isFormSubmitted && !langData.long_description.trim()}
+												<p class="error-message">Please enter a long description</p>
+											{/if}
 										</div>
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
 
-				<br />
-			</div>
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-			<!-- submit Form -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-primary-dark hover:bg-primary-50 text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<div>
-			<Tabs style="underline">
-				<TabItem open title="About List">
-					<div
-						class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-						style="min-height: calc(100vh - 300px);"
-					>
-						<div class="flex justify-start items-start">
-							{#each aboutDataLang as langData}
-								{#if langData.language === selectedLanguageTab}
-									<ExpoCard
-										title=""
-										cardType={CardType.Main}
-										short_description={langData.short_description}
-										thumbnail={aboutObject.image}
-										primaryColor="bg-primary"
-									/>
-								{/if}
-							{/each}
-						</div>
-
-						<div />
+					<!-- submit Form -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Add
+						</button>
 					</div>
-				</TabItem>
-				<TabItem title="About Detail">
-					{#each aboutDataLang as langData}
-						{#if langData.language === selectedLanguageTab}
-							<DetailPage
-								imagesCarousel={carouselImages}
-								long_description={langData.long_description}
-							/>
-						{/if}
-					{/each}
-				</TabItem>
-			</Tabs>
+				</form>
+			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Gallery List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each aboutDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title=""
+											short_description={langData.short_description}
+											thumbnail={aboutObject.image}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Gallery Detail">
+						{#each aboutDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<DetailPage
+									bind:imagesCarousel={carouselImages}
+									long_description={langData.long_description}
+								/>
+							{/if}
+						{/each}
+					</TabItem>
+				</Tabs>
+			</div>
 		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>

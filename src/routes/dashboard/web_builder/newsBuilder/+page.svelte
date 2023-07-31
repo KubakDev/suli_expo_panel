@@ -4,35 +4,55 @@
 		SidebarGroup,
 		SidebarWrapper,
 		SidebarDropdownWrapper,
-		Button,
-		Spinner,
 		Label,
 		Input
 	} from 'flowbite-svelte';
 	import { onMount } from 'svelte';
-	import DynamicImage from '$lib/components/reusables/dynamicImage.svelte';
-	import colorTheme, { getAllThemes } from '../../../../stores/colorTheme';
+	import { insertData, getData, theme } from '../../../../stores/colorTheme';
+	import { insertPageData, pageTheme, updatePageData } from '../../../../stores/pageStore';
+	import { ExpoCard, CardType } from 'kubak-svelte-component';
 	import type { ColorTheme } from '../../../../models/colorTheme';
-	import { supabaseStore } from '../../../../stores/supabaseStore';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
-	import { getNews } from '../../../../stores/news';
-	import type { News } from '../../../../models/news';
-	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
-	import { CardType } from '../../../../models/cardTypeEnum';
-	import { service } from '../../../../stores/serviceStore';
+	import type { PageData } from '../../../..//models/pageType';
+	import { PageEnum } from '../../../../models/pageEnum';
 
 	export let data;
-	onMount(async () => {
-		await getAllThemes();
-	});
-	let currentRowId: number;
-	let CardComponent: any;
+
+	let colorData: any = [];
+	let componentTypeID = 0;
+	let colorThemeID = 0;
+	let componentData: any = [];
+
 	let loading = false;
-	$: component = CardComponent;
-	let selectedCard: string = 'MainCard';
-	let selectedColorTheme = $colorTheme[0];
-	let allCards: string[] = [];
+
+	let selectedColorTheme = {
+		name: '',
+		primaryColor: '',
+		secondaryColor: '',
+		onPrimaryColor: '',
+		onSecondaryColor: '',
+		backgroundColor: '',
+		onBackgroundColor: ''
+	};
+
+	let pageBuilder: PageData = {
+		id: 0,
+		componentId: 0,
+		componentTypeId: 0,
+		page: '',
+		color_palette_id: 0
+	};
+
+	async function fetchData() {
+		let result = await getData(data.supabase);
+		colorData = result;
+	}
+
+	onMount(fetchData);
+
+	let cardShape: any = null;
+
 	let colors = [
 		'primaryColor',
 		'secondaryColor',
@@ -41,118 +61,152 @@
 		'backgroundColor',
 		'onBackgroundColor'
 	];
-	type customColorType = {
-		[key: string]: string;
-	};
-	let showCustomColor: boolean = false;
-	let customColors: customColorType = {} as customColorType;
-	let allNews: News[] = [];
 
-	async function getUI() {
-		const supabase = $supabaseStore;
-		if (!supabase) return;
-		const response: any = await supabase
-			.from('page_builder')
-			.select(
-				`
-					id,
-			component_type:componentTypeId(
-				id,
-					type
-				),
-				component:componentId(
-					title
-				),
-				color_palette:color_palette(
-				*
-		  )
-			`
-			)
-			.eq('page', CardType.Service);
-		selectedColorTheme = response.data[0].color_palette;
-		const cardIndex = response.data.findIndex((item: any) => item.component_type.type === 'card');
-		currentRowId = response.data[cardIndex].id;
-		let card = response.data[cardIndex].component.title;
-		const module = await import('kubak-svelte-component');
-		CardComponent = module[card as keyof typeof module];
-	}
-	async function getAllNews() {
-		const response = await data.supabase.from('news').select(
-			`*,
-			news_languages(*)
-			`
-		);
-		allNews = response.data as News[];
-	}
-	onMount(async () => {
-		// await getAllServices(data.supabase);
-		await getUI();
-		await getNews(0, 10, data.supabase);
-		await getAllNews();
-		component = CardComponent;
-		const images = import.meta.glob('../../../../../static/images/cards/*.{jpg,jpeg,png,gif}');
-		Object.keys(images).forEach((key) => {
-			const fileName: string = key.split('/').pop()!;
-			allCards.push(fileName.split('.').shift()!);
-		});
-	});
-	async function changeCardType(cardType: any) {
-		cardType = cardType.charAt(0).toUpperCase() + cardType.slice(1);
-		selectedCard = cardType;
-		const module = await import('kubak-svelte-component');
-		CardComponent = module[cardType as keyof typeof module];
-	}
-	async function publish() {
+	let showCustomColor: boolean = false;
+
+	let customColors: ColorTheme = {
+		name: '',
+		primaryColor: '',
+		secondaryColor: '',
+		onPrimaryColor: '',
+		onSecondaryColor: '',
+		backgroundColor: '',
+		onBackgroundColor: '',
+		active: null
+	};
+
+	async function formSubmit() {
 		loading = true;
-		let newColorPaletteId = 0;
-		if (Object.keys(customColors).length > 0) {
-			const newColorData = await $supabaseStore!
-				.from('color_palette')
-				.insert([
-					{
-						name: customColors.name,
-						primaryColor: customColors.primaryColor,
-						secondaryColor: customColors.secondaryColor,
-						onPrimaryColor: customColors.onPrimaryColor,
-						onSecondaryColor: customColors.onSecondaryColor,
-						backgroundColor: customColors.backgroundColor,
-						onBackgroundColor: customColors.onBackgroundColor
-					}
-				])
-				.select();
-			newColorPaletteId = newColorData?.data![0].id;
-		}
-		const { data } = await $supabaseStore!
-			.from('component')
-			.select('id')
-			.eq('title', selectedCard)
-			.single();
-		const response = await $supabaseStore!
-			.from('page_builder')
-			.update({
-				componentId: data?.id,
-				color_palette:
-					Object.keys(customColors).length > 0 ? newColorPaletteId : selectedColorTheme?.id
-			})
-			.eq('id', 2);
-		if (response.error) {
-			addNewToast({
-				type: ToastTypeEnum.ERROR,
-				message: 'an error occured while publishing the page',
-				title: 'Error'
-			});
-		} else {
-			addNewToast({
-				type: ToastTypeEnum.SUCCESS,
-				message: 'page published successfully',
-				title: 'Success'
-			});
-		}
+		await insertData(customColors, data.supabase);
+		fetchData();
+		showCustomColor = !showCustomColor;
+		addNewToast({
+			type: ToastTypeEnum.SUCCESS,
+			message: 'New theme has been created successfully',
+			title: 'Success'
+		});
 		loading = false;
 	}
 
-	function changeColorTheme(colorTheme: any) {
+	let cards = [
+		{
+			id: 0,
+			cardName: 'flat',
+			value: CardType.Flat,
+			imgUrl: '../../../../images/cards/flat.png'
+		},
+
+		{
+			id: 1,
+			cardName: 'main',
+			value: CardType.Main,
+			imgUrl: '../../../../images/cards/main.png'
+		},
+		{
+			id: 2,
+			cardName: 'simple',
+			value: CardType.Simple,
+			imgUrl: '../../../../images/cards/simple.png'
+		},
+		{
+			id: 3,
+			cardName: 'square',
+			value: CardType.Square,
+			imgUrl: '../../../../images/cards/square.png'
+		},
+		{
+			id: 4,
+			cardName: 'video',
+			value: CardType.Video,
+			imgUrl: '../../../../images/cards/video.png'
+		}
+	];
+
+	// get component data
+	let supabase = data.supabase;
+
+	async function fetchComponentData() {
+		const { data, error } = await supabase.from('component_type').select('*');
+		if (error) {
+			console.error('Error fetching data:', error.message);
+			return;
+		}
+		componentData = data;
+
+		// console.log(componentData);
+	}
+	onMount(fetchComponentData);
+
+	// insert data into page builder table
+
+	async function insertThemePageData() {
+		for (let i = 0; i < componentData.length; i++) {
+			if (componentData[i].type.toLowerCase() === cardShape.toLowerCase()) {
+				pageBuilder.componentTypeId = componentData[i].id;
+				// console.log(pageBuilder);
+				componentTypeID = componentData[i].id;
+				break;
+			}
+		}
+
+		pageBuilder.color_palette_id = selectedColorTheme.id;
+
+		await insertPageData(pageBuilder, data.supabase);
+	}
+
+	function changeCardType(cardType: any) {
+		cardShape = cardType;
+		// console.log(cardShape);
+	}
+
+	function changePageTheme(colorTheme: any) {
 		selectedColorTheme = colorTheme;
+		customColors = {};
+		// console.log('???????????', selectedColorTheme);
+	}
+
+	async function getPageData() {
+		await data.supabase
+			.from('page_builder')
+			.select('*,color_palette(*),component_type(*),component(*)')
+			.eq('page', PageEnum.NEWS)
+			.single()
+			.then((result) => {
+				pageBuilder = {
+					id: result.data?.id,
+					componentId: result.data?.componentId,
+					componentTypeId: result.data?.componentTypeId,
+					page: PageEnum.NEWS,
+					color_palette_id: result.data?.color_palette_id
+				};
+
+				customColors = {
+					name: result.data?.name,
+					primaryColor: result.data?.color_palette?.primaryColor,
+					secondaryColor: result.data?.color_palette?.secondaryColor,
+					onPrimaryColor: result.data?.color_palette?.onPrimaryColor,
+					onSecondaryColor: result.data?.color_palette?.onSecondaryColor,
+					backgroundColor: result.data?.color_palette?.backgroundColor,
+					onBackgroundColor: result.data?.color_palette?.onBackgroundColor
+				};
+
+				cardShape = result.data?.component_type?.type;
+
+				pageBuilder = { ...pageBuilder };
+				customColors = { ...customColors };
+
+				console.log(result.data);
+				console.log('///', cardShape);
+				console.log(result.data);
+			});
+	}
+
+	onMount(getPageData);
+
+	async function update() {
+		console.log(pageBuilder);
+
+		// updatePageData(pageBuilder.page, supabase);
 	}
 </script>
 
@@ -165,36 +219,34 @@
 					: selectedColorTheme?.backgroundColor
 			}`}
 		>
-			<div class=" flex justify-center pt-8">
+			<div class=" flex flex-col justify-center items-center pt-8 text-black">
 				<h1
 					style={`color:${
 						Object.keys(customColors).length > 0
 							? customColors.onBackgroundColor
 							: selectedColorTheme?.onBackgroundColor
 					}`}
-					class="text-lg font-bold"
+					class="text-lg font-bold text-center pt-5 pb-10"
 				>
-					NEWS
+					News
 				</h1>
-			</div>
-			<div class="flex flex-wrap justify-center">
-				{#each $service as newsItem}
-					<div class="p-10 w-[600px]">
-						{#if component}
-							<svelte:component
-								this={component}
-								data={newsItem.service_languages[0]}
-								colors={Object.keys(customColors).length > 0 ? customColors : selectedColorTheme}
-								imageData={{
-									thumbnail: newsItem.thumbnail,
-									imgSource: ImgSourceEnum.remote
-								}}
-							/>
-						{:else}
-							<div />
-						{/if}
-					</div>
-				{/each}
+
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 px-4">
+					{#each Array(6) as _, index}
+						<ExpoCard
+							cardType={cardShape}
+							title="title"
+							short_description="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum"
+							thumbnail=""
+							primaryColor={Object.keys(customColors).length > 0
+								? customColors.primaryColor
+								: selectedColorTheme?.primaryColor}
+							overlayPrimaryColor={Object.keys(customColors).length > 0
+								? customColors.onPrimaryColor
+								: selectedColorTheme?.onPrimaryColor}
+						/>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
@@ -202,7 +254,7 @@
 		class="h-full bg-[#f9fafb] rounded-md flex flex-col items-center justify-between py-5"
 		style="height: calc(100vh - 80px)"
 	>
-		<Sidebar style="width:300px" class="h">
+		<Sidebar style="width:300px">
 			<SidebarWrapper>
 				<SidebarGroup>
 					<SidebarDropdownWrapper label="Cards">
@@ -252,17 +304,14 @@
 								/></svg
 							>
 						</svelte:fragment>
-						<div style="height: auto; width: 100%;">
-							<div class="grid grid-cols-2">
-								{#each allCards as card}
-									<!-- svelte-ignore a11y-click-events-have-key-events -->
-									<div
-										class=" my-2 cursor-pointer h-32 w-32 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
-										on:click={() => changeCardType(card)}
-									>
-										<DynamicImage src="/images/cards/{card}.png" className={`w-[80px] h-[80px]`} />
-										<p class="text-black">{card}</p>
-									</div>
+
+						<div class=" text-black">
+							<div class="grid grid-cols-3 gap-2">
+								{#each cards as item, i}
+									<button on:click={() => changeCardType(item.value)}>
+										<img src={item.imgUrl} alt="card type" class="w-32 h-28" />
+										<p>{item.cardName}</p>
+									</button>
 								{/each}
 							</div>
 						</div>
@@ -319,11 +368,10 @@
 						<div style="height: auto; width: 100%;">
 							<div class="grid grid-cols-3">
 								{#if !showCustomColor}
-									{#each $colorTheme as color}
-										<!-- svelte-ignore a11y-click-events-have-key-events -->
+									{#each $theme as color}
 										<div
 											class=" my-2 cursor-pointer h-24 w-20 py-1 bg-backgroundComponent rounded-md flex flex-col items-center justify-between"
-											on:click={() => changeColorTheme(color)}
+											on:click={() => changePageTheme(color)}
 										>
 											<div class="h-14 w-14" style={`background-color:${color?.primaryColor}`} />
 											<p class="text-sm text-black">{color.name}</p>
@@ -331,14 +379,15 @@
 									{/each}
 								{/if}
 							</div>
-							<div class="py-5 text-center">
-								<Button
+							<div class="py-2 text-center">
+								<button
+									class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 									on:click={() => {
-										if (showCustomColor) customColors = {};
 										showCustomColor = !showCustomColor;
-									}}>{showCustomColor ? 'Cancel' : 'Create new Palette'}</Button
+									}}>{showCustomColor ? 'Cancel' : 'Create new Theme'}</button
 								>
 							</div>
+
 							{#if showCustomColor}
 								<div class="flex items-center justify-between py-2">
 									<Input
@@ -363,18 +412,39 @@
 									{/if}
 								</div>
 							{/if}
+
+							<div class="py-2 text-center">
+								{#if showCustomColor}
+									<button
+										on:click|preventDefault={formSubmit}
+										type="submit"
+										class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+									>
+										Add
+									</button>
+								{/if}
+							</div>
 						</div>
 					</SidebarDropdownWrapper>
 				</SidebarGroup>
 			</SidebarWrapper>
 		</Sidebar>
-		<div>
-			<Button class="w-52" on:click={() => publish()}>
-				{#if loading}
-					<Spinner class="mr-3" size="4" />
-				{/if}
-				Publish</Button
+		<div class="text-black">
+			<button
+				on:click={() => insertThemePageData()}
+				class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 			>
+				Add New Theme
+			</button>
+
+			<div class="text-black py-5">
+				<button
+					on:click={() => update()}
+					class="w-full flex justify-center items-center transition-all ease-in-out bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+				>
+					Update Page Theme
+				</button>
+			</div>
 		</div>
 	</div>
 </div>

@@ -1,47 +1,40 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { updateData } from '../../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../../models/media_VideoModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import FileUploadComponent from '$lib/components/fileUpload.svelte';
-	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
-	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
 	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import Editor from '@tinymce/tinymce-svelte';
+	//@ts-ignore
+	import { isLength, isEmpty } from 'validator';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	export let data;
-	let sliderImagesFile: File[] = [];
 	let fileName: string;
-	let existingImages: string[] = [];
 	let imageFile: File | undefined;
 	let carouselImages: any = undefined;
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let isFormSubmitted = false;
 
 	let mediaVideoDataLang: VideoModelLang[] = [];
 	let mediaVideoData: VideoModel = {
 		id: 0,
 		thumbnail: '',
 		link: '',
-		exhibition_type: '',
-		created_at: new Date()
+		exhibition_type: ''
 	};
-	const id = $page.params.mediaVideoId;
-	let images: ImagesModel[] = [];
 
+	const id = $page.params.mediaVideoId;
 	let exhibitionData: ExhibitionModel[] = [];
+
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
@@ -72,10 +65,7 @@
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					link: result.data?.link,
-					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
-						result.data?.thumbnail
-					}`,
-					created_at: new Date(result.data?.created_at)
+					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
 				};
 
 				// console.log('video data get db thumbnail : ////////', mediaVideoData.thumbnail);
@@ -102,7 +92,6 @@
 				mediaVideoData = { ...mediaVideoData };
 			});
 	}
-
 	onMount(async () => {
 		await getVideoData();
 	});
@@ -113,7 +102,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload thumbnail image**//
+	//**for upload videio image**//
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -124,35 +113,69 @@
 		reader.onloadend = () => {
 			mediaVideoData.thumbnail = reader.result as '';
 
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `mediaVideoPictures/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(mediaVideoData);
+			const randomText = getRandomTextNumber();
+			fileName = `mediaVideoPictures/${randomText}_${file.name}`;
 		};
 		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
+	}
 
 	//**Handle submit**//
+
 	async function formSubmit() {
-		submitted = true;
-		showToast = true;
+		let hasDataForLanguage = false;
+		let isValidVideoObject = false;
 
-		if (imageFile) {
-			if (mediaVideoData.thumbnail) {
-				await data.supabase.storage.from('image').remove([mediaVideoData.thumbnail]);
+		for (let lang of mediaVideoDataLang) {
+			const title = lang.title.trim();
+			const shortDescription = lang.short_description.trim();
+			const longDescription = lang.long_description.trim();
+
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
+
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
 			}
-
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			mediaVideoData.thumbnail = response.data?.path;
-		} else {
-			mediaVideoData.thumbnail = prevThumbnail;
 		}
 
-		updateData(mediaVideoData, mediaVideoDataLang, data.supabase);
+		if (!isEmpty(mediaVideoData.thumbnail) && !isEmpty(mediaVideoData.link)) {
+			isValidVideoObject = true;
+		}
 
-		setTimeout(() => {
-			showToast = false;
-		}, 1000);
-		goto('/dashboard/mediaVideo');
+		if (hasDataForLanguage && isValidVideoObject) {
+			submitted = true;
+			showToast = true;
+
+			if (imageFile) {
+				if (mediaVideoData.thumbnail) {
+					await data.supabase.storage.from('image').remove([mediaVideoData.thumbnail]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				mediaVideoData.thumbnail = response.data?.path;
+			} else {
+				mediaVideoData.thumbnail = prevThumbnail;
+			}
+
+			updateData(mediaVideoData, mediaVideoDataLang, data.supabase);
+			console.log('result before store :', mediaVideoData);
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/mediaVideo');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 
 	function handleSelectChange(event: any) {
@@ -161,68 +184,70 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="grid grid-col-1 lg:grid-cols-3 bg-[#f1f3f4]">
-	<div class="w-full h-full col-span-2 flex justify-center items-center">
-		{#if showToast}
-			<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-				The Update Was Successfully!
+<div style="min-height: calc(100vh - 160px);">
+	{#if showToast}
+		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+			The Update Was Successfully!
+		</div>
+	{/if}
+	<div class="max-w-screen-2xl mx-auto py-10">
+		<div class="flex justify-center py-10">
+			<h1 class="text-2xl font-bold">Update Video Data</h1>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
+					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					{#if isFormSubmitted && !mediaVideoData.thumbnail.trim()}
+						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
 			</div>
-		{/if}
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<select
+						class="border border-gray-300 rounded-md w-full"
+						id="type"
+						name="type"
+						placeholder="Please select a valid type"
+						on:change={handleSelectChange}
+					>
+						<option disabled selected>
+							{mediaVideoData.exhibition_id
+								? exhibitionData.find((item) => item.id == mediaVideoData.exhibition_id)
+										?.exhibition_type
+								: 'Select type'}
+						</option>
+						{#each exhibitionData as exhibition}
+							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+						{/each}
+					</select>
+				</Label>
+			</div>
 
-		<Form class="form py-10" {submitted}>
-			<h1 class="text-xl font-bold mb-8">Video Data</h1>
-
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<!-- upload thumbnail image  -->
-				<div>
-					<Label class="space-y-2 mb-2">
-						<Label for="first_name" class="mb-2">Upload Image</Label>
-						<Fileupload on:change={handleFileUpload} />
-					</Label>
-				</div>
-				<div>
-					<Label class="space-y-2 mb-2">
-						<span>Date</span>
-						<DateInput bind:value={mediaVideoData.created_at} />
-					</Label>
-				</div>
-
-				<div>
-					<label class="space-y-2 mb-2">
-						<label for="large-input" class="block">Exhibition Type</label>
-						<select
-							class="border border-gray-300 rounded-md"
-							id="type"
-							name="type"
-							placeholder="Please select a valid type"
-							on:change={handleSelectChange}
-						>
-							<option disabled selected>
-								{mediaVideoData.exhibition_id
-									? exhibitionData.find((item) => item.id == mediaVideoData.exhibition_id)
-											?.exhibition_type
-									: 'Select type'}
-							</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-					</label>
-				</div>
-
-				<div class="pb-10">
-					<Label for="first_name" class="mb-2">Link</Label>
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="exhibition_type" class="block font-normal">Link Video</label>
 					<Input
 						type="text"
 						placeholder="Enter title"
 						bind:value={mediaVideoData.link}
-						id="title"
-						name="title"
+						id="link"
+						name="link"
 					/>
-					<!-- <Message name="title" /> -->
-				</div>
+					{#if isFormSubmitted && !mediaVideoData.link}
+						<p class="error-message">Please Enter a link of video</p>
+					{/if}
+				</Label>
+			</div>
+		</div>
 
-				<div class="col-span-3">
+		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
+			<div class="lg:col-span-2 border rounded-lg">
+				<form>
 					<Tabs
 						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
 					>
@@ -249,6 +274,7 @@
 									</div>
 									<div class="pb-10">
 										<Label for="first_name" class="mb-2">Video Title</Label>
+
 										<Input
 											type="text"
 											placeholder="Enter title"
@@ -256,7 +282,9 @@
 											id="title"
 											name="title"
 										/>
-										<!-- <Message name="title" /> -->
+										{#if !langData.title.trim()}
+											<p class="error-message">Please enter a title</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">short description</Label>
@@ -267,67 +295,76 @@
 											id="short_description"
 											name="short_description"
 										/>
-										<!-- <Message name="short_description" /> -->
+										{#if !langData.short_description.trim()}
+											<p class="error-message">Please enter a short description</p>
+										{/if}
 									</div>
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} />
+											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
+					<div class="border mb-2 border-gray-300 mx-10" />
 
-				<br />
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</form>
 			</div>
+			<div class="lg:col-span-1 border rounded-lg">
+				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+					<TabItem open title="Magazine List">
+						<div
+							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
+							style="min-height: calc(100vh - 300px);"
+						>
+							<div class="flex justify-start items-start">
+								{#each mediaVideoDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.short_description}
+											thumbnail={mediaVideoData.thumbnail}
+											primaryColor="bg-primary"
+										/>
+									{/if}
+								{/each}
+							</div>
 
-			<!-- button for submitForm -->
-			<div class="w-full flex justify-end mt-2">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-				>
-					Submit
-				</button>
-			</div>
-		</Form>
-	</div>
-	<div class="h-full p-2 col-span-1 pt-20">
-		<Tabs style="underline">
-			<TabItem open title="Video List">
-				<div
-					class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-					style="min-height: calc(100vh - 300px);"
-				>
-					<div class="flex justify-start items-start">
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Magazine Detail">
 						{#each mediaVideoDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
-								<ExpoCard
-									cardType={CardType.Main}
-									title={langData.title}
-									short_description={langData.short_description}
-									thumbnail={mediaVideoData.thumbnail}
-									primaryColor="bg-primary"
+								<DetailPage
+									bind:imagesCarousel={carouselImages}
+									long_description={langData.long_description}
 								/>
 							{/if}
 						{/each}
-					</div>
-
-					<div />
-				</div>
-			</TabItem>
-			<TabItem title="Video Detail">
-				{#each mediaVideoDataLang as langData}
-					{#if langData.language === selectedLanguageTab}
-						<DetailPage long_description={langData.long_description} />
-					{/if}
-				{/each}
-			</TabItem>
-		</Tabs>
+					</TabItem>
+				</Tabs>
+			</div>
+		</div>
 	</div>
 </div>
+
+<style>
+	.error-message {
+		color: red;
+	}
+</style>
