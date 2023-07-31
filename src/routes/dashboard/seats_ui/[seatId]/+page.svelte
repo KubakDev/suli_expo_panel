@@ -192,31 +192,25 @@
 	onMount(async () => {
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
-		// var customRect = createCustomRectangle();
 
 		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
-		// adjustCanvasSize();
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
-
-			// canvas.isDrawingMode = false;
 			canvas.renderAll();
-
-			// You can save `path` to a database here, if you want
 		});
 
-		fabric.Object.prototype.set({
-			borderColor: '#5d9cec',
-			cornerColor: '#5d9cec',
-			cornerSize: 12,
-			cornerStyle: 'circle',
-			transparentCorners: false,
-			borderDashArray: [2, 2],
-			padding: 10,
-			cornerStrokeColor: '#ffffff',
-			borderOpacityWhenMoving: 0.4
-		});
+		// fabric.Object.prototype.set({
+		// 	borderColor: '#5d9cec',
+		// 	cornerColor: '#5d9cec',
+		// 	cornerSize: 12,
+		// 	cornerStyle: 'circle',
+		// 	transparentCorners: false,
+		// 	borderDashArray: [2, 2],
+		// 	padding: 10,
+		// 	cornerStrokeColor: '#ffffff',
+		// 	borderOpacityWhenMoving: 0.4
+		// });
 
 		const supabase = data.supabase;
 
@@ -246,7 +240,9 @@
 					// container.style.height = `${containerWidth / aspectRatio}px`;
 
 					const currentHeight = containerWidth / aspectRatio;
-					console.log(containerWidth);
+					console.log('container width: ', containerWidth);
+					console.log('design width: ', width);
+					console.log(containerHeight);
 					console.log(currentHeight);
 					console.log('ratio: ', widthRatio);
 					if (canvas) {
@@ -257,12 +253,20 @@
 					}
 					await canvas.loadFromJSON(design, async () => {
 						canvas.forEachObject((obj: any) => {
-							obj.set('selectable', false);
-							obj.set('lockMovementX', true);
-							obj.set('lockMovementY', true);
+							// obj.set('selectable', false);
+							// obj.set('lockMovementX', true);
+							// obj.set('lockMovementY', true);
 						});
+						canvas.width = containerWidth;
+						canvas.height = containerHeight;
+						if (canvas.backgroundImage) {
+							canvas.backgroundImage.scaleX = canvas.backgroundImage.scaleX * widthRatio;
+							canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
+						}
 						await tick(); // wait for the next update cycle
+
 						canvas.forEachObject((obj: any) => {
+							console.log(obj);
 							const scaleX = obj.scaleX;
 							const scaleY = obj.scaleY;
 							const left = obj.left;
@@ -279,35 +283,46 @@
 							obj.scaleY = tempScaleY;
 							obj.left = tempLeft;
 							obj.top = tempTop;
+
 							obj.setCoords();
 						});
+
 						canvas.renderAll();
 					});
 
-					for (var i = 0; i < canvas.width / gridSize; i++) {
-						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
-							stroke: '#ccc',
-							selectable: false
-						});
-						line.toObject = () => null;
-						// This rect will not be included in canvas.toObject()
-						const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
-							stroke: '#ccc',
-							selectable: false
-						});
-						line2.toObject = () => null;
-						canvas.add(line);
-						canvas.add(line2);
-						canvas.sendToBack(line);
-						canvas.sendToBack(line2);
-						canvas.requestRenderAll();
-						// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
-						// canvas.add(customRect);
-					}
+					// for (var i = 0; i < canvas.width / gridSize; i++) {
+					// 	const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
+					// 		stroke: '#ccc',
+					// 		selectable: false
+					// 	});
+					// 	line.toObject = () => null;
+					// 	// This rect will not be included in canvas.toObject()
+					// 	const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
+					// 		stroke: '#ccc',
+					// 		selectable: false
+					// 	});
+					// 	line2.toObject = () => null;
+					// 	canvas.add(line);
+					// 	canvas.add(line2);
+					// 	canvas.sendToBack(line);
+					// 	canvas.sendToBack(line2);
+					// 	canvas.requestRenderAll();
+					// 	// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
+					// 	// canvas.add(customRect);
+					// }
 
 					canvas.renderAll();
 					// Ensure the border always stays in the back of other objects
 				});
+		} else {
+			const containerWidth = container?.offsetWidth;
+			const containerHeight = container?.offsetHeight;
+			if (canvas) {
+				canvas.setDimensions({
+					width: containerWidth,
+					height: containerHeight
+				});
+			}
 		}
 
 		// Handle object removed
