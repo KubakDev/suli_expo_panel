@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
+
+	import { Label, Input, Fileupload, Textarea, InputAddon, ButtonGroup } from 'flowbite-svelte';
+
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -7,12 +9,12 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { onMount } from 'svelte';
-	import { exhibition, getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -42,7 +44,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
+			// console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -103,7 +105,11 @@
 			}
 		}
 
-		if (!isEmpty(videoObjectData.thumbnail) && !isEmpty(videoObjectData.link)) {
+		if (!isEmpty(videoObjectData.link)) {
+			isValidVideoObject = true;
+		}
+
+		if (!isEmpty(videoObjectData.link)) {
 			isValidVideoObject = true;
 		}
 
@@ -117,7 +123,7 @@
 
 		// Upload video thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		videoObjectData.thumbnail = response.data?.path;
+		videoObjectData.thumbnail = response.data?.path || '';
 
 		// Insert data into Supabase
 		insertData(videoObjectData, videoDataLang, data.supabase);
@@ -151,7 +157,13 @@
 	}
 
 	function handleSelectChange(event: any) {
-		videoObjectData.exhibition_id = event.target.value;
+		const selectedValue = event.target.value;
+		console.log(event.target);
+		if (selectedValue === 'Select Type') {
+			delete videoObjectData.exhibition_id;
+		} else {
+			videoObjectData.exhibition_id = selectedValue;
+		}
 	}
 </script>
 
@@ -168,28 +180,39 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					{#if isFormSubmitted && !videoObjectData.thumbnail.trim()}
-						<p class="error-message">Please Upload an Image</p>
-					{/if}
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class="dark:bg-white"
+					/>
+
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<select
-						class="border border-gray-300 rounded-md w-full"
-						id="type"
-						name="type"
-						placeholder="Please select a valid type"
-						on:change={handleSelectChange}
-					>
-						<option disabled selected>Select type</option>
-						{#each exhibitionData as exhibition}
-							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-						{/each}
-					</select>
-				</Label>
+				<div class="mb-6">
+					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
+					<ButtonGroup class="w-full">
+						<select
+							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							id="type"
+							name="type"
+							on:change={handleSelectChange}
+						>
+							<option>Select Type</option>
+							{#each exhibitionData as exhibition}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+							{/each}
+						</select>
+						<InputAddon class="bg-white">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+								<path d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+								/>
+							</svg>
+						</InputAddon>
+					</ButtonGroup>
+				</div>
 			</div>
 
 			<div class="col-span-1">
@@ -210,9 +233,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
+				<form class="">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each videoDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -272,7 +295,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-800 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -286,18 +309,15 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Video List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each videoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
-											cardType={CardType.Main}
+											cardType={CardType.Video}
 											title={langData.title}
 											short_description={langData.short_description}
 											thumbnail={videoObjectData.thumbnail}

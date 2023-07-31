@@ -1,13 +1,18 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
+	import {
+		Label,
+		Input,
+		Fileupload,
+		Textarea,
+		Img,
+		ButtonGroup,
+		InputAddon
+	} from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
 	import { insertData } from '../../../stores/serviceStore';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ServiceModel, ServiceModelLang } from '../../../models/serviceModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -116,7 +121,7 @@
 		showToast = true;
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		serviceObject.thumbnail = response.data?.path;
+		serviceObject.thumbnail = response.data?.path || '';
 
 		insertData(serviceObject, serviceDataLang, data.supabase);
 
@@ -133,7 +138,6 @@
 		serviceObject = {
 			id: 0,
 			thumbnail: '',
-			exhibition_type: '',
 			primaryColor: '#F5EFE7',
 			onPrimaryColor: '#D8C4B6'
 		};
@@ -149,7 +153,12 @@
 	}
 
 	function handleSelectChange(event: any) {
-		serviceObject.exhibition_id = event.target.value;
+		const selectedValue = event.target.value;
+		if (selectedValue === 'Select Type') {
+			delete serviceObject.exhibition_id;
+		} else {
+			serviceObject.exhibition_id = selectedValue;
+		}
 	}
 </script>
 
@@ -166,35 +175,50 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Service Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !serviceObject.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<select
-						class="border border-gray-300 rounded-md w-full"
-						id="type"
-						name="type"
-						placeholder="Please select a valid type"
-						on:change={handleSelectChange}
-					>
-						<option disabled selected>Select type</option>
-						{#each exhibitionData as exhibition}
-							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-						{/each}
-					</select>
-				</Label>
+				<div class="mb-6">
+					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
+					<ButtonGroup class="w-full">
+						<select
+
+							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							id="type"
+							name="type"
+							on:change={handleSelectChange}
+						>
+							<option>Select Type</option>
+							{#each exhibitionData as exhibition}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+							{/each}
+						</select>
+						<InputAddon class="bg-white ">
+
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+								<path d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+								/>
+							</svg>
+						</InputAddon>
+					</ButtonGroup>
+				</div>
 			</div>
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[700px]">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each serviceDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -205,7 +229,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -247,7 +271,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -262,15 +286,12 @@
 				</form>
 			</div>
 
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg">
 					<div class="flex justify-between items-center w-full">
 						<div class=" w-1/4">
 							<TabItem open title="Service List">
-								<div
-									class="w-full rounded-md p-10 flex justify-center items-start"
-									style="min-height: calc(100vh - 300px);"
-								>
+								<div class="w-full rounded-md p-10 flex justify-center items-start">
 									<div class="flex justify-start items-start">
 										{#each serviceDataLang as langData}
 											{#if langData.language === selectedLanguageTab}

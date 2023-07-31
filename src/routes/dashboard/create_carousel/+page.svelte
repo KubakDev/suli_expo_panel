@@ -1,14 +1,5 @@
 <script lang="ts">
-	import {
-		Label,
-		Button,
-		Input,
-		Fileupload,
-		Textarea,
-		Select,
-		Tabs,
-		TabItem
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Select, Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/carouselStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import {
@@ -19,9 +10,8 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -107,7 +97,7 @@
 		showToast = true;
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 		console.log(response);
-		carouselObject.image = response.data?.path;
+		carouselObject.image = response.data?.path || '';
 		insertData(carouselObject, carouselDataLang, data.supabase);
 
 		resetForm();
@@ -139,7 +129,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			New data has been inserted successfully
 		</div>
 	{/if}
@@ -150,7 +140,11 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Carousel Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !carouselObject.image.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
@@ -190,9 +184,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[700px]">
-				<form>
-					<Tabs>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each carouselDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -203,7 +197,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -214,7 +208,7 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-									<div class="pb-10">
+									<div class="pb-10 px-4">
 										<Label for="title" class="mb-2">Carousel Title</Label>
 										<Input
 											type="text"
@@ -227,7 +221,7 @@
 											<p class="error-message">Please enter a title</p>
 										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-10 px-4">
 										<Label for="textarea-id" class="mb-2">Subtitle</Label>
 										<Textarea
 											placeholder="Enter Subtitle"
@@ -245,7 +239,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -262,10 +256,7 @@
 			<div class="lg:col-span-1 border rounded-lg">
 				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
 					<TabItem open title="Carousel List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class=" w-full rounded-md p-10 flex justify-center items-start">
 							<div class="flex justify-start items-start">
 								{#each carouselDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

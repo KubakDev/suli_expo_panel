@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { updateData } from '../../../../stores/promoStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
@@ -14,10 +14,10 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
+	
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let isFormSubmitted = false;
@@ -99,12 +99,11 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
+
 		// console.log(file);
 		const reader = new FileReader();
-
 		reader.onloadend = () => {
 			promoData.thumbnail = reader.result as '';
-
 			const randomText = getRandomTextNumber();
 			fileName = `promotions/${randomText}_${file.name}`;
 		};
@@ -139,7 +138,6 @@
 		}
 
 		if (hasDataForLanguage && isValidPromoObject) {
-			submitted = true;
 			showToast = true;
 
 			if (imageFile) {
@@ -150,7 +148,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				promoData.thumbnail = response.data?.path;
+				promoData.thumbnail = response.data?.path || '';
 			} else {
 				promoData.thumbnail = prevThumbnail;
 			}
@@ -168,14 +166,18 @@
 	}
 
 	function handleSelectChange(event: any) {
-		promoData.exhibition_id = event.target.value;
-		// console.log(event.target.value);
+		const selectedValue = event.target.value;
+		if (selectedValue === 'Select Type') {
+			delete promoData.exhibition_id;
+		} else {
+			promoData.exhibition_id = selectedValue;
+		}
 	}
 </script>
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -188,41 +190,55 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Promotion Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !promoData.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
+
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<select
-						class="border border-gray-300 rounded-md w-full"
-						id="type"
-						name="type"
-						placeholder="Please select a valid type"
-						on:change={handleSelectChange}
-					>
-						<option disabled selected>
-							{promoData.exhibition_id
-								? exhibitionData.find((item) => item.id == promoData.exhibition_id)?.exhibition_type
-								: 'Select type'}
-						</option>
-						{#each exhibitionData as exhibition}
-							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-						{/each}
-					</select>
+					<ButtonGroup class="w-full">
+						<select
+							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							id="type"
+							name="type"
+							on:change={handleSelectChange}
+						>
+							<!-- Use JavaScript ternary operator to handle selected option -->
+							<option value="Select Type" selected={promoData.exhibition_id === undefined}>
+								Select Type
+							</option>
+							{#each exhibitionData as exhibition}
+								<!-- Use JavaScript ternary operator to handle selected option -->
+								<option value={exhibition.id} selected={promoData.exhibition_id === exhibition.id}>
+									{exhibition.exhibition_type}
+								</option>
+							{/each}
+						</select>
+						<InputAddon class="bg-white ">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+								<path d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+								/>
+							</svg>
+						</InputAddon>
+					</ButtonGroup>
 				</Label>
 			</div>
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
-				<form>
-					<Tabs
-						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
-					>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each promotionDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -258,7 +274,7 @@
 											<p class="error-message">Please enter a title</p>
 										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="link" class="mb-2">Promotion video_link</Label>
 
 										<Input
@@ -276,7 +292,7 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 
 					<!-- button for submitForm -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -290,13 +306,10 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Promotion List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each promotionDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

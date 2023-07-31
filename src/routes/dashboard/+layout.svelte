@@ -9,7 +9,7 @@
 		DropdownItem,
 		Chevron
 	} from 'flowbite-svelte';
-
+	import { DarkMode } from 'flowbite-svelte';
 	import '../styles.scss';
 	import { page } from '$app/stores';
 	import type { PageData } from './$types';
@@ -39,30 +39,35 @@
 
 <div class="app h-screen flex flex-col" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
-		<Navbar style="background-color: #14213d;" let:hidden let:toggle>
+		<Navbar class="dark:bg-gray-900 bg-gray-900 border-b shadow-lg" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
-				<div class="mr-3 h-6 sm:h-9">
-					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">
-						Sulaymaniyah Expedition
-					</span>
+				<div class="flex justify-between items-center gap-5">
+					<div class="mr-3 h-6 sm:h-9">
+						<span class="self-center whitespace-nowrap text-xl font-semibold text-white">
+							SulyExpo</span
+						>
+					</div>
 				</div>
 			</NavBrand>
+
+			<DarkMode class="text-xl " />
+
 			<NavHamburger btnClass="ml-3 lg:hidden" on:click={toggle} />
 			<NavUl
 				{hidden}
 				divClass="w-full lg:block lg:w-auto"
-				nonActiveClass="text-gray-900 hover:bg-opacity-30 font-medium hover:bg-blue-400 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
-				activeClass="text-primary-700 font-medium bg-opacity-30 bg-blue-500 lg:bg-transparent lg:text-primary-700"
-				ulClass="bg-[#071229] lg:bg-transparent flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium "
+				nonActiveClass="text-gray-900 hover:bg-gray-50 hover:bg-opacity-10 font-medium  lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
+				activeClass="text-primary-700 font-medium bg-gray-50 bg-opacity-10 lg:bg-transparent lg:text-primary-700"
+				ulClass="flex flex-col p-4 mt-4 lg:flex-row lg:space-x-8 lg:mt-0 lg:text-sm lg:font-medium dark:bg-gray-900 bg-gray-900 "
 			>
 				{#each data.pages as page}
 					{#if page.children}
-						<div class="text-[#e9ecef] py-4 lg:py-0">
+						<div class="text-[#e9ecef] pl-4 md:pl-0 py-4 lg:py-0">
 							<button class="flex items-center focus:outline-none focus:ring-0 dark:focus:ring-0">
 								<Chevron>{page.title}</Chevron>
 							</button>
 
-							<Dropdown class="font-medium ">
+							<Dropdown class="font-medium">
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
@@ -81,15 +86,14 @@
 								goto(page.url + '');
 							}}
 							active={activeUrl == page.url}
-							style={activeUrl == page.url ? 'color: primary;' : 'color:#e9ecef'}
-							>{page.title}</NavLi
+							style={activeUrl == page.url ? '' : 'color:#e9ecef'}>{page.title}</NavLi
 						>
 					{/if}
 				{/each}
 			</NavUl>
 		</Navbar>
 	{/if}
-	<div class="flex-1 justify-center">
+	<div class="flex-1 justify-center dark:bg-gray-900 dark:text-white">
 		<slot />
 	</div>
 </div>

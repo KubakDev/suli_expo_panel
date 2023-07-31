@@ -5,12 +5,11 @@ import type { PageEnum } from '../models/pageEnum';
 
 export const pageTheme = writable<PageData[]>([]);
 
-//Create a new instance of the color pageTheme
+// insert data into this page
 export const insertPageData = async (PageTypeObject: PageData, supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase.from('page_builder').insert(PageTypeObject);
 
-		// console.log(data);
 		pageTheme.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
@@ -25,31 +24,24 @@ export const insertPageData = async (PageTypeObject: PageData, supabase: Supabas
 	}
 };
 
-//update page Data by id
-export const updatePageData = async (pageName: PageEnum, supabase: SupabaseClient) => {
+// update data
+export const updatePageData = async (updatedPageData: PageData, supabase: SupabaseClient) => {
 	try {
-		console.log('first');
 		const { data, error } = await supabase
 			.from('page_builder')
-			.update('page_builder')
-			.eq('page', pageName);
-
-		if (error) {
-			throw error;
-		}
-
+			.update(updatedPageData)
+			.eq('id', updatedPageData.id);
+		console.log('Data before update:', data);
 		pageTheme.update((currentData) => {
 			if (data) {
-				// Find the index of the updated item
-				const index = currentData.findIndex((item) => item.id === PageDataID.id);
-
-				// Create a new array with the updated item
-				const updatedData = [...currentData.slice(0, index), data, ...currentData.slice(index + 1)];
-
-				return updatedData;
+				const updatedIndex = currentData.findIndex((item) => item.id === updatedPageData.id);
+				if (updatedIndex !== -1) {
+					const newData = [...currentData];
+					newData[updatedIndex] = updatedPageData;
+					return newData;
+				}
 			}
-
-			return currentData;
+			return currentData || [];
 		});
 
 		return data;

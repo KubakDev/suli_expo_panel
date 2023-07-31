@@ -4,7 +4,7 @@
 	export let goToPage: any;
 </script>
 
-<div class="flex justify-end items-center">
+<div class="flex justify-end items-center px-4 lg:px-0">
 	<div class="flex items-center justify-center">
 		<span class="text-gray-700 mx-2">{currentPage} </span> of
 		<span class="text-gray-400 mx-2"> {totalPages}</span>
@@ -13,7 +13,7 @@
 		<button
 			on:click={() => goToPage(currentPage - 1)}
 			disabled={currentPage === 1}
-			class="border bg-white hover:bg-gray-100 text-black py-2 px-4 rounded-l-md"
+			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-gray-100 text-black py-2 px-4 rounded-l-md"
 		>
 			<div>
 				<svg
@@ -39,7 +39,7 @@
 
 		<button
 			on:click={() => goToPage(currentPage + 1)}
-			class="border bg-white hover:bg-gray-100 text-black py-2 px-4 rounded-r-md"
+			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-gray-100 text-black py-2 px-4 rounded-r-md"
 			disabled={currentPage == totalPages}
 		>
 			<div>

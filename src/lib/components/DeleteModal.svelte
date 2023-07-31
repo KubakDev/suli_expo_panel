@@ -1,5 +1,8 @@
 <script lang="ts">
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillDelete from 'svelte-icons-pack/ai/AiFillDelete';
 	import { Modal, Button } from 'flowbite-svelte';
+
 	export let itemIdToDelete: number | undefined;
 	export let handleDelete: any;
 
@@ -19,13 +22,21 @@
 			color = 'red';
 			open = true;
 		}}
-		class="text-red-600 hover:text-red-400 hover:underline pl-6"
+		class="bg-red-600 p-2 rounded"
 	>
-		Remove
+		<span
+			><Icon
+				src={AiFillDelete}
+				color="white"
+				size="18"
+				className="custom-icon"
+				title="Custom icon params"
+			/></span
+		>
 	</button>
 
-	<Modal title="Are you sure?" bind:open {color} class="bg-white max-w-sm mx-auto" autoclose>
-		<div class="text-base leading-relaxed">
+	<Modal title="Are you sure?" bind:open {color} class="bg-white max-w-sm mx-auto " autoclose>
+		<div class="text-base leading-relaxed dark:text-red-600 text-red-600">
 			Do you really want to delete this record? This process cannot be undone.
 		</div>
 		<svelte:fragment slot="footer">

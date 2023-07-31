@@ -8,8 +8,10 @@ export interface ExhibitionsModel {
 	country_number: number;
 	company_number: number;
 	exhibition_type: string;
+	deleted_status: string | null;
 	start_date: Date;
 	end_date: Date;
+	position?: number;
 	exhibition_languages?: ExhibitionsModelLang[];
 }
 

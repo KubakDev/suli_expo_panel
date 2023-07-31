@@ -14,9 +14,15 @@
 	let submitted = false;
 	let showToast = false;
 	let errorMessages: any = {};
+
 	let contactDataLang: ContactModelLang[] = [];
 	let contactData: ContactModel = {
 		id: 0,
+		facebook_link: '',
+		instagram_link: '',
+		linkedin_link: '',
+		youtube_link: '',
+		twitter_link: '',
 		created_at: new Date()
 	};
 	const id = $page.params.contactInfoId;
@@ -32,6 +38,11 @@
 			.then((result) => {
 				contactData = {
 					id: result.data?.id,
+					facebook_link: result.data?.facebook_link,
+					instagram_link: result.data?.instagram_link,
+					linkedin_link: result.data?.linkedin_link,
+					youtube_link: result.data?.youtube_link,
+					twitter_link: result.data?.twitter_link,
 					created_at: new Date(result.data?.created_at)
 				};
 
@@ -72,6 +83,7 @@
 	//**Handle submit**//
 	async function formSubmit() {
 		let isEmpty = false;
+		// Validate contactDataLang
 		for (let i = 0; i < contactDataLang.length; i++) {
 			const lang = contactDataLang[i];
 			const isEmptyField =
@@ -90,7 +102,38 @@
 			}
 
 			isEmpty = isEmpty || isEmptyField;
-			console.log(isEmptyField);
+		}
+
+		// Validate contactData
+		const isEmptyContactData =
+			contactData?.facebook_link?.trim() === '' ||
+			contactData?.instagram_link?.trim() === '' ||
+			contactData?.linkedin_link?.trim() === '' ||
+			contactData?.youtube_link?.trim() === '' ||
+			contactData?.twitter_link?.trim() === '';
+
+		if (isEmptyContactData) {
+			errorMessages = {
+				...errorMessages,
+				facebook_link:
+					contactData.facebook_link.trim() === '' ? 'Please enter a Facebook link.' : '',
+				instagram_link:
+					contactData.instagram_link.trim() === '' ? 'Please enter an Instagram link.' : '',
+				linkedin_link:
+					contactData.linkedin_link.trim() === '' ? 'Please enter a LinkedIn link.' : '',
+				youtube_link: contactData.youtube_link.trim() === '' ? 'Please enter a YouTube link.' : '',
+				twitter_link: contactData.twitter_link.trim() === '' ? 'Please enter a Twitter link.' : ''
+			};
+			isEmpty = true;
+		} else {
+			errorMessages = {
+				...errorMessages,
+				facebook_link: '',
+				instagram_link: '',
+				linkedin_link: '',
+				youtube_link: '',
+				twitter_link: ''
+			};
 		}
 
 		if (!isEmpty) {
@@ -104,8 +147,6 @@
 				goto('/dashboard/contactInfo');
 			}, 1000);
 		}
-
-		console.log(errorMessages); // Optional: Check errorMessages object
 	}
 
 	function isValidEmail(email: string) {
@@ -117,20 +158,90 @@
 
 <div style="min-height: calc(100vh - 160px);" class="max-w-screen-xl mx-auto">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			successfully submitted
 		</div>
 	{/if}
 
-	<div class="px-5 lg:px-20 py-10 border m-10 bg-white shadow rounded-lg">
-		<Form class="form " {submitted}>
-			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-700">
-				Contact Information Data
-			</h1>
+	<div class="px-5 lg:px-20 py-10 m-10">
+		<Form class="form" {submitted}>
+			<h1 class="text-2xl font-bold py-2 flex justify-center">Contact Information Data</h1>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
+			<div class="grid grid-cols-3 gap-x-2 gap-y-8 pt-10">
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Facebook link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.facebook_link}
+						id="facebook_link"
+						name="facebook_link"
+					/>
+					{#if !contactData.facebook_link.trim() && errorMessages['facebook_link']}
+						<p class="error-message">{errorMessages['facebook_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Instagram link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.instagram_link}
+						id="instagram_link"
+						name="instagram_link"
+					/>
+					{#if !contactData.instagram_link.trim() && errorMessages['instagram_link']}
+						<p class="error-message">{errorMessages['instagram_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">linkedIn link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.linkedin_link}
+						id="linkedin_link"
+						name="linkedin_link"
+					/>
+					{#if !contactData.linkedin_link.trim() && errorMessages['linkedin_link']}
+						<p class="error-message">{errorMessages['linkedin_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Youtube link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.youtube_link}
+						id="youtube_link"
+						name="youtube_link"
+					/>
+					{#if !contactData.youtube_link.trim() && errorMessages['youtube_link']}
+						<p class="error-message">{errorMessages['youtube_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Twitter link</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactData.twitter_link}
+						id="twitter_link"
+						name="twitter_link"
+					/>
+					{#if !contactData.twitter_link.trim() && errorMessages['twitter_link']}
+						<p class="error-message">{errorMessages['twitter_link']}</p>
+					{/if}
+				</div>
+			</div>
+
+			<div class="grid gap-4 md:grid-cols-3 mt-8 rounded-lg border dark:border-gray-600">
 				<div class="col-span-3">
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900 px-4">
 						{#each contactDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -241,19 +352,20 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-				</div>
-				<div class="bg-gray-500 col-span-3 h-[1px] rounded-md" />
-				<br />
-			</div>
 
-			<div class="w-full flex justify-end">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				>
-					Update
-				</button>
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
+
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Update
+						</button>
+					</div>
+				</div>
 			</div>
 		</Form>
 	</div>

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Label, Input, Textarea, Tabs, TabItem } from 'flowbite-svelte';
+	//@ts-ignore
 	import { Form } from 'svelte-yup';
 	import { insertData } from '../../../stores/contactStor';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ContactModel, ContactModelLang } from '../../../models/contactModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { goto } from '$app/navigation';
 
 	export let data;
@@ -34,10 +34,49 @@
 	}
 
 	let contactInfoObject: ContactModel = {
+		facebook_link: '',
+		instagram_link: '',
+		linkedin_link: '',
+		youtube_link: '',
+		twitter_link: '',
 		created_at: new Date()
 	};
 
 	async function formSubmit() {
+		/** Add validation for contactInfoObject  **/
+		const isEmptyContactInfoObject =
+			contactInfoObject?.facebook_link?.trim() === '' &&
+			contactInfoObject?.instagram_link?.trim() === '' &&
+			contactInfoObject?.linkedin_link?.trim() === '' &&
+			contactInfoObject?.youtube_link?.trim() === '' &&
+			contactInfoObject?.twitter_link?.trim() === '';
+		if (isEmptyContactInfoObject) {
+			errorMessages = {
+				...errorMessages,
+				facebook_link:
+					contactInfoObject.facebook_link.trim() === '' ? 'Please enter a Facebook link.' : '',
+				instagram_link:
+					contactInfoObject.instagram_link.trim() === '' ? 'Please enter an Instagram link.' : '',
+				linkedin_link:
+					contactInfoObject.linkedin_link.trim() === '' ? 'Please enter a LinkedIn link.' : '',
+				youtube_link:
+					contactInfoObject.youtube_link.trim() === '' ? 'Please enter a YouTube link.' : '',
+				twitter_link:
+					contactInfoObject.twitter_link.trim() === '' ? 'Please enter a Twitter link.' : ''
+			};
+		} else {
+			errorMessages = {
+				...errorMessages,
+				facebook_link: '',
+				instagram_link: '',
+				linkedin_link: '',
+				youtube_link: '',
+				twitter_link: ''
+			};
+		}
+		/** Add validation for contactInfoObject  **/
+
+		/**Add validation for contactInfoDataLang **/
 		const isEmpty = contactInfoDataLang.some((lang) => {
 			const isEmptyField =
 				lang?.location?.trim() === '' &&
@@ -87,8 +126,9 @@
 
 			return isEmptyField;
 		});
+		/**Add validation for contactInfoDataLang **/
 
-		if (!isEmpty) {
+		if (!isEmptyContactInfoObject && !isEmpty) {
 			submitted = true;
 			showToast = true;
 
@@ -101,7 +141,7 @@
 		}
 	}
 
-	function isValidEmail(email) {
+	function isValidEmail(email: any) {
 		// Use a regular expression to validate the email format
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(email);
@@ -111,6 +151,11 @@
 		submitted = false;
 
 		contactInfoObject = {
+			facebook_link: '',
+			instagram_link: '',
+			linkedin_link: '',
+			youtube_link: '',
+			twitter_link: '',
 			created_at: new Date()
 		};
 
@@ -130,21 +175,92 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);" class="max-w-screen-xl mx-auto">
+<div class="max-w-screen-xl mx-auto">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			successfully submitted
 		</div>
 	{/if}
 	<h1 class="pt-20 text-2xl font-bold flex justify-center">Contact Information Data</h1>
 
-	<div class="px-10 lg:px-20 py-10 border m-10 bg-white rounded-lg">
-		<Form class="form " {submitted}>
-			<div class="grid gap-4 md:grid-cols-3 mt-8">
-				<br />
+	<div class="px-0 lg:px-10 py-10 m-10">
+		<Form class="form" {submitted}>
 
+			<div class="grid grid-cols-3 gap-x-2 gap-y-8">
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Facebook</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.facebook_link}
+						id="facebook_link"
+						name="facebook_link"
+					/>
+					{#if !contactInfoObject.facebook_link.trim() && errorMessages['facebook_link']}
+						<p class="error-message">{errorMessages['facebook_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Instagram</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.instagram_link}
+						id="instagram_link"
+						name="instagram_link"
+					/>
+					{#if !contactInfoObject.instagram_link.trim() && errorMessages['instagram_link']}
+						<p class="error-message">{errorMessages['instagram_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">linkedIn</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.linkedin_link}
+						id="linkedin_link"
+						name="linkedin_link"
+					/>
+					{#if !contactInfoObject.linkedin_link.trim() && errorMessages['linkedin_link']}
+						<p class="error-message">{errorMessages['linkedin_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Youtube</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.youtube_link}
+						id="youtube_link"
+						name="youtube_link"
+					/>
+					{#if !contactInfoObject.youtube_link.trim() && errorMessages['youtube_link']}
+						<p class="error-message">{errorMessages['youtube_link']}</p>
+					{/if}
+				</div>
+
+				<div class="w-full h-16 mb-8 lg:mb-0">
+					<Label for="administration" class="mb-2">Twitter</Label>
+					<Input
+						type="text"
+						placeholder="Enter Link"
+						bind:value={contactInfoObject.twitter_link}
+						id="twitter_link"
+						name="twitter_link"
+					/>
+					{#if !contactInfoObject.twitter_link.trim() && errorMessages['twitter_link']}
+						<p class="error-message">{errorMessages['twitter_link']}</p>
+					{/if}
+				</div>
+			</div>
+
+			<div class="grid gap-4 md:grid-cols-3 mt-8 rounded-lg border dark:border-gray-600">
 				<div class="col-span-3">
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900 px-8 py-10">
 						{#each contactInfoDataLang as langData, index}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -155,7 +271,7 @@
 							>
 								<div class="py-5">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -257,19 +373,19 @@
 							</TabItem>
 						{/each}
 					</Tabs>
+
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
+					<!-- button for submitForm -->
+					<div class="w-full flex justify-end py-5 px-10">
+						<button
+							on:click|preventDefault={formSubmit}
+							type="submit"
+							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						>
+							Add
+						</button>
+					</div>
 				</div>
-
-				<br />
-			</div>
-
-			<div class="w-full flex justify-end px-4">
-				<button
-					on:click|preventDefault={formSubmit}
-					type="submit"
-					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				>
-					Add
-				</button>
 			</div>
 		</Form>
 	</div>

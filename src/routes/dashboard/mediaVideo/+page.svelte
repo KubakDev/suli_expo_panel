@@ -1,21 +1,22 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { vedioStore, getData, deleteData } from '../../../stores/media_VideoStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
 	import Pagination from '../../../lib/components/pagination/Pagination.svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	//@ts-ignore
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
 	export let data;
 	let currentPage = 1;
 	const pageSize = 8;
 
-	let mediaVideoData = [];
 	let totalPages = 1;
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-		mediaVideoData = result.data;
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
@@ -25,7 +26,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page) {
+	async function goToPage(page: any) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -35,7 +36,7 @@
 	}
 
 	// delete data
-	async function handleDelete(mediaVideoId) {
+	async function handleDelete(mediaVideoId: any) {
 		try {
 			await deleteData(mediaVideoId, data.supabase);
 
@@ -48,12 +49,12 @@
 		}
 	}
 
-	function calculateIndex(index) {
+	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 
 	// convert html tag that return it from db to regular text
-	function extractText(html) {
+	function extractText(html: any) {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;
 		return tempElement.textContent || tempElement.innerText || '';
@@ -65,7 +66,7 @@
 		<div class="py-5 px-4 lg:px-0 flex justify-end">
 			<Button
 				on:click={createMediaVideo}
-				class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
 			>
 				<svg
 					width="20px"
@@ -99,15 +100,15 @@
 					<thead>
 						<tr>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 							>
-								<div class="flex justify-start items-center gap-2">
+								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -145,7 +146,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -178,7 +179,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>
@@ -206,7 +207,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>
@@ -235,7 +236,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -264,13 +265,13 @@
 					<tbody>
 						{#each $vedioStore as item, index (item.id)}
 							<tr>
-								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-									<span class="flex justify-center text-gray-700 font-semibold"
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
 										>{calculateIndex(index)}</span
 									>
 								</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
 											class="w-20 h-20 object-cover rounded"
@@ -282,21 +283,27 @@
 									</div>
 								</td>
 								{#if item.media_video_languages}
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.media_video_languages as lang}
 											<div>
 												{lang.title?.slice(0, 50)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.media_video_languages as lang}
 											<div>
 												{lang.short_description?.slice(0, 40)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.media_video_languages as lang}
 											<div>
 												{extractText(lang.long_description)?.slice(0, 40)}
@@ -304,16 +311,27 @@
 										{/each}
 									</td>
 								{/if}
-								<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-									<div class="flex items-center">
+								<td
+									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+								>
+									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {
 												goto(`/dashboard/mediaVideo/${item.id}`);
 											}}
-											class="text-green-400 hover:text-green-600 hover:underline"
+											class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 										>
-											Edit</button
-										>
+											Edit
+											<span
+												><Icon
+													src={AiFillEdit}
+													color="green"
+													size="20"
+													className="custom-icon"
+													title="Custom icon params"
+												/></span
+											>
+										</button>
 
 										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									</div>

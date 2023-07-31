@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/publishingStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -15,7 +15,7 @@
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -138,7 +138,7 @@
 
 		// Upload publishing thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		publishingObject.thumbnail = response.data?.path;
+		publishingObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
 		for (let pdf of pdfFiles) {
@@ -206,8 +206,13 @@
 	}
 
 	function handleSelectChange(event: any) {
-		publishingObject.exhibition_id = event.target.value;
-		// console.log('publishingObject//', publishingObject);
+		const selectedValue = event.target.value;
+		console.log(event.target);
+		if (selectedValue === 'Select Type') {
+			delete publishingObject.exhibition_id;
+		} else {
+			publishingObject.exhibition_id = selectedValue;
+		}
 	}
 
 	function getImagesObject() {
@@ -241,35 +246,48 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Publishing Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+					/>
 					{#if isFormSubmitted && !publishingObject.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<select
-						class="border border-gray-300 rounded-md w-full"
-						id="type"
-						name="type"
-						placeholder="Please select a valid type"
-						on:change={handleSelectChange}
-					>
-						<option disabled selected>Select type</option>
-						{#each exhibitionData as exhibition}
-							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-						{/each}
-					</select>
-				</Label>
+				<div class="mb-6">
+					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
+					<ButtonGroup class="w-full">
+						<select
+							class="dark:text-black border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							id="type"
+							name="type"
+							on:change={handleSelectChange}
+						>
+							<option>Select Type</option>
+							{#each exhibitionData as exhibition}
+								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
+							{/each}
+						</select>
+						<InputAddon class="bg-white">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+								<path d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+								/>
+							</svg>
+						</InputAddon>
+					</ButtonGroup>
+				</div>
 			</div>
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form>
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900 px-4">
 						{#each publishingDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -280,7 +298,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -329,43 +347,40 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
-
-					<!-- upload Publishing image -->
-					<div class="grid lg:grid-cols-2 gap-4 px-8 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="pdf_file" class="mb-2">Upload Publishing Image</Label>
-							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-							{#if isFormSubmitted && sliderImagesFile.length === 0}
-								<p class="error-message">Please upload at least one image for the slider</p>
-							{/if}
-						</Label>
-						<!-- upload pdf file -->
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload PDF Files</Label>
-							<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
-						</Label>
-					</div>
-
-					<!-- submit Form -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Add
-						</button>
-					</div>
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 				</form>
+
+				<!-- upload Publishing image -->
+				<div class="grid lg:grid-cols-2 pt-5">
+					<Label class="space-y-2 mb-2">
+						<Label for="image" class="mb-2 px-8">Upload Publishing Image</Label>
+						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+						{#if isFormSubmitted && sliderImagesFile.length === 0}
+							<p class="error-message px-8">Please upload at least one image for the slider</p>
+						{/if}
+					</Label>
+					<!-- upload pdf file -->
+					<Label class="space-y-2 mb-2">
+						<Label for="first_name" class="mb-2 px-8">Upload PDF Files</Label>
+						<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
+					</Label>
+				</div>
+
+				<!-- submit Form -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Add
+					</button>
+				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Publishing List">
-						<div
-							class=" w-full rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each publishingDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

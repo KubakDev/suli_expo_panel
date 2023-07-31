@@ -1,54 +1,77 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { exhibitions, getData, deleteData } from '../../../stores/exhibitionStore';
+	import { exhibitions, getData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
 	import { Button } from 'flowbite-svelte';
-	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	import { flip } from 'svelte/animate';
+	import { dndzone } from 'svelte-dnd-action';
+	//@ts-ignore
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
 	export let data;
-	let currentPage = 1;
-	const pageSize = 8;
-	let totalPages = 1;
-
-	// console.log('exhibition//', exhibition);
+	let items: any = [];
+	let flag = false;
 
 	async function fetchData() {
-		let result = await getData(data.supabase, currentPage, pageSize);
-
-		// Recalculate the total number of pages
-		const totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
+		await getData(data.supabase);
+		items = $exhibitions;
+		flag = false;
 	}
-
 	onMount(fetchData);
-
-	async function goToPage(page:number) {
-		currentPage = page;
-		await fetchData();
-	}
 
 	function createExhibition() {
 		goto('/dashboard/create_exhibition');
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId:number) {
+	async function handleDelete(exhibitionId: any) {
 		try {
-			await deleteData(exhibitionId, data.supabase);
-			// alert('exhibition deleted successfully!');
-			if (currentPage > totalPages) {
-				currentPage = totalPages;
-			}
+			await data.supabase
+				.from('exhibition')
+				.update({ deleted_status: 'delete' })
+				.eq('id', exhibitionId);
+
 			await fetchData();
 		} catch (error) {
 			console.error('Error deleting exhibition:', error);
 		}
 	}
 
-	function calculateIndex(index:number) {
-		return index + 1 + (currentPage - 1) * pageSize;
+	const flipDurationMs = 300;
+
+	function handleDndConsider(e: any) {
+		items = e.detail.items;
+		// console.log(items);
+	}
+
+	async function handleDndFinalize(e: any) {
+		items = e.detail.items;
+		flag = true;
+		items.forEach((item: any, index: any) => {
+			item.position = index + 1;
+		});
+
+		await updatePositions();
+		await fetchData(); // Fetch data again after updating positions
+		flag = false; // Set flag to false after data is fetched
+	}
+
+	let supabase = data.supabase;
+
+	async function updatePositions() {
+		for (const item of items) {
+			// Update position in table
+			const { error } = await supabase
+				.from('exhibition')
+				.update({ position: item.position })
+				.eq('id', item.id);
+
+			if (error) {
+				console.error('Error updating position:', error);
+			}
+		}
 	}
 </script>
 
@@ -57,7 +80,7 @@
 		<div class="py-5 px-4 lg:px-0 flex justify-end">
 			<Button
 				on:click={createExhibition}
-				class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
 			>
 				<svg
 					width="20px"
@@ -91,15 +114,15 @@
 					<thead>
 						<tr>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 							>
-								<div class="flex justify-start items-center gap-2">
+								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -137,7 +160,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -170,7 +193,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>
@@ -199,7 +222,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -225,16 +248,22 @@
 						</tr>
 					</thead>
 
-					<tbody>
-						{#each $exhibitions as item, index (item.id)}
-							<tr>
-								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
-									<span class="flex justify-center text-gray-700 font-semibold"
-										>{calculateIndex(index)}</span
+					<tbody
+						use:dndzone={{ items, flipDurationMs, dragDisabled: flag }}
+						on:consider={handleDndConsider}
+						on:finalize={handleDndFinalize}
+					>
+						{#each items as item, index (item.id)}
+							<tr animate:flip={{ duration: flipDurationMs }}>
+
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
+										>{index + 1}</span
 									>
+
 								</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 table-cell">
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
 											class="w-20 h-20 object-cover rounded"
@@ -246,14 +275,18 @@
 									</div>
 								</td>
 								{#if item.exhibition_languages}
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.exhibition_languages as lang}
 											<div>
 												{lang.title?.slice(0, 50)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td
+										class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									>
 										{#each item.exhibition_languages as lang}
 											<div>
 												{lang.description?.slice(0, 40)}
@@ -261,16 +294,29 @@
 										{/each}
 									</td>
 								{/if}
-								<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-									<div class="flex items-center">
+								<td
+
+									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+
+								>
+									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {
 												goto(`/dashboard/exhibition/${item.id}`);
 											}}
-											class="text-green-400 hover:text-green-600 hover:underline"
+											class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 										>
-											Edit</button
-										>
+											Edit
+											<span
+												><Icon
+													src={AiFillEdit}
+													color="green"
+													size="20"
+													className="custom-icon"
+													title="Custom icon params"
+												/></span
+											>
+										</button>
 
 										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									</div>
@@ -282,7 +328,19 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- Add pagination -->
-	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
+
+<style>
+	tbody {
+		cursor: grab;
+	}
+
+	/* Apply styles for dragging state */
+	tr[data-dnd-dragging] {
+		background-color: #ce1111;
+	}
+
+	tr.dnd-placeholder {
+		background-color: #f0f0f0;
+	}
+</style>

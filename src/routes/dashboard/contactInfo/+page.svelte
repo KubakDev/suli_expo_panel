@@ -4,17 +4,15 @@
 	import { goto } from '$app/navigation';
 	import { Button, Modal } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	//@ts-ignore
+
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
 	export let data;
-	let contactInfo_Data = [];
-
-	// console.log('//', contactData);
 
 	async function fetchData() {
-		let result = await getData(data.supabase);
-		contactInfo_Data = result;
-
-		// console.log('contact Information ///////', contactInfo_Data);
+		await getData(data.supabase);
 	}
 
 	onMount(fetchData);
@@ -24,7 +22,7 @@
 	}
 
 	// delete data
-	async function handleDelete(contactInfo_id) {
+	async function handleDelete(contactInfo_id: any) {
 		try {
 			await deleteData(contactInfo_id, data.supabase);
 			await fetchData();
@@ -38,7 +36,7 @@
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
 		<Button
 			on:click={createContact}
-			class="bg-[#e9ecefd2] hover:bg-gray-100 flex  text-black gap-2"
+			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
 		>
 			<svg
 				width="20px"
@@ -70,7 +68,7 @@
 					<thead>
 						<tr>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex justify-start items-center gap-2">
 									<span
@@ -108,7 +106,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -142,7 +140,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -179,7 +177,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -216,7 +214,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -254,7 +252,7 @@
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span
@@ -292,7 +290,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -323,42 +321,42 @@
 						{#each $contactData as item, index (item.id)}
 							<tr>
 								{#if item.contact_info_languages}
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
 											<div>
 												{lang.email}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
 											<div>
 												{lang.location}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
 											<div>
 												{lang.phoneNumber_relations}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
 											<div>
 												{lang.phoneNumber_Technical}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
 											<div>
 												{lang.phoneNumber_Administration}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 font- bg-gray-10 text-gray-600 border border-gray-200 table-cell">
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
 											<div>
 												{lang.phoneNumber_marketing}
@@ -366,16 +364,28 @@
 										{/each}
 									</td>
 								{/if}
-								<td class="p-3 bg-gray-10 text-gray-600 border border-gray-200 table-cell">
-									<div class="flex items-center">
+								<td
+									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+
+								>
+									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {
 												goto(`/dashboard/contactInfo/${item.id}`);
 											}}
-											class="text-green-400 hover:text-green-600 hover:underline"
+											class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 										>
-											Edit</button
-										>
+											Edit
+											<span
+												><Icon
+													src={AiFillEdit}
+													color="green"
+													size="20"
+													className="custom-icon"
+													title="Custom icon params"
+												/></span
+											>
+										</button>
 
 										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									</div>

@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { updateData } from '../../../../stores/newsStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { NewsModel, NewsModelLang } from '../../../../models/newsModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -17,8 +16,9 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
+	
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
@@ -35,7 +35,7 @@
 		id: 0,
 		images: [],
 		thumbnail: '',
-		news_date: new Date()
+		created_at: new Date()
 	};
 	const id = $page.params.newsId;
 	let images: ImagesModel[] = [];
@@ -74,7 +74,7 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
-					news_date: result.data?.news_date
+					created_at: result.data?.created_at
 				};
 
 				// console.log('news data get db thumbnail : ////////', newsData.thumbnail);
@@ -91,7 +91,6 @@
 						title: newsLang?.title ?? '',
 						short_description: newsLang?.short_description ?? '',
 						long_description: newsLang?.long_description ?? '',
-						// created_at: newsLang ? new Date(newsLang.created_at) : new Date(),
 						language:
 							newsLang?.language ?? LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
@@ -152,7 +151,6 @@
 	//**Handle submit**//
 	async function formSubmit() {
 		let hasDataForLanguage = false;
-		let isValidNewsObject = false;
 
 		for (let lang of newsDataLang) {
 			const title = lang.title.trim();
@@ -246,8 +244,12 @@
 	}
 
 	function handleSelectChange(event: any) {
-		newsData.exhibition_id = event.target.value;
-		// console.log(event.target.value);
+		const selectedValue = event.target.value;
+		if (selectedValue === 'Select Type') {
+			delete newsData.exhibition_id;
+		} else {
+			newsData.exhibition_id = selectedValue;
+		}
 	}
 
 	//get thumbnail
@@ -271,7 +273,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -284,46 +286,63 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class="dark:bg-white"
+					/>
 				</Label>
 			</div>
 
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<select
-						class="border border-gray-300 rounded-md w-full"
-						id="type"
-						name="type"
-						placeholder="Please select a valid type"
-						on:change={handleSelectChange}
-					>
-						<option disabled selected>
-							{newsData.exhibition_id
-								? exhibitionData.find((item) => item.id == newsData.exhibition_id)?.exhibition_type
-								: 'Select type'}
-						</option>
-						{#each exhibitionData as exhibition}
-							<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-						{/each}
-					</select>
+					<ButtonGroup class="w-full">
+						<select
+							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+							id="type"
+							name="type"
+							on:change={handleSelectChange}
+						>
+							<!-- Use JavaScript ternary operator to handle selected option -->
+							<option value="Select Type" selected={newsData.exhibition_id === undefined}>
+								Select Type
+							</option>
+							{#each exhibitionData as exhibition}
+								<!-- Use JavaScript ternary operator to handle selected option -->
+								<option value={exhibition.id} selected={newsData.exhibition_id === exhibition.id}>
+									{exhibition.exhibition_type}
+								</option>
+							{/each}
+						</select>
+						<InputAddon class="bg-white ">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+								<path d="M0 0h24v24H0z" fill="none" />
+								<path
+									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
+								/>
+							</svg>
+						</InputAddon>
+					</ButtonGroup>
 				</Label>
 			</div>
 
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<span>Date</span>
-					<Input type="date" bind:value={newsData.news_date} />
+					<Input
+						type="date"
+						bind:value={newsData.created_at}
+						class="dark:bg-white dark:text-black"
+					/>
 				</Label>
 			</div>
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form>
-					<Tabs
-						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
-					>
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each newsDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -372,7 +391,7 @@
 											<p class="error-message">Please enter a short description</p>
 										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-0">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
 											<EditorComponent {langData} {isFormSubmitted} />
@@ -382,38 +401,29 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 border-gray-300 mx-10" />
-					<!-- upload news image -->
-					<div class="px-10 pt-5">
-						<Label class="space-y-2 mb-2">
-							<Label for="first_name" class="mb-2">Upload News Images</Label>
-							<FileUploadComponent
-								on:imageChanges={imageChanges}
-								on:imageFilesChanges={getAllImageFile}
-								data={{ images: images }}
-							/>
-						</Label>
-					</div>
-
-					<!-- button for submitForm -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Update
-						</button>
-					</div>
 				</form>
+				<!-- upload news image -->
+				<FileUploadComponent
+					on:imageChanges={imageChanges}
+					on:imageFilesChanges={getAllImageFile}
+					data={{ images: images }}
+				/>
+				<!-- upload news image -->
+				<!-- button for submitForm -->
+				<div class="w-full flex justify-end py-5 px-10">
+					<button
+						on:click|preventDefault={formSubmit}
+						type="submit"
+						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					>
+						Update
+					</button>
+				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="News List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each newsDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
@@ -423,7 +433,7 @@
 											short_description={langData.short_description}
 											thumbnail={newsData.thumbnail}
 											primaryColor="bg-primary"
-											date={newsData.news_date}
+											date={newsData.created_at}
 										/>
 									{/if}
 								{/each}

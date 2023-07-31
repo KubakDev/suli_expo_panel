@@ -10,7 +10,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -127,7 +127,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				staffData.image = response.data?.path;
+				staffData.image = response.data?.path || '';
 			} else {
 				staffData.image = prevThumbnail;
 			}
@@ -147,7 +147,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -160,7 +160,11 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="image" class="mb-2">Upload Staff Image</Label>
-					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
+					<Fileupload
+						on:change={handleFileUpload}
+						accept=".jpg, .jpeg, .png .svg"
+						class="dark:bg-white"
+					/>
 					{#if isFormSubmitted && !staffData.image.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
@@ -169,11 +173,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[650px]">
-				<form>
-					<Tabs
-						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
-					>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each staffDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -226,8 +228,7 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 border-gray-300 mx-10" />
-
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 					<!-- button for submitForm -->
 					<div class="w-full flex justify-end py-5 px-10">
 						<button
@@ -240,13 +241,10 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Staff List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each staffDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

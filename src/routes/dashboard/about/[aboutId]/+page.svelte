@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import * as yup from 'yup';
-	import { Form, Message } from 'svelte-yup';
-	import { about, updateData } from '../../../../stores/aboutStore';
+	import { updateData } from '../../../../stores/aboutStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { AboutModel, AboutModelLang } from '../../../../models/aboutModel';
-	import { DateInput } from '$lib/components/DateTimePicker';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -14,7 +11,7 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -134,7 +131,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				aboutData.image = response.data?.path;
+				aboutData.image = response?.data?.path;
 			} else {
 				aboutData.image = prevThumbnail;
 			}
@@ -142,10 +139,9 @@
 			updateData(aboutData, aboutDataLang, data.supabase);
 
 			setTimeout(() => {
-				showToast = false;	
+				showToast = false;
 				goto('/dashboard/about');
 			}, 1000);
-		
 		} else {
 			isFormSubmitted = true;
 			return;
@@ -155,7 +151,7 @@
 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
+		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 			The Update Was Successfully!
 		</div>
 	{/if}
@@ -177,11 +173,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
-				<form>
-					<Tabs
-						activeClasses="p-4 text-primary-500 bg-gray-100 rounded-t-lg dark:bg-gray-800 dark:text-primary-500"
-					>
+			<div class="lg:col-span-2">
+				<form class="rounded-lg border dark:border-gray-600">
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each aboutDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -219,7 +213,7 @@
 									</div>
 
 									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
+										<Label for="textarea-id" class="">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
 											<EditorComponent {langData} {isFormSubmitted} />
 										</div>
@@ -228,7 +222,7 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-700 mx-10" />
 
 					<!-- button for submitForm -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -243,12 +237,9 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
-					<TabItem open title="Magazine List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+					<TabItem open title="About List">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each aboutDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
@@ -266,7 +257,7 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem title="Magazine Detail">
+					<TabItem title="About Detail">
 						{#each aboutDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage
