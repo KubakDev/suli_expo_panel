@@ -44,9 +44,6 @@
 		status: false
 	};
 
-	// $: {
-	// 	console.log('first', $selectedTheme);
-	// }
 	let customColors_light = {
 		name: '',
 		primaryColor: $selectedTheme?.primaryColor,
@@ -289,36 +286,16 @@
 		// console.log('page theme ', $pageTheme);
 		await updatePageData(pageBuilder, data.supabase);
 	}
-
-	// create toggle for changing swapping between page theme color
-	function toggleMode() {
-		if ($selectedTheme.mode_type === 'dark') {
-			selectedTheme.set($pageTheme.color_palette_light);
-		} else {
-			selectedTheme.set($pageTheme.color_palette_dark);
-		}
-	}
 </script>
 
 <!-- Show notification -->
-
 {#if showToast}
 	<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
 		The Update Was Successfully!
 	</div>
 {/if}
 
-<label class="relative inline-flex items-center cursor-pointer">
-	<input on:change={toggleMode} type="checkbox" value="" class="sr-only peer" />
-	<div
-		class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-300"
-	/>
-	<span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-		{$selectedTheme?.mode_type === 'light' ? 'dark theme' : 'light theme'}</span
-	>
-</label>
-
-<div class="text-gray-400 text-xs pb-4 flex justify-start items-start w-full px-4">
+<div class="text-gray-400 text-xs pt-1 pb-4 flex justify-start items-start w-full px-5">
 	<input
 		type="checkbox"
 		class="w-4 h-4 bg-gray-100 border-gray-300 dark:ring-offset-gray-800 focus:ring-2 mr-2 dark:bg-gray-700 dark:border-gray-600 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
@@ -329,8 +306,8 @@
 </div>
 
 <Sidebar style="width:300px" asideClass=" ">
-	<SidebarWrapper divClass="">
-		<SidebarGroup ulClass="flex flex-col items-center gap-2">
+	<SidebarWrapper divClass="px-8">
+		<SidebarGroup ulClass="flex flex-col items-center gap-2 ">
 			<SidebarDropdownWrapper
 				label="Choose Card Type"
 				btnClass="flex gap-5 py-2 px-4 rounded border border-gray-700 w-full"
@@ -445,7 +422,7 @@
 							/></svg
 						>
 					</svelte:fragment>
-					<div style="height: auto; width: 100%;">
+					<div class="">
 						<div class="py-2 text-center">
 							<button
 								class="font-normal w-full flex justify-center items-center transition-all ease-in-out border-primary-dark bg-gray-50 dark:bg-gray-900 text-black dark:text-white py-2 px-4 border hover:bg-primary-50 rounded"
@@ -567,7 +544,7 @@
 			{#if $selectedTheme?.mode_type === 'dark'}
 				<SidebarDropdownWrapper
 					label="Choose dark theme"
-					btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full "
+					btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full"
 				>
 					<svelte:fragment slot="icon">
 						<svg
@@ -644,6 +621,7 @@
 							{/if}
 						</div>
 
+						<!-- create new dark_theme_data -->
 						{#if showCustomColor_dark}
 							<div class="grid grid-cols-4 py-2">
 								<input
@@ -739,11 +717,10 @@
 		</SidebarGroup>
 	</SidebarWrapper>
 
-	<div class="py-5 px-7">
+	<div class="py-5 px-5">
 		<button
 			on:click={() => update()}
 			class="w-full flex justify-center items-center transition-all ease-in-out text-white bg-primary-dark hover:bg-gray-50 hover:text-primary-dark font-bold py-2 px-4 border border-primary-50 rounded"
-
 		>
 			Update Page Theme
 		</button>
