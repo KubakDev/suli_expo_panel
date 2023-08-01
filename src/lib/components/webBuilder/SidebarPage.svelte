@@ -743,6 +743,7 @@
 		<button
 			on:click={() => update()}
 			class="w-full flex justify-center items-center transition-all ease-in-out text-white bg-primary-dark hover:bg-gray-50 hover:text-primary-dark font-bold py-2 px-4 border border-primary-50 rounded"
+
 		>
 			Update Page Theme
 		</button>
