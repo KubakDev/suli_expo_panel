@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Button, Modal, Checkbox, Toggle } from 'flowbite-svelte';
-	import type { ColorTheme } from '../../../../models/colorTheme';
+	import { Label, Input, Button, Modal, Checkbox, Toggle, Select } from 'flowbite-svelte';
 	import {
 		insertData,
 		updateData,
@@ -13,12 +12,12 @@
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import { ModeTypeEnum, type ColorTheme } from '../../../../models/colorTheme';
 
 	export let data;
 	let isFormSubmitted = false;
 	let showModal = false;
 	let submitted = false;
-	let activeItemId: any = null;
 
 	let colorData: any = [];
 	let newColorPallet: ColorTheme = {
@@ -29,7 +28,8 @@
 		overlaySecondaryColor: '',
 		backgroundColor: '',
 		overlayBackgroundColor: '',
-		active: null
+		active: null,
+		mode_type: ModeTypeEnum.LIGHT
 	};
 
 	async function fetchData() {
@@ -80,16 +80,26 @@
 			overlaySecondaryColor: '',
 			backgroundColor: '',
 			overlayBackgroundColor: '',
-			active: null
+			active: null,
+			mode_type: ModeTypeEnum.LIGHT
 		};
 	}
 
 	async function toggleChanged(item: any) {
-		activeItemId = item.itemId;
-		newColorPallet.active = true;
-		item.active = true;
-		await updateData(item, data.supabase);
-		// }
+		const updatedThemes = $theme.map((themeItem) => {
+			if (themeItem.mode_type === item.mode_type) {
+				return { ...themeItem, active: null };
+			}
+			return themeItem;
+		});
+		let index = updatedThemes.findIndex((x) => x.id === item.id);
+		updatedThemes[index].active = true;
+
+		console.log(updatedThemes);
+
+		theme.set(updatedThemes);
+
+		await updateData(updatedThemes[index], data.supabase);
 	}
 
 	// delete data
@@ -200,6 +210,13 @@
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
+								<span>Mode Type</span>
+							</div>
+						</th>
+						<th
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+						>
+							<div class="flex items-center justify-center gap-2">
 								<span
 									><svg
 										width="20px"
@@ -232,7 +249,6 @@
 							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<p class="w-20 p-2 rounded dark:text-white font-sans">
-
 										{item.name}
 									</p>
 								</div>
@@ -303,6 +319,11 @@
 									</div>
 								</div>
 							</td>
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+								<div class="flex justify-center">
+									{item.mode_type}
+								</div>
+							</td>
 
 							<td
 								class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
@@ -341,16 +362,31 @@
 			<form>
 				<div class="  px-10 py-10">
 					<h1 class="text-xl font-medium">Create a new theme color</h1>
-					<div class="py-3">
-						<Input
-							type="text"
-							id="name"
-							placeholder="Theme name"
-							bind:value={newColorPallet.name}
-						/>
-						{#if isFormSubmitted && !newColorPallet?.name?.trim()}
-							<p class="error-message">Require</p>
-						{/if}
+					<div class="py-3 flex items-center gap-2">
+						<div>
+							<Input
+								type="text"
+								id="name"
+								placeholder="Theme name"
+								bind:value={newColorPallet.name}
+							/>
+							{#if isFormSubmitted && !newColorPallet?.name?.trim()}
+								<p class="error-message">Require</p>
+							{/if}
+						</div>
+
+						<div>
+							<Select
+								bind:value={newColorPallet.mode_type}
+								id="type"
+								name="type"
+								size="md"
+								placeholder="Please select mode type"
+							>
+								<option value="dark">dark</option>
+								<option value="light">light</option>
+							</Select>
+						</div>
 					</div>
 
 					<div class="grid lg:grid-cols-3 gap-4 py-5">
