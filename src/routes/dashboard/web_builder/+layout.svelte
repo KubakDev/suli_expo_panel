@@ -4,6 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { Drawer, CloseButton } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing';
+	import { onMount } from 'svelte';
+	import { writable } from 'svelte/store';
 
 	export let data;
 	let hidden2 = true;

@@ -8,4 +8,10 @@ export interface ColorTheme {
 	backgroundColor?: string;
 	overlayBackgroundColor?: string;
 	active?: boolean | null;
+	mode_type: ModeTypeEnum;
+}
+
+export enum ModeTypeEnum {
+	DARK = 'dark',
+	LIGHT = 'light'
 }
