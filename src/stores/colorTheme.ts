@@ -24,7 +24,6 @@ export const insertData = async (colorThemeObject: ColorTheme, supabase: Supabas
 export const getData = async (supabase: SupabaseClient) => {
 	const { data } = await supabase.from('color_palette').select('*').order('id');
 	theme.set(data as ColorTheme[]);
-
 	return data as ColorTheme[];
 };
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import { Label, Input, Fileupload, Textarea, InputAddon, ButtonGroup } from 'flowbite-svelte';
 
 	import { Tabs, TabItem } from 'flowbite-svelte';
@@ -121,9 +120,11 @@
 		submitted = true;
 		showToast = true;
 
-		// Upload video thumbnail image
-		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		videoObjectData.thumbnail = response.data?.path || '';
+		if (!isEmpty(videoObjectData.thumbnail)) {
+			// Upload video thumbnail image
+			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
+			videoObjectData.thumbnail = response.data?.path || '';
+		}
 
 		// Insert data into Supabase
 		insertData(videoObjectData, videoDataLang, data.supabase);
@@ -185,7 +186,6 @@
 						accept=".jpg, .jpeg, .png .svg"
 						class="dark:bg-white"
 					/>
-
 				</Label>
 			</div>
 			<div class="col-span-1">
@@ -246,7 +246,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}

@@ -53,6 +53,16 @@
 
 	onMount(fetchData);
 
+	//get video youtube image if exist
+	const youtubeRegex =
+		/(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+
+	function getYouTubeId(url: string): string | null {
+		const match = youtubeRegex.exec(url);
+		console.log('match', match);
+		return match ? match[1] : null;
+	}
+
 	//**** get data from db and put it into the fields ****//
 	async function getVideoData() {
 		await data.supabase
@@ -65,7 +75,9 @@
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					link: result.data?.link,
-					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
+					thumbnail: result.data?.thumbnail
+						? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
+						: `https://img.youtube.com/vi/${getYouTubeId(result.data?.link ?? '')}/hqdefault.jpg`
 				};
 
 				// console.log('video data get db thumbnail : ////////', mediaVideoData.thumbnail);
@@ -92,6 +104,7 @@
 				mediaVideoData = { ...mediaVideoData };
 			});
 	}
+
 	onMount(async () => {
 		await getVideoData();
 	});
@@ -102,7 +115,7 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload videio image**//
+	//**for upload video image**//
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -343,7 +356,6 @@
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="Video List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-
 							<div class="flex justify-start items-start">
 								{#each mediaVideoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
