@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
+	import { afterUpdate, onDestroy, onMount, tick } from 'svelte';
 	import { fabric } from 'fabric';
 	import type { PageData } from '../$types';
 	import {
@@ -192,31 +192,25 @@
 	onMount(async () => {
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
-		// var customRect = createCustomRectangle();
 
 		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
-		adjustCanvasSize();
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
-
-			// canvas.isDrawingMode = false;
 			canvas.renderAll();
-
-			// You can save `path` to a database here, if you want
 		});
 
-		fabric.Object.prototype.set({
-			borderColor: '#5d9cec',
-			cornerColor: '#5d9cec',
-			cornerSize: 12,
-			cornerStyle: 'circle',
-			transparentCorners: false,
-			borderDashArray: [2, 2],
-			padding: 10,
-			cornerStrokeColor: '#ffffff',
-			borderOpacityWhenMoving: 0.4
-		});
+		// fabric.Object.prototype.set({
+		// 	borderColor: '#5d9cec',
+		// 	cornerColor: '#5d9cec',
+		// 	cornerSize: 12,
+		// 	cornerStyle: 'circle',
+		// 	transparentCorners: false,
+		// 	borderDashArray: [2, 2],
+		// 	padding: 10,
+		// 	cornerStrokeColor: '#ffffff',
+		// 	borderOpacityWhenMoving: 0.4
+		// });
 
 		const supabase = data.supabase;
 
@@ -231,42 +225,104 @@
 					const data: any = result.data;
 					exhibitionName = data.name;
 					const design = data.design;
-					if (data && data['design']) {
-						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
-					}
+					// if (data && data['design']) {
+					// 	await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
+					// }
 
-					for (var i = 0; i < canvas.width / gridSize; i++) {
-						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
-							stroke: '#ccc',
-							selectable: false
+					const width = design.width;
+					const height = design.height;
+					const aspectRatio = width / height;
+					const containerWidth = container?.offsetWidth;
+					const containerHeight = container?.offsetHeight;
+					const widthRatio = containerWidth / width;
+					const heightRatio = containerHeight / height;
+
+					// container.style.height = `${containerWidth / aspectRatio}px`;
+
+					const currentHeight = containerWidth / aspectRatio;
+					console.log('container width: ', containerWidth);
+					console.log('design width: ', width);
+					console.log(containerHeight);
+					console.log(currentHeight);
+					console.log('ratio: ', widthRatio);
+					if (canvas) {
+						canvas.setDimensions({
+							width: containerWidth,
+							height: currentHeight
 						});
-						line.toObject = () => null;
-						// This rect will not be included in canvas.toObject()
-						const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
-							stroke: '#ccc',
-							selectable: false
-						});
-						line2.toObject = () => null;
-						canvas.add(line);
-						canvas.add(line2);
-						canvas.sendToBack(line);
-						canvas.sendToBack(line2);
-						canvas.requestRenderAll();
-						// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
-						// canvas.add(customRect);
 					}
-					const prevCanvasWidth = design.width;
-					const prevCanvasHeight = design.height;
+					await canvas.loadFromJSON(design, async () => {
+						canvas.forEachObject((obj: any) => {
+							// obj.set('selectable', false);
+							// obj.set('lockMovementX', true);
+							// obj.set('lockMovementY', true);
+						});
+						canvas.width = containerWidth;
+						canvas.height = containerHeight;
+						if (canvas.backgroundImage) {
+							canvas.backgroundImage.scaleX = canvas.backgroundImage.scaleX * widthRatio;
+							canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
+						}
+						await tick(); // wait for the next update cycle
 
-					const prevCanvasRatio = prevCanvasWidth / prevCanvasHeight;
+						canvas.forEachObject((obj: any) => {
+							console.log(obj);
+							const scaleX = obj.scaleX;
+							const scaleY = obj.scaleY;
+							const left = obj.left;
+							const top = obj.top;
+							const tempScaleX = scaleX * widthRatio;
+							const tempScaleY = scaleY * widthRatio;
+							const tempLeft = left * widthRatio;
+							const tempTop = top * widthRatio;
+							console.log(tempScaleX);
+							console.log(scaleX);
+							console.log(tempScaleY);
+							console.log(scaleY);
+							obj.scaleX = tempScaleX;
+							obj.scaleY = tempScaleY;
+							obj.left = tempLeft;
+							obj.top = tempTop;
 
-					const newCanvasHeight = container.offsetWidth / prevCanvasRatio;
-					canvas.setWidth(container.offsetHeight);
+							obj.setCoords();
+						});
 
-					canvas.setHeight(newCanvasHeight);
+						canvas.renderAll();
+					});
+
+					// for (var i = 0; i < canvas.width / gridSize; i++) {
+					// 	const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
+					// 		stroke: '#ccc',
+					// 		selectable: false
+					// 	});
+					// 	line.toObject = () => null;
+					// 	// This rect will not be included in canvas.toObject()
+					// 	const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
+					// 		stroke: '#ccc',
+					// 		selectable: false
+					// 	});
+					// 	line2.toObject = () => null;
+					// 	canvas.add(line);
+					// 	canvas.add(line2);
+					// 	canvas.sendToBack(line);
+					// 	canvas.sendToBack(line2);
+					// 	canvas.requestRenderAll();
+					// 	// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
+					// 	// canvas.add(customRect);
+					// }
+
 					canvas.renderAll();
 					// Ensure the border always stays in the back of other objects
 				});
+		} else {
+			const containerWidth = container?.offsetWidth;
+			const containerHeight = container?.offsetHeight;
+			if (canvas) {
+				canvas.setDimensions({
+					width: containerWidth,
+					height: containerHeight
+				});
+			}
 		}
 
 		// Handle object removed
@@ -304,6 +360,7 @@
 		let liveLine: any | null = null;
 		canvas.on('mouse:down', function (options: any) {
 			let pointer = canvas.getPointer(options.e);
+			console.log('bnar bnar bnar');
 			if (isAddingText) {
 				const text = new fabric.IText('Click to edit text', {
 					left: pointer.x,
@@ -368,6 +425,8 @@
 				lastPosX = options.e.clientX;
 				lastPosY = options.e.clientY;
 			}
+			canvas.renderAll();
+			canvas.requestRenderAll();
 		});
 
 		canvas.on('mouse:move', function (opt: any) {
@@ -887,7 +946,6 @@
 <style lang="scss">
 	canvas {
 		border: 1px solid black;
-		width: 100% !important;
 	}
 	.custom-cursor {
 		cursor: crosshair;
