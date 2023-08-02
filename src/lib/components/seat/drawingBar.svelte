@@ -30,14 +30,14 @@
 	}
 	onMount(async () => {
 		await seatImageItemStore.getAllSeatItems();
-		setTimeout(() => {
-			console.log('//////////');
-			onShapeSelected({
-				id: 1,
-				name: 'yy',
-				image_url: 'https://cdn-icons-png.flaticon.com/512/4436/4436481.png'
-			});
-		}, 3000);
+		// setTimeout(() => {
+		// 	console.log('//////////');
+		// 	onShapeSelected({
+		// 		id: 1,
+		// 		name: 'yy',
+		// 		image_url: 'https://cdn-icons-png.flaticon.com/512/4436/4436481.png'
+		// 	});
+		// }, 3000);
 	});
 
 	function addImages() {
@@ -46,9 +46,9 @@
 	}
 
 	function onShapeSelected(image: SeatImageItemModel | null = null) {
-		// let iconCanvas = new data.fabric.StaticCanvas('');
-		// iconCanvas.setWidth(50);
-		// iconCanvas.setHeight(50);
+		let iconCanvas = new data.fabric.StaticCanvas('');
+		iconCanvas.setWidth(50);
+		iconCanvas.setHeight(50);
 
 		data.fabric.Image.fromURL(image?.image_url!, function (img: any) {
 			// Adjust the properties of the image if needed
@@ -58,30 +58,30 @@
 				scaleX: 0.5,
 				scaleY: 0.5
 			});
-			// img.id = new Date().getTime();
+			img.id = new Date().getTime();
 			// Add the image to the canvas
 
-			// let scale = Math.max(
-			// 	iconCanvas.getWidth() / img.width!,
-			// 	iconCanvas.getHeight() / img.height!
-			// );
-			// const newImg = new data.fabric.Image(img.getElement(), {
-			// 	scaleX: scale,
-			// 	scaleY: scale,
-			// 	left: iconCanvas.getWidth() / 2,
-			// 	top: iconCanvas.getHeight() / 2,
-			// 	originX: 'center',
-			// 	originY: 'center'
-			// });
-			// iconCanvas.add(newImg);
-			// iconCanvas.renderAll();
+			let scale = Math.max(
+				iconCanvas.getWidth() / img.width!,
+				iconCanvas.getHeight() / img.height!
+			);
+			const newImg = new data.fabric.Image(img.getElement(), {
+				scaleX: scale,
+				scaleY: scale,
+				left: iconCanvas.getWidth() / 2,
+				top: iconCanvas.getHeight() / 2,
+				originX: 'center',
+				originY: 'center'
+			});
+			iconCanvas.add(newImg);
+			iconCanvas.renderAll();
 
-			// let iconDataURL = canvasToDataUrl(iconCanvas);
-			// img.icon = iconDataURL;
+			let iconDataURL = canvasToDataUrl(iconCanvas);
+			img.icon = iconDataURL;
 
 			data.canvas?.add(img);
 			data.canvas?.renderAll();
-			// dispatch('updateLayers');
+			dispatch('updateLayers');
 		});
 	}
 	async function onImageSubmit() {

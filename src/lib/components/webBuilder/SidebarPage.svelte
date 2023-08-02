@@ -450,6 +450,7 @@
 								bind:value={customColors_light.name}
 							/>
 
+
 							{#if showCustomColor_light}
 								<button
 									on:click|preventDefault={insertNewColorPalette_light}
