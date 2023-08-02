@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ExpoCard } from 'kubak-svelte-component';
 	import { selectedTheme, pageTheme } from '../../../stores/pageStore';
-	import { DarkMode } from 'flowbite-svelte';
+
 	export let title: string;
 
 	// create toggle for changing swapping between page theme color

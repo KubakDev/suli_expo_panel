@@ -1,12 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		Checkbox,
-		Sidebar,
-		SidebarDropdownWrapper,
-		SidebarGroup,
-		SidebarWrapper
-	} from 'flowbite-svelte';
+	import { Sidebar, SidebarDropdownWrapper, SidebarGroup, SidebarWrapper } from 'flowbite-svelte';
 	import { CardType } from 'kubak-svelte-component';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
@@ -32,6 +26,7 @@
 	let showCustomColor_dark: boolean = false;
 	let componentData: any = [];
 	let light_theme_data: any = [];
+
 	let dark_theme_data: any = [];
 
 	let pageBuilder: any = {
@@ -113,8 +108,8 @@
 
 	let colors = [
 		'primaryColor',
-		'secondaryColor',
 		'overlayPrimaryColor',
+		'secondaryColor',
 		'overlaySecondaryColor',
 		'backgroundColor',
 		'overlayBackgroundColor'
@@ -124,8 +119,7 @@
 
 	// get color_palette data
 	async function fetchData() {
-		const result = await getData(data.supabase);
-		theme.set(result);
+		await getData(data.supabase);
 	}
 	onMount(fetchData);
 
@@ -155,18 +149,15 @@
 	}
 
 	//get dark theme and light theme data  from table
-	onMount(() => {
-		$theme.forEach((item) => {
-			if (item.mode_type === ModeTypeEnum.LIGHT) {
-				light_theme_data.push(item);
-			} else {
-				dark_theme_data.push(item);
-			}
-		});
-	});
+	$: {
+		light_theme_data = $theme.filter((item) => item.mode_type === ModeTypeEnum.LIGHT);
+		dark_theme_data = $theme.filter((item) => item.mode_type !== ModeTypeEnum.DARK);
+		// console.log($theme);
+	}
 
 	//change theme data
 	function changeThemeColor_light(customColors_light: any) {
+		console.log(customColors_light);
 		$selectedTheme.backgroundColor =
 			customColors_light?.backgroundColor || $selectedTheme.backgroundColor;
 		$selectedTheme.overlayBackgroundColor =
@@ -182,6 +173,7 @@
 
 	//change theme data
 	function changeThemeColor_dark(customColors_dark: any) {
+		console.log(customColors_dark);
 		$selectedTheme.backgroundColor =
 			customColors_dark?.backgroundColor || $selectedTheme.backgroundColor;
 		$selectedTheme.overlayBackgroundColor =
@@ -213,6 +205,7 @@
 
 		await insertData(customColors_light, data.supabase);
 		fetchData();
+
 		showCustomColor_light = !showCustomColor_light;
 		showCustomColor_dark = !showCustomColor_dark;
 		addNewToast({
@@ -282,8 +275,6 @@
 		pageBuilder.page = $pageTheme.page;
 		$pageTheme.status = !$pageTheme.status;
 		pageBuilder.status = $pageTheme.status;
-		// console.log('page builder ', pageBuilder);
-		// console.log('page theme ', $pageTheme);
 		await updatePageData(pageBuilder, data.supabase);
 	}
 </script>

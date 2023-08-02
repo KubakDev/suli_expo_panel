@@ -235,7 +235,6 @@
 					<ButtonGroup class="w-full">
 						<select
 							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-
 							id="type"
 							name="type"
 							on:change={handleSelectChange}
