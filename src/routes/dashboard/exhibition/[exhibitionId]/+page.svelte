@@ -19,9 +19,11 @@
 
 	export let data;
 	let sliderImagesFile: File[] = [];
+	let sliderImagesFile_sponsor: File[] = [];
 	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
+	let existingImages_sponsor: string[] = [];
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let carouselImages: any = undefined;
@@ -39,11 +41,14 @@
 		company_number: 0,
 		exhibition_type: '',
 		deleted_status: '',
+		sponsor_images: [],
+		sponsor_title: '',
 		start_date: new Date(),
 		end_date: new Date()
 	};
 	const id = $page.params.exhibitionId;
 	let images: ImagesModel[] = [];
+	let sponsor_images: ImagesModel[] = [];
 	let pdf_files: PDFModel[] = [];
 
 	//**** get data from db and put it into the fields ****//
@@ -66,11 +71,14 @@
 					company_number: result.data?.company_number,
 					country_number: result.data?.country_number,
 					start_date: new Date(result.data?.start_date),
-					end_date: new Date(result.data?.end_date)
+					end_date: new Date(result.data?.end_date),
+					sponsor_images: result.data?.sponsor_images,
+					sponsor_title: result.data?.sponsor_title
 				};
 
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
+				sponsor_images = getImage_sponsor();
 				pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.exhibition_languages.findIndex(
@@ -84,7 +92,8 @@
 						title: exhibitionLang?.title ?? '',
 						description: exhibitionLang?.description ?? '',
 						video_youtube_link: exhibitionLang?.video_youtube_link ?? '',
-
+						location: exhibitionLang?.location ?? '',
+						location_title: exhibitionLang?.location_title ?? '',
 						language:
 							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
@@ -93,6 +102,7 @@
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
 				getImagesObject();
+				getImagesObject_sponsor();
 			});
 	}
 
@@ -128,7 +138,12 @@
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
 		// console.log(sliderImagesFile);
-	}
+	} //**dropzone**//
+
+	//**dropzone-sponsor**//
+	function getAllImageFile_sponsor(e: { detail: File[] }) {
+		sliderImagesFile_sponsor = e.detail;
+	} //**dropzone-sponsor**//
 
 	//**pdf files**//
 
@@ -150,7 +165,17 @@
 		// console.log('first', result);
 		return result;
 	}
-
+	function getImage_sponsor() {
+		let result = exhibitionsData.sponsor_images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: image,
+				imgSource: ImgSourceEnum.remote
+			};
+		});
+		// console.log('first', result);
+		return result;
+	}
 	//get pdf File
 	function getPdfFile() {
 		let result = exhibitionsData.pdf_files.map((file, i) => {
@@ -175,16 +200,34 @@
 			const title = lang.title.trim();
 			const shortDescription = lang.description.trim();
 			const link = lang.video_youtube_link.trim();
+			const location = lang.location.trim();
+			const location_title = lang.location_title.trim();
 
 			const isStoryIsEmpty = isEmpty(storyData);
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
 			const isLinkEmpty = isEmpty(link);
+			const isLocationEmpty = isEmpty(location);
+			const isLocation_titleEmpty = isEmpty(location_title);
 
-			if (!isStoryIsEmpty || !isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
+			if (
+				!isStoryIsEmpty ||
+				!isTitleEmpty ||
+				!isShortDescriptionEmpty ||
+				!isLinkEmpty ||
+				!isLocationEmpty ||
+				!isLocation_titleEmpty
+			) {
 				// At least one field is not empty
 				hasDataForLanguage = true;
-				if (isStoryIsEmpty || isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
+				if (
+					isStoryIsEmpty ||
+					isTitleEmpty ||
+					isShortDescriptionEmpty ||
+					isLinkEmpty ||
+					isLocationEmpty ||
+					isLocation_titleEmpty
+				) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -195,9 +238,11 @@
 		if (
 			!isEmpty(exhibitionsData.thumbnail) &&
 			exhibitionsData.images.length > 0 &&
+			exhibitionsData.sponsor_images.length > 0 &&
 			exhibitionsData.country_number > 0 &&
 			exhibitionsData.company_number > 0 &&
-			!isEmpty(exhibitionsData.exhibition_type)
+			!isEmpty(exhibitionsData.exhibition_type) &&
+			!isEmpty(exhibitionsData.sponsor_title)
 		) {
 			isValidExhibitionObject = true;
 		}
@@ -206,6 +251,7 @@
 			showToast = true;
 			exhibitionsData.pdf_files = [];
 			exhibitionsData.images = [];
+			exhibitionsData.sponsor_images = [];
 			if (imageFile) {
 				if (exhibitionsData.thumbnail) {
 					await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
@@ -219,6 +265,7 @@
 				exhibitionsData.thumbnail = prevThumbnail;
 			}
 
+			// ***insert  images *****//
 			if (sliderImagesFile.length > 0) {
 				for (let image of sliderImagesFile) {
 					const randomText = getRandomTextNumber();
@@ -238,6 +285,27 @@
 			// Convert exhibition.images to a valid array string format
 			const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
 			exhibitionsData.images = `{${imagesArray.join(',')}}`;
+
+			// ***insert sponsor images *****//
+			if (sliderImagesFile_sponsor.length > 0) {
+				for (let image of sliderImagesFile_sponsor) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('image')
+						.upload(`exhibition/${randomText}_${image.name}`, image!);
+					// console.log('responseMultiple img:', responseMultiple);
+
+					if (responseMultiple.data?.path) {
+						exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
+					}
+				}
+			}
+			for (let image of existingImages_sponsor) {
+				exhibitionsData.sponsor_images.push(image);
+			}
+			// Convert exhibition.images to a valid array string format
+			const imagesArray_sponsor = exhibitionsData.sponsor_images.map((image) => `"${image}"`);
+			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 			// ***insert pdf *****//
 			if (sliderPDFFile.length > 0) {
@@ -290,27 +358,43 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('carouselImages data :::::', carouselImages);
+	}
+
+	//update images_sponsor
+	function imageChanges_sponsor(e: any) {
+		// console.log(e.detail);
+		let result: any = [];
+		let customImages: any = [];
+		e.detail.forEach((image: any) => {
+			if (image.imgSource === ImgSourceEnum.remote) {
+				result.push(image.imgurl);
+				// console.log('///////', image);
+				const newImage = { ...image };
+				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
+				customImages.push(newImage);
+			} else {
+				customImages.push(image);
+			}
+		});
+
+		existingImages_sponsor = result;
 	}
 
 	//update pdf file
 	function pdfChanges(e: any) {
 		// console.log(e.detail);
 		let result: any = [];
-		let customImages: any = [];
 		e.detail.forEach((files: any) => {
 			if (files.imgSource === ImgSourceEnum.PdfRemote) {
 				result.push(files.imgurl);
 				const newFile = { ...files };
 				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
-				// customImages.push(newFile);
 				console.log('first');
 			} else {
 				// customImages.push(files);
 			}
 		});
 		existingPDFfiles = result;
-		// console.log('carouselImages data :::::', existingPDFfiles);
 	}
 
 	function getImagesObject() {
@@ -323,11 +407,22 @@
 				attribution: ''
 			};
 		});
-		// console.log('print //', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+
+	function getImagesObject_sponsor() {
+		carouselImages = exhibitionsData.sponsor_images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
+				imgSource: ImgSourceEnum.remote,
+				name: image,
+				attribution: ''
+			};
+		});
 	}
 </script>
 
@@ -433,6 +528,31 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 
+									<div class="pb-10 flex gap-3 col-span-1">
+										<Label class="w-1/3 space-y-2 mb-2">
+											<span>Title for location</span>
+											<Input
+												type="text"
+												bind:value={langData.location_title}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.location_title}
+												<p class="error-message">Please enter a location_title</p>
+											{/if}
+										</Label>
+										<Label class="w-2/3 space-y-2 mb-2">
+											<span>Location</span>
+											<Input
+												type="text"
+												bind:value={langData.location}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.location}
+												<p class="error-message">Please enter a location</p>
+											{/if}
+										</Label>
+									</div>
+
 									<div class="col-span-3">
 										<Label class="space-y-2 mb-2">
 											<span>Link for youtube video</span>
@@ -515,6 +635,24 @@
 							data={{ pdfFiles: pdf_files }}
 						/>
 					</Label>
+
+					<!-- upload sponsor image -->
+					<Label class="space-y-2 mb-2">
+						<div class="px-8 pt-5">
+							<Input
+								type="text"
+								bind:value={exhibitionsData.sponsor_title}
+								placeholder="Enter a title for sponsor"
+							/>
+						</div>
+						<Label for="image" class="mb-2 px-8">Upload Sponsor Images</Label>
+						<FileUploadComponent
+							on:imageChanges={imageChanges_sponsor}
+							on:imageFilesChanges={getAllImageFile_sponsor}
+							data={{ images: sponsor_images }}
+						/>
+					</Label>
+					<!-- upload sponsor image -->
 				</div>
 
 				<!-- button for submitForm -->
