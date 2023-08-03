@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Button, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -10,7 +10,7 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -18,6 +18,7 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
+	let sliderImagesFile_sponsor: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 	let pdfFiles: File[] = [];
@@ -32,6 +33,8 @@
 		company_number: 0,
 		exhibition_type: '',
 		deleted_status: '',
+		sponsor_images: [],
+		sponsor_title: '',
 		start_date: new Date(),
 		end_date: new Date(),
 		id: 0
@@ -48,6 +51,8 @@
 			video_youtube_link: '',
 			title: '',
 			description: '',
+			location: '',
+			location_title: '',
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
 	}
@@ -74,6 +79,12 @@
 		getImagesObject();
 	} //**dropzone**//
 
+	//**dropzone-sponsor**//
+	function getAllImageFile_sponsor(e: { detail: File[] }) {
+		sliderImagesFile_sponsor = e.detail;
+		getImagesObject();
+	} //**dropzone-sponsor**//
+
 	//**pdf files**//
 
 	function getAllPDFFile(e: { detail: File[] }) {
@@ -89,16 +100,34 @@
 			const title = lang.title.trim();
 			const shortDescription = lang.description.trim();
 			const link = lang.video_youtube_link.trim();
+			const location = lang.location.trim();
+			const location_title = lang.location_title.trim();
 
 			const isStoryIsEmpty = isEmpty(storyData);
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
 			const isLinkEmpty = isEmpty(link);
+			const isLinkEmptyLocation = isEmpty(location);
+			const isLinkEmptyLocation_title = isEmpty(location_title);
 
-			if (!isStoryIsEmpty || !isTitleEmpty || !isShortDescriptionEmpty || !isLinkEmpty) {
+			if (
+				!isStoryIsEmpty ||
+				!isTitleEmpty ||
+				!isShortDescriptionEmpty ||
+				!isLinkEmpty ||
+				!isLinkEmptyLocation ||
+				!isLinkEmptyLocation_title
+			) {
 				// All fields are non-empty for this language
 				hasDataForLanguage = true;
-				if (isStoryIsEmpty || isTitleEmpty || isShortDescriptionEmpty || isLinkEmpty) {
+				if (
+					isStoryIsEmpty ||
+					isTitleEmpty ||
+					isShortDescriptionEmpty ||
+					isLinkEmpty ||
+					isLinkEmptyLocation ||
+					isLinkEmptyLocation_title
+				) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -110,8 +139,10 @@
 		if (
 			!isEmpty(exhibitionsObject.thumbnail) &&
 			sliderImagesFile.length > 0 &&
+			sliderImagesFile_sponsor.length > 0 &&
 			!isEmpty(exhibitionsObject.company_number) &&
 			!isEmpty(exhibitionsObject.country_number) &&
+			!isEmpty(exhibitionsObject.sponsor_title) &&
 			!isEmpty(exhibitionsObject.exhibition_type)
 		) {
 			isValidExhibitionsObject = true;
@@ -153,10 +184,24 @@
 				});
 		}
 
+		for (let image of sliderImagesFile_sponsor) {
+			const randomText = getRandomTextNumber();
+			await data.supabase.storage
+				.from('image')
+				.upload(`exhibitions/${randomText}_${image.name}`, image!)
+				.then((response) => {
+					if (response.data) {
+						exhibitionsObject.sponsor_images.push(response.data.path);
+					}
+				});
+		}
+
 		// Convert exhibitionsObject.images and exhibitionsObject.pdf_files to valid array string format
 		const imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
+		const imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
 		const pdfFilesArray = exhibitionsObject.pdf_files.map((pdf) => `"${pdf}"`);
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
+		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 		exhibitionsObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
 
 		// Insert data into Supabase
@@ -178,6 +223,8 @@
 			company_number: 0,
 			exhibition_type: '',
 			deleted_status: '',
+			sponsor_images: [],
+			sponsor_title: '',
 			start_date: new Date(),
 			end_date: new Date(),
 			id: 0
@@ -190,6 +237,8 @@
 				video_youtube_link: '',
 				title: '',
 				description: '',
+				location: '',
+				location_title: '',
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 			});
 		}
@@ -313,6 +362,31 @@
 										<p>for other language navigate between tabs</p>
 									</div>
 
+									<div class="pb-10 flex gap-3 col-span-1">
+										<Label class="w-1/3 space-y-2 mb-2">
+											<span>Title for location</span>
+											<Input
+												type="text"
+												bind:value={langData.location_title}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.location_title}
+												<p class="error-message">Please enter a location_title</p>
+											{/if}
+										</Label>
+										<Label class="w-2/3 space-y-2 mb-2">
+											<span>Location</span>
+											<Input
+												type="text"
+												bind:value={langData.location}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.location}
+												<p class="error-message">Please enter a location</p>
+											{/if}
+										</Label>
+									</div>
+
 									<div class="pb-10">
 										<Label class="space-y-2 mb-2">
 											<span>Link for youtube video</span>
@@ -375,6 +449,7 @@
 				</form>
 
 				<div class="grid lg:grid-cols-2 pt-5">
+					<!-- upload exhibition image -->
 					<Label class="space-y-2 mb-2">
 						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
@@ -382,17 +457,33 @@
 							<p class="error-message px-8">Please upload at least one image for the slider</p>
 						{/if}
 					</Label>
-
+					<!-- upload exhibition image -->
 					<!-- upload pdf file -->
 					<Label class="space-y-2 mb-2">
 						<Label for="pdf" class="mb-2 px-8">Upload PDF Files</Label>
 						<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
 					</Label>
+					<!-- upload pdf file -->
+
+					<!-- upload sponsor image -->
+					<Label class="space-y-2 mb-2">
+						<div class="px-8 pt-5">
+							<Input
+								type="text"
+								bind:value={exhibitionsObject.sponsor_title}
+								placeholder="Enter a title for sponsor"
+							/>
+						</div>
+						<Label for="image" class="mb-2 px-8">Upload Sponsor Images</Label>
+						<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
+						{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
+							<p class="error-message px-8">Please upload at least one image for the sponsor</p>
+						{/if}
+					</Label>
+					<!-- upload sponsor image -->
 				</div>
-				<!-- upload news image -->
 
 				<div class="py-2" />
-				<!-- upload news image -->
 
 				<!-- submit Form -->
 				<div class="w-full flex justify-end pb-5 px-10">
@@ -405,6 +496,7 @@
 					</button>
 				</div>
 			</div>
+
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
 				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Exhibition List">

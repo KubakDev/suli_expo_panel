@@ -12,6 +12,8 @@ export interface ExhibitionsModel {
 	start_date: Date;
 	end_date: Date;
 	position?: number;
+	sponsor_images: string[];
+	sponsor_title: string;
 	exhibition_languages?: ExhibitionsModelLang[];
 }
 
@@ -21,5 +23,7 @@ export interface ExhibitionsModelLang {
 	video_youtube_link: string;
 	title: string;
 	description: string;
+	location: string;
+	location_title: string;
 	language: LanguageEnum;
 }

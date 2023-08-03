@@ -37,6 +37,7 @@ export const getData = async (supabase: SupabaseClient) => {
 		const { data, error } = await supabase
 			.from('exhibition')
 			.select('*,exhibition_languages(*)')
+			.or('deleted_status.is.null') // Filter rows with deleted_status false or null
 			.order('position', { ascending: true });
 
 		exhibitions.set(data ?? []);
