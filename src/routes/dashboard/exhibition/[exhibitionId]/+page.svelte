@@ -137,8 +137,8 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		// console.log(sliderImagesFile);
 	} //**dropzone**//
+
 
 	//**dropzone-sponsor**//
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
@@ -146,11 +146,9 @@
 	} //**dropzone-sponsor**//
 
 	//**pdf files**//
-
 	function getAllPDFFile(e: { detail: File[] }) {
 		sliderPDFFile = e.detail;
 	}
-
 	//**pdf files**//
 
 	//get image

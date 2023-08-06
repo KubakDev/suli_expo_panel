@@ -2,13 +2,13 @@
 	import { onMount } from 'svelte';
 	import { exhibitions, getData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
-	import { Button } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
 	//@ts-ignore
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
+	import InsertButton from '$lib/components/InsertButton.svelte';
 
 	export let data;
 	let items: any = [];
@@ -90,34 +90,8 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="flex justify-end">
-		<div class="py-5 px-4 lg:px-0 flex justify-end">
-			<Button
-				on:click={createExhibition}
-				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
-			>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 20 20"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-				>
-					<g id="SVGRepo_bgCarrier" stroke-width="0" />
-
-					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-
-					<g id="SVGRepo_iconCarrier">
-						<path
-							fill="#6b6b6b"
-							fill-rule="evenodd"
-							d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"
-						/>
-					</g>
-				</svg>
-			</Button>
-		</div>
-	</div>
+	<!-- insert new data -->
+	<InsertButton insertData={createExhibition} />
 
 	<!-- table data -->
 

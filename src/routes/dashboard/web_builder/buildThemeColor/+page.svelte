@@ -117,9 +117,9 @@
 	<!-- show data on the table -->
 
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
-		<Button
+		<button
 			on:click={() => (showModal = true)}
-			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
+			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2 p-2 rounded-sm shadow-md border"
 		>
 			<svg
 				width="20px"
@@ -140,7 +140,7 @@
 					/>
 				</g>
 			</svg>
-		</Button>
+		</button>
 	</div>
 
 	<!-- table data -->

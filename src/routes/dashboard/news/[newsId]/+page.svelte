@@ -18,7 +18,6 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
-	
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
@@ -420,6 +419,7 @@
 					</button>
 				</div>
 			</div>
+
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="News List">
