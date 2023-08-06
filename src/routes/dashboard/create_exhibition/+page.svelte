@@ -143,6 +143,7 @@
 			!isEmpty(exhibitionsObject.sponsor_title) &&
 			!isEmpty(exhibitionsObject.company_number) &&
 			!isEmpty(exhibitionsObject.country_number) &&
+			!isEmpty(exhibitionsObject.sponsor_title) &&
 			!isEmpty(exhibitionsObject.exhibition_type)
 		) {
 			isValidExhibitionsObject = true;
