@@ -4,6 +4,7 @@
 	import { XMark } from 'svelte-heros-v2';
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
 	import type { PDFModel } from '../../models/pdfModel';
+	import { Shadow } from 'svelte-loading-spinners';
 
 	export let data: { pdfFiles?: PDFModel[] } = {};
 	let pdfFiles: PDFModel[] = data.pdfFiles ?? [];

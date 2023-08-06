@@ -137,7 +137,6 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		// console.log(sliderImagesFile);
 	} //**dropzone**//
 
 	//**dropzone-sponsor**//
@@ -146,11 +145,9 @@
 	} //**dropzone-sponsor**//
 
 	//**pdf files**//
-
 	function getAllPDFFile(e: { detail: File[] }) {
 		sliderPDFFile = e.detail;
 	}
-
 	//**pdf files**//
 
 	//get image
@@ -252,6 +249,7 @@
 			exhibitionsData.pdf_files = [];
 			exhibitionsData.images = [];
 			exhibitionsData.sponsor_images = [];
+
 			if (imageFile) {
 				if (exhibitionsData.thumbnail) {
 					await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);

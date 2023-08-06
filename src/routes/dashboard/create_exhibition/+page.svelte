@@ -140,9 +140,9 @@
 			!isEmpty(exhibitionsObject.thumbnail) &&
 			sliderImagesFile.length > 0 &&
 			sliderImagesFile_sponsor.length > 0 &&
+			!isEmpty(exhibitionsObject.sponsor_title) &&
 			!isEmpty(exhibitionsObject.company_number) &&
 			!isEmpty(exhibitionsObject.country_number) &&
-			!isEmpty(exhibitionsObject.sponsor_title) &&
 			!isEmpty(exhibitionsObject.exhibition_type)
 		) {
 			isValidExhibitionsObject = true;
@@ -473,8 +473,11 @@
 								bind:value={exhibitionsObject.sponsor_title}
 								placeholder="Enter a title for sponsor"
 							/>
+							{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
+								<p class="error-message">Please enter a title for sponsor</p>
+							{/if}
 						</div>
-						<Label for="image" class="mb-2 px-8">Upload Sponsor Images</Label>
+						<Label for="image" class=" px-8">Upload Sponsor Images</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
 						{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
 							<p class="error-message px-8">Please upload at least one image for the sponsor</p>
