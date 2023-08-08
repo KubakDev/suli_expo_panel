@@ -323,7 +323,6 @@
 						const response = await data.supabase.storage
 							.from('image')
 							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf!);
-
 						lang.pdf_files = response.data?.path || '';
 					}
 				}
