@@ -303,12 +303,10 @@
 							name="type"
 							on:change={handleSelectChange}
 						>
-							<!-- Use JavaScript ternary operator to handle selected option -->
 							<option value="Select Type" selected={newsData.exhibition_id === undefined}>
 								Select Type
 							</option>
 							{#each exhibitionData as exhibition}
-								<!-- Use JavaScript ternary operator to handle selected option -->
 								<option value={exhibition.id} selected={newsData.exhibition_id === exhibition.id}>
 									{exhibition.exhibition_type}
 								</option>

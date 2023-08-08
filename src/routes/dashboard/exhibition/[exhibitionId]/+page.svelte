@@ -15,27 +15,33 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
-	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
 	let sliderPDFFile: File[] = [];
 	let fileName: string;
+	let fileName_map: string;
 	let existingImages: string[] = [];
 	let existingImages_sponsor: string[] = [];
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
+	let imageFile_map: File | undefined;
+	let imageFile_pdf: File | undefined;
+	let fileName_pdf: any[] = [];
 	let carouselImages: any = undefined;
+	let carouselImages_sponsor: any = undefined;
 	let showToast = false;
 	let prevThumbnail: string = '';
+	let prevImage_map: string = '';
+	let prevPDFFile: string = '';
 	let isFormSubmitted = false;
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
 		id: 0,
 		images: [],
-		pdf_files: [],
+		image_map: '',
 		thumbnail: '',
 		country_number: 0,
 		company_number: 0,
@@ -65,8 +71,10 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
-					pdf_files: result.data?.pdf_files,
 					exhibition_type: result.data?.exhibition_type,
+					image_map: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
+						result.data?.image_map
+					}`,
 					deleted_status: result.data?.deleted_status,
 					company_number: result.data?.company_number,
 					country_number: result.data?.country_number,
@@ -77,9 +85,11 @@
 				};
 
 				prevThumbnail = result.data?.thumbnail;
+				prevImage_map = result.data?.image_map;
+
 				images = getImage();
 				sponsor_images = getImage_sponsor();
-				pdf_files = getPdfFile();
+				// pdf_files = getPdfFile();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.exhibition_languages.findIndex(
 						(exhibitionLang: ExhibitionsModelLang) =>
@@ -94,15 +104,19 @@
 						video_youtube_link: exhibitionLang?.video_youtube_link ?? '',
 						location: exhibitionLang?.location ?? '',
 						location_title: exhibitionLang?.location_title ?? '',
+						pdf_files: exhibitionLang?.pdf_files ?? '',
 						language:
 							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
+					prevPDFFile = exhibitionLang?.pdf_files;
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
 				getImagesObject();
 				getImagesObject_sponsor();
+
+				// console.log(exhibitionDataLang);
 			});
 	}
 
@@ -134,6 +148,48 @@
 		reader.readAsDataURL(file);
 	} //**for upload exhibition image**//
 
+	//handle image map
+	function handleFileUpload_ImageMap(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_map = file;
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsData.image_map = reader.result as '';
+			const randomText = getRandomTextNumber(); // Generate random text
+			fileName_map = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	// handle pdf
+	function handleFileUpload_pdf(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf = file;
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.pdf_files = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf.push({
+				lang: selectedLanguageTab,
+				fileName: `exhibitions/${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -144,13 +200,6 @@
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
 		sliderImagesFile_sponsor = e.detail;
 	} //**dropzone-sponsor**//
-
-	//**pdf files**//
-	function getAllPDFFile(e: { detail: File[] }) {
-		sliderPDFFile = e.detail;
-	}
-	//**pdf files**//
-
 	//get image
 	function getImage() {
 		let result = exhibitionsData.images.map((image, i) => {
@@ -172,18 +221,6 @@
 			};
 		});
 		// console.log('first', result);
-		return result;
-	}
-	//get pdf File
-	function getPdfFile() {
-		let result = exhibitionsData.pdf_files.map((file, i) => {
-			return {
-				id: i,
-				imgurl: file,
-				imgSource: ImgSourceEnum.PdfRemote
-			};
-		});
-		// console.log('first pdf file ', result);
 		return result;
 	}
 
@@ -247,9 +284,10 @@
 
 		if (hasDataForLanguage && isValidExhibitionObject) {
 			showToast = true;
-			exhibitionsData.pdf_files = [];
+
 			exhibitionsData.images = [];
 			exhibitionsData.sponsor_images = [];
+
 			if (imageFile) {
 				if (exhibitionsData.thumbnail) {
 					await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
@@ -261,6 +299,38 @@
 				exhibitionsData.thumbnail = response.data?.path || '';
 			} else {
 				exhibitionsData.thumbnail = prevThumbnail;
+			}
+
+			if (imageFile_map) {
+				if (exhibitionsData.image_map) {
+					await data.supabase.storage.from('image').remove([exhibitionsData.image_map]);
+				}
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile_map!);
+				exhibitionsData.image_map = response.data?.path || '';
+			} else {
+				exhibitionsData.image_map = prevImage_map;
+			}
+
+			if (imageFile_pdf) {
+				for (let lang of exhibitionDataLang) {
+					const pdfFileData = fileName_pdf.find((fileData) => fileData.lang === lang.language);
+					if (pdfFileData) {
+						if (lang.pdf_files) {
+							await data.supabase.storage.from('image').remove([lang.pdf_files]);
+						}
+						const response = await data.supabase.storage
+							.from('image')
+							.upload(`${pdfFileData.fileName}`, imageFile_pdf!);
+
+						lang.pdf_files = response.data?.path || '';
+					}
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.pdf_files = prevPDFFile;
+				}
 			}
 
 			// ***insert  images *****//
@@ -306,25 +376,6 @@
 			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 			// ***insert pdf *****//
-			if (sliderPDFFile.length > 0) {
-				for (let PDFfile of sliderPDFFile) {
-					const randomText = getRandomTextNumber();
-					const responseMultiple = await data.supabase.storage
-						.from('PDF')
-						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
-					// console.log('responseMultiple pdf:', responseMultiple);
-
-					if (responseMultiple.data?.path) {
-						exhibitionsData.pdf_files.push(responseMultiple.data.path);
-					}
-				}
-			}
-			for (let pdf of existingPDFfiles) {
-				exhibitionsData.pdf_files.push(pdf);
-			}
-			// Convert exhibition.images to a valid array string format
-			const pdfArray = exhibitionsData.pdf_files.map((file) => `"${file}"`);
-			exhibitionsData.pdf_files = `{${pdfArray.join(',')}}`;
 
 			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 			console.log('result before store :', exhibitionsData);
@@ -374,25 +425,8 @@
 				customImages.push(image);
 			}
 		});
-
+		carouselImages_sponsor = customImages;
 		existingImages_sponsor = result;
-	}
-
-	//update pdf file
-	function pdfChanges(e: any) {
-		// console.log(e.detail);
-		let result: any = [];
-		e.detail.forEach((files: any) => {
-			if (files.imgSource === ImgSourceEnum.PdfRemote) {
-				result.push(files.imgurl);
-				const newFile = { ...files };
-				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
-				console.log('first');
-			} else {
-				// customImages.push(files);
-			}
-		});
-		existingPDFfiles = result;
 	}
 
 	function getImagesObject() {
@@ -412,7 +446,7 @@
 	}
 
 	function getImagesObject_sponsor() {
-		carouselImages = exhibitionsData.sponsor_images.map((image, i) => {
+		carouselImages_sponsor = exhibitionsData.sponsor_images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
@@ -421,6 +455,20 @@
 				attribution: ''
 			};
 		});
+		if (carouselImages_sponsor.length <= 0) {
+			carouselImages_sponsor = undefined;
+		}
+	}
+
+	function openPdfFile(pdfLink: string) {
+		console.log(pdfLink);
+		const completePdfLink = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_PDF_URL}/${pdfLink}`;
+
+		const newWindow = window.open();
+		if (newWindow !== null) {
+			console.log('first');
+			newWindow.document.body.innerHTML = `<iframe src="${completePdfLink}" width="100%" height="100%"></iframe>`;
+		}
 	}
 </script>
 
@@ -449,6 +497,18 @@
 					{/if}
 				</Label>
 			</div>
+			<div class="col-span-4">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
+					<Fileupload
+						on:change={handleFileUpload_ImageMap}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+						lang={selectedLanguageTab}
+					/>
+				</Label>
+			</div>
+
 			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Start Date</span>
@@ -527,6 +587,37 @@
 									</div>
 
 									<div class="pb-10 flex gap-3 col-span-1">
+										<Label class="w-2/3 space-y-2 mb-2">
+											<span>Link for youtube video</span>
+											<Input
+												type="text"
+												bind:value={langData.video_youtube_link}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.video_youtube_link}
+												<p class="error-message">Please enter a link for youtube video</p>
+											{/if}
+										</Label>
+
+										<Label class="w-1/3 space-y-2 mb-2">
+											<span>Upload pdf file </span>
+											<Fileupload
+												on:change={handleFileUpload_pdf}
+												accept=".pdf"
+												class=" dark:bg-white"
+											/>
+
+											<div>
+												<button
+													class="text-xs hover:text-red-700 text-gray-600"
+													on:click={() => openPdfFile(langData?.pdf_files ?? '')}
+													>Click here to view the PDF</button
+												>
+											</div>
+										</Label>
+									</div>
+
+									<div class="pb-10 flex gap-3 col-span-1">
 										<Label class="w-1/3 space-y-2 mb-2">
 											<span>Title for location</span>
 											<Input
@@ -547,20 +638,6 @@
 											/>
 											{#if isFormSubmitted && !langData.location}
 												<p class="error-message">Please enter a location</p>
-											{/if}
-										</Label>
-									</div>
-
-									<div class="col-span-3">
-										<Label class="space-y-2 mb-2">
-											<span>Link for youtube video</span>
-											<Input
-												type="text"
-												bind:value={langData.video_youtube_link}
-												placeholder="Enter a link"
-											/>
-											{#if isFormSubmitted && !langData.video_youtube_link}
-												<p class="error-message">Please enter a link for youtube video</p>
 											{/if}
 										</Label>
 									</div>
@@ -612,6 +689,13 @@
 					<div class="border mb-2 dark:border-gray-800 mx-10" />
 				</form>
 
+				<div class="px-8 pt-5">
+					<Input
+						type="text"
+						bind:value={exhibitionsData.sponsor_title}
+						placeholder="Enter a title for sponsor"
+					/>
+				</div>
 				<div class="grid lg:grid-cols-2 pt-5">
 					<!-- upload Exhibition image -->
 					<Label class="space-y-2 mb-2">
@@ -623,26 +707,8 @@
 						/>
 					</Label>
 
-					<!-- upload pdf file -->
-
-					<Label class="space-y-2 mb-2">
-						<Label for="pdf" class="mb-2 px-8">Upload PDF Files</Label>
-						<PDFUploadComponent
-							on:imageChanges={pdfChanges}
-							on:imageFilesChanges={getAllPDFFile}
-							data={{ pdfFiles: pdf_files }}
-						/>
-					</Label>
-
 					<!-- upload sponsor image -->
 					<Label class="space-y-2 mb-2">
-						<div class="px-8 pt-5">
-							<Input
-								type="text"
-								bind:value={exhibitionsData.sponsor_title}
-								placeholder="Enter a title for sponsor"
-							/>
-						</div>
 						<Label for="image" class="mb-2 px-8">Upload Sponsor Images</Label>
 						<FileUploadComponent
 							on:imageChanges={imageChanges_sponsor}
@@ -691,6 +757,29 @@
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
+							{/if}
+						{/each}
+					</TabItem>
+
+					<TabItem title="Map">
+						{#each exhibitionDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<ExpoCard
+									cardType={CardType.Flat}
+									title=""
+									short_description=""
+									thumbnail={exhibitionsData.image_map}
+									primaryColor="bg-primary"
+									startDate=""
+									endDate=""
+								/>
+							{/if}
+						{/each}
+					</TabItem>
+					<TabItem title="Sponsor List">
+						{#each exhibitionDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<DetailPage bind:imagesCarousel={carouselImages_sponsor} long_description="" />
 							{/if}
 						{/each}
 					</TabItem>

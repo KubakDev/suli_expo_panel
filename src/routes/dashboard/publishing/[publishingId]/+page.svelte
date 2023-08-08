@@ -86,8 +86,8 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				console.log('publishing data get db pdf files : ////////', publishingData.pdf_files);
-				console.log('publishing data get db images: ////////', publishingData.images);
+				// console.log('publishing data get db pdf files : ////////', publishingData.pdf_files);
+				// console.log('publishing data get db images: ////////', publishingData.images);
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				pdf_files = getPdfFile();

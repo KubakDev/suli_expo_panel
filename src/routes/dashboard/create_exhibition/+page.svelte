@@ -8,7 +8,6 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
-	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
@@ -16,7 +15,11 @@
 	let isFormSubmitted = false;
 	let showToast = false;
 	let fileName: string;
+	let fileName_map: string;
+	let fileName_pdf: any[] = [];
 	let imageFile: File | undefined;
+	let imageFile_map: File | undefined;
+	let imageFile_pdf: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
 	let carouselImages: any = undefined;
@@ -24,11 +27,10 @@
 	let pdfFiles: File[] = [];
 
 	let exhibitionsDataLang: ExhibitionsModelLang[] = [];
-
 	let exhibitionsObject: ExhibitionsModel = {
 		images: [],
-		pdf_files: [],
 		thumbnail: '',
+		image_map: '',
 		country_number: 0,
 		company_number: 0,
 		exhibition_type: '',
@@ -50,6 +52,7 @@
 			story: '',
 			video_youtube_link: '',
 			title: '',
+			pdf_files: '',
 			description: '',
 			location: '',
 			location_title: '',
@@ -57,15 +60,55 @@
 		});
 	}
 
+	function handleFileUpload_pdf(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf = file;
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.pdf_files = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	//handle image map
+	function handleFileUpload_ImageMap(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_map = file;
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsObject.image_map = reader.result as '';
+			const randomText = getRandomTextNumber(); // Generate random text
+			fileName_map = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
+		};
+
+		reader.readAsDataURL(file);
+	}
+
 	function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			exhibitionsObject.thumbnail = reader.result as '';
+			exhibitionsObject.image_map = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
 		};
@@ -85,94 +128,32 @@
 		getImagesObject();
 	} //**dropzone-sponsor**//
 
-	//**pdf files**//
-
-	function getAllPDFFile(e: { detail: File[] }) {
-		pdfFiles = e.detail;
-	}
-
 	async function formSubmit() {
 		let hasDataForLanguage = false;
 		let isValidExhibitionsObject = false;
-
-		for (let lang of exhibitionsDataLang) {
-			const storyData = lang.story.trim();
-			const title = lang.title.trim();
-			const shortDescription = lang.description.trim();
-			const link = lang.video_youtube_link.trim();
-			const location = lang.location.trim();
-			const location_title = lang.location_title.trim();
-
-			const isStoryIsEmpty = isEmpty(storyData);
-			const isTitleEmpty = isEmpty(title);
-			const isShortDescriptionEmpty = isEmpty(shortDescription);
-			const isLinkEmpty = isEmpty(link);
-			const isLinkEmptyLocation = isEmpty(location);
-			const isLinkEmptyLocation_title = isEmpty(location_title);
-
-			if (
-				!isStoryIsEmpty ||
-				!isTitleEmpty ||
-				!isShortDescriptionEmpty ||
-				!isLinkEmpty ||
-				!isLinkEmptyLocation ||
-				!isLinkEmptyLocation_title
-			) {
-				// All fields are non-empty for this language
-				hasDataForLanguage = true;
-				if (
-					isStoryIsEmpty ||
-					isTitleEmpty ||
-					isShortDescriptionEmpty ||
-					isLinkEmpty ||
-					isLinkEmptyLocation ||
-					isLinkEmptyLocation_title
-				) {
-					// At least one field is empty for this language
-					hasDataForLanguage = false;
-					break;
-				}
-			}
-		}
-
-		// Check if galleryObject has a valid thumbnail and at least one slider image
-		if (
-			!isEmpty(exhibitionsObject.thumbnail) &&
-			sliderImagesFile.length > 0 &&
-			sliderImagesFile_sponsor.length > 0 &&
-			!isEmpty(exhibitionsObject.sponsor_title) &&
-			!isEmpty(exhibitionsObject.company_number) &&
-			!isEmpty(exhibitionsObject.country_number) &&
-			!isEmpty(exhibitionsObject.sponsor_title) &&
-			!isEmpty(exhibitionsObject.exhibition_type)
-		) {
-			isValidExhibitionsObject = true;
-		}
-
-		if (!hasDataForLanguage || !isValidExhibitionsObject) {
-			isFormSubmitted = true;
-			return;
-		}
-
 		showToast = true;
 
 		// Upload exhibition thumbnail image
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 		exhibitionsObject.thumbnail = response.data?.path || '';
 
-		// Upload PDF files
-		for (let pdf of pdfFiles) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('PDF')
-				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
-				.then((response) => {
-					if (response.data) {
-						exhibitionsObject.pdf_files.push(response.data.path);
-					}
-				});
-		}
+		// Upload exhibition  image map
+		const response2 = await data.supabase.storage
+			.from('image')
+			.upload(`${fileName_map}`, imageFile_map!);
+		exhibitionsObject.image_map = response2.data?.path || '';
 
+		// Upload exhibition pdf image
+		for (let file of fileName_pdf) {
+			const response3 = await data.supabase.storage
+				.from('PDF')
+				.upload(`pdfFiles/${file.fileName}`, imageFile_pdf!);
+
+			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
+			if (langObj) {
+				langObj.pdf_files = response3?.data?.path || '';
+			}
+		}
 		for (let image of sliderImagesFile) {
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
@@ -200,10 +181,11 @@
 		// Convert exhibitionsObject.images and exhibitionsObject.pdf_files to valid array string format
 		const imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
 		const imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
-		const pdfFilesArray = exhibitionsObject.pdf_files.map((pdf) => `"${pdf}"`);
+		// const imagesArray_pdf = exhibitionsDataLang.pdf_files.map((image) => `"${image}"`);
+
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
-		exhibitionsObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
+		// exhibitionsDataLang.pdf_files = `{${imagesArray_pdf.join(',')}}`;
 
 		// Insert data into Supabase
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
@@ -218,7 +200,7 @@
 	function resetForm() {
 		exhibitionsObject = {
 			images: [],
-			pdf_files: [],
+			image_map: '',
 			thumbnail: '',
 			country_number: 0,
 			company_number: 0,
@@ -240,6 +222,7 @@
 				description: '',
 				location: '',
 				location_title: '',
+				pdf_files: '',
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 			});
 		}
@@ -278,7 +261,7 @@
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
 						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						accept=".jpg, .jpeg, .png, .svg"
 						class=" dark:bg-white"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
@@ -286,6 +269,19 @@
 					{/if}
 				</Label>
 			</div>
+
+			<div class="col-span-4">
+				<Label class="space-y-2 mb-2">
+					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
+					<Fileupload
+						on:change={handleFileUpload_ImageMap}
+						accept=".jpg, .jpeg, .png .svg"
+						class=" dark:bg-white"
+						lang={selectedLanguageTab}
+					/>
+				</Label>
+			</div>
+
 			<div class="col-span-2">
 				<Label class="space-y-2 mb-2">
 					<span>Start Date</span>
@@ -362,19 +358,32 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-
 									<div class="pb-10 flex gap-3 col-span-1">
-										<Label class="w-1/3 space-y-2 mb-2">
-											<span>Title for location</span>
+										<Label class="w-2/3 space-y-2 mb-2">
+											<span>Link for youtube video</span>
 											<Input
 												type="text"
-												bind:value={langData.location_title}
+												bind:value={langData.video_youtube_link}
 												placeholder="Enter a link"
 											/>
-											{#if isFormSubmitted && !langData.location_title}
-												<p class="error-message">Please enter a location_title</p>
+											{#if isFormSubmitted && !langData.video_youtube_link}
+												<p class="error-message">Please enter a link for youtube video</p>
 											{/if}
 										</Label>
+										<Label class="w-1/3 space-y-2 mb-2">
+											<span>Upload pdf file </span>
+											<Fileupload
+												on:change={handleFileUpload_pdf}
+												accept=".pdf"
+												class=" dark:bg-white"
+											/>
+											{#if isFormSubmitted && !langData?.pdf_files?.trim()}
+												<p class="error-message">Please Upload an pdf file</p>
+											{/if}
+										</Label>
+									</div>
+
+									<div class="pb-10 flex gap-3 col-span-1">
 										<Label class="w-2/3 space-y-2 mb-2">
 											<span>Location</span>
 											<Input
@@ -386,21 +395,19 @@
 												<p class="error-message">Please enter a location</p>
 											{/if}
 										</Label>
-									</div>
-
-									<div class="pb-10">
-										<Label class="space-y-2 mb-2">
-											<span>Link for youtube video</span>
+										<Label class="w-1/3 space-y-2 mb-2">
+											<span>Title for location</span>
 											<Input
 												type="text"
-												bind:value={langData.video_youtube_link}
+												bind:value={langData.location_title}
 												placeholder="Enter a link"
 											/>
-											{#if isFormSubmitted && !langData.video_youtube_link}
-												<p class="error-message">Please enter a link for youtube video</p>
+											{#if isFormSubmitted && !langData.location_title}
+												<p class="error-message">Please enter a location_title</p>
 											{/if}
 										</Label>
 									</div>
+
 									<div class="pb-10">
 										<Label for="title" class="mb-2">Exhibition Title</Label>
 										<Input
@@ -449,35 +456,31 @@
 					<div class="border mb-2 dark:border-gray-700 mx-10" />
 				</form>
 
+				<div class="px-8 pt-5">
+					<Input
+						type="text"
+						bind:value={exhibitionsObject.sponsor_title}
+						placeholder="Enter a title for sponsor"
+					/>
+					{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
+						<p class="error-message">Please enter a title for sponsor</p>
+					{/if}
+				</div>
 				<div class="grid lg:grid-cols-2 pt-5">
 					<!-- upload exhibition image -->
-					<Label class="space-y-2 mb-2">
+					<Label
+						class="space-y-2 mb-2 
+					"
+					>
 						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 						{#if isFormSubmitted && sliderImagesFile.length === 0}
 							<p class="error-message px-8">Please upload at least one image for the slider</p>
 						{/if}
 					</Label>
-					<!-- upload exhibition image -->
-					<!-- upload pdf file -->
-					<Label class="space-y-2 mb-2">
-						<Label for="pdf" class="mb-2 px-8">Upload PDF Files</Label>
-						<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
-					</Label>
-					<!-- upload pdf file -->
 
 					<!-- upload sponsor image -->
 					<Label class="space-y-2 mb-2">
-						<div class="px-8 pt-5">
-							<Input
-								type="text"
-								bind:value={exhibitionsObject.sponsor_title}
-								placeholder="Enter a title for sponsor"
-							/>
-							{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
-								<p class="error-message">Please enter a title for sponsor</p>
-							{/if}
-						</div>
 						<Label for="image" class=" px-8">Upload Sponsor Images</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
 						{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
