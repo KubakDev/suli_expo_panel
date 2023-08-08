@@ -183,7 +183,7 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
 				lang: selectedLanguageTab,
-				fileName: `exhibitions/${randomText}_${file.name}`
+				fileName: `${randomText}_${file.name}`
 			});
 		};
 
@@ -322,7 +322,7 @@
 						}
 						const response = await data.supabase.storage
 							.from('image')
-							.upload(`${pdfFileData.fileName}`, imageFile_pdf!);
+							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf!);
 
 						lang.pdf_files = response.data?.path || '';
 					}
