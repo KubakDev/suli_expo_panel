@@ -32,7 +32,6 @@
 	const id = $page.params.serviceId;
 
 	let exhibitionData: ExhibitionModel[] = [];
-
 	const fetchData = async () => {
 		try {
 			exhibitionData = await getDataExhibition(data.supabase);
@@ -223,7 +222,6 @@
 								Select Type
 							</option>
 							{#each exhibitionData as exhibition}
-								<!-- Use JavaScript ternary operator to handle selected option -->
 								<option
 									value={exhibition.id}
 									selected={serviceData.exhibition_id === exhibition.id}
