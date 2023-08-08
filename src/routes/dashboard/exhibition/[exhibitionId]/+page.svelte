@@ -195,11 +195,11 @@
 		sliderImagesFile = e.detail;
 	} //**dropzone**//
 
+
 	//**dropzone-sponsor**//
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
 		sliderImagesFile_sponsor = e.detail;
 	} //**dropzone-sponsor**//
-
 	//get image
 	function getImage() {
 		let result = exhibitionsData.images.map((image, i) => {
