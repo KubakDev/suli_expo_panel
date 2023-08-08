@@ -131,7 +131,6 @@
 	async function formSubmit() {
 		let hasDataForLanguage = false;
 		let isValidExhibitionsObject = false;
-
 		showToast = true;
 
 		// Upload exhibition thumbnail image
