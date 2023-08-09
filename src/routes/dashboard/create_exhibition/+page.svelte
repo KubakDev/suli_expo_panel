@@ -370,7 +370,11 @@
 												<p class="error-message">Please enter a link for youtube video</p>
 											{/if}
 										</Label>
-										<Label class="w-1/3 space-y-2 mb-2">
+										<Label
+											class="w-1/
+										
+										3 space-y-2 mb-2"
+										>
 											<span>Upload pdf file </span>
 											<Fileupload
 												on:change={handleFileUpload_pdf}

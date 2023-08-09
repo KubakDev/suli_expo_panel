@@ -36,6 +36,7 @@
 	let prevImage_map: string = '';
 	let prevPDFFile: string = '';
 	let isFormSubmitted = false;
+	let pdfSource = ImgSourceEnum.PdfRemote;
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
@@ -166,6 +167,8 @@
 
 	// handle pdf
 	function handleFileUpload_pdf(e: Event) {
+		pdfSource = ImgSourceEnum.PdfLocal;
+
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_pdf = file;
@@ -194,7 +197,6 @@
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
 	} //**dropzone**//
-
 
 	//**dropzone-sponsor**//
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
@@ -318,10 +320,10 @@
 					const pdfFileData = fileName_pdf.find((fileData) => fileData.lang === lang.language);
 					if (pdfFileData) {
 						if (lang.pdf_files) {
-							await data.supabase.storage.from('image').remove([lang.pdf_files]);
+							await data.supabase.storage.from('PDF').remove([lang.pdf_files]);
 						}
 						const response = await data.supabase.storage
-							.from('image')
+							.from('PDF')
 							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf!);
 						lang.pdf_files = response.data?.path || '';
 					}
@@ -465,8 +467,18 @@
 
 		const newWindow = window.open();
 		if (newWindow !== null) {
-			console.log('first');
 			newWindow.document.body.innerHTML = `<iframe src="${completePdfLink}" width="100%" height="100%"></iframe>`;
+			console.log(newWindow.document.body.innerHTML);
+		}
+	}
+
+	// decode pdf_file
+	function decodeBase64(pdf_file: any) {
+		const newWindow = window.open();
+		if (newWindow !== null) {
+			newWindow.document.write(
+				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
+			);
 		}
 	}
 </script>
@@ -612,6 +624,14 @@
 													on:click={() => openPdfFile(langData?.pdf_files ?? '')}
 													>Click here to view the PDF</button
 												>
+
+												<button
+													on:click={() =>
+														pdfSource == ImgSourceEnum.PdfLocal
+															? decodeBase64(langData?.pdf_files ?? '')
+															: openPdfFile(langData?.pdf_files ?? '')}
+													class="cursor-pointer"
+												/>
 											</div>
 										</Label>
 									</div>
