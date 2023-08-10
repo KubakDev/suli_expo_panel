@@ -22,7 +22,7 @@ export interface ExhibitionsModelLang {
 	story: string;
 	video_youtube_link: string;
 	title: string;
-	pdf_files?: string;
+	pdf_files: string;
 	description: string;
 	location: string;
 	location_title: string;

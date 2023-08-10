@@ -4,6 +4,7 @@ export interface seatServicesModel {
 	id: number;
 	icon: string;
 	price?: number;
+	quantity: number;
 	created_at?: Date;
 	seat_services_languages?: seatServicesModelLang[];
 }

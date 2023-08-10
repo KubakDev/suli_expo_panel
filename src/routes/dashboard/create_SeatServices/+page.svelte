@@ -23,6 +23,7 @@
 	let seatServicesObject: seatServicesModel = {
 		id: 0,
 		icon: '',
+		quantity: 0,
 		price: 0,
 		created_at: new Date()
 	};
@@ -77,7 +78,7 @@
 			}
 		}
 
-		if (!isEmpty(seatServicesObject.icon)) {
+		if (!isEmpty(seatServicesObject.icon) && !isEmpty(seatServicesObject.quantity)) {
 			isValidServiceObject = true;
 		}
 
@@ -109,6 +110,7 @@
 		seatServicesObject = {
 			icon: '',
 			price: 0,
+			quantity: 0,
 			created_at: new Date(),
 			id: 0
 		};
@@ -152,10 +154,30 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="icon" class="mb-2">Enter price</Label>
-					<Input type="number" bind:value={seatServicesObject.price} placeholder="Enter a number" />
+					<Input
+						type="number"
+						bind:value={seatServicesObject.price}
+						placeholder="Enter a number"
+						min="0"
+					/>
 					<p class="text-xs text-gray-500">
 						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
 					</p>
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Enter quantity</Label>
+					<Input
+						type="number"
+						bind:value={seatServicesObject.quantity}
+						placeholder="Enter a number"
+						min="0"
+					/>
+					{#if isFormSubmitted && !seatServicesObject.quantity}
+						<p class="error-message">Please Enter quantity number</p>
+					{/if}
 				</Label>
 			</div>
 		</div>

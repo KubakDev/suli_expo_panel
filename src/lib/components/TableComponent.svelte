@@ -152,7 +152,7 @@
 											/></span
 										>
 									</button>
-									{#if pageName !== 'about'}
+									{#if pageName !== 'about' && pageName !== 'seatServices'}
 										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									{/if}
 								</div>
