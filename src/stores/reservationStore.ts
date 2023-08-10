@@ -20,7 +20,6 @@ export const getData = async (supabase: SupabaseClient) => {
 	console.log('first', data);
 	return data as Reservation[];
 };
-
 export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: string) => {
 	const { data, error } = await supabase
 		.from('seat_reservation')
@@ -36,4 +35,3 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 	return data;
 };
 
-// ... (other code)

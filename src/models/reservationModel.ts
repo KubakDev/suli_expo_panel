@@ -1,3 +1,4 @@
+
 import type { CompanyType } from './companyModel';
 import type { ExhibitionModel } from './exhibitionTypeModel';
 import type { ReservationStatusEnum } from './reservationEnum';
