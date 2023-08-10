@@ -70,6 +70,8 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_pdf = file;
+		// console.log(file.name);
+		console.log(imageFile_pdf.name);
 		const lang = selectedLanguageTab; // Get the selected language
 
 		const reader = new FileReader();
@@ -543,6 +545,14 @@
 											{#if isFormSubmitted && !langData.map_title}
 												<p class="error-message">Please enter map title</p>
 											{/if}
+
+											<div>
+												<button
+													on:click={() => decodeBase64(langData?.pdf_files ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+											</div>
 										</Label>
 									</div>
 

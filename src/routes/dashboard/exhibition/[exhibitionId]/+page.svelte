@@ -90,7 +90,7 @@
 
 				prevThumbnail = result.data?.thumbnail;
 				prevImage_map = result.data?.image_map;
-
+				console.log(';;;;;', result.data?.image_map);
 				images = getImage();
 				sponsor_images = getImage_sponsor();
 				// pdf_files = getPdfFile();
@@ -530,6 +530,17 @@
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.body.innerHTML = `<iframe src="${completePdfLink}" width="100%" height="100%"></iframe>`;
+			console.log(newWindow.document.body.innerHTML);
+		}
+	}
+
+	// decode pdf_file
+	function decodeBase64(pdf_file: any) {
+		const newWindow = window.open();
+		if (newWindow !== null) {
+			newWindow.document.write(
+				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
+			);
 		}
 	}
 
@@ -682,6 +693,14 @@
 													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
 													>Click here to view the PDF</button
 												>
+
+												<button
+													on:click={() =>
+														pdfSource == ImgSourceEnum.PdfLocal
+															? decodeBase64(langData?.pdf_files ?? '')
+															: openPdfFile(langData?.pdf_files ?? '')}
+													class="cursor-pointer"
+												/>
 											</div>
 										</Label>
 
@@ -733,7 +752,6 @@
 												bind:value={langData.location_title}
 												placeholder="Enter a link"
 											/>
-
 											{#if isFormSubmitted && !langData.location_title.trim()}
 												<p class="error-message">Please enter a location title</p>
 											{/if}
@@ -745,7 +763,6 @@
 												bind:value={langData.location}
 												placeholder="Enter a link"
 											/>
-
 											{#if isFormSubmitted && !langData.location.trim()}
 												<p class="error-message">Please enter a location</p>
 											{/if}
