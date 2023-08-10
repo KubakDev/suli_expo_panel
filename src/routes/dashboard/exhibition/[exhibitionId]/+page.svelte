@@ -28,13 +28,16 @@
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
+	let imageFile_brochure: File | undefined;
 	let fileName_pdf: any[] = [];
+	let fileName_brochure: any[] = [];
 	let carouselImages: any = undefined;
 	let carouselImages_sponsor: any = undefined;
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let prevImage_map: string = '';
 	let prevPDFFile: string = '';
+	let prevBrochureFile: string = '';
 	let isFormSubmitted = false;
 	let pdfSource = ImgSourceEnum.PdfRemote;
 
@@ -87,7 +90,7 @@
 
 				prevThumbnail = result.data?.thumbnail;
 				prevImage_map = result.data?.image_map;
-				console.log(';;;;;', result.data?.image_map);
+
 				images = getImage();
 				sponsor_images = getImage_sponsor();
 				// pdf_files = getPdfFile();
@@ -105,19 +108,22 @@
 						video_youtube_link: exhibitionLang?.video_youtube_link ?? '',
 						location: exhibitionLang?.location ?? '',
 						location_title: exhibitionLang?.location_title ?? '',
+						map_title: exhibitionLang?.map_title ?? '',
 						pdf_files: exhibitionLang?.pdf_files ?? '',
+						brochure: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
+							exhibitionLang.brochure
+						}`,
 						language:
 							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 					prevPDFFile = exhibitionLang?.pdf_files;
+					prevBrochureFile = exhibitionLang?.brochure;
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
 				getImagesObject();
 				getImagesObject_sponsor();
-
-				// console.log(exhibitionDataLang);
 			});
 	}
 
@@ -191,6 +197,33 @@
 		reader.readAsDataURL(file);
 	}
 
+	// handle brochure
+
+	function handleFileUpload_brochure(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_brochure = file;
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.brochure = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_brochure.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -237,6 +270,7 @@
 			const link = lang.video_youtube_link.trim();
 			const location = lang.location.trim();
 			const location_title = lang.location_title.trim();
+			const mapTitle = lang.map_title.trim();
 
 			const isStoryIsEmpty = isEmpty(storyData);
 			const isTitleEmpty = isEmpty(title);
@@ -244,25 +278,30 @@
 			const isLinkEmpty = isEmpty(link);
 			const isLocationEmpty = isEmpty(location);
 			const isLocation_titleEmpty = isEmpty(location_title);
+			const isMapTitleEmpty = isEmpty(mapTitle);
 
 			if (
 				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
 				!isStoryIsEmpty ||
 				!isTitleEmpty ||
 				!isShortDescriptionEmpty ||
 				!isLinkEmpty ||
 				!isLocationEmpty ||
+				!isMapTitleEmpty ||
 				!isLocation_titleEmpty
 			) {
 				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (
 					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
 					isStoryIsEmpty ||
 					isTitleEmpty ||
 					isShortDescriptionEmpty ||
 					isLinkEmpty ||
 					isLocationEmpty ||
+					isMapTitleEmpty ||
 					isLocation_titleEmpty
 				) {
 					// At least one field is empty for this language
@@ -332,6 +371,28 @@
 			} else {
 				for (let lang of exhibitionDataLang) {
 					lang.pdf_files = prevPDFFile;
+				}
+			}
+
+			if (imageFile_brochure) {
+				for (let lang of exhibitionDataLang) {
+					const brochureFileData = fileName_brochure.find(
+						(fileData) => fileData.lang === lang.language
+					);
+					if (brochureFileData) {
+						if (lang.brochure) {
+							await data.supabase.storage.from('image').remove([lang.brochure]);
+						}
+						const response = await data.supabase.storage
+							.from('PDF')
+							.upload(`exhibition/${brochureFileData.fileName}`, imageFile_brochure!);
+
+						lang.brochure = response.data?.path || '';
+					}
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.brochure = prevBrochureFile;
 				}
 			}
 
@@ -587,7 +648,7 @@
 								}}
 							>
 								<div class="px-10 py-10">
-									<div class="text-center w-full pb-5">
+									<div class="text-center w-full pb-10">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
@@ -601,20 +662,7 @@
 									</div>
 
 									<div class="pb-10 flex gap-3 col-span-1">
-										<Label class="w-2/3 space-y-2 mb-2">
-											<span>Link for youtube video</span>
-											<Input
-												type="text"
-												bind:value={langData.video_youtube_link}
-												placeholder="Enter a link"
-											/>
-
-											{#if isFormSubmitted && !langData.video_youtube_link.trim()}
-												<p class="error-message">Please enter a link for youtube video</p>
-											{/if}
-										</Label>
-
-										<Label class="w-1/3 space-y-2 mb-2">
+										<Label class="w-2/4 space-y-2 mb-2">
 											<span>Upload pdf file </span>
 											<Fileupload
 												on:change={handleFileUpload_pdf}
@@ -636,6 +684,45 @@
 												>
 											</div>
 										</Label>
+
+										<Label class="w-2/4 space-y-2 mb-2">
+											<span>Upload brochure file </span>
+											<Fileupload
+												on:change={handleFileUpload_brochure}
+												accept=".svg, .png, .jpg, .jpeg"
+												class=" dark:bg-white"
+											/>
+											{#if isFormSubmitted && !langData.brochure.trim()}
+												<p class="error-message">Please Upload brochure file</p>
+											{/if}
+										</Label>
+									</div>
+
+									<div class="pb-10 flex gap-3 col-span-1">
+										<Label class="w-2/4 space-y-2 mb-2">
+											<span>Link for youtube video</span>
+											<Input
+												type="text"
+												bind:value={langData.video_youtube_link}
+												placeholder="Enter a link"
+											/>
+
+											{#if isFormSubmitted && !langData.video_youtube_link.trim()}
+												<p class="error-message">Please enter a link for youtube video</p>
+											{/if}
+										</Label>
+										<Label class="w-2/4 space-y-2 mb-2">
+											<span>Map Title</span>
+											<Input
+												type="text"
+												bind:value={langData.map_title}
+												placeholder="Enter title"
+											/>
+
+											{#if isFormSubmitted && !langData.map_title.trim()}
+												<p class="error-message">Please enter map title</p>
+											{/if}
+										</Label>
 									</div>
 
 									<div class="pb-10 flex gap-3 col-span-1">
@@ -647,7 +734,7 @@
 												placeholder="Enter a link"
 											/>
 
-											{#if !langData.location_title.trim()}
+											{#if isFormSubmitted && !langData.location_title.trim()}
 												<p class="error-message">Please enter a location title</p>
 											{/if}
 										</Label>
@@ -659,7 +746,7 @@
 												placeholder="Enter a link"
 											/>
 
-											{#if !langData.location.trim()}
+											{#if isFormSubmitted && !langData.location.trim()}
 												<p class="error-message">Please enter a location</p>
 											{/if}
 										</Label>
@@ -675,7 +762,7 @@
 											id="title"
 											name="title"
 										/>
-										{#if !langData.title.trim()}
+										{#if isFormSubmitted && !langData.title.trim()}
 											<p class="error-message">Please enter a title</p>
 										{/if}
 									</div>
@@ -688,7 +775,7 @@
 											id="story"
 											name="story"
 										/>
-										{#if !langData.story.trim()}
+										{#if isFormSubmitted && !langData.story.trim()}
 											<p class="error-message">Please enter a story</p>
 										{/if}
 									</div>
@@ -701,7 +788,7 @@
 											id="description"
 											name="description"
 										/>
-										{#if !langData.description.trim()}
+										{#if isFormSubmitted && !langData.description.trim()}
 											<p class="error-message">Please enter a description</p>
 										{/if}
 									</div>
@@ -713,6 +800,7 @@
 				</form>
 
 				<div class="px-8 pt-5">
+					<Label for="textarea-id" class="mb-2">Sponsor title</Label>
 					<Input
 						type="text"
 						bind:value={exhibitionsData.sponsor_title}
@@ -755,7 +843,7 @@
 			</div>
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
-					<TabItem open title="Exhibition List">
+					<TabItem open title="List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each exhibitionDataLang as langData}
@@ -776,7 +864,28 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem title="Exhibition Detail">
+					<TabItem open title="Brochure">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+							<div class="flex justify-start items-start">
+								{#each exhibitionDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Flat}
+											title=""
+											short_description=""
+											thumbnail={langData.brochure ?? ''}
+											primaryColor="bg-primary"
+											startDate=""
+											endDate=""
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<TabItem title="Detail">
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
@@ -789,7 +898,7 @@
 							{#if langData.language === selectedLanguageTab}
 								<ExpoCard
 									cardType={CardType.Flat}
-									title=""
+									title={langData.map_title}
 									short_description=""
 									thumbnail={exhibitionsData.image_map}
 									primaryColor="bg-primary"
@@ -799,7 +908,7 @@
 							{/if}
 						{/each}
 					</TabItem>
-					<TabItem title="Sponsor List">
+					<TabItem title="Sponsor">
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage bind:imagesCarousel={carouselImages_sponsor} long_description="" />

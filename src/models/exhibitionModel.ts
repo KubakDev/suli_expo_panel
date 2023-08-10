@@ -26,5 +26,7 @@ export interface ExhibitionsModelLang {
 	description: string;
 	location: string;
 	location_title: string;
+	brochure: string;
+	map_title: string;
 	language: LanguageEnum;
 }
