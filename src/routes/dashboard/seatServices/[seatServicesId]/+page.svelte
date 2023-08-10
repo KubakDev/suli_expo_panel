@@ -26,6 +26,7 @@
 	let seatServicesData: seatServicesModel = {
 		id: 0,
 		icon: '',
+		quantity: 0,
 		price: 0,
 		created_at: new Date()
 	};
@@ -43,7 +44,8 @@
 					id: result.data?.id,
 					icon: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.icon}`,
 					created_at: new Date(result.data?.created_at),
-					price: result.data?.price
+					price: result.data?.price,
+					quantity: result.data?.quantity
 				};
 
 				prevThumbnail = result.data?.icon;
@@ -119,7 +121,7 @@
 			}
 		}
 
-		if (!isEmpty(seatServicesData.icon)) {
+		if (!isEmpty(seatServicesData.icon) && seatServicesData.quantity > 0) {
 			isValidSeatServiceObject = true;
 		}
 
@@ -182,13 +184,27 @@
 				</Label>
 			</div>
 
-			<div class="col-span-1">
+			<!-- <div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="icon" class="mb-2">Enter price</Label>
 					<Input type="number" bind:value={seatServicesData.price} placeholder="Enter a number" />
 					<p class="text-xs text-gray-500">
 						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
 					</p>
+				</Label>
+			</div> -->
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Enter quantity</Label>
+					<Input
+						type="number"
+						bind:value={seatServicesData.quantity}
+						placeholder="Enter a number"
+						min="0"
+					/>
+					{#if isFormSubmitted && !seatServicesData.quantity}
+						<p class="error-message">Please Enter quantity number</p>
+					{/if}
 				</Label>
 			</div>
 		</div>

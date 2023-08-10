@@ -87,7 +87,7 @@
 
 				prevThumbnail = result.data?.thumbnail;
 				prevImage_map = result.data?.image_map;
-
+				console.log(';;;;;', result.data?.image_map);
 				images = getImage();
 				sponsor_images = getImage_sponsor();
 				// pdf_files = getPdfFile();
@@ -136,15 +136,12 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
 			exhibitionsData.thumbnail = reader.result as '';
-
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(exhibitionsData);
 		};
 		reader.readAsDataURL(file);
 	} //**for upload exhibition image**//
@@ -153,6 +150,7 @@
 	function handleFileUpload_ImageMap(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
+
 		imageFile_map = file;
 		const reader = new FileReader();
 
@@ -248,6 +246,7 @@
 			const isLocation_titleEmpty = isEmpty(location_title);
 
 			if (
+				!isEmpty(lang.pdf_files) ||
 				!isStoryIsEmpty ||
 				!isTitleEmpty ||
 				!isShortDescriptionEmpty ||
@@ -258,6 +257,7 @@
 				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (
+					isEmpty(lang.pdf_files) ||
 					isStoryIsEmpty ||
 					isTitleEmpty ||
 					isShortDescriptionEmpty ||
@@ -309,8 +309,9 @@
 				}
 				const response = await data.supabase.storage
 					.from('image')
-					.upload(`${fileName}`, imageFile_map!);
+					.upload(`${fileName_map}`, imageFile_map!);
 				exhibitionsData.image_map = response.data?.path || '';
+				console.log(response.data?.path);
 			} else {
 				exhibitionsData.image_map = prevImage_map;
 			}
@@ -377,7 +378,7 @@
 			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 			// ***insert pdf *****//
-
+			console.log(exhibitionsData);
 			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 			console.log('result before store :', exhibitionsData);
 			setTimeout(() => {
@@ -464,16 +465,16 @@
 	function openPdfFile(pdfLink: string) {
 		console.log(pdfLink);
 		const completePdfLink = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_PDF_URL}/${pdfLink}`;
-
+		console.log('open', completePdfLink);
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.body.innerHTML = `<iframe src="${completePdfLink}" width="100%" height="100%"></iframe>`;
-			console.log(newWindow.document.body.innerHTML);
 		}
 	}
 
 	// decode pdf_file
 	function decodeBase64(pdf_file: any) {
+		console.log('decode', pdf_file);
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(
@@ -550,6 +551,7 @@
 						type="number"
 						bind:value={exhibitionsData.country_number}
 						placeholder="Enter a number"
+						min="0"
 					/>
 					{#if isFormSubmitted && !exhibitionsData.country_number}
 						<p class="error-message">Required</p>
@@ -563,6 +565,7 @@
 						type="number"
 						bind:value={exhibitionsData.company_number}
 						placeholder="Enter a number"
+						min="0"
 					/>
 					{#if isFormSubmitted && !exhibitionsData.company_number}
 						<p class="error-message">Required</p>
@@ -605,7 +608,8 @@
 												bind:value={langData.video_youtube_link}
 												placeholder="Enter a link"
 											/>
-											{#if isFormSubmitted && !langData.video_youtube_link}
+
+											{#if isFormSubmitted && !langData.video_youtube_link.trim()}
 												<p class="error-message">Please enter a link for youtube video</p>
 											{/if}
 										</Label>
@@ -617,21 +621,19 @@
 												accept=".pdf"
 												class=" dark:bg-white"
 											/>
+											{#if isFormSubmitted && !langData.pdf_files.trim()}
+												<p class="error-message">Please Upload PDF file</p>
+											{/if}
 
 											<div>
-												<button
-													class="text-xs hover:text-red-700 text-gray-600"
-													on:click={() => openPdfFile(langData?.pdf_files ?? '')}
-													>Click here to view the PDF</button
-												>
-
 												<button
 													on:click={() =>
 														pdfSource == ImgSourceEnum.PdfLocal
 															? decodeBase64(langData?.pdf_files ?? '')
 															: openPdfFile(langData?.pdf_files ?? '')}
-													class="cursor-pointer"
-												/>
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
 											</div>
 										</Label>
 									</div>
@@ -644,8 +646,9 @@
 												bind:value={langData.location_title}
 												placeholder="Enter a link"
 											/>
-											{#if isFormSubmitted && !langData.location_title}
-												<p class="error-message">Please enter a location_title</p>
+
+											{#if !langData.location_title.trim()}
+												<p class="error-message">Please enter a location title</p>
 											{/if}
 										</Label>
 										<Label class="w-2/3 space-y-2 mb-2">
@@ -655,7 +658,8 @@
 												bind:value={langData.location}
 												placeholder="Enter a link"
 											/>
-											{#if isFormSubmitted && !langData.location}
+
+											{#if !langData.location.trim()}
 												<p class="error-message">Please enter a location</p>
 											{/if}
 										</Label>

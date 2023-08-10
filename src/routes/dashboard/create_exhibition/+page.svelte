@@ -12,6 +12,7 @@
 	import { isEmpty } from 'validator';
 
 	export let data;
+
 	let isFormSubmitted = false;
 	let showToast = false;
 	let fileName: string;
@@ -64,6 +65,8 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_pdf = file;
+		// console.log(file.name);
+		console.log(imageFile_pdf.name);
 		const lang = selectedLanguageTab; // Get the selected language
 
 		const reader = new FileReader();
@@ -108,7 +111,7 @@
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			exhibitionsObject.image_map = reader.result as '';
+			exhibitionsObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
 		};
@@ -131,6 +134,66 @@
 	async function formSubmit() {
 		let hasDataForLanguage = false;
 		let isValidExhibitionsObject = false;
+
+		for (let lang of exhibitionsDataLang) {
+			const storyData = lang.story.trim();
+			const title = lang.title.trim();
+			const shortDescription = lang.description.trim();
+			const link = lang.video_youtube_link.trim();
+			const location = lang.location.trim();
+			const location_title = lang.location_title.trim();
+
+			const isStoryIsEmpty = isEmpty(storyData);
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLinkEmpty = isEmpty(link);
+			const isLinkEmptyLocation = isEmpty(location);
+			const isLinkEmptyLocation_title = isEmpty(location_title);
+			if (
+				!isEmpty(lang.pdf_files) ||
+				!isStoryIsEmpty ||
+				!isTitleEmpty ||
+				!isShortDescriptionEmpty ||
+				!isLinkEmpty ||
+				!isLinkEmptyLocation ||
+				!isLinkEmptyLocation_title
+			) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (
+					isEmpty(lang.pdf_files) ||
+					isStoryIsEmpty ||
+					isTitleEmpty ||
+					isShortDescriptionEmpty ||
+					isLinkEmpty ||
+					isLinkEmptyLocation ||
+					isLinkEmptyLocation_title
+				) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
+		}
+
+		// Check if galleryObject has a valid thumbnail and at least one slider image
+		if (
+			!isEmpty(exhibitionsObject.thumbnail) &&
+			sliderImagesFile.length > 0 &&
+			sliderImagesFile_sponsor.length > 0 &&
+			!isEmpty(exhibitionsObject.company_number) &&
+			!isEmpty(exhibitionsObject.country_number) &&
+			!isEmpty(exhibitionsObject.sponsor_title) &&
+			!isEmpty(exhibitionsObject.exhibition_type)
+		) {
+			isValidExhibitionsObject = true;
+		}
+
+		if (!hasDataForLanguage || !isValidExhibitionsObject) {
+			isFormSubmitted = true;
+			return;
+		}
+
 		showToast = true;
 
 		// Upload exhibition thumbnail image
@@ -181,11 +244,9 @@
 		// Convert exhibitionsObject.images and exhibitionsObject.pdf_files to valid array string format
 		const imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
 		const imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
-		// const imagesArray_pdf = exhibitionsDataLang.pdf_files.map((image) => `"${image}"`);
 
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
-		// exhibitionsDataLang.pdf_files = `{${imagesArray_pdf.join(',')}}`;
 
 		// Insert data into Supabase
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
@@ -242,6 +303,16 @@
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
+		}
+	}
+
+	// decode pdf_file
+	function decodeBase64(pdf_file: any) {
+		const newWindow = window.open();
+		if (newWindow !== null) {
+			newWindow.document.write(
+				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
+			);
 		}
 	}
 </script>
@@ -370,20 +441,27 @@
 												<p class="error-message">Please enter a link for youtube video</p>
 											{/if}
 										</Label>
-										<Label
-											class="w-1/
-										
-										3 space-y-2 mb-2"
-										>
+										<Label class="w-1/3 space-y-2 mb-2">
 											<span>Upload pdf file </span>
+
 											<Fileupload
 												on:change={handleFileUpload_pdf}
 												accept=".pdf"
 												class=" dark:bg-white"
+												placeholder="Upload"
 											/>
+
 											{#if isFormSubmitted && !langData?.pdf_files?.trim()}
 												<p class="error-message">Please Upload an pdf file</p>
 											{/if}
+
+											<div>
+												<button
+													on:click={() => decodeBase64(langData?.pdf_files ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+											</div>
 										</Label>
 									</div>
 
