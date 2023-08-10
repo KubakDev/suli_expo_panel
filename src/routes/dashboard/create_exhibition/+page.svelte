@@ -18,9 +18,11 @@
 	let fileName: string;
 	let fileName_map: string;
 	let fileName_pdf: any[] = [];
+	let fileName_brochure: any[] = [];
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
+	let imageFile_brochure: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
 	let carouselImages: any = undefined;
@@ -57,10 +59,13 @@
 			description: '',
 			location: '',
 			location_title: '',
+			brochure: '',
+			map_title: '',
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
 	}
 
+	// handle pdf
 	function handleFileUpload_pdf(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -80,6 +85,34 @@
 
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	// handle brochure
+	function handleFileUpload_brochure(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_brochure = file;
+		// console.log(file.name);
+		console.log(imageFile_brochure.name);
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.brochure = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_brochure.push({
 				lang: selectedLanguageTab,
 				fileName: `${randomText}_${file.name}`
 			});
@@ -142,6 +175,7 @@
 			const link = lang.video_youtube_link.trim();
 			const location = lang.location.trim();
 			const location_title = lang.location_title.trim();
+			const mapTitle = lang.map_title.trim();
 
 			const isStoryIsEmpty = isEmpty(storyData);
 			const isTitleEmpty = isEmpty(title);
@@ -149,24 +183,30 @@
 			const isLinkEmpty = isEmpty(link);
 			const isLinkEmptyLocation = isEmpty(location);
 			const isLinkEmptyLocation_title = isEmpty(location_title);
+			const isMapTitle = isEmpty(mapTitle);
+
 			if (
 				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
 				!isStoryIsEmpty ||
 				!isTitleEmpty ||
 				!isShortDescriptionEmpty ||
 				!isLinkEmpty ||
 				!isLinkEmptyLocation ||
+				!isMapTitle ||
 				!isLinkEmptyLocation_title
 			) {
 				// All fields are non-empty for this language
 				hasDataForLanguage = true;
 				if (
 					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
 					isStoryIsEmpty ||
 					isTitleEmpty ||
 					isShortDescriptionEmpty ||
 					isLinkEmpty ||
 					isLinkEmptyLocation ||
+					isMapTitle ||
 					isLinkEmptyLocation_title
 				) {
 					// At least one field is empty for this language
@@ -206,7 +246,6 @@
 			.upload(`${fileName_map}`, imageFile_map!);
 		exhibitionsObject.image_map = response2.data?.path || '';
 
-		// Upload exhibition pdf image
 		for (let file of fileName_pdf) {
 			const response3 = await data.supabase.storage
 				.from('PDF')
@@ -217,11 +256,23 @@
 				langObj.pdf_files = response3?.data?.path || '';
 			}
 		}
+
+		for (let file of fileName_brochure) {
+			const response3 = await data.supabase.storage
+				.from('image')
+				.upload(`exhibition/${file.fileName}`, imageFile_brochure!);
+
+			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
+			if (langObj) {
+				langObj.brochure = response3?.data?.path || '';
+			}
+		}
+
 		for (let image of sliderImagesFile) {
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`exhibitions/${randomText}_${image.name}`, image!)
+				.upload(`exhibition/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
 						exhibitionsObject.images.push(response.data.path);
@@ -233,7 +284,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`exhibitions/${randomText}_${image.name}`, image!)
+				.upload(`exhibition/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
 						exhibitionsObject.sponsor_images.push(response.data.path);
@@ -417,7 +468,7 @@
 								}}
 							>
 								<div class="px-5 py-10">
-									<div class="text-center w-full pb-5">
+									<div class="text-center w-full pb-10">
 										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
@@ -429,23 +480,8 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-									<div class="pb-10 flex gap-3 col-span-1">
-										<Label class="w-2/3 space-y-2 mb-2">
-											<span>Link for youtube video</span>
-											<Input
-												type="text"
-												bind:value={langData.video_youtube_link}
-												placeholder="Enter a link"
-											/>
-											{#if isFormSubmitted && !langData.video_youtube_link}
-												<p class="error-message">Please enter a link for youtube video</p>
-											{/if}
-										</Label>
-										<Label
-											class="w-1/
-										
-										3 space-y-2 mb-2"
-										>
+									<div class="pb-5 flex gap-4 col-span-1">
+										<Label class="w-1/2 space-y-2 mb-2">
 											<span>Upload pdf file </span>
 
 											<Fileupload
@@ -457,6 +493,57 @@
 
 											{#if isFormSubmitted && !langData?.pdf_files?.trim()}
 												<p class="error-message">Please Upload an pdf file</p>
+											{/if}
+
+											<div>
+												<button
+													on:click={() => decodeBase64(langData?.pdf_files ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+											</div>
+										</Label>
+
+										<Label class="w-1/2 space-y-2 mb-2">
+											<span>Upload brochure image</span>
+
+											<Fileupload
+												on:change={handleFileUpload_brochure}
+												accept=".svg, .png, .jpg, .jpeg"
+												class=" dark:bg-white"
+												placeholder="Upload"
+											/>
+
+											{#if isFormSubmitted && !langData?.brochure?.trim()}
+												<p class="error-message">Please Upload brochure image</p>
+											{/if}
+										</Label>
+									</div>
+
+									<div class="pb-10 flex gap-3 col-span-1">
+										<Label class="w-2/4 space-y-2 mb-2">
+											<Label for="title" class="mb-2">Link for youtube video</Label>
+											<Input
+												type="text"
+												bind:value={langData.video_youtube_link}
+												placeholder="Enter a link"
+											/>
+											{#if isFormSubmitted && !langData.video_youtube_link}
+												<p class="error-message">Please enter a link for youtube video</p>
+											{/if}
+										</Label>
+
+										<Label class="w-2/4 space-y-2 mb-2">
+											<Label for="title" class="mb-2">Map Title</Label>
+											<Input
+												type="text"
+												placeholder="Enter title"
+												bind:value={langData.map_title}
+												id="title"
+												name="title"
+											/>
+											{#if isFormSubmitted && !langData.map_title}
+												<p class="error-message">Please enter map title</p>
 											{/if}
 
 											<div>
@@ -543,6 +630,7 @@
 				</form>
 
 				<div class="px-8 pt-5">
+					<Label for="textarea-id" class="mb-2">Sponsor title</Label>
 					<Input
 						type="text"
 						bind:value={exhibitionsObject.sponsor_title}
@@ -554,10 +642,7 @@
 				</div>
 				<div class="grid lg:grid-cols-2 pt-5">
 					<!-- upload exhibition image -->
-					<Label
-						class="space-y-2 mb-2 
-					"
-					>
+					<Label class="space-y-2 mb-2 ">
 						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 						{#if isFormSubmitted && sliderImagesFile.length === 0}
@@ -605,6 +690,27 @@
 											primaryColor="bg-primary"
 											startDate={exhibitionsObject.start_date}
 											endDate={exhibitionsObject.end_date}
+										/>
+									{/if}
+								{/each}
+							</div>
+
+							<div />
+						</div>
+					</TabItem>
+					<TabItem open title="Brochure">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+							<div class="flex justify-start items-start">
+								{#each exhibitionsDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Flat}
+											title=""
+											short_description=""
+											thumbnail={langData.brochure ?? ''}
+											primaryColor="bg-primary"
+											startDate=""
+											endDate=""
 										/>
 									{/if}
 								{/each}

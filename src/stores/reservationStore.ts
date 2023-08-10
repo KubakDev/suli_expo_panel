@@ -20,3 +20,18 @@ export const getData = async (supabase: SupabaseClient) => {
 	console.log('first', data);
 	return data as Reservation[];
 };
+export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: string) => {
+	const { data, error } = await supabase
+		.from('seat_reservation')
+		.update(updatedFields)
+		.eq('id', id);
+
+	if (error) {
+		console.error('Error updating data:', error);
+		throw error;
+	}
+
+	console.log('Updated data:', data);
+	return data;
+};
+

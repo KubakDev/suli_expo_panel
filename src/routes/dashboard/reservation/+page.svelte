@@ -1,35 +1,34 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { seatReservation, getData } from '../../../stores/reservationStore';
-	import { goto } from '$app/navigation';
+	import { seatReservation, getData, updateData } from '../../../stores/reservationStore';
+	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 
 	export let data;
 
 	async function fetchData() {
 		let result = await getData(data.supabase);
-		console.log(result);
-		console.log('seatReservation//', $seatReservation);
+		// console.log(result);
+		// console.log('seatReservation//', $seatReservation);
 	}
 	onMount(fetchData);
 
-	// async function goToPage(page: number) {
-	// 	currentPage = page;
-	// 	await fetchData();
-	// }
+	async function updateStatus(itemID: number, selectedStatus: string) {
+		console.log(itemID, selectedStatus);
+		const updatedData = $seatReservation.map((reservation) => {
+			if (itemID === reservation.id) {
+				return { ...reservation, status: selectedStatus };
+			}
+			return reservation;
+		});
 
-	// // delete data
-	// async function handleDelete(newsId: number) {
-	// 	try {
-	// 		await deleteData(newsId, data.supabase);
-	// 		// alert('News deleted successfully!');
-	// 		if (currentPage > totalPages) {
-	// 			currentPage = totalPages;
-	// 		}
-	// 		await fetchData();
-	// 	} catch (error) {
-	// 		console.error('Error deleting news:', error);
-	// 	}
-	// }
+		for (const reservation of updatedData) {
+			if (itemID === reservation.id) {
+				await updateData(data.supabase, reservation.id, { status: selectedStatus });
+			}
+		}
+
+		fetchData(); // Refresh the data after updating
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
@@ -128,7 +127,15 @@
 
 								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<div>
-										{item?.status}
+										<select
+											class="text-black"
+											bind:value={item.status}
+											on:change={() => updateStatus(item.id, item.status)}
+										>
+											<option value="pending">Pending</option>
+											<option value="accept">Accept</option>
+											<option value="reject">Reject</option>
+										</select>
 									</div>
 								</td>
 							</tr>
