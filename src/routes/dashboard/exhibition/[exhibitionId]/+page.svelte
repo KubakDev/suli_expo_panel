@@ -482,28 +482,6 @@
 			);
 		}
 	}
-
-	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
-		console.log('decode', pdf_file);
-		const newWindow = window.open();
-		if (newWindow !== null) {
-			newWindow.document.write(
-				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
-			);
-		}
-	}
-
-	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
-		console.log('decode', pdf_file);
-		const newWindow = window.open();
-		if (newWindow !== null) {
-			newWindow.document.write(
-				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
-			);
-		}
-	}
 </script>
 
 <div style="min-height: calc(100vh - 160px);">
