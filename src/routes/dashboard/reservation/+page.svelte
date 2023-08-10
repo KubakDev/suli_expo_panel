@@ -6,9 +6,7 @@
 	export let data;
 
 	async function fetchData() {
-		let result = await getData(data.supabase);
-		// console.log(result);
-		// console.log('seatReservation//', $seatReservation);
+		await getData(data.supabase);
 	}
 	onMount(fetchData);
 
@@ -27,11 +25,18 @@
 			}
 		}
 
-		fetchData(); // Refresh the data after updating
+		fetchData();
 	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
+	<!-- filtering by company name  -->
+	<div class="pb-5 flex justify-end">
+		<select class="text-black">
+			<option value="">select company name </option>
+		</select>
+	</div>
+
 	<!-- table data -->
 
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
@@ -44,7 +49,7 @@
 								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
-									<span>object id</span>
+									<span>#</span>
 								</div>
 							</th>
 
@@ -99,12 +104,14 @@
 						</tr>
 					</thead>
 
-					<tbody>
+					<tbody class="dark:text-gray-300">
 						{#each $seatReservation as item, index (item.id)}
 							<tr>
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+								<td
+									class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
+								>
 									<div>
-										{item?.object_id}
+										{index + 1}
 									</div>
 								</td>
 
@@ -132,9 +139,15 @@
 											bind:value={item.status}
 											on:change={() => updateStatus(item.id, item.status)}
 										>
-											<option value="pending">Pending</option>
-											<option value="accept">Accept</option>
-											<option value="reject">Reject</option>
+											<option value={ReservationStatusEnum.PENDING}
+												>{ReservationStatusEnum.PENDING}</option
+											>
+											<option value={ReservationStatusEnum.ACCEPT}
+												>{ReservationStatusEnum.ACCEPT}</option
+											>
+											<option value={ReservationStatusEnum.REJECT}
+												>{ReservationStatusEnum.REJECT}</option
+											>
 										</select>
 									</div>
 								</td>

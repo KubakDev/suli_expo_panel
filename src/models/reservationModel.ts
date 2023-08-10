@@ -6,6 +6,7 @@ export interface Reservation {
 	id: number;
 	exhibition_id: number;
 	object_id: number;
+	comment: string;
 	services: string[];
 	company_id: number;
 	company: CompanyType;

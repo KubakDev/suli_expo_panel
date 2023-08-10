@@ -281,8 +281,8 @@
 			const isMapTitleEmpty = isEmpty(mapTitle);
 
 			if (
-				!isEmpty(lang.pdf_files) ||
-				!isEmpty(lang.brochure) ||
+				// !isEmpty(lang.pdf_files) ||
+				// !isEmpty(lang.brochure) ||
 				!isStoryIsEmpty ||
 				!isTitleEmpty ||
 				!isShortDescriptionEmpty ||
@@ -294,8 +294,8 @@
 				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (
-					isEmpty(lang.pdf_files) ||
-					isEmpty(lang.brochure) ||
+					// isEmpty(lang.pdf_files) ||
+					// isEmpty(lang.brochure) ||
 					isStoryIsEmpty ||
 					isTitleEmpty ||
 					isShortDescriptionEmpty ||
@@ -384,7 +384,7 @@
 							await data.supabase.storage.from('image').remove([lang.brochure]);
 						}
 						const response = await data.supabase.storage
-							.from('PDF')
+							.from('image')
 							.upload(`exhibition/${brochureFileData.fileName}`, imageFile_brochure!);
 
 						lang.brochure = response.data?.path || '';

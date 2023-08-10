@@ -21,7 +21,7 @@ export const getData = async (supabase: SupabaseClient) => {
 	return data as Reservation[];
 };
 
-export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: string) => {
+export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: any) => {
 	const { data, error } = await supabase
 		.from('seat_reservation')
 		.update(updatedFields)
@@ -35,5 +35,3 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 	console.log('Updated data:', data);
 	return data;
 };
-
-// ... (other code)
