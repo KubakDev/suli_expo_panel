@@ -131,7 +131,7 @@
 		reader.onloadend = () => {
 			exhibitionsObject.image_map = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName_map = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
+			fileName_map = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);
@@ -146,7 +146,7 @@
 		reader.onloadend = () => {
 			exhibitionsObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);

@@ -20,7 +20,7 @@
 	import { getSeatServices, seatServices } from '../../../../stores/seatServicesStore';
 	import Sortable from 'sortablejs';
 	import { EditingMode } from '../../../../models/editingModeModel';
-	import { getImage } from '$lib/utils/getImage';
+	import { getImage } from '$lib/utils/getImagesObject';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';

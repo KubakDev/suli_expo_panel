@@ -1,17 +1,24 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { seatReservation, getData, updateData } from '../../../stores/reservationStore';
+	import {
+		seatReservation,
+		getReservationData,
+		updateData
+	} from '../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
+	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { Checkbox, Label } from 'flowbite-svelte';
 
 	export let data;
+	let selectedExhibition: number[];
 
-	async function fetchData() {
-		await getData(data.supabase);
+	async function fetchReservationData() {
+		await getReservationData(data.supabase);
 	}
-	onMount(fetchData);
+	onMount(fetchReservationData);
 
 	async function updateStatus(itemID: number, selectedStatus: string) {
-		console.log(itemID, selectedStatus);
 		const updatedData = $seatReservation.map((reservation) => {
 			if (itemID === reservation.id) {
 				return { ...reservation, status: selectedStatus };
@@ -27,18 +34,57 @@
 
 		fetchData();
 	}
+
+	let exhibitionData: ExhibitionModel[] = [];
+
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	onMount(fetchData);
+
+	async function filterByExhibition() {
+		if (selectedExhibition !== null) {
+			await getReservationData(data.supabase, [selectedExhibition]);
+		} else {
+			await getReservationData(data.supabase);
+		}
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<!-- filtering by company name  -->
-	<div class="pb-5 flex justify-end">
-		<select class="text-black">
-			<option value="">select company name </option>
-		</select>
+	<!-- filtering by exhibition -->
+
+	<div class="py-5 px-4 lg:px-0 flex justify-end">
+		<div class="mb-6 w-44 flex flex-col">
+			<Label for="website-admin" class="block mb-2">Filter By Exhibition Type</Label>
+			<select
+				class="dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+				id="type"
+				name="type"
+				bind:value={selectedExhibition}
+				on:change={filterByExhibition}
+			>
+				<option value={null}>All Exhibitions</option>
+				{#each exhibitionData as item (item.id)}
+					<option value={item.id}>{item.exhibition_type}</option>
+				{/each}
+			</select>
+		</div>
 	</div>
 
 	<!-- table data -->
-
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">

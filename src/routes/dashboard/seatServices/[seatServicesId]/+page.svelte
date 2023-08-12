@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { updateSeatService } from '../../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
-	import type {
-		seatServicesModel,
-		seatServicesModelLang
+	import {
+		SeatServiceTypeEnum,
+		type seatServicesModel,
+		type seatServicesModelLang
 	} from '../../../../models/seatServicesModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
@@ -22,12 +23,15 @@
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let isFormSubmitted = false;
+
 	let seatServicesDataLang: seatServicesModelLang[] = [];
 	let seatServicesData: seatServicesModel = {
 		id: 0,
 		icon: '',
 		quantity: 0,
+		discount: 0,
 		price: 0,
+		type: SeatServiceTypeEnum.SINGULAR,
 		created_at: new Date()
 	};
 	const id = $page.params.seatServicesId;
@@ -45,7 +49,9 @@
 					icon: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.icon}`,
 					created_at: new Date(result.data?.created_at),
 					price: result.data?.price,
-					quantity: result.data?.quantity
+					quantity: result.data?.quantity,
+					discount: result.data?.discount,
+					type: result.data?.type
 				};
 
 				prevThumbnail = result.data?.icon;
@@ -169,7 +175,7 @@
 			<h1 class="text-2xl font-bold">Update Seat Service Data</h1>
 		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4">
+		<div class="grid lg:grid-cols-4 gap-4 px-4">
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Seat Service Image</Label>
@@ -184,6 +190,34 @@
 				</Label>
 			</div>
 
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<label for="type" class="block font-normal">Type</label>
+					<Select
+						bind:value={seatServicesData.type}
+						id="type"
+						name="type"
+						size="md"
+						placeholder="Please select a valid type"
+					>
+						<option value={SeatServiceTypeEnum.SINGULAR}>{SeatServiceTypeEnum.SINGULAR}</option>
+						<option value={SeatServiceTypeEnum.PLURAL}>{SeatServiceTypeEnum.PLURAL}</option>
+					</Select>
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Discount</Label>
+					<Input
+						type="number"
+						bind:value={seatServicesData.discount}
+						placeholder="Enter a number"
+						min="0"
+					/>
+				</Label>
+			</div>
+
 			<!-- <div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="icon" class="mb-2">Enter price</Label>
@@ -195,7 +229,7 @@
 			</div> -->
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<Label for="icon" class="mb-2">Enter quantity</Label>
+					<Label for="icon" class="mb-2">Quantity</Label>
 					<Input
 						type="number"
 						bind:value={seatServicesData.quantity}

@@ -5,19 +5,21 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const seatReservation = writable<Reservation[]>([]);
 
 //Get all data
-export const getData = async (supabase: SupabaseClient) => {
-	const { data } = await supabase
-		.from('seat_reservation')
-		.select(
-			`
-    *,
-    company(*),
-    exhibition(*)
-  `
-		)
-		.order('id');
+export const getReservationData = async (supabase: SupabaseClient, filters?: any[]) => {
+	console.log(filters);
+	let query = supabase.from('seat_reservation').select(`
+        *,
+        company(*),
+        exhibition(*)
+    `);
+
+	if (filters && filters.length > 0) {
+		query = query.in('exhibition_id', filters);
+	}
+
+	const { data } = await query.order('id');
+
 	seatReservation.set(data as Reservation[]);
-	console.log('first', data);
 	return data as Reservation[];
 };
 

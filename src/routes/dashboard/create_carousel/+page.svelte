@@ -152,7 +152,7 @@
 			</div>
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
+					<label for="exhibition_type" class="block font-normal">Type</label>
 					<Select
 						bind:value={carouselObject.type}
 						id="type"

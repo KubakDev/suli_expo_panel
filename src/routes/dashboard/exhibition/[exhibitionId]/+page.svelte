@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { updateData } from '../../../../stores/exhibitionStore';
+	import { updateData, exhibitions } from '../../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../../models/exhibitionModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { decodeBase64 } from '$lib/utils/decodeBase64';
+	import { openPdfFile } from '$lib/utils/openPdfFile';
+	import { getImagesObject } from '$lib/utils/getImagesObject';
+	import { getImagesObject_sponsor } from '$lib/utils/getImagesObject_sponsor';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
@@ -15,6 +19,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -122,13 +127,14 @@
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
-				getImagesObject();
-				getImagesObject_sponsor();
+				getImagesObject(exhibitionsData.images);
+				getImagesObject_sponsor(exhibitionsData.sponsor_images);
 			});
 	}
 
 	onMount(async () => {
 		await getExhibitionData();
+		console.log($exhibitions);
 	});
 
 	//** for swapping between languages**//
@@ -136,21 +142,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload exhibition image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			exhibitionsData.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
-		};
-		reader.readAsDataURL(file);
-	} //**for upload exhibition image**//
 
 	//handle image map
 	function handleFileUpload_ImageMap(e: Event) {
@@ -163,7 +154,7 @@
 		reader.onloadend = () => {
 			exhibitionsData.image_map = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName_map = `exhibitions/${randomText}_${file.name}`; // Append random text to the file name
+			fileName_map = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);
@@ -454,13 +445,11 @@
 
 	//update images
 	function imageChanges(e: any) {
-		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				// console.log('///////', image);
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -474,13 +463,11 @@
 
 	//update images_sponsor
 	function imageChanges_sponsor(e: any) {
-		// console.log(e.detail);
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				// console.log('///////', image);
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -490,58 +477,6 @@
 		});
 		carouselImages_sponsor = customImages;
 		existingImages_sponsor = result;
-	}
-
-	function getImagesObject() {
-		carouselImages = exhibitionsData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
-	}
-
-	function getImagesObject_sponsor() {
-		carouselImages_sponsor = exhibitionsData.sponsor_images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		if (carouselImages_sponsor.length <= 0) {
-			carouselImages_sponsor = undefined;
-		}
-	}
-
-	function openPdfFile(pdfLink: string) {
-		console.log(pdfLink);
-		const completePdfLink = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_PDF_URL}/${pdfLink}`;
-		console.log('open', completePdfLink);
-		const newWindow = window.open();
-		if (newWindow !== null) {
-			newWindow.document.body.innerHTML = `<iframe src="${completePdfLink}" width="100%" height="100%"></iframe>`;
-			console.log(newWindow.document.body.innerHTML);
-		}
-	}
-
-	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
-		const newWindow = window.open();
-		if (newWindow !== null) {
-			newWindow.document.write(
-				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
-			);
-		}
 	}
 </script>
 
@@ -561,7 +496,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
+						on:change={(e) => {
+							handleFileUpload(e, exhibitionsData, imageFile, fileName);
+						}}
 						accept=".jpg, .jpeg, .png .svg"
 						class="dark:bg-white"
 					/>
@@ -914,6 +851,7 @@
 							{/if}
 						{/each}
 					</TabItem>
+
 					<TabItem title="Sponsor">
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
