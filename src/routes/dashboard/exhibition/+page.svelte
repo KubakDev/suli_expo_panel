@@ -43,7 +43,7 @@
 
 	function handleDndConsider(e: any) {
 		items = e.detail.items;
-		// console.log(items);
+		//
 	}
 
 	async function handleDndFinalize(e: any) {
@@ -255,12 +255,10 @@
 					>
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
-
 								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
 										>{index + 1}</span
 									>
-
 								</td>
 
 								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
@@ -295,9 +293,7 @@
 									</td>
 								{/if}
 								<td
-
 									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button

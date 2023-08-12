@@ -45,7 +45,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -140,9 +139,9 @@
 
 		const imagesArray = newsObject.images.map((image) => `"${image}"`);
 		newsObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('newsObject ::::', newsObject);
+		//
 
-		// console.log(response);
+		//
 		newsObject.thumbnail = response.data?.path || '';
 
 		insertData(newsObject, newsDataLang, data.supabase);
@@ -176,7 +175,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete newsObject.exhibition_id;
 		} else {
@@ -187,7 +186,7 @@
 	//get thumbnail
 	function getImagesObject() {
 		carouselImages = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
+			//
 			const imgUrl = URL.createObjectURL(image);
 			return {
 				id: i,
@@ -196,7 +195,6 @@
 				attribution: ''
 			};
 		});
-		console.log('test//', carouselImages);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
@@ -235,7 +233,6 @@
 					<ButtonGroup class="w-full">
 						<select
 							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-
 							id="type"
 							name="type"
 							on:change={handleSelectChange}

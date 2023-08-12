@@ -13,8 +13,8 @@ export const actions = {
         const formData = await request.formData();
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
-        console.log('email: ', email);
-        console.log('password: ', password);
+
+
         if (!email) {
             const errors = 'email required';
             return {
@@ -25,7 +25,7 @@ export const actions = {
         }
         if (!password) {
             const errors = 'password required';
-            return{
+            return {
                 email,
                 password,
                 errors
@@ -62,7 +62,7 @@ export const actions = {
             };
         } else {
             // return success
-            console.log('redirecting to dashboard ********');
+
             return { message: 'redirecting to dashboard' };
         }
     },

@@ -15,19 +15,19 @@
 	let newsData = [];
 	let totalPages = 1;
 
-	// console.log('news//', news);
+	//
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
 
 		newsData = result.data || [];
 
-		// console.log('news data///////', newsData);
+		//
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
+		//
 	}
 
 	onMount(fetchData);

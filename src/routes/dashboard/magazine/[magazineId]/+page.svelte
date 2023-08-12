@@ -57,7 +57,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -83,9 +82,6 @@
 					pdf_files: result.data?.pdf_files,
 					created_at: new Date(result.data?.created_at)
 				};
-
-				console.log('magazine data get db pdf files : ////////', magazineData.pdf_files);
-				console.log('magazine data get db images: ////////', magazineData.images);
 
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
@@ -128,7 +124,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -136,7 +132,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(magazineData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload magazine image**//
@@ -144,7 +140,7 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		// console.log(sliderImagesFile);
+		//
 	}
 
 	//**pdf files**//
@@ -164,7 +160,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 
@@ -177,7 +173,7 @@
 				imgSource: ImgSourceEnum.PdfRemote
 			};
 		});
-		// console.log('first pdf file ', result);
+		//
 		return result;
 	}
 
@@ -235,7 +231,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`magazine/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple img:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						magazineData.images.push(responseMultiple.data?.path);
@@ -256,7 +252,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
 						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
-					// console.log('responseMultiple pdf:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						magazineData.pdf_files.push(responseMultiple.data.path);
@@ -271,7 +267,7 @@
 			magazineData.pdf_files = `{${pdfArray.join(',')}}`;
 
 			updateData(magazineData, magazineDataLang, data.supabase);
-			console.log('result before store :', magazineData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/magazine');
@@ -284,13 +280,13 @@
 
 	//update images
 	function imageChanges(e: any) {
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				// console.log('///////', image);
+				//
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -300,12 +296,12 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('carouselImages data :::::', carouselImages);
+		//
 	}
 
 	//update pdf file
 	function pdfChanges(e: any) {
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((files: any) => {
@@ -314,13 +310,12 @@
 				const newFile = { ...files };
 				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
 				// customImages.push(newFile);
-				console.log('first');
 			} else {
 				// customImages.push(files);
 			}
 		});
 		existingPDFfiles = result;
-		// console.log('carouselImages data :::::', existingPDFfiles);
+		//
 	}
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
@@ -341,7 +336,7 @@
 				attribution: ''
 			};
 		});
-		// console.log('print //', carouselImages);
+		//
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

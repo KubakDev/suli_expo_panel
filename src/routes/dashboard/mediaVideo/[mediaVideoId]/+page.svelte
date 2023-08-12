@@ -45,7 +45,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -68,8 +67,8 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
 				};
 
-				// console.log('video data get db thumbnail : ////////', mediaVideoData.thumbnail);
-				// console.log('video data get db images: ////////', mediaVideoData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.media_video_languages.findIndex(
@@ -107,7 +106,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -167,7 +166,7 @@
 			}
 
 			updateData(mediaVideoData, mediaVideoDataLang, data.supabase);
-			console.log('result before store :', mediaVideoData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/mediaVideo');
@@ -343,7 +342,6 @@
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="Video List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-
 							<div class="flex justify-start items-start">
 								{#each mediaVideoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

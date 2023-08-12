@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import { Label, Input, Fileupload, Textarea, InputAddon, ButtonGroup } from 'flowbite-svelte';
 
 	import { Tabs, TabItem } from 'flowbite-svelte';
@@ -44,7 +43,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			// console.log(uniqueTypes);
+			//
 		} catch (error) {
 			console.error(error);
 		}
@@ -69,7 +68,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -158,7 +157,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete videoObjectData.exhibition_id;
 		} else {
@@ -185,7 +184,6 @@
 						accept=".jpg, .jpeg, .png .svg"
 						class="dark:bg-white"
 					/>
-
 				</Label>
 			</div>
 			<div class="col-span-1">

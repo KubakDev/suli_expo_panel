@@ -43,7 +43,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -67,8 +66,8 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
 				};
 
-				// console.log('service data get db thumbnail : ////////', serviceData.thumbnail);
-				// console.log('service data get db images: ////////', serviceData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.service_languages.findIndex(
@@ -104,7 +103,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -112,7 +111,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `service/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(serviceData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload thumbnail image**//

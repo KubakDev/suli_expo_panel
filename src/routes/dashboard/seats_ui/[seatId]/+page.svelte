@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fabric } from 'fabric';
 	import type { PageData } from '../$types';
 	import {
@@ -11,7 +11,10 @@
 		Input,
 		InputAddon,
 		Modal,
-		Search
+		Search,
+		TabItem,
+		Tabs,
+		Textarea
 	} from 'flowbite-svelte';
 	import { Minus, Plus } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
@@ -20,17 +23,21 @@
 	import { getSeatServices, seatServices } from '../../../../stores/seatServicesStore';
 	import Sortable from 'sortablejs';
 	import { EditingMode } from '../../../../models/editingModeModel';
-	import { getImage } from '$lib/utils/getImage';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
+	import type { ExhibitionsModel } from '../../../../models/exhibitionModel';
+	import { LanguageEnum } from '../../../../models/languageEnum';
+
+	let languageEnumKeys = Object.values(LanguageEnum);
 
 	let iconCanvas = new fabric.StaticCanvas('');
 	let addSeatModal = false;
 	iconCanvas.setWidth(50);
 	iconCanvas.setHeight(50);
 
+	let currentSeatLayoutData: any = {};
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
@@ -54,17 +61,17 @@
 	let files: any;
 	let selectedObjectId: number = 0;
 
-	let bottomRightRadius = 0;
-	let bottomLeftRadius = 0;
-	let topLeftRadius = 0;
-	let topRightRadius = 0;
+	let radius: null | undefined | number = null;
 	let isAddingText = false;
 	let objects: any[] = [];
 
+	let objectDetailDescription: { language?: LanguageEnum; description?: string }[] = [];
+
 	let objectDetail: {
 		selectable: boolean;
-		services: seatServicesModel[];
+		services: { id: number; isFree: boolean }[];
 		price: number;
+		description?: string;
 	} = {
 		selectable: false,
 		services: [],
@@ -132,64 +139,29 @@
 				width: container.offsetWidth,
 				height: container.offsetHeight
 			});
-			console.log(container.offsetWidth / container.offsetHeight);
-			// Create a rectangle with no fill, only a stroke (border)
-			// Create a rectangle with no fill, only a stroke (border)
 		}
 	};
 
-	async function updateCustomRectangle(value: any, type: string) {
+	async function updateCustomRectangle() {
 		var activeObject = canvas.getActiveObject();
+		activeObject.set({
+			rx: radius,
+			ry: radius
+		});
 
-		// const allProperty = activeObject.toObject();
-
-		// remove active object
-		if (activeObject) {
-			await canvas.remove(activeObject);
-			await canvas.requestRenderAll();
-		} else {
-			return;
-		}
-
-		const radius = parseInt(value.target.value);
-		switch (type) {
-			case 'tl':
-				topLeftRadius = radius;
-				break;
-			case 'tr':
-				topRightRadius = radius;
-				break;
-			case 'bl':
-				bottomLeftRadius = radius;
-				break;
-			case 'br':
-				bottomRightRadius = radius;
-				break;
-			default:
-				break;
-		}
-		// create pathdata from allProperty
-		var pathData = [
-			`M ${topLeftRadius} 0`,
-			`Q 0 0 0 ${topLeftRadius}`,
-			`L 0 ${200 - bottomRightRadius}`,
-			`Q 0 200 ${bottomLeftRadius} 200`,
-			`L ${200 - topRightRadius} 200`,
-			`Q 200 200 200 ${200 - topRightRadius}`,
-			`L 200 ${topRightRadius}`,
-			`Q 200 0 ${200 - topRightRadius} 0`,
-			`L ${topLeftRadius} 0`,
-			`Z`
-		];
-
-		// add Property to path
-
-		const data = new fabric.Path(pathData.join(' '));
-		canvas.add(data);
 		canvas.requestRenderAll();
 	}
 
 	onMount(async () => {
+		document.addEventListener('keydown', (event) => {
+			if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+				// Ctrl+C: Copy the selected object
+				copySelectedObject();
+			} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+				// Ctrl+V: Paste the copied object
+				pasteCopiedObject();
+			}
+		});
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
 		// var customRect = createCustomRectangle();
@@ -224,11 +196,12 @@
 		if (pageId !== 'create') {
 			supabase
 				.from('seat_layout')
-				.select('*')
+				.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
 				.eq('id', pageId)
 				.single()
 				.then(async (result) => {
 					const data: any = result.data;
+					currentSeatLayoutData = data;
 					exhibitionName = data.name;
 					const design = data.design;
 					if (data && data['design']) {
@@ -446,17 +419,43 @@
 		});
 
 		canvas.on('selection:created', function (event: any) {
-			var selectedObject = event.selected[0];
-			const index = canvas.getObjects().indexOf(selectedObject);
-			setSelectedObjectValue(selectedObject);
+			objectDetail = {
+				selectable: false,
+				services: [],
+				price: 0
+			};
+			radius = 0;
+			canvas.forEachObject((obj: any) => {
+				if (obj.id === event.selected[0].id) {
+					if (obj.objectDetail) {
+						objectDetail = obj.objectDetail;
+						objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
+					}
+					setSelectedObjectValue(obj);
+				}
+			});
 		});
 		canvas.on('selection:updated', function (event: any) {
-			var selectedObject = event.selected[0];
-			setSelectedObjectValue(selectedObject);
+			objectDetail = {
+				selectable: false,
+				services: [],
+				price: 0
+			};
+			radius = 0;
+			canvas.forEachObject((obj: any) => {
+				if (obj.id === event.selected[0].id) {
+					if (obj.objectDetail) {
+						objectDetail = obj.objectDetail;
+						objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
+					}
+					setSelectedObjectValue(obj);
+				}
+			});
 		});
 
 		canvas.on('selection:cleared', function (event: any) {
 			clearAllInput();
+			radius = null;
 		});
 
 		canvas.on('object:modified', function (event: any) {
@@ -465,9 +464,8 @@
 		});
 
 		window.addEventListener('keydown', function (e) {
-			// keyCode 46 corresponds to the Delete key
 			const selectedObject = canvas.getActiveObject();
-			if (e.key === 'Delete' || e.key === 'Backspace') {
+			if (e.key === 'Delete') {
 				removeSelectedObject();
 			}
 			handleKeydown(e, selectedObject);
@@ -496,9 +494,16 @@
 	function clearAllInput() {
 		strokeWidth = null;
 		itemWidth = null;
+		radius = null;
 		itemHeight = null;
 		isAnObjectSelected = false;
+		objectDetail = {
+			selectable: false,
+			services: [],
+			price: 0
+		};
 		selectedObjectId = 0;
+		objectDetailDescription = [];
 	}
 
 	function onObjectModified(selectedObject: any) {
@@ -528,7 +533,6 @@
 		itemWidth = selectedObject.width;
 		itemHeight = selectedObject.height;
 		isAnObjectSelected = true;
-		// canvas.bringToFront(selectedObject);
 	}
 
 	async function openAddSeatModal() {
@@ -668,7 +672,9 @@
 	function addPropertiesToShape() {
 		let selectedObject = canvas.getActiveObject();
 		selectedObject.set({
-			selectable: !objectDetail.selectable
+			objectDetail: {
+				selectable: !objectDetail.selectable
+			}
 		});
 		objectDetail.selectable = !objectDetail.selectable;
 		canvas.requestRenderAll();
@@ -677,7 +683,10 @@
 		let selectedObject = canvas.getActiveObject();
 		let index = objectDetail.services.findIndex((item) => item.id === service.id);
 		if (index === -1) {
-			objectDetail.services.push(service);
+			objectDetail.services.push({
+				id: service.id,
+				isFree: false
+			});
 		} else {
 			objectDetail.services.splice(index, 1);
 		}
@@ -686,6 +695,71 @@
 			objectDetail: objectDetail
 		});
 		canvas.requestRenderAll();
+	}
+	function addFreeService(event: Event, service: seatServicesModel) {
+		event.stopPropagation();
+		let selectedObject = canvas.getActiveObject();
+		let selectedService = selectedObject.objectDetail?.services.find(
+			(item: any) => item.id === service.id
+		);
+		if (selectedService) {
+			selectedService.isFree = true;
+		} else {
+			addServiceToActiveObject(service);
+			addFreeService(event, service);
+		}
+		objectDetail = { ...selectedObject.objectDetail };
+	}
+
+	function copySelectedObject() {
+		const selectedObject = canvas.getActiveObject();
+
+		if (selectedObject) {
+			const copiedObject = fabric.util.object.clone(selectedObject);
+			copiedObject.set({
+				left: selectedObject.left + 10,
+				top: selectedObject.top + 10
+			});
+
+			canvas.copiedObject = copiedObject;
+		}
+	}
+
+	function pasteCopiedObject() {
+		if (canvas.copiedObject) {
+			const pastedObject = fabric.util.object.clone(canvas.copiedObject);
+			pastedObject.set({
+				id: new Date().getTime()
+			});
+			canvas.add(pastedObject);
+			canvas.setActiveObject(pastedObject);
+			canvas.renderAll();
+			updateLayers();
+		}
+	}
+	$: {
+		if (objectDetail && canvas) {
+			let selectedObject = canvas?.getActiveObject();
+			if (selectedObject) {
+				selectedObject.set({
+					objectDetail: objectDetail
+				});
+				canvas.renderAll();
+			}
+		}
+	}
+	function addDescriptionToObjectDetail(description: string, lang: string) {
+		let selectedObject = canvas?.getActiveObject();
+		if (!selectedObject.objectDetail.descriptionLanguages) {
+			selectedObject.objectDetail.descriptionLanguages = [];
+		}
+		selectedObject.objectDetail.descriptionLanguages =
+			selectedObject.objectDetail.descriptionLanguages.filter((x) => x.language !== lang);
+		selectedObject.objectDetail.descriptionLanguages.push({
+			description,
+			language: lang as LanguageEnum
+		});
+		objectDetailDescription = selectedObject.objectDetail.descriptionLanguages;
 	}
 </script>
 
@@ -704,7 +778,7 @@
 />
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<Modal bind:open={addSeatModal} size="sm" autoclose={false} class="w-full">
+<Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
 	<AddSeatModalComponent
 		{data}
 		seatInfo={{
@@ -712,6 +786,7 @@
 			seatId: $page.params.seatId
 		}}
 		on:closeModal={() => (addSeatModal = false)}
+		{currentSeatLayoutData}
 	/>
 </Modal>
 <div class="flex flex-col w-full h-full flex-1">
@@ -734,12 +809,11 @@
 				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
 			</div>
 		</div>
-		<div class="p-4 bg-secondary">
+		<div class="p-4 bg-[#f2f3f7]">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
 					<Button on:click={addPropertiesToShape} class="w-full" outline>
 						<Checkbox checked={objectDetail.selectable} />
-
 						selectable
 					</Button>
 				</div>
@@ -769,49 +843,17 @@
 						let:props
 					/></ButtonGroup
 				>
-				<ButtonGroup class="w-full" size="sm">
+				<ButtonGroup class="w-full col-span-2" size="sm">
 					<InputAddon>(</InputAddon><Input
 						type="number"
-						disabled={topLeftRadius === null || topLeftRadius === undefined}
+						disabled={radius === null || radius === undefined}
 						size="sm"
-						value={topLeftRadius}
-						on:input={(value) => updateCustomRectangle(value, 'tl')}
+						bind:value={radius}
+						on:input={updateCustomRectangle}
 						placeholder="Radius"
 					/></ButtonGroup
 				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={topRightRadius === null || topRightRadius === undefined}
-						size="sm"
-						value={topRightRadius}
-						on:input={(value) => updateCustomRectangle(value, 'tr')}
-						placeholder="Radius"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={bottomLeftRadius === null || bottomLeftRadius === undefined}
-						size="sm"
-						value={bottomLeftRadius}
-						on:input={(value) => updateCustomRectangle(value, 'bl')}
-						placeholder="Radius"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={bottomRightRadius === null || bottomRightRadius === undefined}
-						size="sm"
-						value={bottomRightRadius}
-						on:input={(value) => updateCustomRectangle(value, 'br')}
-						placeholder="Radius"
-						let:props
-					/></ButtonGroup
-				>
+
 				<div class="flex col-span-2">
 					<ButtonGroup class="w-full" size="sm">
 						<InputAddon
@@ -833,6 +875,7 @@
 					>
 				</div>
 			</div>
+
 			{#if objectDetail.selectable}
 				<div class="w-full">
 					<ButtonGroup class="w-full mb-2" size="sm">
@@ -843,6 +886,28 @@
 							bind:value={objectDetail.price}
 						/></ButtonGroup
 					>
+					<Textarea
+						id="textarea-id"
+						placeholder="description"
+						rows="5"
+						class="my-3"
+						bind:value={objectDetail.description}
+					/>
+					<div class="mt-2 mb-6">
+						<Tabs>
+							{#each languageEnumKeys as lang}
+								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add description for ${lang}`}
+										rows="8"
+										value={objectDetailDescription?.find((x) => x.language === lang)?.description}
+										on:input={(e) => addDescriptionToObjectDetail(e.target?.value ?? '', lang)}
+									/>
+								</TabItem>
+							{/each}
+						</Tabs>
+					</div>
 					<Button id="placements" class="w-full"><Chevron>Services</Chevron></Button>
 					<Dropdown class="overflow-y-auto px-3 pb-3 text-sm mx-3 ">
 						<div slot="header" class="p-3">
@@ -853,25 +918,20 @@
 								<!-- svelte-ignore a11y-click-events-have-key-events -->
 								<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 								<li
-									class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+									class={`
+									rounded p-2  dark:hover:bg-gray-600 cursor-pointer  my-1
+									${objectDetail.services.some((x) => x.id === service.id) ? 'bg-gray-300' : 'hover:bg-gray-100'}`}
 									on:click={() => {
 										addServiceToActiveObject(service);
 									}}
 								>
 									{#if service.seat_services_languages}
-										<div class="flex justify-between">
+										<div class="flex justify-between items-center">
+											<p>{service.price}</p>
 											<Checkbox
-												disabled={true}
 												class="cursor-pointer"
-												checked={objectDetail.services.some((x) => x.id === service.id)}
-												>{service.seat_services_languages[0].title}</Checkbox
+												on:click={(event) => addFreeService(event, service)}>free</Checkbox
 											>
-
-											<img
-												src={getImage(service.icon)}
-												class="w-8 h-8 rounded-full mr-3"
-												alt="niaaaa"
-											/>
 										</div>
 									{/if}
 								</li>

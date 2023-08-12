@@ -14,7 +14,6 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
-	
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
@@ -42,7 +41,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -100,7 +98,7 @@
 		const file = fileInput.files![0];
 		imageFile = file;
 
-		// console.log(file);
+		//
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			promoData.thumbnail = reader.result as '';
@@ -154,7 +152,7 @@
 			}
 
 			updateData(promoData, promotionDataLang, data.supabase);
-			console.log('result before store :', promoData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/promotions');

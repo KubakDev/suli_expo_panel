@@ -50,7 +50,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -74,7 +73,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -82,7 +81,7 @@
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `service/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log('serviceObject////////////', serviceObject);
+			//
 		};
 
 		reader.readAsDataURL(file);
@@ -190,7 +189,6 @@
 					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
 					<ButtonGroup class="w-full">
 						<select
-
 							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 							id="type"
 							name="type"
@@ -202,7 +200,6 @@
 							{/each}
 						</select>
 						<InputAddon class="bg-white ">
-
 							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
 								<path d="M0 0h24v24H0z" fill="none" />
 								<path

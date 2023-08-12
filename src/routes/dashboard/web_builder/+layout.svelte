@@ -22,7 +22,6 @@
 	function updateActiveUrl(url: string) {
 		activeUrl = url;
 		goto('/');
-		console.log(activeUrl);
 	}
 </script>
 

@@ -89,7 +89,7 @@
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
-		// console.log(response);
+		//
 		staffObject.image = response.data?.path || '';
 
 		insertData(staffObject, staffDataLang, data.supabase);

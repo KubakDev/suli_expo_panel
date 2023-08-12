@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import type { NewsModel, NewsModelLang } from '../models/newsModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
+
 export const news = writable<NewsModel[]>([]);
 
 //Create a new instance of the news
@@ -86,7 +87,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_news_and_news_lang', {
 			news_data: newsObject,
 			news_lang_data: newsDataLang

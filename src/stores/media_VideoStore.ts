@@ -15,8 +15,8 @@ export const insertData = async (
 			mediavideo_data: videoObject,
 			mediavideo_lang_data: videoDataLang
 		});
-		// console.log(mediaVedio_lang_data);
-		// console.log(data);
+		// 
+		// 
 		vedioStore.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
@@ -43,8 +43,8 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('media_video').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
+
+		// 
 		const result = {
 			data: data,
 			count: count
@@ -90,7 +90,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_media_video_and_video_lang', {
 			mediavideo_data: mediaVideoObject,
 			mediavideo_lang_data: mediaVideoDataLang

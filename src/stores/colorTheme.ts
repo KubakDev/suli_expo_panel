@@ -9,7 +9,7 @@ export const insertData = async (colorThemeObject: ColorTheme, supabase: Supabas
 	try {
 		const { data, error } = await supabase.from('color_palette').insert(colorThemeObject);
 
-		// console.log(data);
+		// 
 		theme.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];

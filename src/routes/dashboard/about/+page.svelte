@@ -12,22 +12,15 @@
 	export let data;
 	let aboutData: any = [];
 	let staffData: any = [];
-	// console.log('about//', about);
 
 	async function fetchData() {
 		let result = await getData(data.supabase);
 		let staffResult = await getDataStaff(data.supabase);
 		aboutData = result;
 		staffData = staffResult;
-
-		console.log('About Data', result);
-
-		// console.log('about data///////', aboutData);
 	}
 
 	onMount(fetchData);
-
-	// convert html tag that return it from db to regular text
 	function extractText(html: any) {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;

@@ -49,7 +49,6 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
 		} catch (error) {
 			console.error(error);
 		}
@@ -74,7 +73,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -207,7 +206,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete publishingObject.exhibition_id;
 		} else {
@@ -225,7 +224,7 @@
 				attribution: ''
 			};
 		});
-		// console.log('test//', carouselImages);
+		//
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

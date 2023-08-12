@@ -16,19 +16,19 @@
 	let galleryData = [];
 	let totalPages = 1;
 
-	// console.log('gallery//', gallery);
+	//
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
 
 		galleryData = result.data;
 
-		// console.log('gallery data///////', galleryData);
+		//
 
 		// Recalculate the total number of pages
 		const totalItems = result.count;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
+		//
 	}
 
 	onMount(fetchData);

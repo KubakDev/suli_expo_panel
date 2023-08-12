@@ -21,7 +21,7 @@
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
+		//
 	}
 
 	onMount(fetchData);
@@ -277,9 +277,7 @@
 									</td>
 								{/if}
 								<td
-
 									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button

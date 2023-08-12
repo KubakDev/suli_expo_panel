@@ -15,7 +15,7 @@ export const insertData = async (
 			contactinfo_lang_data: contactInfoDataLang
 		});
 
-		// console.log(data);
+		// 
 		contactData.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
@@ -78,7 +78,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_contactInfo_and_contactInfo_lang', {
 			contactinfo_data: contactInfoObject,
 			contactinfo_lang_data: contactInfoDataLang

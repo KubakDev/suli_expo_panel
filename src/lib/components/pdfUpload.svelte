@@ -19,7 +19,7 @@
 	let imageFiles: File[] = [];
 
 	function addImage(e: Event) {
-		// console.log('//////e', e);
+		//
 		const fileInput = e.target as HTMLInputElement;
 		const totalFiles = fileInput?.files?.length; // Total number of files being uploaded
 		for (let file of fileInput!.files!) {
@@ -47,7 +47,7 @@
 					uploadCount = 0; // Reset the upload count after all images are uploaded
 				}
 
-				// console.log('File name:', pdfFiles);
+				//
 			};
 			reader.readAsDataURL(file);
 		}

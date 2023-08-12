@@ -56,7 +56,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -205,7 +205,7 @@
 				attribution: ''
 			};
 		});
-		// console.log('test//', carouselImages);
+		//
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

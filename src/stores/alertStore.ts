@@ -12,7 +12,7 @@ const createAlertStore = () => {
     const state = writable<Alert[]>([]);
 
     const addAlert = (title: string, message: string, type: Alert['type'] = 'info') => {
-        console.log(title, message, type);
+
         const id = Date.now();
         state.update((alerts) => [...alerts, { id, title, message, type }]);
         setTimeout(() => removeAlert(id), 5000);

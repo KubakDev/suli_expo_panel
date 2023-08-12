@@ -31,7 +31,7 @@ export const updatePageData = async (updatedPageData: PageData, supabase: Supaba
 			.from('page_builder')
 			.update(updatedPageData)
 			.eq('id', updatedPageData.id);
-		console.log('Data before update:', data);
+
 		pageTheme.update((currentData) => {
 			if (data) {
 				const updatedIndex = currentData.findIndex((item) => item.id === updatedPageData.id);

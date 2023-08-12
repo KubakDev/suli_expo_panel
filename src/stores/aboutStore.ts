@@ -16,7 +16,7 @@ export const insertData = async (
 			about_lang_data: aboutDataLang
 		});
 
-		// console.log(data);
+		// 
 		about.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
@@ -53,7 +53,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_about_and_about_lang', {
 			about_data: aboutObject,
 			about_lang_data: aboutDataLang

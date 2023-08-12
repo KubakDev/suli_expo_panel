@@ -26,6 +26,10 @@ export const load = async () => {
 			url: '/dashboard/seats_ui'
 		},
 		{
+			title: 'Reservation',
+			url: '/dashboard/seat_reservation'
+		},
+		{
 			title: 'Carousel',
 			url: '/dashboard/carousel'
 		},

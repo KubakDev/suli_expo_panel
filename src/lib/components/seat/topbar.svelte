@@ -36,7 +36,6 @@
 	);
 
 	function createCustomShape(shape?: SeatCustomShapes) {
-		console.log('create new Item', shape);
 		if (shape === undefined) return;
 		let customShape;
 		switch (shape) {
@@ -162,7 +161,6 @@
 			group.destroy();
 			data.canvas?.remove(group);
 			group.forEachObject(function (obj: any) {
-				console.log(obj);
 				obj.groupId = undefined;
 			});
 			group.groupId = undefined;

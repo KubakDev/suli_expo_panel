@@ -56,13 +56,13 @@
 
 	function changeCardType(cardType: any) {
 		cardShape = cardType;
-		// console.log(cardShape);
+		//
 	}
 
 	function changePageTheme(colorTheme: any) {
 		selectedColorTheme = colorTheme;
 		customColors = {};
-		// console.log('??????????? selected color theme', selectedColorTheme);
+		//
 	}
 
 	async function getPageData() {
@@ -108,7 +108,7 @@
 		const componentID = componentData.find((item: any) => item.type === cardShape)?.id || null;
 		pageBuilder.color_palette_id = selectedColorTheme?.id || pageBuilder.color_palette_id;
 		pageBuilder.componentTypeId = componentID;
-		// console.log('/////////////', pageBuilder);
+		//
 		await updatePageData(pageBuilder, data.supabase);
 
 		setTimeout(() => {
@@ -117,8 +117,8 @@
 	}
 
 	setColor.subscribe((value) => {
-		// console.log(customColors);
-		// console.log('Updated color:', value);
+		//
+		//
 		customColors.backgroundColor = value?.backgroundColor || customColors?.backgroundColor;
 		customColors.overlayBackgroundColor =
 			value?.overlayBackgroundColor || customColors?.overlayBackgroundColor;
