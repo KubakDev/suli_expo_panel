@@ -236,8 +236,8 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="About List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">

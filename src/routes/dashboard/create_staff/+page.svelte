@@ -144,9 +144,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg h-[550px]">
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form>
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each staffDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -155,9 +155,9 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-5 py-10">
+								<div class="p-10">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -200,7 +200,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-800 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -214,10 +214,10 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
 					<TabItem open title="Staff List">
-						<div class=" w-full bg-[#cfd3d63c] rounded-md flex justify-center items-start">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each staffDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

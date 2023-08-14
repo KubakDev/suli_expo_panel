@@ -9,13 +9,9 @@ export const insertData = async (colorThemeObject: ColorTheme, supabase: Supabas
 	try {
 		const { data, error } = await supabase.from('color_palette').insert(colorThemeObject);
 
-		// 
-		theme.update((currentData) => {
-			if (data) {
-				return [...(currentData || []), ...data];
-			}
-			return currentData || [];
-		});
+		if (data) {
+			theme.update((currentData) => [...(currentData || []), ...data]);
+		}
 
 		return data;
 	} catch (error) {
@@ -28,38 +24,26 @@ export const insertData = async (colorThemeObject: ColorTheme, supabase: Supabas
 export const getData = async (supabase: SupabaseClient) => {
 	const { data } = await supabase.from('color_palette').select('*').order('id');
 	theme.set(data as ColorTheme[]);
-
 	return data as ColorTheme[];
 };
 
 // Update data by ID
 export const updateData = async (colorThemeObject: ColorTheme, supabase: SupabaseClient) => {
+	console.log(colorThemeObject);
 	try {
 		const responseData = await supabase
 			.from('color_palette')
 			.update({ active: null })
-			.match({ active: true });
+			.match({ active: true, mode_type: colorThemeObject.mode_type });
 		if (responseData.error) return;
-
 		const { data, error } = await supabase
 			.from('color_palette')
 			.update(colorThemeObject)
 			.match({ id: colorThemeObject.id });
-
 		if (error) {
 			throw new Error(error.message);
 		}
-
-		theme.update((currentData) => {
-			if (data) {
-				return currentData.map((item) =>
-					item.id === colorThemeObject.id ? colorThemeObject : item
-				);
-			}
-			return currentData || [];
-		});
 		getData(supabase);
-
 		return data;
 	} catch (error) {
 		console.error(error);

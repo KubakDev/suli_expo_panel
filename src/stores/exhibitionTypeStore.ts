@@ -7,8 +7,11 @@ export const exhibition = writable<ExhibitionModel[]>([]);
 //Get all exhibition data
 export const getDataExhibition = async (supabase: SupabaseClient) => {
 	try {
-		const { data, error } = await supabase.from('exhibition').select('*,exhibition_languages(*)');
-		// 
+		const { data, error } = await supabase
+			.from('exhibition')
+			.select('*,exhibition_languages(*)')
+			.or('deleted_status.is.null');
+		// console.log('data : ', data);
 
 		return data as ExhibitionModel[];
 	} catch (error) {

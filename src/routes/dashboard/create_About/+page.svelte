@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
+	import { Label, Fileupload, Textarea, Img } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/aboutStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -9,7 +9,7 @@
 	import { goto } from '$app/navigation';
 	import Editor from '@tinymce/tinymce-svelte';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -185,9 +185,9 @@
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 border rounded-lg">
+			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form>
-					<Tabs>
+					<Tabs contentClass="dark:bg-gray-900">
 						{#each aboutDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -198,7 +198,7 @@
 							>
 								<div class="px-5 py-16">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 font-bold">
+										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -223,7 +223,7 @@
 										{/if}
 									</div>
 
-									<div class="pb-10">
+									<div class="pb-0">
 										<Label for="textarea-id" class="mb-2">About Paragraph</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
 											<Editor
@@ -243,7 +243,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 border-gray-300 mx-10" />
+					<div class="border mb-2 dark:border-gray-800 mx-10" />
 
 					<!-- submit Form -->
 					<div class="w-full flex justify-end py-5 px-10">
@@ -257,13 +257,10 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
-					<TabItem open title="About List">
-						<div
-							class=" w-full bg-[#cfd3d63c] rounded-md p-10 flex justify-center items-start"
-							style="min-height: calc(100vh - 300px);"
-						>
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+					<TabItem open title="Gallery List">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each aboutDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

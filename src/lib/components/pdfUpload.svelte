@@ -4,6 +4,7 @@
 	import { XMark } from 'svelte-heros-v2';
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
 	import type { PDFModel } from '../../models/pdfModel';
+	import { Shadow } from 'svelte-loading-spinners';
 
 	export let data: { pdfFiles?: PDFModel[] } = {};
 	let pdfFiles: PDFModel[] = data.pdfFiles ?? [];
@@ -19,7 +20,6 @@
 	let imageFiles: File[] = [];
 
 	function addImage(e: Event) {
-		//
 		const fileInput = e.target as HTMLInputElement;
 		const totalFiles = fileInput?.files?.length; // Total number of files being uploaded
 		for (let file of fileInput!.files!) {

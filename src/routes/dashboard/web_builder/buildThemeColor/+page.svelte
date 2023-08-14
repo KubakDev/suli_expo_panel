@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Button, Modal, Checkbox, Toggle } from 'flowbite-svelte';
-	import type { ColorTheme } from '../../../../models/colorTheme';
+	import { Label, Input, Modal, Select } from 'flowbite-svelte';
 	import {
 		insertData,
 		updateData,
@@ -13,12 +12,12 @@
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import { ModeTypeEnum, type ColorTheme } from '../../../../models/colorTheme';
 
 	export let data;
 	let isFormSubmitted = false;
 	let showModal = false;
 	let submitted = false;
-	let activeItemId: any = null;
 
 	let colorData: any = [];
 	let newColorPallet: ColorTheme = {
@@ -29,7 +28,8 @@
 		overlaySecondaryColor: '',
 		backgroundColor: '',
 		overlayBackgroundColor: '',
-		active: null
+		active: null,
+		mode_type: ModeTypeEnum.LIGHT
 	};
 
 	async function fetchData() {
@@ -80,16 +80,26 @@
 			overlaySecondaryColor: '',
 			backgroundColor: '',
 			overlayBackgroundColor: '',
-			active: null
+			active: null,
+			mode_type: ModeTypeEnum.LIGHT
 		};
 	}
 
 	async function toggleChanged(item: any) {
-		activeItemId = item.itemId;
-		newColorPallet.active = true;
-		item.active = true;
-		await updateData(item, data.supabase);
-		// }
+		const updatedThemes = $theme.map((themeItem) => {
+			if (themeItem.mode_type === item.mode_type) {
+				return { ...themeItem, active: null };
+			}
+			return themeItem;
+		});
+		let index = updatedThemes.findIndex((x) => x.id === item.id);
+		updatedThemes[index].active = true;
+
+		console.log(updatedThemes);
+
+		theme.set(updatedThemes);
+
+		await updateData(updatedThemes[index], data.supabase);
 	}
 
 	// delete data
@@ -107,9 +117,9 @@
 	<!-- show data on the table -->
 
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
-		<Button
+		<button
 			on:click={() => (showModal = true)}
-			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
+			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2 p-2 rounded-sm shadow-md border"
 		>
 			<svg
 				width="20px"
@@ -130,7 +140,7 @@
 					/>
 				</g>
 			</svg>
-		</Button>
+		</button>
 	</div>
 
 	<!-- table data -->
@@ -200,6 +210,13 @@
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
+								<span>Mode Type</span>
+							</div>
+						</th>
+						<th
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+						>
+							<div class="flex items-center justify-center gap-2">
 								<span
 									><svg
 										width="20px"
@@ -232,7 +249,6 @@
 							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<p class="w-20 p-2 rounded dark:text-white font-sans">
-
 										{item.name}
 									</p>
 								</div>
@@ -303,6 +319,11 @@
 									</div>
 								</div>
 							</td>
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+								<div class="flex justify-center">
+									{item.mode_type}
+								</div>
+							</td>
 
 							<td
 								class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
@@ -317,11 +338,26 @@
 											{/if}
 										</div>
 										<div>
-											<Toggle
+											<!-- <Toggle
 												class="rounded px-2   hover:bg-gray-100 dark:hover:bg-gray-600"
 												checked={item.active}
 												on:change={() => toggleChanged(item)}
-											/>
+											/> -->
+
+											<div class="flex justify-end items-center mr-5">
+												<label class="relative inline-flex items-center cursor-pointer">
+													<input
+														on:change={() => toggleChanged(item)}
+														type="checkbox"
+														value=""
+														class="sr-only peer"
+														bind:checked={item.active}
+													/>
+													<div
+														class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"
+													/>
+												</label>
+											</div>
 										</div>
 									</div>
 
@@ -341,16 +377,31 @@
 			<form>
 				<div class="  px-10 py-10">
 					<h1 class="text-xl font-medium">Create a new theme color</h1>
-					<div class="py-3">
-						<Input
-							type="text"
-							id="name"
-							placeholder="Theme name"
-							bind:value={newColorPallet.name}
-						/>
-						{#if isFormSubmitted && !newColorPallet?.name?.trim()}
-							<p class="error-message">Require</p>
-						{/if}
+					<div class="py-3 flex items-center gap-2">
+						<div>
+							<Input
+								type="text"
+								id="name"
+								placeholder="Theme name"
+								bind:value={newColorPallet.name}
+							/>
+							{#if isFormSubmitted && !newColorPallet?.name?.trim()}
+								<p class="error-message">Require</p>
+							{/if}
+						</div>
+
+						<div>
+							<Select
+								bind:value={newColorPallet.mode_type}
+								id="type"
+								name="type"
+								size="md"
+								placeholder="Please select mode type"
+							>
+								<option value="dark">dark</option>
+								<option value="light">light</option>
+							</Select>
+						</div>
 					</div>
 
 					<div class="grid lg:grid-cols-3 gap-4 py-5">
