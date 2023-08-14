@@ -54,7 +54,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -187,7 +187,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete publishingObject.exhibition_id;
 		} else {
@@ -205,7 +205,7 @@
 				attribution: ''
 			};
 		});
-		// console.log('test//', carouselImages);
+		//
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

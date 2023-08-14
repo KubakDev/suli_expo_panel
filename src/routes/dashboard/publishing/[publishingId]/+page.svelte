@@ -109,7 +109,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -124,7 +124,7 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		// console.log(sliderImagesFile);
+		//
 	}
 
 	//**pdf files**//
@@ -144,7 +144,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 
@@ -157,7 +157,7 @@
 				imgSource: ImgSourceEnum.PdfRemote
 			};
 		});
-		// console.log('first pdf file ', result);
+		//
 		return result;
 	}
 
@@ -215,7 +215,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`publishing/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple img:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						publishingData.images.push(responseMultiple.data?.path);
@@ -236,7 +236,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
 						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
-					// console.log('responseMultiple pdf:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						publishingData.pdf_files.push(responseMultiple.data.path);
@@ -251,7 +251,7 @@
 			publishingData.pdf_files = `{${pdfArray.join(',')}}`;
 
 			updateData(publishingData, publishingDataLang, data.supabase);
-			console.log('result before store :', publishingData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/publishing');
@@ -264,13 +264,13 @@
 
 	//update images
 	function imageChanges(e: any) {
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				// console.log('///////', image);
+				//
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -280,12 +280,12 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('carouselImages data :::::', carouselImages);
+		//
 	}
 
 	//update pdf file
 	function pdfChanges(e: any) {
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((files: any) => {
@@ -294,13 +294,12 @@
 				const newFile = { ...files };
 				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
 				// customImages.push(newFile);
-				console.log('first');
 			} else {
 				// customImages.push(files);
 			}
 		});
 		existingPDFfiles = result;
-		// console.log('carouselImages data :::::', existingPDFfiles);
+		//
 	}
 
 	function handleSelectChange(event: any) {
@@ -322,7 +321,7 @@
 				attribution: ''
 			};
 		});
-		// console.log('print //', carouselImages);
+		//
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

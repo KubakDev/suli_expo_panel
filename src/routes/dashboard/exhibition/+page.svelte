@@ -43,7 +43,7 @@
 
 	function handleDndConsider(e: any) {
 		items = e.detail.items;
-		// console.log(items);
+		//
 	}
 
 	async function handleDndFinalize(e: any) {

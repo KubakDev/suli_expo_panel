@@ -50,8 +50,8 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				// console.log('carousel data get db thumbnail : ////////', carouselData.thumbnail);
-				// console.log('carousel data get db images: ////////', carouselData.images);
+				//
+				//
 				prevThumbnail = result.data?.image;
 
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -89,7 +89,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -97,7 +97,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `carousel/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(carouselData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload image image**//

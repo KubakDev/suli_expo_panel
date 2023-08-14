@@ -58,8 +58,8 @@
 					created_at: result.data?.created_at
 				};
 
-				// console.log('news data get db thumbnail : ////////', newsData.thumbnail);
-				// console.log('news data get db images: ////////', newsData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -97,7 +97,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -105,7 +105,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `news/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(newsData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload thumbnail image**//
@@ -113,7 +113,6 @@
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		console.log(sliderImagesFile);
 	}
 
 	//get image
@@ -125,7 +124,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 
@@ -176,7 +175,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`news/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						newsData.images.push(responseMultiple.data?.path);
@@ -203,15 +202,14 @@
 	}
 
 	function imageChanges(e: any) {
-		console.log(e.detail);
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
+
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -221,7 +219,7 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('carouselImages data :::::', carouselImages);
+		//
 	}
 
 	function handleSelectChange(event: any) {
@@ -244,7 +242,7 @@
 				attribution: ''
 			};
 		});
-		// console.log('print //', carouselImages);
+		//
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;

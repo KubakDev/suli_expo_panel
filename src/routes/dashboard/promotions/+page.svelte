@@ -18,7 +18,7 @@
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		// console.log(totalPages);
+		//
 	}
 
 	onMount(fetchData);

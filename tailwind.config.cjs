@@ -28,6 +28,11 @@ const config = {
 					on: '#E1B168' //800
 				}
 			},
+			status: {
+				"Pending": "#111827",
+				"Accept": "#10B981",
+				"Rejected": "#EF4444",
+			},
 			danger: '#cf250d',
 			hoverBox: '#e0dddd',
 			info: '#c27803',

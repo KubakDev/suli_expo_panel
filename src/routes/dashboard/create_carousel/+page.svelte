@@ -22,7 +22,7 @@
 	let carouselDataLang: CarouselModelLang[] = [];
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
-	// console.log(languageEnumKeys);
+	//
 
 	const languageEnumLength = languageEnumKeys.length;
 
@@ -45,15 +45,13 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
 			carouselObject.image = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `carousel/${randomText}_${file.name}`; // Append random text to the file name
-
-			console.log(carouselObject);
 		};
 
 		reader.readAsDataURL(file);
@@ -96,7 +94,7 @@
 		submitted = true;
 		showToast = true;
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-		console.log(response);
+
 		carouselObject.image = response.data?.path || '';
 		insertData(carouselObject, carouselDataLang, data.supabase);
 

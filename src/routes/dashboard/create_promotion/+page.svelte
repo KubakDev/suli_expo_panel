@@ -53,7 +53,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -69,8 +69,7 @@
 		let hasDataForLanguage = false;
 		let isValidPromoObject = false;
 		// Insert data into Supabase
-		console.log(promoObject);
-		console.log(promoDataLang);
+
 		for (let lang of promoDataLang) {
 			const title = lang.title.trim();
 			const link = lang.video_link.trim();

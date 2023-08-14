@@ -15,7 +15,7 @@ export const insertData = async (
 			publishing_lang_data: publishingDataLang
 		});
 
-		// console.log(data);
+		// 
 		publishing.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
@@ -42,8 +42,8 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('publishing').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
+
+		// 
 		const result = {
 			data: data,
 			count: count
@@ -89,7 +89,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_publishing_and_publishing_lang', {
 			publishing_data: publishingObject,
 			publishing_lang_data: publishingDataLang

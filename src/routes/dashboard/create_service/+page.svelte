@@ -54,7 +54,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -62,7 +62,7 @@
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `service/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log('serviceObject////////////', serviceObject);
+			//
 		};
 
 		reader.readAsDataURL(file);

@@ -19,7 +19,6 @@
 	let activeUrl: string;
 
 	onMount(() => {
-		console.log($page.url);
 		activeUrl = $page.url.pathname;
 	});
 
@@ -33,7 +32,6 @@
 
 	function updateActiveUrl(url: string) {
 		activeUrl = url;
-		console.log(activeUrl);
 	}
 </script>
 
@@ -50,7 +48,9 @@
 				</div>
 			</NavBrand>
 
-			<DarkMode class="text-xl " />
+			<div on:click={() => {}}>
+				<DarkMode class="text-xl " />
+			</div>
 
 			<NavHamburger btnClass="ml-3 lg:hidden" on:click={toggle} />
 			<NavUl

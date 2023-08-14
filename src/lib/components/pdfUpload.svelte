@@ -47,7 +47,7 @@
 					uploadCount = 0; // Reset the upload count after all images are uploaded
 				}
 
-				// console.log('File name:', pdfFiles);
+				//
 			};
 			reader.readAsDataURL(file);
 		}

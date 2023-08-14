@@ -16,7 +16,7 @@
 	let contactInfoDataLang: ContactModelLang[] = [];
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
-	// console.log(languageEnumKeys);
+	//
 
 	const languageEnumLength = languageEnumKeys.length;
 
@@ -185,7 +185,6 @@
 
 	<div class="px-0 lg:px-10 py-10 m-10">
 		<Form class="form" {submitted}>
-
 			<div class="grid grid-cols-3 gap-x-2 gap-y-8">
 				<div class="w-full h-16 mb-8 lg:mb-0">
 					<Label for="administration" class="mb-2">Facebook</Label>

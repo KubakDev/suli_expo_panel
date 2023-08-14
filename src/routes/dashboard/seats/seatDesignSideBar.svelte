@@ -26,13 +26,10 @@
 	});
 
 	$: {
-		console.log($seatImageItemStore);
 		images = $seatImageItemStore;
 	}
 
-	function onSelectedImage(e: any) {
-		console.log(e.detail.value);
-	}
+	function onSelectedImage(e: any) {}
 
 	const seatTypes: SeatItemModel[] = [
 		{ id: 'seat-a', class: 'seat seat-a', content: 'A', type: 'rect', defaultRadius: 20 }
@@ -65,7 +62,7 @@
 		}
 		submittedImage = 'loading';
 		const url = await uploadFileStore.uploadFile(files[0]);
-		console.log(url);
+
 		if (url) {
 			const image: SeatImageItemModel = {
 				image_url: url,
@@ -80,15 +77,12 @@
 			itemName = '';
 			uploadImageModal = false;
 			seatImageItemStore.getAllSeatItems();
-
 		} else {
 			alertStore.addAlert('error', 'Image Url is empty', 'error');
 		}
 	}
 
 	async function onFileSelected(e: any) {
-		console.log(e);
-		console.log(files[0]);
 		if (files && files.length > 0) {
 			const file = files[0];
 			const reader = new FileReader();
@@ -130,13 +124,12 @@
 			<Plus class="w-full h-full" />
 		</Button>
 		{#each images as image, index}
-			
-				<div
-					on:click={() => onShapeSelected(image)}
-					class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
-				>
-					<img class="w-full h-full" src={image.image_url} alt={image.name} />
-				</div>
+			<div
+				on:click={() => onShapeSelected(image)}
+				class="w-20 h-20 seat-design p-2 bg-gray-200 rounded cursor-move m-1"
+			>
+				<img class="w-full h-full" src={image.image_url} alt={image.name} />
+			</div>
 		{/each}
 	</div>
 

@@ -79,7 +79,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		// console.log('first');
+		// 
 		const { data, error } = await supabase.rpc('update_exhibition_and_exhibition_lang', {
 			exhibition_data: exhibitionObject,
 			exhibition_lang_data: exhibitionDataLang

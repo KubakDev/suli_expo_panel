@@ -60,8 +60,8 @@
 						: `https://img.youtube.com/vi/${getYouTubeId(result.data?.link ?? '')}/hqdefault.jpg`
 				};
 
-				// console.log('video data get db thumbnail : ////////', mediaVideoData.thumbnail);
-				// console.log('video data get db images: ////////', mediaVideoData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.media_video_languages.findIndex(
@@ -100,7 +100,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -160,7 +160,7 @@
 			}
 
 			updateData(mediaVideoData, mediaVideoDataLang, data.supabase);
-			console.log('result before store :', mediaVideoData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/mediaVideo');
