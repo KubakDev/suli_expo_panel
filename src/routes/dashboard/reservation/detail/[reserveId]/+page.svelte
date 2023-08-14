@@ -27,8 +27,7 @@
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
 		const updatedReservation = { ...$seatReservation };
-		console.log(updatedReservation);
-		console.log(updatedReservation);
+		// console.log(updatedReservation);
 
 		if (updatedReservation.id === itemID) {
 			updatedReservation.status = selectedStatus;
@@ -39,7 +38,7 @@
 	}
 
 	onMount(() => {
-		console.log(reservationData);
+		console.log($seatReservation);
 	});
 </script>
 
