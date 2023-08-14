@@ -8,17 +8,22 @@
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
-	import { Checkbox, Label } from 'flowbite-svelte';
+	import { Checkbox, Label, Search, TableSearch } from 'flowbite-svelte';
+	import { Button, Dropdown, DropdownItem, Radio } from 'flowbite-svelte';
+	import { Icon } from 'flowbite-svelte-icons';
+	import { goto } from '$app/navigation';
 
 	export let data;
 	let selectedExhibition: number[];
+	let searchQuery = ''; // Variable to store the search query
+	let searchField: any = null;
 
 	async function fetchReservationData() {
 		await getReservationData(data.supabase);
 	}
 	onMount(fetchReservationData);
 
-	async function updateStatus(itemID: number, selectedStatus: string) {
+	async function updateStatus(itemID: any, selectedStatus: any) {
 		const updatedData = $seatReservation.map((reservation) => {
 			if (itemID === reservation.id) {
 				return { ...reservation, status: selectedStatus };
@@ -61,12 +66,35 @@
 			await getReservationData(data.supabase);
 		}
 	}
+
+	//create checkboxes
+	const options = ['company name', 'company phoneNumber', 'company email'];
+	let checked: any = {};
+
+	function selectOneCheckbox(index: number) {
+		const option = options[index];
+
+		// Uncheck all checkboxes first
+		for (const opt of options) {
+			checked[opt] = false;
+		}
+
+		// Check the selected checkbox
+		checked[option] = true;
+	}
+
+	async function filterByCompany() {
+		if (searchQuery && searchField !== null) {
+			await getReservationData(data.supabase, null, searchField, searchQuery);
+		} else {
+			await getReservationData(data.supabase);
+		}
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- filtering by exhibition -->
-
-	<div class="py-5 px-4 lg:px-0 flex justify-end">
+	<div class="py-5 px-4 lg:px-0 flex justify-end items-center gap-5">
 		<div class="mb-6 w-44 flex flex-col">
 			<Label for="website-admin" class="block mb-2">Filter By Exhibition Type</Label>
 			<select
@@ -81,6 +109,33 @@
 					<option value={item.id}>{item.exhibition_type}</option>
 				{/each}
 			</select>
+		</div>
+
+		<!-- filtering by company -->
+
+		<div>
+			<Button>
+				Filter By company info <Icon
+					name="chevron-down-solid"
+					class="w-3 h-3 ml-2 text-white dark:text-white"
+				/>
+			</Button>
+			<Dropdown class="p-3 space-y-3 text-sm">
+				<input type="search" class="rounded" name="" id="" />
+				{#each options as option, index}
+					<div class="option">
+						<input
+							type="checkbox"
+							name="selectedOptions"
+							value={option}
+							id="option{index}"
+							on:change={() => selectOneCheckbox(index)}
+							checked={checked[option]}
+						/>
+						<label for="option{index}">{option}</label>
+					</div>
+				{/each}
+			</Dropdown>
 		</div>
 	</div>
 
@@ -123,7 +178,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+								class=" w-48 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -151,54 +206,68 @@
 					</thead>
 
 					<tbody class="dark:text-gray-300">
-						{#each $seatReservation as item, index (item.id)}
-							<tr>
-								<td
-									class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
-								>
-									<div>
-										{index + 1}
-									</div>
-								</td>
+						{#if $seatReservation.length > 0}
+							{#each $seatReservation as item, index (item.id)}
+								<tr>
+									<td
+										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
+									>
+										<div>
+											{index + 1}
+										</div>
+									</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										{item?.company?.company_name}
-									</div>
-								</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{item?.company?.company_name}
+										</div>
+									</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										{item?.company?.phone_number}
-									</div>
-								</td>
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										{item?.exhibition?.exhibition_type}
-									</div>
-								</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{item?.company?.phone_number}
+										</div>
+									</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{item?.exhibition?.exhibition_type}
+										</div>
+									</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										<select
-											class="text-black"
-											bind:value={item.status}
-											on:change={() => updateStatus(item.id, item.status)}
-										>
-											<option value={ReservationStatusEnum.PENDING}
-												>{ReservationStatusEnum.PENDING}</option
+									<td
+										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 flex justify-between items-center gap-4"
+									>
+										<div>
+											<select
+												class="text-black"
+												bind:value={item.status}
+												on:change={() => updateStatus(item.id, item.status)}
 											>
-											<option value={ReservationStatusEnum.ACCEPT}
-												>{ReservationStatusEnum.ACCEPT}</option
-											>
-											<option value={ReservationStatusEnum.REJECT}
-												>{ReservationStatusEnum.REJECT}</option
-											>
-										</select>
-									</div>
-								</td>
-							</tr>
-						{/each}
+												<option value={ReservationStatusEnum.PENDING}
+													>{ReservationStatusEnum.PENDING}</option
+												>
+												<option value={ReservationStatusEnum.ACCEPT}
+													>{ReservationStatusEnum.ACCEPT}</option
+												>
+												<option value={ReservationStatusEnum.REJECT}
+													>{ReservationStatusEnum.REJECT}</option
+												>
+											</select>
+										</div>
+
+										<div>
+											<button
+												on:click={() => {
+													goto(`/dashboard/reservation/detail/${item.id}`);
+												}}
+												class="text-gray-300"
+												>view
+											</button>
+										</div>
+									</td>
+								</tr>
+							{/each}
+						{/if}
 					</tbody>
 				</table>
 			</div>

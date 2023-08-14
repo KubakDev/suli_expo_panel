@@ -6,7 +6,6 @@ export const seatReservation = writable<Reservation[]>([]);
 
 //Get all data
 export const getReservationData = async (supabase: SupabaseClient, filters?: any[]) => {
-	console.log(filters);
 	let query = supabase.from('seat_reservation').select(`
         *,
         company(*),
@@ -36,4 +35,27 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 
 	console.log('Updated data:', data);
 	return data;
+};
+
+export const getReservationById = async (supabase: SupabaseClient, id: any) => {
+	const { data, error } = await supabase
+		.from('seat_reservation')
+		.select(
+			`
+        *,
+        company(*),
+        exhibition(*)
+    `
+		)
+		.eq('id', id)
+		.single();
+
+	if (error) {
+		console.error('Error fetching data by ID:', error);
+		throw error;
+	}
+
+	console.log('Fetched data by ID:', data);
+	seatReservation.set(data as Reservation[]);
+	return data as Reservation;
 };
