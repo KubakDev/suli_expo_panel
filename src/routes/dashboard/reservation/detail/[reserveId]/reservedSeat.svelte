@@ -8,21 +8,10 @@
 	import { page } from '$app/stores';
 
 	export let data: any;
-	export let supabase: SupabaseClient;
 	export let reservedData: any = [];
 
-	let previousReserveSeatData: any = [];
 	let canvas: Canvas;
 	let container: any;
-	let selectedObject: any = undefined;
-	let selectableObjectServices: {}[] = [];
-	let selectableObjectTotalPrice: number = 0;
-	let popupPosition = {
-		top: 0,
-		left: 0
-	};
-	let freeServices: any = [];
-	let paidServices: any = [];
 
 	onMount(async () => {
 		if (data) {
