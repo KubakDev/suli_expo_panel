@@ -9,26 +9,25 @@
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { Reservation } from '../../../../../models/reservationModel';
 	import { Avatar } from 'flowbite-svelte';
+	import ReservedSeat from './reservedSeat.svelte';
 
 	const params = $page.params.reserveId;
 	export let data;
 
 	let reservationData: Reservation = {};
+	let seatLayout: undefined | {} = undefined;
 
 	onMount(async () => {
 		try {
 			const fetchedReservationData = await getReservationById(data.supabase, params);
+			console.log(fetchedReservationData);
 			reservationData = fetchedReservationData;
-			// console.log(reservationData);
-		} catch (error) {
-			console.error('Error fetching data:', error);
-		}
+			getSeatLayout();
+		} catch (error) {}
 	});
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
 		const updatedReservation = { ...$seatReservation };
-		console.log(updatedReservation);
-		console.log(updatedReservation);
 
 		if (updatedReservation.id === itemID) {
 			updatedReservation.status = selectedStatus;
@@ -37,10 +36,17 @@
 
 		seatReservation.set(updatedReservation);
 	}
-
-	onMount(() => {
-		console.log(reservationData);
-	});
+	async function getSeatLayout() {
+		const response = await data.supabase
+			.from('exhibition')
+			.select('*,seat_layout(*)', { count: 'exact' })
+			.eq('id', reservationData.exhibition_id)
+			.single();
+		if (response.data.seat_layout) {
+			seatLayout = response.data.seat_layout;
+		}
+		console.log(response);
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10 body-font">
@@ -137,7 +143,9 @@
 				<p class="leading-relaxed text-base mb-4">{reservationData.company?.type}</p>
 			</div>
 		</div>
-
+		{#if seatLayout}
+			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
+		{/if}
 		<!-- bottom section -->
 		<div class="dark:bg-gray-900 bg-white mt-5 flex flex-wrap shadow border dark:border-gray-800">
 			<span class="p-5"
