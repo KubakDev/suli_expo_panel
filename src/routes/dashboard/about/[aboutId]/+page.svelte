@@ -79,7 +79,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -87,7 +87,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `about/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(aboutData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload image image**//
@@ -135,7 +135,7 @@
 			} else {
 				aboutData.image = prevThumbnail;
 			}
-			// console.log('////data before submission :', aboutData, 'language :', aboutDataLang);
+			//
 			updateData(aboutData, aboutDataLang, data.supabase);
 
 			setTimeout(() => {

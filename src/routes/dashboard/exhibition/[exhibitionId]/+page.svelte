@@ -233,7 +233,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 	function getImage_sponsor() {
@@ -394,7 +394,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`exhibition/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple img:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						exhibitionsData.images.push(responseMultiple.data?.path);
@@ -432,7 +432,7 @@
 			// ***insert pdf *****//
 			console.log(exhibitionsData);
 			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
-			console.log('result before store :', exhibitionsData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/exhibition');

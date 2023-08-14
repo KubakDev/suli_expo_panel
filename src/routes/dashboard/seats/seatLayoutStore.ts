@@ -23,6 +23,7 @@ export interface SeatLayoutModel {
 	image_url: string | undefined;
 	exhibition: number | undefined;
 	design: JSON | undefined;
+	is_active?: boolean;
 }
 
 const createSeatLayoutStore = () => {
@@ -32,13 +33,13 @@ const createSeatLayoutStore = () => {
 	return {
 		subscribe,
 		setItem: (item: any) => {
-			console.log(item);
+
 			localState = item;
 			set(item);
 		},
 		saveData: async (layoutData: SeatLayoutModel, supabase: SupabaseClient<any, 'public', any>) => {
-			console.log(layoutData);
-			console.log(localState);
+
+
 			if (localState && localState.id) {
 				const { data, error } = await supabase.rpc('update_seat_layout_and_seats', {
 					layout_data: {
@@ -57,7 +58,7 @@ const createSeatLayoutStore = () => {
 					seats: layoutData.seats,
 					image_url: localState.image_url
 				};
-				console.log(data);
+
 			} else {
 				const { data, error } = await supabase.rpc('create_seat_layout_and_seats', {
 					layout_data: {
@@ -76,11 +77,11 @@ const createSeatLayoutStore = () => {
 					seats: layoutData.seats,
 					image_url: layoutData.image_url
 				};
-				console.log(data);
+
 			}
 		},
 		setAreaSize: (size: number) => {
-			console.log('aspec ratio', size);
+
 			if (!localState) {
 				localState = {
 					id: undefined,
@@ -90,11 +91,11 @@ const createSeatLayoutStore = () => {
 					seats: [],
 					image_url: undefined
 				};
-				console.log(localState);
+
 			} else {
 				localState.aspect_ratio = size;
 			}
-			console.log(localState);
+
 			update((item) => localState!);
 		},
 		updateItem: (field: any, value: any) => update((item) => ({ ...item, [field]: value }))

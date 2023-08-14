@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, InputAddon, ButtonGroup } from 'flowbite-svelte';
 
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/media_VideoStore';
@@ -30,6 +30,24 @@
 		id: 0
 	};
 
+	let exhibitionData: ExhibitionModel[] = [];
+	const fetchData = async () => {
+		try {
+			exhibitionData = await getDataExhibition(data.supabase);
+
+			let uniqueTypes = exhibitionData.filter((item, index, array) => {
+				return !array
+					.slice(0, index)
+					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
+			});
+			exhibitionData = uniqueTypes;
+			// console.log(uniqueTypes);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 
@@ -48,7 +66,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -139,7 +157,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete videoObjectData.exhibition_id;
 		} else {

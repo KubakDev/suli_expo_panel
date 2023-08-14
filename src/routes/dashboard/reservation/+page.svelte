@@ -8,17 +8,22 @@
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
-	import { Checkbox, Label } from 'flowbite-svelte';
+	import { Button, Dropdown, Label } from 'flowbite-svelte';
+	import { Icon } from 'flowbite-svelte-icons';
+	import { goto } from '$app/navigation';
 
 	export let data;
 	let selectedExhibition: number[];
+	let searchQuery = '';
+	let searchField: any = null;
+	let isOptionSelected = false;
 
 	async function fetchReservationData() {
 		await getReservationData(data.supabase);
 	}
 	onMount(fetchReservationData);
 
-	async function updateStatus(itemID: number, selectedStatus: string) {
+	async function updateStatus(itemID: any, selectedStatus: any) {
 		const updatedData = $seatReservation.map((reservation) => {
 			if (itemID === reservation.id) {
 				return { ...reservation, status: selectedStatus };
@@ -61,12 +66,72 @@
 			await getReservationData(data.supabase);
 		}
 	}
+
+	//create checkboxes
+	const options = ['company name', 'company phoneNumber', 'company email'];
+	let checked: any = {};
+
+	function selectOneCheckbox(index: number) {
+		const option = options[index];
+
+		for (const opt of options) {
+			checked[opt] = false;
+		}
+
+		checked[option] = true;
+
+		switch (option) {
+			case 'company name':
+				searchField = 'companyNameField';
+				break;
+			case 'company phoneNumber':
+				searchField = 'phoneNumberField';
+				break;
+			case 'company email':
+				searchField = 'emailField';
+				break;
+			default:
+				searchField = null;
+		}
+
+		isOptionSelected = true;
+		filterByCompany();
+	}
+
+	async function filterByCompany() {
+		if (isOptionSelected && searchQuery && searchField !== null) {
+			const filters = selectedExhibition ? [selectedExhibition] : null;
+			const filteredData = await getReservationData(
+				data.supabase,
+				filters,
+				searchField,
+				searchQuery
+			);
+			seatReservation.set(filteredData);
+		} else {
+			await getReservationData(data.supabase);
+		}
+	}
+
+	// clear filter
+	function clearFilters() {
+		isOptionSelected = false;
+
+		for (const opt of options) {
+			checked[opt] = false; // Deselect all checkboxes
+		}
+
+		searchQuery = ''; // Clear the search query
+		searchField = null; // Clear the search field
+
+		// Reset the reservation data
+		getReservationData(data.supabase);
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<!-- filtering by exhibition -->
-
-	<div class="py-5 px-4 lg:px-0 flex justify-end">
+	<div class="py-5 px-4 lg:px-0 flex justify-end items-center gap-5">
+		<!-- filtering by exhibition -->
 		<div class="mb-6 w-44 flex flex-col">
 			<Label for="website-admin" class="block mb-2">Filter By Exhibition Type</Label>
 			<select
@@ -81,6 +146,91 @@
 					<option value={item.id}>{item.exhibition_type}</option>
 				{/each}
 			</select>
+		</div>
+
+		<!-- filtering by company -->
+		<div>
+			<Button>
+				Filter By company info <Icon
+					name="chevron-down-solid"
+					class="w-3 h-3 ml-2 text-white dark:text-white"
+				/>
+			</Button>
+
+			<Dropdown class="p-3 space-y-3 text-sm">
+				<div class="flex items-center">
+					<input
+						type="search"
+						class="rounded text-gray-900 mr-2"
+						bind:value={searchQuery}
+						on:input={filterByCompany}
+						on:keyup={filterByCompany}
+						placeholder="search for..."
+						disabled={!isOptionSelected}
+					/>
+
+					{#if $seatReservation.length > 0}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="24"
+							height="24"
+							viewBox="0 0 22 20"
+							id="filter"
+							><path
+								fill="none"
+								fill-rule="evenodd"
+								stroke="#fff"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M20 0H0l8 9.46V16l4 2V9.46z"
+								transform="translate(1 1)"
+							/></svg
+						>
+					{:else}
+						<!-- clear filter  -->
+						<button on:click={clearFilters} class="">
+							<svg
+								width="32px"
+								height="32px"
+								viewBox="0 0 24 24"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+								><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+									id="SVGRepo_tracerCarrier"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/><g id="SVGRepo_iconCarrier">
+									<g id="Interface / Filter_Off">
+										<path
+											id="Vector"
+											d="M13 4H18.4C18.9601 4 19.2409 4 19.4548 4.10899C19.6429 4.20487 19.7948 4.35774 19.8906 4.5459C19.9996 4.75981 20 5.04005 20 5.6001V6.3448C20 6.58444 20 6.70551 19.9727 6.81942C19.9482 6.92146 19.9072 7.01893 19.8524 7.1084C19.7906 7.20931 19.7043 7.2958 19.5314 7.46875L18 9.00012M7.49961 4H5.59961C5.03956 4 4.75981 4 4.5459 4.10899C4.35774 4.20487 4.20487 4.35774 4.10899 4.5459C4 4.75981 4 5.04005 4 5.6001V6.33736C4 6.58195 4 6.70433 4.02763 6.81942C4.05213 6.92146 4.09263 7.01893 4.14746 7.1084C4.20928 7.20928 4.29591 7.29591 4.46875 7.46875L9.53149 12.5315C9.70443 12.7044 9.79044 12.7904 9.85228 12.8914C9.90711 12.9808 9.94816 13.0786 9.97266 13.1807C10 13.2946 10 13.4155 10 13.6552V18.411C10 19.2682 10 19.6971 10.1805 19.9552C10.3382 20.1806 10.5814 20.331 10.8535 20.3712C11.1651 20.4172 11.5487 20.2257 12.3154 19.8424L13.1154 19.4424C13.4365 19.2819 13.5966 19.2013 13.7139 19.0815C13.8176 18.9756 13.897 18.8485 13.9453 18.7083C14 18.5499 14 18.37 14 18.011V13.6626C14 13.418 14 13.2958 14.0276 13.1807C14.0521 13.0786 14.0926 12.9809 14.1475 12.8915C14.2091 12.7909 14.2952 12.7048 14.4669 12.5331L14.4688 12.5314L15.5001 11.5001M15.5001 11.5001L5 1M15.5001 11.5001L19 15"
+											stroke="#fff"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										/>
+									</g>
+								</g></svg
+							></button
+						>
+					{/if}
+				</div>
+
+				{#each options as option, index}
+					<div class="option">
+						<input
+							type="checkbox"
+							name="selectedOptions"
+							value={option}
+							id="option{index}"
+							on:change={() => selectOneCheckbox(index)}
+							checked={checked[option]}
+						/>
+						<label for="option{index}">{option}</label>
+					</div>
+				{/each}
+			</Dropdown>
 		</div>
 	</div>
 
@@ -123,7 +273,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+								class=" w-48 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -151,54 +301,80 @@
 					</thead>
 
 					<tbody class="dark:text-gray-300">
-						{#each $seatReservation as item, index (item.id)}
-							<tr>
-								<td
-									class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
-								>
-									<div>
-										{index + 1}
-									</div>
-								</td>
+						{#if $seatReservation.length > 0}
+							{#each $seatReservation as item, index (item.id)}
+								<tr>
+									<td
+										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
+									>
+										<div>
+											{index + 1}
+										</div>
+									</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										{item?.company?.company_name}
-									</div>
-								</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{item?.company?.company_name}
+										</div>
+									</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										{item?.company?.phone_number}
-									</div>
-								</td>
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										{item?.exhibition?.exhibition_type}
-									</div>
-								</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{item?.company?.phone_number}
+										</div>
+									</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{item?.exhibition?.exhibition_type}
+										</div>
+									</td>
 
-								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-									<div>
-										<select
-											class="text-black"
-											bind:value={item.status}
-											on:change={() => updateStatus(item.id, item.status)}
-										>
-											<option value={ReservationStatusEnum.PENDING}
-												>{ReservationStatusEnum.PENDING}</option
+									<td
+										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 flex justify-between items-center gap-4"
+									>
+										<div>
+											<button
+												on:click={() => {
+													goto(`/dashboard/reservation/detail/${item.id}`);
+												}}
+												class="dark:text-gray-400 hover:underline"
+												>view
+											</button>
+										</div>
+
+										<div>
+											{#if item.status === ReservationStatusEnum.PENDING}
+												<div class="w-5 h-5 bg-[#F7CB73] rounded-full" />
+											{:else if item.status === ReservationStatusEnum.ACCEPT}
+												<div class="w-5 h-5 bg-green-600 rounded-full" />
+											{:else}
+												<div class="w-5 h-5 bg-red-600 rounded-full" />
+											{/if}
+										</div>
+
+										<div>
+											<select
+												class="text-black"
+												bind:value={item.status}
+												on:change={() => updateStatus(item.id, item.status)}
 											>
-											<option value={ReservationStatusEnum.ACCEPT}
-												>{ReservationStatusEnum.ACCEPT}</option
-											>
-											<option value={ReservationStatusEnum.REJECT}
-												>{ReservationStatusEnum.REJECT}</option
-											>
-										</select>
-									</div>
-								</td>
-							</tr>
-						{/each}
+												<option value={ReservationStatusEnum.PENDING}
+													>{ReservationStatusEnum.PENDING}</option
+												>
+												<option value={ReservationStatusEnum.ACCEPT}
+													>{ReservationStatusEnum.ACCEPT}</option
+												>
+												<option value={ReservationStatusEnum.REJECT}
+													>{ReservationStatusEnum.REJECT}</option
+												>
+											</select>
+										</div>
+									</td>
+								</tr>
+							{/each}
+						{:else}
+							<p>No data found</p>
+						{/if}
 					</tbody>
 				</table>
 			</div>

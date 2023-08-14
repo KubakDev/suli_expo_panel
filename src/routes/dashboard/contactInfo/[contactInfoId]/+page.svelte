@@ -26,7 +26,7 @@
 		created_at: new Date()
 	};
 	const id = $page.params.contactInfoId;
-	// console.log($page.params);
+	//
 
 	//**** get data from db and put it into the fields ****//
 	async function getcontactData() {

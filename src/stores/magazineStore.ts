@@ -15,8 +15,8 @@ export const insertData = async (
 			magazine_data: magazineObject,
 			magazine_lang_data: magazineDataLang
 		});
-		// console.log(magazine_lang_data);
-		// console.log(data);
+		// 
+		// 
 		magazine.update((currentMagazine) => {
 			if (data) {
 				return [...(currentMagazine || []), ...data];
@@ -43,8 +43,8 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('magazine').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
+
+		// 
 		const result = {
 			data: data,
 			count: count
@@ -90,7 +90,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_magazine_and_magazine_lang', {
 			magazine_data: magazineObject,
 			magazine_lang_data: magazineDataLang

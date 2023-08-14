@@ -80,7 +80,7 @@
 		const file = fileInput.files![0];
 		imageFile = file;
 
-		// console.log(file);
+		//
 		const reader = new FileReader();
 		reader.onloadend = () => {
 			promoData.thumbnail = reader.result as '';
@@ -134,7 +134,7 @@
 			}
 
 			updateData(promoData, promotionDataLang, data.supabase);
-			console.log('result before store :', promoData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/promotions');

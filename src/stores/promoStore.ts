@@ -16,7 +16,7 @@ export const insertData = async (
 			promo_lang_data: promotionDataLang
 		});
 
-		// console.log(data);
+		// 
 		promotion.update((currentData) => {
 			if (data) {
 				return [...(currentData || []), ...data];
@@ -43,15 +43,15 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('promo').select('count', { count: 'exact' });
 
-		// console.log('/////////', count);
-		// console.log('data : ', data);
+		// 
+		// 
 		const result = {
 			data: data,
 			count: count
 		};
 
 		promotion.set(data ?? []);
-		// console.log(data);
+		// 
 		return result;
 	} catch (error) {
 		console.error(error);
@@ -91,7 +91,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		// console.log('first');
+		// 
 		const { data, error } = await supabase.rpc('update_promo_and_promo_lang', {
 			promo_data: promoObject,
 			promo_lang_data: promoDataLang

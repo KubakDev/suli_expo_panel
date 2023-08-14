@@ -12,7 +12,6 @@
 
 	function onSubmit() {
 		loading = true;
-		console.log('jh');
 	}
 </script>
 

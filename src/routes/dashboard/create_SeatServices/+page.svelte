@@ -99,7 +99,7 @@
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
-		// console.log(response);
+		//
 		seatServicesObject.icon = response.data?.path ?? '';
 
 		insertDataToSeatService(seatServicesObject, seatServicesDataLang, data.supabase);

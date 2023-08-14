@@ -16,8 +16,8 @@ export const insertData = async (
 			gallery_data: galleryObject,
 			gallery_lang_data: galleryDataLang
 		});
-		// console.log(gallery_lang_data);
-		// console.log(data);
+		// 
+		// 
 		gallery.update((currentGallery) => {
 			if (data) {
 				return [...(currentGallery || []), ...data];
@@ -62,7 +62,7 @@ export const getData = async (
 			count: count || 0
 		};
 
-		// console.log('Search Result:', result);
+		// 
 		gallery.set(data ?? []);
 		return result;
 	} catch (error) {
@@ -103,7 +103,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_gallery_and_gallery_lang', {
 			gallery_data: galleryObject,
 			gallery_lang_data: galleryDataLang

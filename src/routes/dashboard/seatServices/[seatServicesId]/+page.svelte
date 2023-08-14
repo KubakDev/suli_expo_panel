@@ -91,7 +91,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -99,7 +99,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `seat_services/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(seatServicesData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload icon image**//
