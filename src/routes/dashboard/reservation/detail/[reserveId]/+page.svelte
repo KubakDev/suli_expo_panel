@@ -6,30 +6,26 @@
 		seatReservation,
 		updateData
 	} from '../../../../../stores/reservationStore';
- 
 	import { getSeatServiceById, seatServices } from '../../../../../stores/seatServicesStore';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { Reservation } from '../../../../../models/reservationModel';
 	import { Avatar } from 'flowbite-svelte';
 	import type { seatServicesModel } from '../../../../../models/seatServicesModel';
- 
 	import ReservedSeat from './reservedSeat.svelte';
 
 	const params = $page.params.reserveId;
 	export let data;
 
- 
 	let loadingServiceData = true;
 
 	let reservationData: Reservation = {};
 	let serviceData: seatServicesModel = {};
 	let seatLayout: undefined | {} = undefined;
 	let serviceID: any;
- 
+
 	onMount(async () => {
 		try {
 			const fetchedReservationData = await getReservationById(data.supabase, params);
- 
 			reservationData = fetchedReservationData;
 			if (reservationData.services) {
 				const servicesArray = JSON.parse(reservationData.services[0]);
@@ -41,7 +37,6 @@
 		} catch (error) {
 			console.log(error);
 		}
- 
 	});
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
@@ -63,14 +58,13 @@
 		if (response.data.seat_layout) {
 			seatLayout = response.data.seat_layout;
 		}
- 
 	}
 
 	async function getServiceDetail(serviceID: any) {
+		console.log(serviceID);
 		serviceData = await getSeatServiceById(data.supabase, serviceID);
 		console.log(serviceData);
 		loadingServiceData = false; // Update loading state after data is loaded
- 
 	}
 </script>
 
@@ -168,7 +162,6 @@
 				<p class="leading-relaxed text-base mb-4">{reservationData.company?.type}</p>
 			</div>
 		</div>
- 
 
 		<!-- service detail -->
 		<div class="pt-5" />
@@ -245,6 +238,5 @@
 		{#if seatLayout}
 			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
 		{/if}
- 
 	</div>
 </div>
