@@ -133,9 +133,11 @@
 	<div class="py-5 px-4 lg:px-0 flex justify-end items-center gap-5">
 		<!-- filtering by exhibition -->
 		<div class="mb-6 w-44 flex flex-col">
-			<Label for="website-admin" class="block mb-2">Filter By Exhibition Type</Label>
+			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs px-2"
+				>Filter By Exhibition Type</Label
+			>
 			<select
-				class="dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+				class="dark:text-gray-900 border border-gray-300 rounded-lg w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 				id="type"
 				name="type"
 				bind:value={selectedExhibition}
@@ -153,7 +155,7 @@
 			<Button>
 				Filter By company info <Icon
 					name="chevron-down-solid"
-					class="w-3 h-3 ml-2 text-white dark:text-white"
+					class="w-3 h-3 ml-2 text-white dark:text-white  border border-gray-300 rounded-lg   focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 				/>
 			</Button>
 

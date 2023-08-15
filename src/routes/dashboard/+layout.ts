@@ -42,10 +42,7 @@ export const load = async () => {
 			title: 'Contact',
 			url: '/dashboard/contactInfo'
 		},
-		{
-			title: 'Seat Services',
-			url: '/dashboard/seatServices'
-		},
+
 		{
 			title: 'Reservation',
 			url: '/dashboard/reservation'

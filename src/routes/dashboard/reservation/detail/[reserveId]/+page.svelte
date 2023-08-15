@@ -6,24 +6,37 @@
 		seatReservation,
 		updateData
 	} from '../../../../../stores/reservationStore';
+	import { getSeatServiceById, seatServices } from '../../../../../stores/seatServicesStore';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { Reservation } from '../../../../../models/reservationModel';
 	import { Avatar } from 'flowbite-svelte';
+	import type { seatServicesModel } from '../../../../../models/seatServicesModel';
 	import ReservedSeat from './reservedSeat.svelte';
 
 	const params = $page.params.reserveId;
 	export let data;
 
+	let loadingServiceData = true;
+
 	let reservationData: Reservation = {};
+	let serviceData: seatServicesModel = {};
 	let seatLayout: undefined | {} = undefined;
+	let serviceID: any;
 
 	onMount(async () => {
 		try {
 			const fetchedReservationData = await getReservationById(data.supabase, params);
-			console.log(fetchedReservationData);
 			reservationData = fetchedReservationData;
+			if (reservationData.services) {
+				const servicesArray = JSON.parse(reservationData.services[0]);
+				serviceID = servicesArray.serviceId;
+				getServiceDetail(serviceID);
+			}
+
 			getSeatLayout();
-		} catch (error) {}
+		} catch (error) {
+			console.log(error);
+		}
 	});
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
@@ -45,7 +58,12 @@
 		if (response.data.seat_layout) {
 			seatLayout = response.data.seat_layout;
 		}
-		console.log(response);
+	}
+
+	async function getServiceDetail(serviceID: any) {
+		serviceData = await getSeatServiceById(data.supabase, serviceID);
+		console.log(serviceData);
+		loadingServiceData = false; // Update loading state after data is loaded
 	}
 </script>
 
@@ -143,16 +161,81 @@
 				<p class="leading-relaxed text-base mb-4">{reservationData.company?.type}</p>
 			</div>
 		</div>
+
+		<!-- service detail -->
+		<div class="pt-5" />
+
+		{#if loadingServiceData}
+			<p>Loading...</p>
+		{:else}
+			<div class="flex flex-wrap dark:bg-gray-900 bg-white shadow border dark:border-gray-800">
+				<div
+					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
+				>
+					<h2
+						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
+					>
+						service title
+					</h2>
+					<p class="leading-relaxed text-base mb-4">
+						{#if serviceData.seat_services_languages}
+							{#each serviceData.seat_services_languages as language}
+								<div>
+									<p>Language: {language.language}</p>
+									<p>Title: {language.title}</p>
+									<p>Description: {language.description}</p>
+								</div>
+							{/each}
+						{/if}
+					</p>
+				</div>
+				<div
+					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
+				>
+					<h2
+						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
+					>
+						service price
+					</h2>
+					<p class="leading-relaxed text-base mb-4">{serviceData?.price}</p>
+				</div>
+				<div
+					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
+				>
+					<h2
+						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
+					>
+						service quantity
+					</h2>
+					<p class="leading-relaxed text-base mb-4">{serviceData.quantity}</p>
+				</div>
+				<div
+					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
+				>
+					<h2
+						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
+					>
+						service discount
+					</h2>
+					<p class="leading-relaxed text-base mb-4">{serviceData?.discount}</p>
+				</div>
+				<div
+					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
+				>
+					<h2
+						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
+					>
+						service type
+					</h2>
+					<p class="leading-relaxed text-base mb-4">{serviceData?.type}</p>
+				</div>
+			</div>
+		{/if}
+
+		<!-- seatLayout -->
+
 		{#if seatLayout}
 			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
 		{/if}
-		<!-- bottom section -->
-		<div class="dark:bg-gray-900 bg-white mt-5 flex flex-wrap shadow border dark:border-gray-800">
-			<span class="p-5"
-				>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nulla mollitia laudantium quam
-				incidunt porro sint fugiat dolorem vero distinctio quaerat quisquam molestiae quos, ipsam
-				quo, non repellat, amet hic maiores.</span
-			>
-		</div>
 	</div>
 </div>
