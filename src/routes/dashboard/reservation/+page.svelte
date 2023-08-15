@@ -155,8 +155,8 @@
 			<Button>
 				Filter By company info <Icon
 					name="chevron-down-solid"
-        	class="w-3 h-3 ml-2 text-white dark:text-white  border border-gray-300 rounded-lg   focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
- 
+					class="w-3 h-3 ml-2 text-white dark:text-white"
+				/>
 			</Button>
 
 			<Dropdown class="p-3 space-y-3 text-sm">
