@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { seatServicesModel, seatServicesModelLang } from '../models/seatServicesModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ServiceModel, ServiceModelLang } from '../models/serviceModel';
 
 export const seatServices = writable<seatServicesModel[]>([]);
 
