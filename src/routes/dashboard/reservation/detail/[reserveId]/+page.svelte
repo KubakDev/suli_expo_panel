@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { getSeatServiceById, seatServices } from '../../../../../stores/seatServicesStore';
+	import { getSeatServicesByIds, seatServices } from '../../../../../stores/seatServicesStore';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { Reservation } from '../../../../../models/reservationModel';
 	import { Avatar } from 'flowbite-svelte';
@@ -19,18 +19,34 @@
 	let loadingServiceData = true;
 
 	let reservationData: Reservation = {};
-	let serviceData: seatServicesModel = {};
+	let serviceData: any = [];
 	let seatLayout: undefined | {} = undefined;
-	let serviceID: any;
+	let serviceID: any = [];
+	let quantityNumber: any = [];
 
 	onMount(async () => {
 		try {
 			const fetchedReservationData = await getReservationById(data.supabase, params);
 			reservationData = fetchedReservationData;
+
 			if (reservationData.services) {
-				const servicesArray = JSON.parse(reservationData.services[0]);
-				serviceID = servicesArray.serviceId;
-				getServiceDetail(serviceID);
+				const servicesArray = reservationData.services;
+
+				servicesArray.map((serviceString) => {
+					const serviceObj = JSON.parse(serviceString);
+
+					serviceID.push(serviceObj.serviceId);
+				});
+
+				servicesArray.map((serviceString) => {
+					const serviceObj = JSON.parse(serviceString);
+
+					quantityNumber.push(serviceObj.quantity);
+				});
+				// console.log(quantityNumber);
+				// console.log(serviceID);
+
+				getServiceDetails(serviceID);
 			}
 
 			getSeatLayout();
@@ -60,11 +76,17 @@
 		}
 	}
 
-	async function getServiceDetail(serviceID: any) {
-		console.log(serviceID);
-		serviceData = await getSeatServiceById(data.supabase, serviceID);
-		console.log(serviceData);
-		loadingServiceData = false; // Update loading state after data is loaded
+	async function getServiceDetails(serviceIDs: any) {
+		try {
+			serviceData = await getSeatServicesByIds(data.supabase, serviceIDs);
+			console.log(serviceData);
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
+	function findTotalPrice(price: number, quantity: number) {
+		return price * quantity;
 	}
 </script>
 
@@ -165,8 +187,54 @@
 
 		<!-- service detail -->
 		<div class="pt-5" />
+		{#if serviceData}
+			{#each serviceData as item, index}
+				<div
+					class=" dark:bg-gray-700 rounded-lg flex flex-wrap shadow border dark:border-gray-800 p-8"
+				>
+					<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 w-full">
+						<div class="lg:col-span-3">
+							<div>
+								<span>Title :</span>
+								<h1>{item.seat_services_languages[0].title}</h1>
+							</div>
+							<div>
+								<span>Quantity :</span>
+								<h1>{quantityNumber[index]}</h1>
+							</div>
+							<div>
+								<span>Price :</span>
+								<h1>{item.price}$</h1>
+							</div>
+						</div>
+						<div
+							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg"
+						>
+							<div class="flex flex-col justify-center items-center py-2">
+								<h1 class="text-3xl font-bold py-5">{item.discount}%</h1>
+							</div>
+							<div class="border border-gray-800" />
+							<div class="flex flex-col justify-center items-center py-2">
+								<span class="text-gray-500">Total Price</span>
+								<h1>{findTotalPrice(item.price, quantityNumber[index])}$</h1>
+							</div>
+						</div>
+						<div
+							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg flex flex-col justify-center items-center"
+						>
+							<p class="text-xl font-semibold">{item.type}</p>
+						</div>
 
-		{#if loadingServiceData}
+						<div
+							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 lg:col-span-2 p-4 shadow-sm rounded-lg dark:text-gray-50"
+						>
+							<p>{item.seat_services_languages[0].description}</p>
+						</div>
+					</div>
+				</div>
+			{/each}
+		{/if}
+		<!-- {#if loadingServiceData}
 			<p>Loading...</p>
 		{:else}
 			<div class="flex flex-wrap dark:bg-gray-900 bg-white shadow border dark:border-gray-800">
@@ -180,13 +248,21 @@
 					</h2>
 					<p class="leading-relaxed text-base mb-4">
 						{#if serviceData.seat_services_languages}
-							{#each serviceData.seat_services_languages as language}
-								<div>
-									<p>Language: {language.language}</p>
-									<p>Title: {language.title}</p>
-									<p>Description: {language.description}</p>
-								</div>
-							{/each}
+							<p>{serviceData.seat_services_languages[0].title}</p>
+						{/if}
+					</p>
+				</div>
+				<div
+					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
+				>
+					<h2
+						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
+					>
+						service description
+					</h2>
+					<p class="leading-relaxed text-base mb-4">
+						{#if serviceData.seat_services_languages}
+							<p>{serviceData.seat_services_languages[0].description}</p>
 						{/if}
 					</p>
 				</div>
@@ -231,12 +307,12 @@
 					<p class="leading-relaxed text-base mb-4">{serviceData?.type}</p>
 				</div>
 			</div>
-		{/if}
+		{/if} -->
 
 		<!-- seatLayout -->
 
-		{#if seatLayout}
+		<!-- {#if seatLayout}
 			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
-		{/if}
+		{/if} -->
 	</div>
 </div>
