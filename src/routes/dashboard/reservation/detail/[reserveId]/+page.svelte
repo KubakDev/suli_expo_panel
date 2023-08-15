@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import {
-		getReservationById,
-		seatReservation,
-		updateData
-	} from '../../../../../stores/reservationStore';
 	import { getSeatServiceById, seatServices } from '../../../../../stores/seatServicesStore';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { Reservation } from '../../../../../models/reservationModel';
 	import { Avatar } from 'flowbite-svelte';
 	import type { seatServicesModel } from '../../../../../models/seatServicesModel';
 	import ReservedSeat from './reservedSeat.svelte';
+	import {
+		getReservationById,
+		seatReservation,
+		updateData
+	} from '../../../../../stores/reservationStore';
 
 	const params = $page.params.reserveId;
 	export let data;
