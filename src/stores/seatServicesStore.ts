@@ -119,18 +119,18 @@ export const updateSeatService = async (
 };
 
 // get  data by id
-export const getSeatServiceById = async (supabase: SupabaseClient, id: number) => {
+export const getSeatServicesByIds = async (supabase: SupabaseClient, ids: number[]) => {
 	try {
 		const { data, error } = await supabase
 			.from('seat_services')
 			.select('*,seat_services_languages(*)')
-			.eq('id', id)
-			.single();
+			.in('id', ids);
 
 		if (error) {
 			console.error(error);
 			throw error;
 		}
+		// console.log(data);
 
 		return data;
 	} catch (error) {

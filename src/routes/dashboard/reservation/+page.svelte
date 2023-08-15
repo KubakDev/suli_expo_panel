@@ -130,58 +130,66 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="py-5 px-4 lg:px-0 flex justify-end items-center gap-5">
+	<div class="py-5 px-4 lg:px-0 flex justify-end gap-5">
 		<!-- filtering by exhibition -->
 		<div class="mb-6 w-44 flex flex-col">
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs px-2"
+			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs "
 				>Filter By Exhibition Type</Label
 			>
+
 			<select
-				class="dark:text-gray-900 border border-gray-300 rounded-lg w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+				class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 				id="type"
 				name="type"
 				bind:value={selectedExhibition}
 				on:change={filterByExhibition}
 			>
-				<option value={null}>All Exhibitions</option>
+				<option value={null} class="bg-[#e9ecefd2] dark:bg-gray-100">All Exhibitions</option>
 				{#each exhibitionData as item (item.id)}
-					<option value={item.id}>{item.exhibition_type}</option>
+					<option value={item.id} class="bg-[#e9ecefd2] dark:bg-gray-100"
+						>{item.exhibition_type}</option
+					>
 				{/each}
 			</select>
 		</div>
 
 		<!-- filtering by company -->
 		<div>
-			<Button>
-				Filter By company info <Icon
+			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs  "
+				>Filter By company info</Label
+			>
+			<Button
+				class="py-2 font-medium text-center text-base  hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+			>
+				Company Information <Icon
 					name="chevron-down-solid"
-					class="w-3 h-3 ml-2 text-white dark:text-white  border border-gray-300 rounded-lg   focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+					class="w-3 h-3 ml-2 text-gray-500 dark:text-gray-500   "
 				/>
 			</Button>
-
-			<Dropdown class="p-3 space-y-3 text-sm">
-				<div class="flex items-center">
+			<!-- bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-80 pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" -->
+			<Dropdown class="bg-[#e9ecefd2] dark:bg-gray-100 space-y-3 rounded">
+				<div class="flex items-center p-2 text-gray-900">
 					<input
 						type="search"
-						class="rounded text-gray-900 mr-2"
+						class="mr-2 dark:bg-gray-50 border border-gray-300 dark:border-gray-300 dark:text-gray-900 text-sm rounded-lg focus:ring-gray-200 focus:border-gray-300 block w-48 pl-3 p-2.5 dark:placeholder-gray-400 dark:focus:ring-gray-300 dark:focus:border-gray-300"
 						bind:value={searchQuery}
 						on:input={filterByCompany}
 						on:keyup={filterByCompany}
-						placeholder="search for..."
+						placeholder="Search for..."
 						disabled={!isOptionSelected}
 					/>
 
 					{#if $seatReservation.length > 0}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
-							width="24"
-							height="24"
+							width="24px"
+							height="24px"
 							viewBox="0 0 22 20"
 							id="filter"
 							><path
 								fill="none"
 								fill-rule="evenodd"
-								stroke="#fff"
+								stroke="gray"
 								stroke-linecap="round"
 								stroke-linejoin="round"
 								stroke-width="2"
@@ -193,8 +201,8 @@
 						<!-- clear filter  -->
 						<button on:click={clearFilters} class="">
 							<svg
-								width="32px"
-								height="32px"
+								width="24px"
+								height="24px"
 								viewBox="0 0 24 24"
 								fill="none"
 								xmlns="http://www.w3.org/2000/svg"
@@ -207,7 +215,7 @@
 										<path
 											id="Vector"
 											d="M13 4H18.4C18.9601 4 19.2409 4 19.4548 4.10899C19.6429 4.20487 19.7948 4.35774 19.8906 4.5459C19.9996 4.75981 20 5.04005 20 5.6001V6.3448C20 6.58444 20 6.70551 19.9727 6.81942C19.9482 6.92146 19.9072 7.01893 19.8524 7.1084C19.7906 7.20931 19.7043 7.2958 19.5314 7.46875L18 9.00012M7.49961 4H5.59961C5.03956 4 4.75981 4 4.5459 4.10899C4.35774 4.20487 4.20487 4.35774 4.10899 4.5459C4 4.75981 4 5.04005 4 5.6001V6.33736C4 6.58195 4 6.70433 4.02763 6.81942C4.05213 6.92146 4.09263 7.01893 4.14746 7.1084C4.20928 7.20928 4.29591 7.29591 4.46875 7.46875L9.53149 12.5315C9.70443 12.7044 9.79044 12.7904 9.85228 12.8914C9.90711 12.9808 9.94816 13.0786 9.97266 13.1807C10 13.2946 10 13.4155 10 13.6552V18.411C10 19.2682 10 19.6971 10.1805 19.9552C10.3382 20.1806 10.5814 20.331 10.8535 20.3712C11.1651 20.4172 11.5487 20.2257 12.3154 19.8424L13.1154 19.4424C13.4365 19.2819 13.5966 19.2013 13.7139 19.0815C13.8176 18.9756 13.897 18.8485 13.9453 18.7083C14 18.5499 14 18.37 14 18.011V13.6626C14 13.418 14 13.2958 14.0276 13.1807C14.0521 13.0786 14.0926 12.9809 14.1475 12.8915C14.2091 12.7909 14.2952 12.7048 14.4669 12.5331L14.4688 12.5314L15.5001 11.5001M15.5001 11.5001L5 1M15.5001 11.5001L19 15"
-											stroke="#fff"
+											stroke="gray"
 											stroke-width="2"
 											stroke-linecap="round"
 											stroke-linejoin="round"
@@ -220,8 +228,9 @@
 				</div>
 
 				{#each options as option, index}
-					<div class="option">
+					<div class="option px-4 pb-2 text-gray-900">
 						<input
+							class="w-4 h-4 bg-gray-100 dark:bg-gray-100 border-gray-300 dark:ring-offset-gray-200 focus:ring-2 mr-2 dark:border-gray-400 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
 							type="checkbox"
 							name="selectedOptions"
 							value={option}
@@ -275,7 +284,7 @@
 							</th>
 
 							<th
-								class=" w-48 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+								class="w-60 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -340,7 +349,7 @@
 													goto(`/dashboard/reservation/detail/${item.id}`);
 												}}
 												class="dark:text-gray-400 hover:underline"
-												>view
+												>View
 											</button>
 										</div>
 
@@ -356,7 +365,7 @@
 
 										<div>
 											<select
-												class="text-black"
+												class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg w-full focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 												bind:value={item.status}
 												on:change={() => updateStatus(item.id, item.status)}
 											>
