@@ -12,11 +12,10 @@
 		seatReservation,
 		updateData
 	} from '../../../../../stores/reservationStore';
+	import Icon from 'svelte-icons-pack';
 
 	const params = $page.params.reserveId;
 	export let data;
-
-	let loadingServiceData = true;
 
 	let reservationData: Reservation = {};
 	let serviceData: any = [];
@@ -101,8 +100,10 @@
 			/>
 		</div>
 		<!-- top section  -->
-		<div class="flex flex-col text-center w-full mb-20">
-			<h2 class="text-2xl text-primary-100 tracking-widest font-medium title-font mb-1">
+		<div class="flex flex-col text-center w-full mb-0">
+			<h2
+				class="text-3xl text-gray-900 dark:text-gray-100 tracking-widest font-medium title-font mb-1"
+			>
 				{reservationData.company?.company_name}
 			</h2>
 			<h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 dark:text-gray-300 text-gray-900">
@@ -145,7 +146,7 @@
 					</p>
 				</div>
 			</h1>
-			<p class="lg:w-2/3 mx-auto leading-relaxed text-base">
+			<p class="lg:w-2/3 mx-auto leading-relaxed text-base dark:text-gray-300 text-gray-600">
 				{reservationData?.comment}
 			</p>
 		</div>
@@ -153,7 +154,7 @@
 		<!-- change status -->
 		<div class="flex justify-end py-3">
 			<select
-				class="text-black rounded-md"
+				class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 				bind:value={reservationData.status}
 				on:change={() => updateStatus(reservationData?.id, reservationData.status)}
 			>
@@ -187,132 +188,137 @@
 
 		<!-- service detail -->
 		<div class="pt-5" />
-		{#if serviceData}
-			{#each serviceData as item, index}
-				<div
-					class=" dark:bg-gray-700 rounded-lg flex flex-wrap shadow border dark:border-gray-800 p-8"
-				>
-					<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 w-full">
-						<div class="lg:col-span-3">
-							<div>
-								<span>Title :</span>
-								<h1>{item.seat_services_languages[0].title}</h1>
-							</div>
-							<div>
-								<span>Quantity :</span>
-								<h1>{quantityNumber[index]}</h1>
-							</div>
-							<div>
-								<span>Price :</span>
-								<h1>{item.price}$</h1>
-							</div>
-						</div>
-						<div
-							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg"
-						>
-							<div class="flex flex-col justify-center items-center py-2">
-								<h1 class="text-3xl font-bold py-5">{item.discount}%</h1>
-							</div>
-							<div class="border border-gray-800" />
-							<div class="flex flex-col justify-center items-center py-2">
-								<span class="text-gray-500">Total Price</span>
-								<h1>{findTotalPrice(item.price, quantityNumber[index])}$</h1>
-							</div>
-						</div>
-						<div
-							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg flex flex-col justify-center items-center"
-						>
-							<p class="text-xl font-semibold">{item.type}</p>
-						</div>
 
-						<div
-							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 lg:col-span-2 p-4 shadow-sm rounded-lg dark:text-gray-50"
-						>
-							<p>{item.seat_services_languages[0].description}</p>
-						</div>
-					</div>
-				</div>
-			{/each}
-		{/if}
-		<!-- {#if loadingServiceData}
-			<p>Loading...</p>
-		{:else}
-			<div class="flex flex-wrap dark:bg-gray-900 bg-white shadow border dark:border-gray-800">
-				<div
-					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
-				>
-					<h2
-						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
-					>
-						service title
-					</h2>
-					<p class="leading-relaxed text-base mb-4">
-						{#if serviceData.seat_services_languages}
-							<p>{serviceData.seat_services_languages[0].title}</p>
+		<!-- table data -->
+
+		<div class="overflow-x-auto rounded">
+			<div class="min-w-full table-responsive">
+				<table class="min-w-full border-collapse">
+					<thead>
+						<tr>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex justify-start items-center gap-2">
+									<span>#</span>
+								</div>
+							</th>
+
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Title</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-start gap-2">
+									<span>Description</span>
+								</div>
+							</th>
+
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Type </span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Quantity</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Price</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Discount</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Total Price</span>
+								</div>
+							</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{#if serviceData}
+							{#each serviceData as item, index}
+								<tr>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>
+											{index + 1}
+										</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.seat_services_languages[0].title}</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.seat_services_languages[0].description}</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.type}</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{quantityNumber[index]}</div>
+									</td>
+
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.price}$</div>
+									</td>
+
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div class="text-base font-bold">{item.discount}%</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div class="text-xl font-bold">
+											{findTotalPrice(item.price, quantityNumber[index])}$
+										</div>
+									</td>
+								</tr>
+							{/each}
 						{/if}
-					</p>
-				</div>
-				<div
-					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
-				>
-					<h2
-						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
-					>
-						service description
-					</h2>
-					<p class="leading-relaxed text-base mb-4">
-						{#if serviceData.seat_services_languages}
-							<p>{serviceData.seat_services_languages[0].description}</p>
-						{/if}
-					</p>
-				</div>
-				<div
-					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
-				>
-					<h2
-						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
-					>
-						service price
-					</h2>
-					<p class="leading-relaxed text-base mb-4">{serviceData?.price}</p>
-				</div>
-				<div
-					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
-				>
-					<h2
-						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
-					>
-						service quantity
-					</h2>
-					<p class="leading-relaxed text-base mb-4">{serviceData.quantity}</p>
-				</div>
-				<div
-					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
-				>
-					<h2
-						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
-					>
-						service discount
-					</h2>
-					<p class="leading-relaxed text-base mb-4">{serviceData?.discount}</p>
-				</div>
-				<div
-					class="xl:w-1/5 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
-				>
-					<h2
-						class="text-lg sm:text-xl dark:text-gray-300 text-gray-900 font-medium title-font mb-2"
-					>
-						service type
-					</h2>
-					<p class="leading-relaxed text-base mb-4">{serviceData?.type}</p>
-				</div>
+					</tbody>
+				</table>
 			</div>
-		{/if} -->
+		</div>
 
 		<!-- seatLayout -->
 
-		<!-- {#if seatLayout}
+		{#if seatLayout}
 			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
-		{/if} -->
+		{/if}
 	</div>
 </div>
