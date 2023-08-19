@@ -1,29 +1,57 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { getSeatServicesByIds, seatServices } from '../../../../../stores/seatServicesStore';
+	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
+	import type { Reservation } from '../../../../../models/reservationModel';
+	import { Avatar } from 'flowbite-svelte';
+	import type { seatServicesModel } from '../../../../../models/seatServicesModel';
+	import ReservedSeat from './reservedSeat.svelte';
 	import {
 		getReservationById,
 		seatReservation,
 		updateData
 	} from '../../../../../stores/reservationStore';
-	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
-	import type { Reservation } from '../../../../../models/reservationModel';
-	import { Avatar } from 'flowbite-svelte';
-	import ReservedSeat from './reservedSeat.svelte';
+	import Icon from 'svelte-icons-pack';
 
 	const params = $page.params.reserveId;
 	export let data;
 
 	let reservationData: Reservation = {};
+	let serviceData: any = [];
 	let seatLayout: undefined | {} = undefined;
+	let serviceID: any = [];
+	let quantityNumber: any = [];
 
 	onMount(async () => {
 		try {
 			const fetchedReservationData = await getReservationById(data.supabase, params);
-			console.log(fetchedReservationData);
 			reservationData = fetchedReservationData;
+
+			if (reservationData.services) {
+				const servicesArray = reservationData.services;
+
+				servicesArray.map((serviceString) => {
+					const serviceObj = JSON.parse(serviceString);
+
+					serviceID.push(serviceObj.serviceId);
+				});
+
+				servicesArray.map((serviceString) => {
+					const serviceObj = JSON.parse(serviceString);
+
+					quantityNumber.push(serviceObj.quantity);
+				});
+				// console.log(quantityNumber);
+				// console.log(serviceID);
+
+				getServiceDetails(serviceID);
+			}
+
 			getSeatLayout();
-		} catch (error) {}
+		} catch (error) {
+			console.log(error);
+		}
 	});
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
@@ -45,7 +73,19 @@
 		if (response.data.seat_layout) {
 			seatLayout = response.data.seat_layout;
 		}
-		console.log(response);
+	}
+
+	async function getServiceDetails(serviceIDs: any) {
+		try {
+			serviceData = await getSeatServicesByIds(data.supabase, serviceIDs);
+			console.log(serviceData);
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
+	function findTotalPrice(price: number, quantity: number) {
+		return price * quantity;
 	}
 </script>
 
@@ -60,8 +100,10 @@
 			/>
 		</div>
 		<!-- top section  -->
-		<div class="flex flex-col text-center w-full mb-20">
-			<h2 class="text-2xl text-primary-100 tracking-widest font-medium title-font mb-1">
+		<div class="flex flex-col text-center w-full mb-0">
+			<h2
+				class="text-3xl text-gray-900 dark:text-gray-100 tracking-widest font-medium title-font mb-1"
+			>
 				{reservationData.company?.company_name}
 			</h2>
 			<h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 dark:text-gray-300 text-gray-900">
@@ -104,7 +146,7 @@
 					</p>
 				</div>
 			</h1>
-			<p class="lg:w-2/3 mx-auto leading-relaxed text-base">
+			<p class="lg:w-2/3 mx-auto leading-relaxed text-base dark:text-gray-300 text-gray-600">
 				{reservationData?.comment}
 			</p>
 		</div>
@@ -112,7 +154,7 @@
 		<!-- change status -->
 		<div class="flex justify-end py-3">
 			<select
-				class="text-black rounded-md"
+				class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 				bind:value={reservationData.status}
 				on:change={() => updateStatus(reservationData?.id, reservationData.status)}
 			>
@@ -143,16 +185,177 @@
 				<p class="leading-relaxed text-base mb-4">{reservationData.company?.type}</p>
 			</div>
 		</div>
-		{#if seatLayout}
-			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
-		{/if}
-		<!-- bottom section -->
-		<div class="dark:bg-gray-900 bg-white mt-5 flex flex-wrap shadow border dark:border-gray-800">
-			<span class="p-5"
-				>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nulla mollitia laudantium quam
-				incidunt porro sint fugiat dolorem vero distinctio quaerat quisquam molestiae quos, ipsam
-				quo, non repellat, amet hic maiores.</span
-			>
+
+		<!-- service detail -->
+		<div class="pt-5" />
+		{#if serviceData}
+			{#each serviceData as item, index}
+				<div
+					class=" dark:bg-gray-700 rounded-lg flex flex-wrap shadow border dark:border-gray-800 p-8"
+				>
+					<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 w-full">
+						<div class="lg:col-span-3">
+							<div>
+								<span>Title :</span>
+								<h1>{item.seat_services_languages[0].title}</h1>
+							</div>
+							<div>
+								<span>Quantity :</span>
+								<h1>{quantityNumber[index]}</h1>
+							</div>
+							<div>
+								<span>Price :</span>
+								<h1>{item.price}$</h1>
+							</div>
+						</div>
+						<div
+							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg"
+						>
+							<div class="flex flex-col justify-center items-center py-2">
+								<h1 class="text-3xl font-bold py-5">{item.discount}%</h1>
+							</div>
+							<div class="border border-gray-800" />
+							<div class="flex flex-col justify-center items-center py-2">
+								<span class="text-gray-500">Total Price</span>
+								<h1>{findTotalPrice(item.price, quantityNumber[index])}$</h1>
+							</div>
+						</div>
+						<div
+							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg flex flex-col justify-center items-center"
+						>
+							<p class="text-xl font-semibold">{item.type}</p>
+						</div>
+		<!-- table data -->
+
+		<div class="overflow-x-auto rounded">
+			<div class="min-w-full table-responsive">
+				<table class="min-w-full border-collapse">
+					<thead>
+						<tr>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex justify-start items-center gap-2">
+									<span>#</span>
+								</div>
+							</th>
+
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Title</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-start gap-2">
+									<span>Description</span>
+								</div>
+							</th>
+
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Type </span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Quantity</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Price</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Discount</span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
+									<span>Total Price</span>
+								</div>
+							</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{#if serviceData}
+							{#each serviceData as item, index}
+								<tr>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>
+											{index + 1}
+										</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.seat_services_languages[0].title}</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.seat_services_languages[0].description}</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.type}</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{quantityNumber[index]}</div>
+									</td>
+
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div>{item.price}$</div>
+									</td>
+
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div class="text-base font-bold">{item.discount}%</div>
+									</td>
+									<td
+										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div class="text-xl font-bold">
+											{findTotalPrice(item.price, quantityNumber[index])}$
+										</div>
+									</td>
+								</tr>
+							{/each}
+
+						{/if}
+					</tbody>
+				</table>
+			</div>
 		</div>
+
+		<!-- seatLayout -->
+
+		<!-- {#if seatLayout}
+			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
+		{/if} -->
 	</div>
 </div>

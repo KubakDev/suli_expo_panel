@@ -26,8 +26,8 @@ export const load = async () => {
 			url: '/dashboard/seats_ui'
 		},
 		{
-			title: 'Reservation',
-			url: '/dashboard/seat_reservation'
+			title: 'seatServices',
+			url: '/dashboard/seatServices'
 		},
 		{
 			title: 'Carousel',
@@ -42,10 +42,7 @@ export const load = async () => {
 			title: 'Contact',
 			url: '/dashboard/contactInfo'
 		},
-		{
-			title: 'Seat Services',
-			url: '/dashboard/seatServices'
-		},
+
 		{
 			title: 'Reservation',
 			url: '/dashboard/reservation'

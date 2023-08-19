@@ -1,11 +1,7 @@
 <script lang="ts">
-	import { Button, Checkbox } from 'flowbite-svelte';
 	import { onMount, tick } from 'svelte';
 	import { fabric } from 'fabric';
 	import type { Canvas } from 'fabric/fabric-impl';
-	import type { SupabaseClient } from '@supabase/supabase-js';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 
 	export let data: any;
 	export let reservedData: any = [];
