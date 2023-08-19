@@ -336,6 +336,8 @@
 				location: '',
 				location_title: '',
 				pdf_files: '',
+				brochure: '',
+				map_title: '',
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 			});
 		}

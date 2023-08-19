@@ -16,6 +16,7 @@
 	//
 
 	async function fetchData() {
+		console.log(data.supabase);
 		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
 
 		galleryData = result.data;

@@ -11,6 +11,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	export let data;
 
