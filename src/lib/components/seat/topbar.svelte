@@ -10,6 +10,7 @@
 	import LayerUnGroup from '$lib/images/icons/layerUnGroup.svg';
 	import { EditingMode } from '../../../models/editingModeModel';
 	import { createEventDispatcher } from 'svelte';
+	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
 
 	class MyGroup extends fabric.Group {
 		groupId: number;
@@ -123,7 +124,6 @@
 					const canvasHeight = containerWidth! / imageRatio;
 
 					data.canvas?.setHeight(canvasHeight);
-
 					data.canvas?.setBackgroundImage(image, data.canvas?.renderAll.bind(data.canvas), {
 						scaleX: data.canvas?.width! / image!.width!,
 						scaleY: data.canvas?.height! / image!.height!
@@ -131,6 +131,7 @@
 				};
 			};
 			reader.readAsDataURL(file);
+			data.canvas?.renderAll();
 		};
 		input.click();
 	}
