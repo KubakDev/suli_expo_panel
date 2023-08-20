@@ -188,43 +188,7 @@
 
 		<!-- service detail -->
 		<div class="pt-5" />
-		{#if serviceData}
-			{#each serviceData as item, index}
-				<div
-					class=" dark:bg-gray-700 rounded-lg flex flex-wrap shadow border dark:border-gray-800 p-8"
-				>
-					<div class="grid grid-cols-1 lg:grid-cols-7 gap-4 w-full">
-						<div class="lg:col-span-3">
-							<div>
-								<span>Title :</span>
-								<h1>{item.seat_services_languages[0].title}</h1>
-							</div>
-							<div>
-								<span>Quantity :</span>
-								<h1>{quantityNumber[index]}</h1>
-							</div>
-							<div>
-								<span>Price :</span>
-								<h1>{item.price}$</h1>
-							</div>
-						</div>
-						<div
-							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg"
-						>
-							<div class="flex flex-col justify-center items-center py-2">
-								<h1 class="text-3xl font-bold py-5">{item.discount}%</h1>
-							</div>
-							<div class="border border-gray-800" />
-							<div class="flex flex-col justify-center items-center py-2">
-								<span class="text-gray-500">Total Price</span>
-								<h1>{findTotalPrice(item.price, quantityNumber[index])}$</h1>
-							</div>
-						</div>
-						<div
-							class="dark:bg-gray-900 border border-gray-200 dark:border dark:border-gray-600 col-span-1 p-4 shadow-sm rounded-lg flex flex-col justify-center items-center"
-						>
-							<p class="text-xl font-semibold">{item.type}</p>
-						</div>
+
 		<!-- table data -->
 
 		<div class="overflow-x-auto rounded">
@@ -345,7 +309,6 @@
 									</td>
 								</tr>
 							{/each}
-
 						{/if}
 					</tbody>
 				</table>
@@ -354,8 +317,8 @@
 
 		<!-- seatLayout -->
 
-		<!-- {#if seatLayout}
+		{#if seatLayout}
 			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
-		{/if} -->
+		{/if}
 	</div>
 </div>

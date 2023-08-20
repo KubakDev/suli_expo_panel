@@ -3,7 +3,7 @@ import type { ExhibitionModel } from './exhibitionTypeModel';
 import type { ReservationStatusEnum } from './reservationEnum';
 
 export interface Reservation {
-	id: number;
+	id?: number;
 	exhibition_id?: number;
 	object_id?: number;
 	comment?: string;
