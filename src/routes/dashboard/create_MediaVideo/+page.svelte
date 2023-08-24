@@ -12,6 +12,9 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
+	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
+	import { onMount } from 'svelte';
 
 	export let data;
 	let isFormSubmitted = false;
