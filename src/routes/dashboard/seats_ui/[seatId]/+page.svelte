@@ -945,13 +945,7 @@
 							bind:value={objectDetail.price}
 						/></ButtonGroup
 					>
-					<Textarea
-						id="textarea-id"
-						placeholder="description"
-						rows="5"
-						class="my-3"
-						bind:value={objectDetail.description}
-					/>
+
 					<div class="mt-2 mb-6">
 						<Tabs>
 							{#each languageEnumKeys as lang}
@@ -986,6 +980,7 @@
 								>
 									{#if service.seat_services_languages}
 										<div class="flex justify-between items-center">
+											<p>{service?.seat_services_languages[0]?.title}</p>
 											<p>{service.price}</p>
 											<Checkbox
 												class="cursor-pointer"
