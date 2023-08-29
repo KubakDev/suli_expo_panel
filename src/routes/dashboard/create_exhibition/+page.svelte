@@ -10,6 +10,7 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import imageCompression from 'browser-image-compression';
 
 	export let data;
 
@@ -137,20 +138,32 @@
 		reader.readAsDataURL(file);
 	}
 
-	function handleFileUpload(e: Event) {
+	async function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		//
-		const reader = new FileReader();
 
-		reader.onloadend = () => {
-			exhibitionsObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
+		const options = {
+			maxSizeMB: 0.1,
+			maxWidthOrHeight: 300,
+			useWebWorker: true
 		};
+		try {
+			const compressedFile = await imageCompression(imageFile, options);
+			console.log(file);
+			console.log(compressedFile); // This will now log the actual Blob (compressed image)
 
-		reader.readAsDataURL(file);
+			const reader = new FileReader();
+
+			reader.onloadend = () => {
+				exhibitionsObject.thumbnail = reader.result as string;
+				const randomText = getRandomTextNumber(); // Generate random text
+				fileName = `exhibition/${randomText}_${compressedFile.name}`; // Append random text to the file name
+			};
+			reader.readAsDataURL(compressedFile); // Use the compressedFile here
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	//**dropzone**//

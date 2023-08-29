@@ -8,14 +8,23 @@ export const seatReservation = writable<Reservation[]>([]);
 export const getReservationData = async (
 	supabase: SupabaseClient,
 	filters?: any[],
-	searchField?: string | null,
-	searchQuery?: string
+	searchField?: string | undefined,
+	searchQuery?: string | undefined,
+	page: number,
+	pageSize: number
 ) => {
-	let query = supabase.from('seat_reservation').select(`
+	let query = supabase
+		.from('seat_reservation')
+		.select(
+			`
         *,
         company(*),
         exhibition(*)
-    `);
+    `
+		)
+		.range((page - 1) * pageSize, page * pageSize - 1)
+		.limit(pageSize)
+		.order('created_at', { ascending: false });
 
 	// filter data by company information
 	let companyIds: any = [];
@@ -86,9 +95,15 @@ export const getReservationData = async (
 	}
 
 	const { data } = await query.order('id');
+	const { count } = await supabase.from('seat_reservation').select('count', { count: 'exact' });
+	//
+	const result = {
+		data: data,
+		count: count
+	};
 
 	seatReservation.set(data as Reservation[]);
-	return data as Reservation[];
+	return result;
 };
 
 export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: any) => {
