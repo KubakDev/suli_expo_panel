@@ -188,7 +188,6 @@
 
 		<!-- service detail -->
 		<div class="pt-5" />
-
 		<!-- table data -->
 
 		<div class="overflow-x-auto rounded">
