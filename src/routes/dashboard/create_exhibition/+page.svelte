@@ -10,6 +10,7 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import imageCompression from 'browser-image-compression';
 
 	export let data;
 
@@ -137,20 +138,44 @@
 		reader.readAsDataURL(file);
 	}
 
-	function handleFileUpload(e: Event) {
+	async function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
 
-		reader.onloadend = () => {
-			exhibitionsObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
+		// Compute the aspect ratio and derive the desired width based on a fixed height of 650px
+		const originalImage = new Image();
+		originalImage.src = URL.createObjectURL(file);
+
+		await new Promise((resolve) => {
+			originalImage.onload = resolve;
+		});
+
+		const aspectRatio = originalImage.width / originalImage.height;
+		const desiredWidth = 650 * aspectRatio;
+
+		const options = {
+			// maxSizeMB: 1, // (maximum file size in MB)
+			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
+			useWebWorker: true
 		};
 
-		reader.readAsDataURL(file);
+		try {
+			const compressedFile = await imageCompression(file, options);
+
+			// Now use compressedFile instead of file
+			imageFile = compressedFile;
+			console.log('Upload', imageFile);
+
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				exhibitionsObject.thumbnail = reader.result as string;
+				const randomText = getRandomTextNumber(); // Generate random text
+				fileName = `exhibition/${randomText}_${compressedFile.name}`; // Append random text to the file name
+			};
+			reader.readAsDataURL(compressedFile);
+		} catch (error) {
+			console.error('Error compressing the image:', error);
+		}
 	}
 
 	//**dropzone**//
@@ -166,69 +191,69 @@
 	} //**dropzone-sponsor**//
 
 	async function formSubmit() {
-		let hasDataForLanguage = false;
-		let isValidExhibitionsObject = false;
+		let hasDataForLanguage = true; //byankawa ba false
+		let isValidExhibitionsObject = true; //byankawa ba false
 
-		for (let lang of exhibitionsDataLang) {
-			const storyData = lang.story.trim();
-			const title = lang.title.trim();
-			const shortDescription = lang.description.trim();
-			const link = lang.video_youtube_link.trim();
-			const location = lang.location.trim();
-			const location_title = lang.location_title.trim();
-			const mapTitle = lang.map_title.trim();
+		// for (let lang of exhibitionsDataLang) {
+		// 	const storyData = lang.story.trim();
+		// 	const title = lang.title.trim();
+		// 	const shortDescription = lang.description.trim();
+		// 	const link = lang.video_youtube_link.trim();
+		// 	const location = lang.location.trim();
+		// 	const location_title = lang.location_title.trim();
+		// 	const mapTitle = lang.map_title.trim();
 
-			const isStoryIsEmpty = isEmpty(storyData);
-			const isTitleEmpty = isEmpty(title);
-			const isShortDescriptionEmpty = isEmpty(shortDescription);
-			const isLinkEmpty = isEmpty(link);
-			const isLinkEmptyLocation = isEmpty(location);
-			const isLinkEmptyLocation_title = isEmpty(location_title);
-			const isMapTitle = isEmpty(mapTitle);
+		// 	const isStoryIsEmpty = isEmpty(storyData);
+		// 	const isTitleEmpty = isEmpty(title);
+		// 	const isShortDescriptionEmpty = isEmpty(shortDescription);
+		// 	const isLinkEmpty = isEmpty(link);
+		// 	const isLinkEmptyLocation = isEmpty(location);
+		// 	const isLinkEmptyLocation_title = isEmpty(location_title);
+		// 	const isMapTitle = isEmpty(mapTitle);
 
-			if (
-				!isEmpty(lang.pdf_files) ||
-				!isEmpty(lang.brochure) ||
-				!isStoryIsEmpty ||
-				!isTitleEmpty ||
-				!isShortDescriptionEmpty ||
-				!isLinkEmpty ||
-				!isLinkEmptyLocation ||
-				!isMapTitle ||
-				!isLinkEmptyLocation_title
-			) {
-				// All fields are non-empty for this language
-				hasDataForLanguage = true;
-				if (
-					isEmpty(lang.pdf_files) ||
-					isEmpty(lang.brochure) ||
-					isStoryIsEmpty ||
-					isTitleEmpty ||
-					isShortDescriptionEmpty ||
-					isLinkEmpty ||
-					isLinkEmptyLocation ||
-					isMapTitle ||
-					isLinkEmptyLocation_title
-				) {
-					// At least one field is empty for this language
-					hasDataForLanguage = false;
-					break;
-				}
-			}
-		}
+		// 	if (
+		// 		!isEmpty(lang.pdf_files) ||
+		// 		!isEmpty(lang.brochure) ||
+		// 		!isStoryIsEmpty ||
+		// 		!isTitleEmpty ||
+		// 		!isShortDescriptionEmpty ||
+		// 		!isLinkEmpty ||
+		// 		!isLinkEmptyLocation ||
+		// 		!isMapTitle ||
+		// 		!isLinkEmptyLocation_title
+		// 	) {
+		// 		// All fields are non-empty for this language
+		// 		hasDataForLanguage = true;
+		// 		if (
+		// 			isEmpty(lang.pdf_files) ||
+		// 			isEmpty(lang.brochure) ||
+		// 			isStoryIsEmpty ||
+		// 			isTitleEmpty ||
+		// 			isShortDescriptionEmpty ||
+		// 			isLinkEmpty ||
+		// 			isLinkEmptyLocation ||
+		// 			isMapTitle ||
+		// 			isLinkEmptyLocation_title
+		// 		) {
+		// 			// At least one field is empty for this language
+		// 			hasDataForLanguage = false;
+		// 			break;
+		// 		}
+		// 	}
+		// }
 
 		// Check if galleryObject has a valid thumbnail and at least one slider image
-		if (
-			!isEmpty(exhibitionsObject.thumbnail) &&
-			sliderImagesFile.length > 0 &&
-			sliderImagesFile_sponsor.length > 0 &&
-			!isEmpty(exhibitionsObject.company_number) &&
-			!isEmpty(exhibitionsObject.country_number) &&
-			!isEmpty(exhibitionsObject.sponsor_title) &&
-			!isEmpty(exhibitionsObject.exhibition_type)
-		) {
-			isValidExhibitionsObject = true;
-		}
+		// if (
+		// 	!isEmpty(exhibitionsObject.thumbnail) &&
+		// 	sliderImagesFile.length > 0 &&
+		// 	sliderImagesFile_sponsor.length > 0 &&
+		// 	!isEmpty(exhibitionsObject.company_number) &&
+		// 	!isEmpty(exhibitionsObject.country_number) &&
+		// 	!isEmpty(exhibitionsObject.sponsor_title) &&
+		// 	!isEmpty(exhibitionsObject.exhibition_type)
+		// ) {
+		// 	isValidExhibitionsObject = true;
+		// }
 
 		if (!hasDataForLanguage || !isValidExhibitionsObject) {
 			isFormSubmitted = true;

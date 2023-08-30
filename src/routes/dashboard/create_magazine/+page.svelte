@@ -67,7 +67,7 @@
 		const desiredWidth = 650 * aspectRatio;
 
 		const options = {
-			maxSizeMB: 1, // (maximum file size in MB)
+			// maxSizeMB: 1, // (maximum file size in MB)
 			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
 			useWebWorker: true
 		};

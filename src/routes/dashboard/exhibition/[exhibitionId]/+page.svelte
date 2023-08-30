@@ -499,7 +499,7 @@
 						on:change={(e) => {
 							handleFileUpload(e, exhibitionsData, imageFile, fileName);
 						}}
-						accept=".jpg, .jpeg, .png .svg"
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !exhibitionsData.thumbnail.trim()}
