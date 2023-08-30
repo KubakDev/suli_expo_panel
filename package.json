@@ -75,6 +75,7 @@
 	"dependencies": {
 		"@panzoom/panzoom": "^4.5.1",
 		"@tinymce/tinymce-svelte": "^1.0.1",
+		"browser-image-compression": "^2.0.2",
 		"canvg": "^4.0.1",
 		"dropzone": "^6.0.0-beta.2",
 		"flowbite-svelte-icons": "^0.3.5",

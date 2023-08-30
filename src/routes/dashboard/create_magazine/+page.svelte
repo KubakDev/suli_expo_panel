@@ -13,6 +13,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import imageCompression from 'browser-image-compression';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -50,20 +51,44 @@
 		});
 	}
 
-	function handleFileUpload(e: Event) {
+	async function handleFileUpload(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
 
-		reader.onloadend = () => {
-			magazineObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
+		// Compute the aspect ratio and derive the desired width based on a fixed height of 650px
+		const originalImage = new Image();
+		originalImage.src = URL.createObjectURL(file);
+
+		await new Promise((resolve) => {
+			originalImage.onload = resolve;
+		});
+
+		const aspectRatio = originalImage.width / originalImage.height;
+		const desiredWidth = 650 * aspectRatio;
+
+		const options = {
+			maxSizeMB: 1, // (maximum file size in MB)
+			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
+			useWebWorker: true
 		};
 
-		reader.readAsDataURL(file);
+		try {
+			const compressedFile = await imageCompression(file, options);
+
+			// Now use compressedFile instead of file
+			imageFile = compressedFile;
+			console.log('Upload', imageFile);
+
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				magazineObject.thumbnail = reader.result as string;
+				const randomText = getRandomTextNumber(); // Generate random text
+				fileName = `magazine/${randomText}_${compressedFile.name}`; // Append random text to the file name
+			};
+			reader.readAsDataURL(compressedFile);
+		} catch (error) {
+			console.error('Error compressing the image:', error);
+		}
 	}
 
 	//**dropzone**//

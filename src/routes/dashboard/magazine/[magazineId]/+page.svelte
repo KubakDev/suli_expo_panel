@@ -106,7 +106,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		//
+
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
