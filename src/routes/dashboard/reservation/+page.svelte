@@ -19,7 +19,7 @@
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 8;
+	const pageSize: number = 4;
 	let totalPages: number = 1;
 
 	async function fetchReservationData() {
