@@ -18,6 +18,8 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -87,7 +89,7 @@
 				}
 				magazineDataLang = [...magazineDataLang];
 				magazineData = { ...magazineData };
-				getImagesObject();
+				carouselImages = getImagesObject(magazineData);
 			});
 	}
 
@@ -101,36 +103,15 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload magazine image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			magazineData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
-			//
-		};
-		reader.readAsDataURL(file);
-	} //**for upload magazine image**//
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
 		//
 	}
-
 	//**pdf files**//
-
 	function getAllPDFFile(e: { detail: File[] }) {
 		sliderPDFFile = e.detail;
 	}
-
 	//**pdf files**//
 
 	//get image
@@ -308,21 +289,11 @@
 		}
 	}
 
-	function getImagesObject() {
-		carouselImages = magazineData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -342,8 +313,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, magazineData, setImageFile, setFileName, 'magazine')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !magazineData.thumbnail.trim()}

@@ -7,8 +7,6 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { decodeBase64 } from '$lib/utils/decodeBase64';
 	import { openPdfFile } from '$lib/utils/openPdfFile';
-	import { getImagesObject } from '$lib/utils/getImagesObject';
-	import { getImagesObject_sponsor } from '$lib/utils/getImagesObject_sponsor';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
@@ -20,16 +18,16 @@
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
-	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let fileName_map: string;
 	let existingImages: string[] = [];
 	let existingImages_sponsor: string[] = [];
-	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
@@ -127,8 +125,8 @@
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
-				getImagesObject(exhibitionsData.images);
-				getImagesObject_sponsor(exhibitionsData.sponsor_images);
+				carouselImages = getImagesObject(exhibitionsData);
+				getImagesObject_sponsor();
 			});
 	}
 
@@ -142,23 +140,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//handle image map
-	function handleFileUpload_ImageMap(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-
-		imageFile_map = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			exhibitionsData.image_map = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName_map = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
-	}
 
 	// handle pdf
 	function handleFileUpload_pdf(e: Event) {
@@ -187,9 +168,7 @@
 
 		reader.readAsDataURL(file);
 	}
-
 	// handle brochure
-
 	function handleFileUpload_brochure(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -246,6 +225,20 @@
 		});
 		// console.log('first', result);
 		return result;
+	}
+
+	export function getImagesObject_sponsor() {
+		const carouselImages_sponsor = exhibitionsData.sponsor_images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
+				imgSource: ImgSourceEnum.remote,
+				name: image,
+				attribution: ''
+			};
+		});
+
+		return carouselImages_sponsor.length > 0 ? carouselImages_sponsor : undefined;
 	}
 
 	//**Handle submit**//
@@ -478,6 +471,18 @@
 		carouselImages_sponsor = customImages;
 		existingImages_sponsor = result;
 	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
+	}
+	function setImageFile_map(file: File) {
+		imageFile_map = file;
+	}
+	function setFileName_map(name: string) {
+		fileName_map = name;
+	}
 </script>
 
 <div style="min-height: calc(100vh - 160px);">
@@ -496,10 +501,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={(e) => {
-							handleFileUpload(e, exhibitionsData, imageFile, fileName);
-						}}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, exhibitionsData, setImageFile, setFileName, 'exhibition')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !exhibitionsData.thumbnail.trim()}
@@ -511,7 +515,14 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
 					<Fileupload
-						on:change={handleFileUpload_ImageMap}
+						on:change={(event) =>
+							handleFileUpload(
+								event,
+								exhibitionsData,
+								setImageFile_map,
+								setFileName_map,
+								'exhibition'
+							)}
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 						lang={selectedLanguageTab}

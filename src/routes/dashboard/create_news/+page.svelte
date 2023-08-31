@@ -12,6 +12,8 @@
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 
@@ -45,21 +47,6 @@
 			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			newsObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `news/${randomText}_${file.name}`;
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	//**dropzone**//
@@ -164,22 +151,17 @@
 		}
 	}
 
-	//get thumbnail
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			//
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -197,8 +179,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, newsObject, setImageFile, setFileName, 'news')}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
 
