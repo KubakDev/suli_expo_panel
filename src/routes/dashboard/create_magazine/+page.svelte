@@ -16,6 +16,7 @@
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
+
 	export let data;
 	let isFormSubmitted = false;
 	let submitted = false;

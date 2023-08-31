@@ -67,7 +67,6 @@
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
 	}
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -81,69 +80,69 @@
 	} //**dropzone-sponsor**//
 
 	async function formSubmit() {
-		let hasDataForLanguage = false;
-		let isValidExhibitionsObject = false;
+		let hasDataForLanguage = true; //byankawa ba false
+		let isValidExhibitionsObject = true; //byankawa ba false
 
-		for (let lang of exhibitionsDataLang) {
-			const storyData = lang.story.trim();
-			const title = lang.title.trim();
-			const shortDescription = lang.description.trim();
-			const link = lang.video_youtube_link.trim();
-			const location = lang.location.trim();
-			const location_title = lang.location_title.trim();
-			const mapTitle = lang.map_title.trim();
+		// for (let lang of exhibitionsDataLang) {
+		// 	const storyData = lang.story.trim();
+		// 	const title = lang.title.trim();
+		// 	const shortDescription = lang.description.trim();
+		// 	const link = lang.video_youtube_link.trim();
+		// 	const location = lang.location.trim();
+		// 	const location_title = lang.location_title.trim();
+		// 	const mapTitle = lang.map_title.trim();
 
-			const isStoryIsEmpty = isEmpty(storyData);
-			const isTitleEmpty = isEmpty(title);
-			const isShortDescriptionEmpty = isEmpty(shortDescription);
-			const isLinkEmpty = isEmpty(link);
-			const isLinkEmptyLocation = isEmpty(location);
-			const isLinkEmptyLocation_title = isEmpty(location_title);
-			const isMapTitle = isEmpty(mapTitle);
+		// 	const isStoryIsEmpty = isEmpty(storyData);
+		// 	const isTitleEmpty = isEmpty(title);
+		// 	const isShortDescriptionEmpty = isEmpty(shortDescription);
+		// 	const isLinkEmpty = isEmpty(link);
+		// 	const isLinkEmptyLocation = isEmpty(location);
+		// 	const isLinkEmptyLocation_title = isEmpty(location_title);
+		// 	const isMapTitle = isEmpty(mapTitle);
 
-			if (
-				!isEmpty(lang.pdf_files) ||
-				!isEmpty(lang.brochure) ||
-				!isStoryIsEmpty ||
-				!isTitleEmpty ||
-				!isShortDescriptionEmpty ||
-				!isLinkEmpty ||
-				!isLinkEmptyLocation ||
-				!isMapTitle ||
-				!isLinkEmptyLocation_title
-			) {
-				// All fields are non-empty for this language
-				hasDataForLanguage = true;
-				if (
-					isEmpty(lang.pdf_files) ||
-					isEmpty(lang.brochure) ||
-					isStoryIsEmpty ||
-					isTitleEmpty ||
-					isShortDescriptionEmpty ||
-					isLinkEmpty ||
-					isLinkEmptyLocation ||
-					isMapTitle ||
-					isLinkEmptyLocation_title
-				) {
-					// At least one field is empty for this language
-					hasDataForLanguage = false;
-					break;
-				}
-			}
-		}
+		// 	if (
+		// 		!isEmpty(lang.pdf_files) ||
+		// 		!isEmpty(lang.brochure) ||
+		// 		!isStoryIsEmpty ||
+		// 		!isTitleEmpty ||
+		// 		!isShortDescriptionEmpty ||
+		// 		!isLinkEmpty ||
+		// 		!isLinkEmptyLocation ||
+		// 		!isMapTitle ||
+		// 		!isLinkEmptyLocation_title
+		// 	) {
+		// 		// All fields are non-empty for this language
+		// 		hasDataForLanguage = true;
+		// 		if (
+		// 			isEmpty(lang.pdf_files) ||
+		// 			isEmpty(lang.brochure) ||
+		// 			isStoryIsEmpty ||
+		// 			isTitleEmpty ||
+		// 			isShortDescriptionEmpty ||
+		// 			isLinkEmpty ||
+		// 			isLinkEmptyLocation ||
+		// 			isMapTitle ||
+		// 			isLinkEmptyLocation_title
+		// 		) {
+		// 			// At least one field is empty for this language
+		// 			hasDataForLanguage = false;
+		// 			break;
+		// 		}
+		// 	}
+		// }
 
 		// Check if galleryObject has a valid thumbnail and at least one slider image
-		if (
-			!isEmpty(exhibitionsObject.thumbnail) &&
-			sliderImagesFile.length > 0 &&
-			sliderImagesFile_sponsor.length > 0 &&
-			!isEmpty(exhibitionsObject.company_number) &&
-			!isEmpty(exhibitionsObject.country_number) &&
-			!isEmpty(exhibitionsObject.sponsor_title) &&
-			!isEmpty(exhibitionsObject.exhibition_type)
-		) {
-			isValidExhibitionsObject = true;
-		}
+		// if (
+		// 	!isEmpty(exhibitionsObject.thumbnail) &&
+		// 	sliderImagesFile.length > 0 &&
+		// 	sliderImagesFile_sponsor.length > 0 &&
+		// 	!isEmpty(exhibitionsObject.company_number) &&
+		// 	!isEmpty(exhibitionsObject.country_number) &&
+		// 	!isEmpty(exhibitionsObject.sponsor_title) &&
+		// 	!isEmpty(exhibitionsObject.exhibition_type)
+		// ) {
+		// 	isValidExhibitionsObject = true;
+		// }
 
 		if (!hasDataForLanguage || !isValidExhibitionsObject) {
 			isFormSubmitted = true;
