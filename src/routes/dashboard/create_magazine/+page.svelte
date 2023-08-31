@@ -13,7 +13,9 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
-	import imageCompression from 'browser-image-compression';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+
 
 	export let data;
 	let isFormSubmitted = false;
@@ -49,46 +51,6 @@
 			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	async function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-
-		// Compute the aspect ratio and derive the desired width based on a fixed height of 650px
-		const originalImage = new Image();
-		originalImage.src = URL.createObjectURL(file);
-
-		await new Promise((resolve) => {
-			originalImage.onload = resolve;
-		});
-
-		const aspectRatio = originalImage.width / originalImage.height;
-		const desiredWidth = 650 * aspectRatio;
-
-		const options = {
-			// maxSizeMB: 1, // (maximum file size in MB)
-			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
-			useWebWorker: true
-		};
-
-		try {
-			const compressedFile = await imageCompression(file, options);
-
-			// Now use compressedFile instead of file
-			imageFile = compressedFile;
-			console.log('Upload', imageFile);
-
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				magazineObject.thumbnail = reader.result as string;
-				const randomText = getRandomTextNumber(); // Generate random text
-				fileName = `magazine/${randomText}_${compressedFile.name}`; // Append random text to the file name
-			};
-			reader.readAsDataURL(compressedFile);
-		} catch (error) {
-			console.error('Error compressing the image:', error);
-		}
 	}
 
 	//**dropzone**//
@@ -220,20 +182,16 @@
 	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -251,8 +209,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, magazineObject, setImageFile, setFileName, 'magazine')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !magazineObject.thumbnail.trim()}

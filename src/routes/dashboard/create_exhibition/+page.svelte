@@ -10,7 +10,9 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
-	import imageCompression from 'browser-image-compression';
+	import { decodeBase64 } from '$lib/utils/decodeBase64';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 
@@ -65,119 +67,6 @@
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
 	}
-
-	// handle pdf
-	function handleFileUpload_pdf(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile_pdf = file;
-		// console.log(file.name);
-		console.log(imageFile_pdf.name);
-		const lang = selectedLanguageTab; // Get the selected language
-
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			for (let lang of exhibitionsDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.pdf_files = reader.result as '';
-				}
-			}
-
-			const randomText = getRandomTextNumber();
-			fileName_pdf.push({
-				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
-			});
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	// handle brochure
-	function handleFileUpload_brochure(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile_brochure = file;
-		// console.log(file.name);
-		console.log(imageFile_brochure.name);
-		const lang = selectedLanguageTab; // Get the selected language
-
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			for (let lang of exhibitionsDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.brochure = reader.result as '';
-				}
-			}
-
-			const randomText = getRandomTextNumber();
-			fileName_brochure.push({
-				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
-			});
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	//handle image map
-	function handleFileUpload_ImageMap(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile_map = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			exhibitionsObject.image_map = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName_map = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	async function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-
-		// Compute the aspect ratio and derive the desired width based on a fixed height of 650px
-		const originalImage = new Image();
-		originalImage.src = URL.createObjectURL(file);
-
-		await new Promise((resolve) => {
-			originalImage.onload = resolve;
-		});
-
-		const aspectRatio = originalImage.width / originalImage.height;
-		const desiredWidth = 650 * aspectRatio;
-
-		const options = {
-			// maxSizeMB: 1, // (maximum file size in MB)
-			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
-			useWebWorker: true
-		};
-
-		try {
-			const compressedFile = await imageCompression(file, options);
-
-			// Now use compressedFile instead of file
-			imageFile = compressedFile;
-			console.log('Upload', imageFile);
-
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				exhibitionsObject.thumbnail = reader.result as string;
-				const randomText = getRandomTextNumber(); // Generate random text
-				fileName = `exhibition/${randomText}_${compressedFile.name}`; // Append random text to the file name
-			};
-			reader.readAsDataURL(compressedFile);
-		} catch (error) {
-			console.error('Error compressing the image:', error);
-		}
-	}
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -273,13 +162,13 @@
 		exhibitionsObject.image_map = response2.data?.path || '';
 
 		for (let file of fileName_pdf) {
-			const response3 = await data.supabase.storage
+			const responsePDF = await data.supabase.storage
 				.from('PDF')
 				.upload(`pdfFiles/${file.fileName}`, imageFile_pdf!);
 
 			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
 			if (langObj) {
-				langObj.pdf_files = response3?.data?.path || '';
+				langObj.pdf_files = responsePDF?.data?.path || '';
 			}
 		}
 
@@ -324,7 +213,7 @@
 
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
-
+		console.log(exhibitionsDataLang);
 		// Insert data into Supabase
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
 
@@ -367,32 +256,78 @@
 			});
 		}
 	}
+	function handleFileUpload_pdf(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf = file;
+		// console.log(file.name);
+		console.log(imageFile_pdf.name);
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.pdf_files = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	// handle brochure
+	function handleFileUpload_brochure(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_brochure = file;
+		// console.log(file.name);
+		console.log(imageFile_brochure.name);
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.brochure = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_brochure.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
 	}
-
-	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
-		const newWindow = window.open();
-		if (newWindow !== null) {
-			newWindow.document.write(
-				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
-			);
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
+	}
+	function setImageFile_map(file: File) {
+		imageFile_map = file;
+	}
+	function setFileName_map(name: string) {
+		fileName_map = name;
 	}
 </script>
 
@@ -410,8 +345,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png, .svg"
+						on:change={(event) =>
+							handleFileUpload(event, exhibitionsObject, setImageFile, setFileName, 'exhibition')}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
@@ -424,8 +360,15 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
 					<Fileupload
-						on:change={handleFileUpload_ImageMap}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(
+								event,
+								exhibitionsObject,
+								setImageFile_map,
+								setFileName_map,
+								'exhibition'
+							)}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 						lang={selectedLanguageTab}
 					/>

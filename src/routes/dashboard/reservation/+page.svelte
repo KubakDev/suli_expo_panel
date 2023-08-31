@@ -11,15 +11,29 @@
 	import { Button, Dropdown, Label } from 'flowbite-svelte';
 	import { Icon } from 'flowbite-svelte-icons';
 	import { goto } from '$app/navigation';
+	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
 	export let data;
 	let selectedExhibition: number[];
-	let searchQuery = '';
-	let searchField: any = null;
-	let isOptionSelected = false;
+	let searchQuery: string = '';
+	let searchField: string | null = null;
+	let isOptionSelected: boolean = false;
+	let currentPage: number = 1;
+	const pageSize: number = 4;
+	let totalPages: number = 1;
 
 	async function fetchReservationData() {
-		await getReservationData(data.supabase);
+		let result = await getReservationData(
+			data.supabase,
+			undefined,
+			undefined,
+			undefined,
+			currentPage,
+			pageSize
+		);
+		// Recalculate the total number of pages
+		const totalItems = result.count || 0;
+		totalPages = Math.ceil(totalItems / pageSize);
 	}
 	onMount(fetchReservationData);
 
@@ -33,7 +47,7 @@
 
 		for (const reservation of updatedData) {
 			if (itemID === reservation.id) {
-				await updateData(data.supabase, reservation.id, { status: selectedStatus });
+				await updateData(data.supabase, reservation?.id, { status: selectedStatus });
 			}
 		}
 
@@ -59,11 +73,30 @@
 
 	onMount(fetchData);
 
+	async function goToPage(page: any) {
+		currentPage = page;
+		await fetchReservationData();
+	}
+
 	async function filterByExhibition() {
 		if (selectedExhibition !== null) {
-			await getReservationData(data.supabase, [selectedExhibition]);
+			await getReservationData(
+				data.supabase,
+				[selectedExhibition],
+				undefined,
+				undefined,
+				currentPage,
+				pageSize
+			);
 		} else {
-			await getReservationData(data.supabase);
+			await getReservationData(
+				data.supabase,
+				undefined,
+				undefined,
+				undefined,
+				currentPage,
+				pageSize
+			);
 		}
 	}
 
@@ -99,17 +132,29 @@
 	}
 
 	async function filterByCompany() {
+		console.log('Filtering by company with:', searchQuery, searchField);
 		if (isOptionSelected && searchQuery && searchField !== null) {
-			const filters = selectedExhibition ? [selectedExhibition] : null;
+			const filters = selectedExhibition && [selectedExhibition];
+
 			const filteredData = await getReservationData(
 				data.supabase,
 				filters,
 				searchField,
-				searchQuery
+				searchQuery,
+				currentPage,
+				pageSize
 			);
-			seatReservation.set(filteredData);
+			console.log(filteredData);
+			// seatReservation.set(filteredData);
 		} else {
-			await getReservationData(data.supabase);
+			await getReservationData(
+				data.supabase,
+				undefined,
+				undefined,
+				undefined,
+				currentPage,
+				pageSize
+			);
 		}
 	}
 
@@ -125,7 +170,7 @@
 		searchField = null; // Clear the search field
 
 		// Reset the reservation data
-		getReservationData(data.supabase);
+		getReservationData(data.supabase, undefined, undefined, undefined, currentPage, pageSize);
 	}
 </script>
 
@@ -388,6 +433,9 @@
 						{/if}
 					</tbody>
 				</table>
+
+				<!-- Add pagination -->
+				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>
 	</div>

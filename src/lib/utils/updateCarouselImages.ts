@@ -1,7 +1,9 @@
+// imageHelper.js
+
 import { ImgSourceEnum } from '../../models/imgSourceEnum';
 
-export function getImagesObject(imageUrls) {
-	const carouselImages = imageUrls.map((image, i) => {
+export function getImagesObject(exhibitionsData: any) {
+	let carouselImages = exhibitionsData.images.map((image, i) => {
 		return {
 			id: i,
 			imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
@@ -11,5 +13,9 @@ export function getImagesObject(imageUrls) {
 		};
 	});
 
-	return carouselImages.length > 0 ? carouselImages : undefined;
+	if (carouselImages.length <= 0) {
+		carouselImages = undefined;
+	}
+
+	return carouselImages;
 }

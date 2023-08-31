@@ -18,6 +18,9 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -78,7 +81,7 @@
 				}
 				newsDataLang = [...newsDataLang];
 				newsData = { ...newsData };
-				getImagesObject();
+				carouselImages = getImagesObject(newsData);
 			});
 	}
 
@@ -91,24 +94,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload thumbnail image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			newsData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `news/${randomText}_${file.name}`; // Append random text to the file name
-			//
-		};
-		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
@@ -231,22 +216,11 @@
 		}
 	}
 
-	//get thumbnail
-	function getImagesObject() {
-		carouselImages = newsData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -266,8 +240,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, newsData, setImageFile, setFileName, 'news')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 				</Label>

@@ -56,12 +56,6 @@
 			name: 'about_languages',
 			subField: 'short_description',
 			type: 'array'
-		},
-		{
-			header: 'long description',
-			name: 'about_languages',
-			subField: 'long_description',
-			type: 'array'
 		}
 	];
 
