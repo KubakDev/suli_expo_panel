@@ -26,12 +26,14 @@ export const getReservationData = async (
 		.limit(pageSize)
 		.order('created_at', { ascending: false });
 
+	let countQuery = supabase.from('seat_reservation').select('count', { count: 'exact' });
+
 	// filter data by company information
 	let companyIds: any = [];
 
 	if (searchField && searchQuery) {
 		const lowercaseSearchQuery = searchQuery.toLowerCase();
-		let dataFound = false; // Flag to track if matching data is found
+		let dataFound = false;
 
 		if (searchField === 'companyNameField') {
 			const companyResponse = await supabase
@@ -87,16 +89,18 @@ export const getReservationData = async (
 
 	if (companyIds.length > 0) {
 		query = query.in('company_id', companyIds);
+		countQuery = countQuery.in('company_id', companyIds);
 	}
 
 	// filter data by exhibition
 	if (filters && filters.length > 0) {
 		query = query.in('exhibition_id', filters);
+		countQuery = countQuery.in('exhibition_id', filters);
 	}
 
 	const { data } = await query.order('id');
-	const { count } = await supabase.from('seat_reservation').select('count', { count: 'exact' });
-	//
+	const { count } = await countQuery;
+
 	const result = {
 		data: data,
 		count: count

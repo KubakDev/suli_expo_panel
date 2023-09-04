@@ -21,20 +21,22 @@
 	let currentPage: number = 1;
 	const pageSize: number = 4;
 	let totalPages: number = 1;
+	let totalItems: any;
 
 	async function fetchReservationData() {
 		let result = await getReservationData(
 			data.supabase,
-			undefined,
-			undefined,
-			undefined,
+			selectedExhibition,
+			searchField,
+			searchQuery,
 			currentPage,
 			pageSize
 		);
 		// Recalculate the total number of pages
-		const totalItems = result.count || 0;
+		totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
 	}
+
 	onMount(fetchReservationData);
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
@@ -74,13 +76,29 @@
 	onMount(fetchData);
 
 	async function goToPage(page: any) {
-		currentPage = page;
-		await fetchReservationData();
+		currentPage++;
+		if (currentPage > totalPages) {
+			currentPage = 1;
+		}
+
+		// await fetchReservationData();
+		const result = await getReservationData(
+			data.supabase,
+			selectedExhibition ? [selectedExhibition] : undefined,
+			searchField ? searchField : undefined,
+			searchQuery ? searchQuery : undefined,
+			currentPage,
+			pageSize
+		);
+		totalItems = result.count || 0;
+		totalPages = Math.ceil(totalItems / pageSize);
 	}
 
 	async function filterByExhibition() {
+		currentPage = 1;
+		await fetchReservationData();
 		if (selectedExhibition !== null) {
-			await getReservationData(
+			const result = await getReservationData(
 				data.supabase,
 				[selectedExhibition],
 				undefined,
@@ -88,8 +106,11 @@
 				currentPage,
 				pageSize
 			);
+			totalItems = result.count || 0;
+			totalPages = Math.ceil(totalItems / pageSize);
+			console.log(result);
 		} else {
-			await getReservationData(
+			const result = await getReservationData(
 				data.supabase,
 				undefined,
 				undefined,
@@ -97,6 +118,8 @@
 				currentPage,
 				pageSize
 			);
+			totalItems = result.count || 0;
+			totalPages = Math.ceil(totalItems / pageSize);
 		}
 	}
 
@@ -132,11 +155,13 @@
 	}
 
 	async function filterByCompany() {
-		console.log('Filtering by company with:', searchQuery, searchField);
+		await fetchReservationData();
+		currentPage = 1;
+
 		if (isOptionSelected && searchQuery && searchField !== null) {
 			const filters = selectedExhibition && [selectedExhibition];
 
-			const filteredData = await getReservationData(
+			const result = await getReservationData(
 				data.supabase,
 				filters,
 				searchField,
@@ -144,10 +169,11 @@
 				currentPage,
 				pageSize
 			);
-			console.log(filteredData);
+			totalItems = result.count || 0;
+			totalPages = Math.ceil(totalItems / pageSize);
 			// seatReservation.set(filteredData);
 		} else {
-			await getReservationData(
+			const result = await getReservationData(
 				data.supabase,
 				undefined,
 				undefined,
@@ -155,6 +181,9 @@
 				currentPage,
 				pageSize
 			);
+
+			totalItems = result.count || 0;
+			totalPages = Math.ceil(totalItems / pageSize);
 		}
 	}
 
@@ -168,7 +197,7 @@
 
 		searchQuery = ''; // Clear the search query
 		searchField = null; // Clear the search field
-
+		selectedExhibition = [];
 		// Reset the reservation data
 		getReservationData(data.supabase, undefined, undefined, undefined, currentPage, pageSize);
 	}
