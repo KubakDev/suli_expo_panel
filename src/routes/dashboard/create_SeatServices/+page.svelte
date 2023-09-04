@@ -85,7 +85,7 @@
 			}
 		}
 
-		if (!isEmpty(seatServicesObject.icon) && !isEmpty(seatServicesObject.quantity)) {
+		if (!isEmpty(seatServicesObject.icon)) {
 			isValidServiceObject = true;
 		}
 

@@ -399,7 +399,8 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{item?.company?.company_name}
+											{item?.company?.first_name}
+											{item?.company?.last_name}
 										</div>
 									</td>
 

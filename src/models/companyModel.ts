@@ -7,4 +7,6 @@ export interface CompanyType {
 	phone_number?: string;
 	type?: string;
 	uid?: string;
+	first_name?: string;
+	last_name?: string;
 }

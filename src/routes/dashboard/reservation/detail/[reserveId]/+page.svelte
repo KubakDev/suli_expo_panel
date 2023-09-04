@@ -84,8 +84,8 @@
 		}
 	}
 
-	function findTotalPrice(price: number, quantity: number) {
-		return price * quantity;
+	function findTotalPrice(item: any, price: number, quantity: number) {
+		return (item.discount ?? price) * (quantity ?? 0);
 	}
 </script>
 
@@ -104,7 +104,8 @@
 			<h2
 				class="text-3xl text-gray-900 dark:text-gray-100 tracking-widest font-medium title-font mb-1"
 			>
-				{reservationData.company?.company_name}
+				{reservationData.company?.first_name}
+				{reservationData.company?.last_name}
 			</h2>
 			<h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 dark:text-gray-300 text-gray-900">
 				<div class="flex justify-center lg:gap-5 pt-4">
@@ -291,19 +292,19 @@
 									<td
 										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
-										<div>{item.price}$</div>
+										<div>{item.price}IQD</div>
 									</td>
 
 									<td
 										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
-										<div class="text-base font-bold">{item.discount}%</div>
+										<div class="text-base font-bold">{item.discount}IQD</div>
 									</td>
 									<td
 										class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
 										<div class="text-xl font-bold">
-											{findTotalPrice(item.price, quantityNumber[index])}$
+											{findTotalPrice(item, item.price, quantityNumber[index])}IQD
 										</div>
 									</td>
 								</tr>
