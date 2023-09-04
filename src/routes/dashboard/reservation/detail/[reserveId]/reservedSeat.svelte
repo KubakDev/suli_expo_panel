@@ -77,7 +77,6 @@
 
 	async function checkIfTheSeatReserved() {
 		for (let object of data[0].design?.objects) {
-			console.log(object);
 			if (object?.id == reservedData?.object_id) {
 				canvas.forEachObject((obj: any) => {
 					if (obj.id == object.id) {
