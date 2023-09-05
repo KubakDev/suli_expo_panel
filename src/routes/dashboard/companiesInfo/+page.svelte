@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import {
-		seatReservation,
-		getReservationData,
-		updateData
-	} from '../../../stores/reservationStore';
+	import { getCompanyData, companyInfo } from '../../../stores/companyInfo';
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
@@ -23,58 +19,20 @@
 	let totalPages: number = 1;
 	let totalItems: any;
 
-	async function fetchReservationData() {
-		let result = await getReservationData(
+	async function fetchCompanyData() {
+		const result = await getCompanyData(
 			data.supabase,
-			selectedExhibition,
 			searchField,
 			searchQuery,
 			currentPage,
 			pageSize
 		);
-		console.log(result);
-		// Recalculate the total number of pages
+		console.log($companyInfo);
 		totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
 	}
 
-	onMount(fetchReservationData);
-
-	async function updateStatus(itemID: any, selectedStatus: any) {
-		const updatedData = $seatReservation.map((reservation) => {
-			if (itemID === reservation.id) {
-				return { ...reservation, status: selectedStatus };
-			}
-			return reservation;
-		});
-
-		for (const reservation of updatedData) {
-			if (itemID === reservation.id) {
-				await updateData(data.supabase, reservation?.id, { status: selectedStatus });
-			}
-		}
-
-		fetchData();
-	}
-
-	let exhibitionData: ExhibitionModel[] = [];
-
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
+	onMount(fetchCompanyData);
 
 	async function goToPage(page: any) {
 		currentPage++;
@@ -83,9 +41,8 @@
 		}
 
 		// await fetchReservationData();
-		const result = await getReservationData(
+		const result = await getCompanyData(
 			data.supabase,
-			selectedExhibition ? [selectedExhibition] : undefined,
 			searchField ? searchField : undefined,
 			searchQuery ? searchQuery : undefined,
 			currentPage,
@@ -95,37 +52,8 @@
 		totalPages = Math.ceil(totalItems / pageSize);
 	}
 
-	async function filterByExhibition() {
-		currentPage = 1;
-		await fetchReservationData();
-		if (selectedExhibition !== null) {
-			const result = await getReservationData(
-				data.supabase,
-				[selectedExhibition],
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-			console.log(result);
-		} else {
-			const result = await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-		}
-	}
-
 	//create checkboxes
-	const options = ['company name', 'company phoneNumber', 'company email'];
+	const options = ['company name', 'company phoneNumber', 'company email', 'company type'];
 	let checked: any = {};
 
 	function selectOneCheckbox(index: number) {
@@ -147,24 +75,22 @@
 			case 'company email':
 				searchField = 'emailField';
 				break;
-			default:
-				searchField = null;
+			case 'company type':
+				searchField = 'emailType';
+				break;
 		}
 
 		isOptionSelected = true;
-		filterByCompany();
+		fetchCompanyData();
 	}
 
 	async function filterByCompany() {
-		await fetchReservationData();
+		await fetchCompanyData();
 		currentPage = 1;
 
 		if (isOptionSelected && searchQuery && searchField !== null) {
-			const filters = selectedExhibition && [selectedExhibition];
-
-			const result = await getReservationData(
+			const result = await getCompanyData(
 				data.supabase,
-				filters,
 				searchField,
 				searchQuery,
 				currentPage,
@@ -174,9 +100,8 @@
 			totalPages = Math.ceil(totalItems / pageSize);
 			// seatReservation.set(filteredData);
 		} else {
-			const result = await getReservationData(
+			const result = await getCompanyData(
 				data.supabase,
-				undefined,
 				undefined,
 				undefined,
 				currentPage,
@@ -191,58 +116,31 @@
 	// clear filter
 	function clearFilters() {
 		isOptionSelected = false;
-
 		for (const opt of options) {
 			checked[opt] = false; // Deselect all checkboxes
 		}
-
 		searchQuery = ''; // Clear the search query
 		searchField = null; // Clear the search field
-		selectedExhibition = [];
-		// Reset the reservation data
-		getReservationData(data.supabase, undefined, undefined, undefined, currentPage, pageSize);
+
+		fetchCompanyData();
 	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex justify-end gap-5">
 		<!-- filtering by exhibition -->
-		<div class="mb-6 w-44 flex flex-col">
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs "
-				>Filter By Exhibition Type</Label
-			>
-
-			<select
-				class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-				id="type"
-				name="type"
-				bind:value={selectedExhibition}
-				on:change={filterByExhibition}
-			>
-				<option value={null} class="bg-[#e9ecefd2] dark:bg-gray-100">All Exhibitions</option>
-				{#each exhibitionData as item (item.id)}
-					<option value={item.id} class="bg-[#e9ecefd2] dark:bg-gray-100"
-						>{item.exhibition_type}</option
-					>
-				{/each}
-			</select>
-		</div>
 
 		<!-- filtering by company -->
 		<div>
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs  "
-				>Filter By company info</Label
-			>
 			<Button
 				class="py-2 font-medium text-center text-base  hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 			>
-				Company Information <Icon
+				Filter <Icon
 					name="chevron-down-solid"
 					class="w-3 h-3 ml-2 text-gray-500 dark:text-gray-500   "
 				/>
 			</Button>
-			<!-- bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-80 pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" -->
-			<Dropdown class="z-40 bg-[#e9ecefd2] dark:bg-gray-100 space-y-3 rounded">
+			<Dropdown class="bg-[#e9ecefd2] dark:bg-gray-100 space-y-3 rounded">
 				<div class="flex items-center p-2 text-gray-900">
 					<input
 						type="search"
@@ -254,7 +152,7 @@
 						disabled={!isOptionSelected}
 					/>
 
-					{#if $seatReservation.length > 0}
+					{#if $companyInfo.length > 0}
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							width="24px"
@@ -273,7 +171,6 @@
 							/></svg
 						>
 					{:else}
-						<!-- clear filter  -->
 						<button on:click={clearFilters} class="">
 							<svg
 								width="24px"
@@ -347,6 +244,13 @@
 								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
+									<span>company email </span>
+								</div>
+							</th>
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							>
+								<div class="flex items-center gap-2">
 									<span>company phone_number</span>
 								</div>
 							</th>
@@ -354,41 +258,15 @@
 								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
-									<span>exhibition type </span>
-								</div>
-							</th>
-
-							<th
-								class="w-60 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
-							>
-								<div class="flex items-start gap-2">
-									<span
-										><svg
-											width="20px"
-											height="20px"
-											viewBox="0 0 24 24"
-											xmlns="http://www.w3.org/2000/svg"
-											fill="#65686c"
-											><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-												id="SVGRepo_tracerCarrier"
-												stroke-linecap="round"
-												stroke-linejoin="round"
-											/><g id="SVGRepo_iconCarrier"
-												><path
-													d="M9.5 2h-6A1.502 1.502 0 0 0 2 3.5v6A1.502 1.502 0 0 0 3.5 11h6A1.502 1.502 0 0 0 11 9.5v-6A1.502 1.502 0 0 0 9.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 2h-6A1.502 1.502 0 0 0 13 3.5v6a1.502 1.502 0 0 0 1.5 1.5h6A1.502 1.502 0 0 0 22 9.5v-6A1.502 1.502 0 0 0 20.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM9.5 13h-6A1.502 1.502 0 0 0 2 14.5v6A1.502 1.502 0 0 0 3.5 22h6a1.502 1.502 0 0 0 1.5-1.5v-6A1.502 1.502 0 0 0 9.5 13zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 13h-6a1.502 1.502 0 0 0-1.5 1.5v6a1.502 1.502 0 0 0 1.5 1.5h6a1.502 1.502 0 0 0 1.5-1.5v-6a1.502 1.502 0 0 0-1.5-1.5zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5z"
-												/><path fill="none" d="M0 0h24v24H0z" /></g
-											></svg
-										></span
-									>
-									<span>Actions</span>
+									<span>company type </span>
 								</div>
 							</th>
 						</tr>
 					</thead>
 
 					<tbody class="dark:text-gray-300">
-						{#if $seatReservation.length > 0}
-							{#each $seatReservation as item, index (item.id)}
+						{#if $companyInfo.length > 0}
+							{#each $companyInfo as item, index (item.id)}
 								<tr>
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
@@ -400,61 +278,23 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{item?.company?.company_name}
+											{item?.company_name}
 										</div>
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{item?.company?.phone_number}
+											{item?.email}
 										</div>
 									</td>
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{item?.exhibition?.exhibition_type}
+											{item?.phone_number}
 										</div>
 									</td>
-
-									<td
-										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 flex justify-between items-center gap-4"
-									>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											<button
-												on:click={() => {
-													goto(`/dashboard/reservation/detail/${item.id}`);
-												}}
-												class="dark:text-gray-400 hover:underline"
-												>View
-											</button>
-										</div>
-
-										<div>
-											{#if item.status === ReservationStatusEnum.PENDING}
-												<div class="w-5 h-5 bg-[#F7CB73] rounded-full" />
-											{:else if item.status === ReservationStatusEnum.ACCEPT}
-												<div class="w-5 h-5 bg-green-600 rounded-full" />
-											{:else}
-												<div class="w-5 h-5 bg-red-600 rounded-full" />
-											{/if}
-										</div>
-
-										<div>
-											<select
-												class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg w-full focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
-												bind:value={item.status}
-												on:change={() => updateStatus(item.id, item.status)}
-												disabled={item.status === ReservationStatusEnum.REJECT}
-											>
-												<option value={ReservationStatusEnum.PENDING}
-													>{ReservationStatusEnum.PENDING}</option
-												>
-												<option value={ReservationStatusEnum.ACCEPT}
-													>{ReservationStatusEnum.ACCEPT}</option
-												>
-												<option value={ReservationStatusEnum.REJECT}
-													>{ReservationStatusEnum.REJECT}</option
-												>
-											</select>
+											{item?.type}
 										</div>
 									</td>
 								</tr>

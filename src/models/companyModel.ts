@@ -1,3 +1,5 @@
+import type { UserInfo } from './usersModel';
+
 export interface CompanyType {
 	id?: number;
 	company_name?: string;
@@ -6,7 +8,5 @@ export interface CompanyType {
 	logo_url?: string;
 	phone_number?: string;
 	type?: string;
-	uid?: string;
-	first_name?: string;
-	last_name?: string;
+	uid?: UserInfo;
 }
