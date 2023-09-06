@@ -12,6 +12,7 @@
 		companyDetail,
 		clearCompanyDetail
 	} from '../../../../../stores/companyInfo';
+	let src = '/notFound.gif';
 
 	const companyId = $page.params.companyId;
 	export let data;
@@ -246,7 +247,10 @@
 				</div>
 			</div>
 		{:else}
-			not data found
+			<div class="flex justify-center">
+				<!-- No data found -->
+				<img {src} alt="img" />
+			</div>
 		{/if}
 	</div>
 </div>

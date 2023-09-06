@@ -1,6 +1,10 @@
 export const load = async () => {
 	const pages = [
 		{
+			title: 'Home',
+			url: '/dashboard'
+		},
+		{
 			title: 'Promotions',
 			url: '/dashboard/promotions'
 		},
