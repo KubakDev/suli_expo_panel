@@ -84,7 +84,7 @@
 									initial={0}
 									value={$viewerData?.news_viewers}
 									duration={2000}
-									step={1}
+									step={10}
 									roundto={5}
 									format={true}
 								/>
@@ -124,7 +124,7 @@
 									initial={0}
 									value={$viewerData?.exhibition_viewers}
 									duration={2000}
-									step={1}
+									step={10}
 									roundto={1}
 									format={true}
 								/>
@@ -182,7 +182,7 @@
 									initial={0}
 									value={$viewerData?.suly_expo_viewers}
 									duration={2000}
-									step={1}
+									step={10}
 									roundto={1}
 									format={true}
 								/>
