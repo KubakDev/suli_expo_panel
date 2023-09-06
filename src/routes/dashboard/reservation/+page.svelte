@@ -208,10 +208,6 @@
 	<div class="py-5 px-4 lg:px-0 flex justify-end gap-5">
 		<!-- filtering by exhibition -->
 		<div class="mb-6 w-44 flex flex-col">
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs "
-				>Filter By Exhibition Type</Label
-			>
-
 			<select
 				class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 				id="type"
@@ -230,9 +226,6 @@
 
 		<!-- filtering by company -->
 		<div>
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs  "
-				>Filter By company info</Label
-			>
 			<Button
 				class="py-2 font-medium text-center text-base  hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 			>

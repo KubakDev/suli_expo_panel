@@ -3,6 +3,7 @@ import type { CompanyType } from '../models/companyModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const companyInfo = writable<CompanyType[]>([]);
+export const companyDetail = writable<CompanyType | undefined>();
 
 //Get all data
 export const getCompanyData = async (
@@ -61,3 +62,21 @@ export const getCompanyData = async (
 	companyInfo.set(data as CompanyType[]);
 	return result;
 };
+
+export const getCompanyDataById = async (supabase: SupabaseClient, id: number) => {
+	try {
+		const { data, error } = await supabase.from('company').select('*').eq('id', id).single();
+
+		if (error) {
+			throw error;
+		}
+		companyDetail.set(data);
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};
+
+export function clearCompanyDetail() {
+	companyDetail.set(undefined);
+}

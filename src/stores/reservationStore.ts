@@ -147,3 +147,25 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 	seatReservation.set(data as Reservation[]);
 	return data as Reservation;
 };
+
+export const getReservationsForCompany = async (supabase: SupabaseClient, companyId: any) => {
+	const { data, error } = await supabase
+		.from('seat_reservation')
+		.select(
+			`
+        *,
+        company(*),
+        exhibition(*)
+    `
+		)
+		.eq('company_id', companyId);
+
+	if (error) {
+		console.error('Error fetching reservation count for company:', error);
+		throw error;
+	}
+
+	// console.log(data);
+
+	seatReservation.set(data);
+};
