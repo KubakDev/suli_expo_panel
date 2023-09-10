@@ -23,7 +23,7 @@
 	let totalPages: number = 1;
 
 	async function fetchReservationData() {
-		let result = await getReservationData(
+		let result: any = await getReservationData(
 			data.supabase,
 			undefined,
 			undefined,
@@ -47,7 +47,7 @@
 
 		for (const reservation of updatedData) {
 			if (itemID === reservation.id) {
-				await updateData(data.supabase, reservation?.id, { status: selectedStatus });
+				await updateData(data.supabase, reservation?.id ?? 0, { status: selectedStatus });
 			}
 		}
 
@@ -132,7 +132,6 @@
 	}
 
 	async function filterByCompany() {
-		console.log('Filtering by company with:', searchQuery, searchField);
 		if (isOptionSelected && searchQuery && searchField !== null) {
 			const filters = selectedExhibition && [selectedExhibition];
 
@@ -144,7 +143,7 @@
 				currentPage,
 				pageSize
 			);
-			console.log(filteredData);
+
 			// seatReservation.set(filteredData);
 		} else {
 			await getReservationData(

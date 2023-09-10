@@ -11,7 +11,7 @@
 
 	async function fetchPageData() {
 		await getPageData(PageEnum.EXHIBITION, data.supabase);
-		// console.log($pageTheme);
+		//
 	}
 	onMount(fetchPageData);
 
@@ -24,7 +24,6 @@
 		} else {
 			selectedTheme.set($pageTheme.color_palette_dark);
 		}
-		console.log('change state  :', $selectedTheme);
 	}
 </script>
 

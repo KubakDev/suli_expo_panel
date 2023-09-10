@@ -213,7 +213,7 @@
 
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
-		console.log(exhibitionsDataLang);
+
 		// Insert data into Supabase
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
 
@@ -260,8 +260,8 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_pdf = file;
-		// console.log(file.name);
-		console.log(imageFile_pdf.name);
+		//
+
 		const lang = selectedLanguageTab; // Get the selected language
 
 		const reader = new FileReader();
@@ -288,8 +288,8 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_brochure = file;
-		// console.log(file.name);
-		console.log(imageFile_brochure.name);
+		//
+
 		const lang = selectedLanguageTab; // Get the selected language
 
 		const reader = new FileReader();

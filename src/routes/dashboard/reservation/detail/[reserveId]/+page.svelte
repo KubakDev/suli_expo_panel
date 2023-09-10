@@ -12,7 +12,6 @@
 		seatReservation,
 		updateData
 	} from '../../../../../stores/reservationStore';
-	import Icon from 'svelte-icons-pack';
 
 	const params = $page.params.reserveId;
 	export let data;
@@ -42,24 +41,22 @@
 
 					quantityNumber.push(serviceObj.quantity);
 				});
-				// console.log(quantityNumber);
-				// console.log(serviceID);
+				//
+				//
 
 				getServiceDetails(serviceID);
 			}
 
 			getSeatLayout();
-		} catch (error) {
-			console.log(error);
-		}
+		} catch (error) {}
 	});
 
 	async function updateStatus(itemID: any, selectedStatus: any) {
-		const updatedReservation = { ...$seatReservation };
+		const updatedReservation: any = { ...$seatReservation };
 
 		if (updatedReservation.id === itemID) {
 			updatedReservation.status = selectedStatus;
-			await updateData(data.supabase, itemID, { status: selectedStatus });
+			await updateData(data.supabase, itemID, { status: selectedStatus }, $seatReservation);
 		}
 
 		seatReservation.set(updatedReservation);
@@ -78,7 +75,6 @@
 	async function getServiceDetails(serviceIDs: any) {
 		try {
 			serviceData = await getSeatServicesByIds(data.supabase, serviceIDs);
-			console.log(serviceData);
 		} catch (error) {
 			console.error(error);
 		}
@@ -318,7 +314,7 @@
 		<!-- seatLayout -->
 
 		{#if seatLayout}
-			<ReservedSeat supabase={data.supabase} data={seatLayout} reservedData={reservationData} />
+			<ReservedSeat data={seatLayout} reservedData={reservationData} />
 		{/if}
 	</div>
 </div>

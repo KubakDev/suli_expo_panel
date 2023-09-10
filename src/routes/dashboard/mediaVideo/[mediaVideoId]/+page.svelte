@@ -40,7 +40,7 @@
 
 	function getYouTubeId(url: string): string | null {
 		const match = youtubeRegex.exec(url);
-		console.log('match', match);
+
 		return match ? match[1] : null;
 	}
 

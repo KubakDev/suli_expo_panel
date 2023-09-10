@@ -69,7 +69,7 @@ export async function getPageData(pageName: PageEnum, supabase: any) {
 		.single();
 
 	pageTheme.set(result.data);
-	// console.log('first', result.data);
+	// 
 
 	if (result) {
 		// Update the pageData store with the fetched data

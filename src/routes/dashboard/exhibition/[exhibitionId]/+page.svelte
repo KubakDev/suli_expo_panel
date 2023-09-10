@@ -93,7 +93,7 @@
 
 				prevThumbnail = result.data?.thumbnail;
 				prevImage_map = result.data?.image_map;
-				console.log(';;;;;', result.data?.image_map);
+
 				images = getImage();
 				sponsor_images = getImage_sponsor();
 				// pdf_files = getPdfFile();
@@ -132,7 +132,6 @@
 
 	onMount(async () => {
 		await getExhibitionData();
-		console.log($exhibitions);
 	});
 
 	//** for swapping between languages**//
@@ -223,7 +222,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 
@@ -334,7 +333,6 @@
 					.from('image')
 					.upload(`${fileName_map}`, imageFile_map!);
 				exhibitionsData.image_map = response.data?.path || '';
-				console.log(response.data?.path);
 			} else {
 				exhibitionsData.image_map = prevImage_map;
 			}
@@ -408,7 +406,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`exhibition/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple img:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
@@ -423,7 +421,7 @@
 			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 			// ***insert pdf *****//
-			console.log(exhibitionsData);
+
 			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
 			setTimeout(() => {
