@@ -12,4 +12,5 @@ export interface Reservation {
 	company?: CompanyType;
 	exhibition?: ExhibitionModel;
 	status?: ReservationStatusEnum;
+	created_at?: Date;
 }

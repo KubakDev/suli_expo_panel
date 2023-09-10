@@ -5,7 +5,6 @@
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { Reservation } from '../../../../../models/reservationModel';
 	import { Avatar } from 'flowbite-svelte';
-	import type { seatServicesModel } from '../../../../../models/seatServicesModel';
 	import ReservedSeat from './reservedSeat.svelte';
 	import {
 		getReservationById,
@@ -100,8 +99,7 @@
 			<h2
 				class="text-3xl text-gray-900 dark:text-gray-100 tracking-widest font-medium title-font mb-1"
 			>
-				{reservationData.company?.first_name}
-				{reservationData.company?.last_name}
+				{reservationData.company?.company_name}
 			</h2>
 			<h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 dark:text-gray-300 text-gray-900">
 				<div class="flex justify-center lg:gap-5 pt-4">
@@ -154,6 +152,7 @@
 				class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 				bind:value={reservationData.status}
 				on:change={() => updateStatus(reservationData?.id, reservationData.status)}
+				disabled={reservationData.status === ReservationStatusEnum.REJECT}
 			>
 				<option value={ReservationStatusEnum.PENDING}>{ReservationStatusEnum.PENDING}</option>
 				<option value={ReservationStatusEnum.ACCEPT}>{ReservationStatusEnum.ACCEPT}</option>

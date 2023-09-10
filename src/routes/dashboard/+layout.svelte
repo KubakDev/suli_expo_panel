@@ -15,7 +15,6 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
-	import Button from '$lib/components/Button.svelte';
 	export let data: PageData;
 	let activeUrl: string;
 

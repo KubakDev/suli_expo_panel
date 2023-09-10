@@ -1,6 +1,10 @@
 export const load = async () => {
 	const pages = [
 		{
+			title: 'Home',
+			url: '/dashboard'
+		},
+		{
 			title: 'Promotions',
 			url: '/dashboard/promotions'
 		},
@@ -42,6 +46,10 @@ export const load = async () => {
 		{
 			title: 'Reservation',
 			url: '/dashboard/reservation'
+		},
+		{
+			title: 'Company',
+			url: '/dashboard/companiesInfo'
 		},
 		{
 			title: 'Web Builder',
