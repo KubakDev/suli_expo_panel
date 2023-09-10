@@ -3,43 +3,55 @@
 	import { getViewerData, viewerData } from '../../stores/viewersStore.js';
 	//@ts-ignore
 	import Countup from 'svelte-countup';
+	import BarChart from '$lib/components/BarChart.svelte';
 
 	export let data;
 	let isDataLoaded = false;
+	let selectedDate: Date;
 
 	async function fetchData() {
-		await getViewerData(data.supabase, 1);
+		await getViewerData(data.supabase, 1, undefined);
 		isDataLoaded = true;
-
-		console.log($viewerData);
 	}
 	onMount(fetchData);
 
-	// Function to format a date string as "year month date"
+	// This will be a string formatted as 'YYYY-MM-DD'
+
+	async function handleDateChange() {
+		await getViewerData(data.supabase, 1, selectedDate);
+	}
+
 	function formatDate(dateString: any) {
 		const date = new Date(dateString);
 		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0'); // +1 because months are 0-indexed
+		const month = String(date.getMonth() + 1).padStart(2, '0');
 		const day = String(date.getDate()).padStart(2, '0');
 		return `${year}-${month}-${day}`;
 	}
-
-	// create counterUp
 </script>
 
 {#if isDataLoaded}
 	<div class="max-w-screen-2xl mx-auto py-10">
-		<div
-			class="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased text-black dark:text-white"
-		>
+		<!-- filter by depend month  -->
+		<div class="flex justify-end px-4">
+			<input
+				type="date"
+				name="date_filter"
+				class="text-gray-900 rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
+				bind:value={selectedDate}
+				on:change={handleDateChange}
+			/>
+		</div>
+
+		<!-- card header -->
+		<div class="flex flex-col flex-auto flex-shrink-0 antialiased text-black dark:text-white">
 			<div class="h-full mb-10">
-				<!-- Statistics Cards -->
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-4 gap-4">
 					<div
-						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-700 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
+						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-300 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
 					>
 						<div
-							class="flex justify-center items-center w-20 h-20 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12"
+							class="flex justify-center items-center w-24 h-24 bg-[#ff6384] rounded-full transition-all duration-300 transform group-hover:rotate-12"
 						>
 							<svg
 								class="w-20 h-16"
@@ -79,25 +91,26 @@
 							>
 						</div>
 						<div class="text-right">
-							<p class="text-7xl pb-5">
-								<Countup
+							<p class="text-5xl pb-5">
+								{$viewerData?.news_viewers}
+								<!-- <Countup
 									initial={0}
 									value={$viewerData?.news_viewers}
 									duration={2000}
-									step={10}
-									roundto={5}
+									step={1}
+									roundto={1}
 									format={true}
-								/>
+								/> -->
 							</p>
 							<p>News Viewer</p>
 							<span class="text-gray-500 text-xs">{formatDate($viewerData?.created_at)}</span>
 						</div>
 					</div>
 					<div
-						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-700 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
+						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-300 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
 					>
 						<div
-							class="flex justify-center items-center w-20 h-20 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12"
+							class="flex justify-center items-center w-24 h-24 bg-[#36a2eb] rounded-full transition-all duration-300 transform group-hover:rotate-12"
 						>
 							<svg
 								class="w-20 h-16"
@@ -119,25 +132,26 @@
 							>
 						</div>
 						<div class="text-right">
-							<p class="text-7xl pb-5">
-								<Countup
+							<p class="text-5xl pb-5">
+								{$viewerData?.exhibition_viewers}
+								<!-- <Countup
 									initial={0}
 									value={$viewerData?.exhibition_viewers}
 									duration={2000}
-									step={10}
+									step={1}
 									roundto={1}
 									format={true}
-								/>
+								/> -->
 							</p>
 							<p>Exhibition Viewer</p>
 							<span class="text-gray-500 text-xs">{formatDate($viewerData?.created_at)}</span>
 						</div>
 					</div>
 					<div
-						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-700 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
+						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-300 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
 					>
 						<div
-							class="flex justify-center items-center w-20 h-20 bg-white rounded-full transition-all duration-300 transform group-hover:rotate-12"
+							class="flex justify-center items-center w-24 h-24 bg-[#ffce56] rounded-full transition-all duration-300 transform group-hover:rotate-12"
 						>
 							<svg
 								class="w-20 h-16"
@@ -177,15 +191,16 @@
 							>
 						</div>
 						<div class="text-right">
-							<p class="text-7xl pb-5">
-								<Countup
+							<p class="text-5xl pb-5">
+								{$viewerData?.suly_expo_viewers}
+								<!-- <Countup
 									initial={0}
 									value={$viewerData?.suly_expo_viewers}
 									duration={2000}
-									step={10}
+									step={1}
 									roundto={1}
 									format={true}
-								/>
+								/> -->
 							</p>
 							<p>SulyExpo Viewer</p>
 							<span class="text-gray-500 text-xs">{formatDate($viewerData?.created_at)}</span>
@@ -194,5 +209,8 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- chart js -->
+		<div class="px-4"><BarChart {data} /></div>
 	</div>
 {/if}

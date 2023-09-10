@@ -3,19 +3,55 @@ import type { Viewers } from '../models/viewersModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const viewerData = writable<Viewers>();
+export const AllViewersData = writable<Viewers[]>([]);
+
 // Get the latest viewer data based on created_at column
-export const getViewerData = async (supabase: SupabaseClient, limitNumber: number) => {
+export const getViewerData = async (
+	supabase: SupabaseClient,
+	limitNumber: number,
+	dateString?: Date
+) => {
 	try {
-		const { data, error } = await supabase
+		console.log('date', dateString);
+		let query = supabase
 			.from('viewers')
 			.select('*')
 			.order('created_at', { ascending: false })
-			.limit(limitNumber); // Fetch only one row
+			.limit(limitNumber);
+
+		if (dateString) {
+			const startOfDay = new Date(dateString).toISOString();
+			const endOfDay = new Date(new Date(dateString).setHours(23, 59, 59, 999)).toISOString();
+
+			query = query.filter('created_at', 'gte', startOfDay).filter('created_at', 'lte', endOfDay);
+		}
+
+		const { data, error } = await query;
 
 		if (error) {
 			console.error('Error fetching viewer data:', error);
 		} else {
-			viewerData.set(data[0] as Viewers);
+			if (data && data.length > 0) {
+				viewerData.set(data[0] as Viewers);
+			}
+		}
+	} catch (error) {
+		console.error('Error fetching viewer data:', error);
+	}
+};
+
+// get all viewer
+export const getAllViewersData = async (supabase: SupabaseClient) => {
+	try {
+		const { data, error } = await supabase
+			.from('viewers')
+			.select('*')
+			.order('created_at', { ascending: false });
+
+		if (error) {
+			console.error('Error fetching viewer data:', error);
+		} else {
+			AllViewersData.set(data ?? []);
 		}
 	} catch (error) {
 		console.error('Error fetching viewer data:', error);
