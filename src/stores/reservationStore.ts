@@ -13,6 +13,11 @@ export const getReservationData = async (
 	page?: number,
 	pageSize?: number
 ) => {
+	await supabase
+		.rpc("get_seat_reservations", {
+			page_num: page,
+			page_size: pageSize,
+		})
 	let query = supabase
 		.from('seat_reservation')
 		.select(
