@@ -4,14 +4,21 @@
 	import type { PageData } from './$types';
 	import type { SeatLayoutModel } from '../seats/seatLayoutStore';
 	import { goto } from '$app/navigation';
+	import { SeatsLayoutTypeEnum } from '../../../models/seatsLayoutTypeEnum';
 	export let data: PageData;
 
 	$: ({ supabase } = data);
 	let designs: SeatLayoutModel[] | undefined;
-
 	async function getData() {
 		if (!supabase) return;
 		const seatsData = await supabase.from('seat_layout').select('*');
+
+		seatsData.data =
+			seatsData.data?.filter((seat) => {
+				return seat.type !== SeatsLayoutTypeEnum.AREAFIELDS;
+			}) ?? [];
+
+		console.log(seatsData.data);
 		designs = seatsData.data?.map((seat) => {
 			return seat as SeatLayoutModel;
 		});

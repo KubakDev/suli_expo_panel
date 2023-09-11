@@ -6,17 +6,15 @@
 		Button,
 		ButtonGroup,
 		Checkbox,
-		Chevron,
-		Dropdown,
 		Input,
 		InputAddon,
 		Modal,
-		Search,
+		Spinner,
 		TabItem,
 		Tabs,
 		Textarea
 	} from 'flowbite-svelte';
-	import { Minus, Plus } from 'svelte-heros-v2';
+	import { Minus, Plus, XMark } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import { page } from '$app/stores';
@@ -42,6 +40,7 @@
 	let canvas: any;
 	let container: any;
 	let fillColor = '#000000'; // Default color
+	let favColors: string[] = [];
 
 	let isDown: boolean = false;
 	let points: any[] = [];
@@ -153,15 +152,16 @@
 	}
 
 	onMount(async () => {
-		document.addEventListener('keydown', (event) => {
-			if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
-				// Ctrl+C: Copy the selected object
-				copySelectedObject();
-			} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-				// Ctrl+V: Paste the copied object
-				pasteCopiedObject();
-			}
-		});
+		await getFavColors();
+		// document.addEventListener('keydown', (event) => {
+		// 	if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+		// 		// Ctrl+C: Copy the selected object
+		// 		copySelectedObject();
+		// 	} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+		// 		// Ctrl+V: Paste the copied object
+		// 		pasteCopiedObject();
+		// 	}
+		// });
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
 
@@ -171,7 +171,9 @@
 			path.set({ stroke: 'red' });
 			canvas.renderAll();
 		});
-
+		canvas.imageSmoothingEnabled = false;
+		canvas.msImageSmoothingEnabled = false;
+		canvas.lineWidth = Math.round(2);
 		const supabase = data.supabase;
 
 		const pageId = $page.params.seatId;
@@ -252,12 +254,12 @@
 		});
 		updateLayers();
 		canvas.on('object:moving', function (options: fabric.IEvent) {
-			if (options.target) {
-				options.target.set({
-					left: Math.round(options.target.left! / gridSize) * gridSize,
-					top: Math.round(options.target.top! / gridSize) * gridSize
-				});
-			}
+			// if (options.target) {
+			// 	options.target.set({
+			// 		left: Math.round(options.target.left! / gridSize) * gridSize,
+			// 		top: Math.round(options.target.top! / gridSize) * gridSize
+			// 	});
+			// }
 		});
 		var panning = false;
 		var lastPosX: any, lastPosY: any;
@@ -712,12 +714,14 @@
 	function addMaxFreeServiceCount(event: any, service: seatServicesModel) {
 		event.stopPropagation();
 		let selectedObject = canvas.getActiveObject();
-		let selectedService = selectedObject.objectDetail?.services.find(
+		let selectedService = selectedObject?.objectDetail?.services.find(
 			(item: any) => item.id === service.id
 		);
-		selectedService.maxFreeCount = +event.target?.value;
+		if (selectedService) {
+			selectedService.maxFreeCount = +event.target?.value;
+		}
 
-		objectDetail = { ...selectedObject.objectDetail };
+		objectDetail = { ...selectedObject?.objectDetail };
 	}
 	function addMaxServiceCount(event: any, service: seatServicesModel) {
 		event.stopPropagation();
@@ -780,6 +784,29 @@
 		});
 		objectDetailDescription = selectedObject.objectDetail.descriptionLanguages;
 	}
+
+	async function getFavColors() {
+		await data.supabase
+			.from('fav_colors')
+			.select('*')
+			.then((Response) => {
+				favColors = Response.data?.map((x) => x.color) as string[];
+			});
+	}
+
+	let newFavColor: string = '';
+	let addFavColorLoading = false;
+	async function addNewFavColor() {
+		if (!newFavColor) return;
+		if (!newFavColor.startsWith('#')) {
+			newFavColor = `#${newFavColor}`;
+		}
+		addFavColorLoading = true;
+		await data.supabase.from('fav_colors').insert([{ color: newFavColor }]);
+		await getFavColors();
+		newFavColor = '';
+		addFavColorLoading = false;
+	}
 </script>
 
 <TopBarComponent
@@ -837,6 +864,28 @@
 					</Button>
 				</div>
 			{/if}
+			<h1 class="mx-2">favourite Colors</h1>
+			<div class="flex flex-wrap">
+				{#each favColors as color}
+					<div class="h-8 w-12 rounded-sm m-1" style={`background-color:${color}`} />
+				{/each}
+
+				<ButtonGroup class="w-full my-3" size="sm">
+					<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<InputAddon class="cursor-pointer p-0">
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<div class="w-full h-full p-2" on:click={addNewFavColor}>
+							{#if addFavColorLoading}
+								<Spinner />
+							{:else}
+								<Plus />
+							{/if}
+						</div>
+					</InputAddon>
+				</ButtonGroup>
+			</div>
 			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
 			<div class="grid grid-cols-2 gap-4 my-4">
 				<ButtonGroup class="w-full" size="sm">
