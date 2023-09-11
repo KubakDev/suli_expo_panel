@@ -13,6 +13,7 @@
 	} from '../../../../../stores/reservationStore';
 
 	const params = $page.params.reserveId;
+	$: console.log(params);
 	export let data;
 
 	let reservationData: Reservation = {};
@@ -21,70 +22,70 @@
 	let serviceID: any = [];
 	let quantityNumber: any = [];
 
-	onMount(async () => {
-		try {
-			const fetchedReservationData = await getReservationById(data.supabase, params);
-			reservationData = fetchedReservationData;
+	// onMount(async () => {
+	// 	try {
+	// 		const fetchedReservationData = await getReservationById(data.supabase, params);
+	// 		reservationData = fetchedReservationData;
 
-			if (reservationData.services) {
-				const servicesArray = reservationData.services;
+	// 		if (reservationData.services) {
+	// 			const servicesArray = reservationData.services;
 
-				servicesArray.map((serviceString) => {
-					const serviceObj = JSON.parse(serviceString);
+	// 			servicesArray.map((serviceString) => {
+	// 				const serviceObj = JSON.parse(serviceString);
 
-					serviceID.push(serviceObj.serviceId);
-				});
+	// 				serviceID.push(serviceObj.serviceId);
+	// 			});
 
-				servicesArray.map((serviceString) => {
-					const serviceObj = JSON.parse(serviceString);
+	// 			servicesArray.map((serviceString) => {
+	// 				const serviceObj = JSON.parse(serviceString);
 
-					quantityNumber.push(serviceObj.quantity);
-				});
-				//
-				//
+	// 				quantityNumber.push(serviceObj.quantity);
+	// 			});
+	// 			//
+	// 			//
 
-				getServiceDetails(serviceID);
-			}
+	// 			getServiceDetails(serviceID);
+	// 		}
 
-			getSeatLayout();
-		} catch (error) {}
-	});
+	// 		getSeatLayout();
+	// 	} catch (error) {}
+	// });
 
-	async function updateStatus(itemID: any, selectedStatus: any) {
-		const updatedReservation: any = { ...$seatReservation };
+	// async function updateStatus(itemID: any, selectedStatus: any) {
+	// 	const updatedReservation: any = { ...$seatReservation };
 
-		if (updatedReservation.id === itemID) {
-			updatedReservation.status = selectedStatus;
-			await updateData(data.supabase, itemID, { status: selectedStatus }, $seatReservation);
-		}
+	// 	if (updatedReservation.id === itemID) {
+	// 		updatedReservation.status = selectedStatus;
+	// 		await updateData(data.supabase, itemID, { status: selectedStatus }, $seatReservation);
+	// 	}
 
-		seatReservation.set(updatedReservation);
-	}
-	async function getSeatLayout() {
-		const response = await data.supabase
-			.from('exhibition')
-			.select('*,seat_layout(*)', { count: 'exact' })
-			.eq('id', reservationData.exhibition_id)
-			.single();
-		if (response.data.seat_layout) {
-			seatLayout = response.data.seat_layout;
-		}
-	}
+	// 	seatReservation.set(updatedReservation);
+	// }
+	// async function getSeatLayout() {
+	// 	const response = await data.supabase
+	// 		.from('exhibition')
+	// 		.select('*,seat_layout(*)', { count: 'exact' })
+	// 		.eq('id', reservationData.exhibition_id)
+	// 		.single();
+	// 	if (response.data.seat_layout) {
+	// 		seatLayout = response.data.seat_layout;
+	// 	}
+	// }
 
-	async function getServiceDetails(serviceIDs: any) {
-		try {
-			serviceData = await getSeatServicesByIds(data.supabase, serviceIDs);
-		} catch (error) {
-			console.error(error);
-		}
-	}
+	// async function getServiceDetails(serviceIDs: any) {
+	// 	try {
+	// 		serviceData = await getSeatServicesByIds(data.supabase, serviceIDs);
+	// 	} catch (error) {
+	// 		console.error(error);
+	// 	}
+	// }
 
-	function findTotalPrice(item: any, price: number, quantity: number) {
-		return (item.discount ?? price) * (quantity ?? 0);
-	}
+	// function findTotalPrice(item: any, price: number, quantity: number) {
+	// 	return (item.discount ?? price) * (quantity ?? 0);
+	// }
 </script>
 
-<div class="max-w-screen-2xl mx-auto py-10 body-font">
+<!-- <div class="max-w-screen-2xl mx-auto py-10 body-font">
 	<div class="container px-5 py-5 mx-auto">
 		<div class="flex justify-center pb-5">
 			<Avatar
@@ -94,7 +95,7 @@
 				size="xl"
 			/>
 		</div>
-		<!-- top section  -->
+		top section 
 		<div class="flex flex-col text-center w-full mb-0">
 			<h2
 				class="text-3xl text-gray-900 dark:text-gray-100 tracking-widest font-medium title-font mb-1"
@@ -146,7 +147,7 @@
 			</p>
 		</div>
 
-		<!-- change status -->
+		change status
 		<div class="flex justify-end py-3">
 			<select
 				class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
@@ -160,7 +161,7 @@
 			</select>
 		</div>
 
-		<!-- detail section -->
+		detail section
 		<div class="flex flex-wrap dark:bg-gray-900 bg-white shadow border dark:border-gray-800">
 			<div
 				class="xl:w-2/4 lg:w-1/2 md:w-full px-8 py-6 border-l-2 border-gray-200 border-opacity-60"
@@ -182,9 +183,9 @@
 			</div>
 		</div>
 
-		<!-- service detail -->
+		service detail
 		<div class="pt-5" />
-		<!-- table data -->
+		table data
 
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">
@@ -310,10 +311,10 @@
 			</div>
 		</div>
 
-		<!-- seatLayout -->
+		seatLayout
 
 		{#if seatLayout}
 			<ReservedSeat data={seatLayout} reservedData={reservationData} />
 		{/if}
 	</div>
-</div>
+</div> -->

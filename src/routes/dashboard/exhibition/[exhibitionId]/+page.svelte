@@ -31,8 +31,10 @@
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
+	let imageFile_pdf_contract: File | undefined;
 	let imageFile_brochure: File | undefined;
 	let fileName_pdf: any[] = [];
+	let fileName_pdf_contract: any[] = [];
 	let fileName_brochure: any[] = [];
 	let carouselImages: any = undefined;
 	let carouselImages_sponsor: any = undefined;
@@ -40,9 +42,11 @@
 	let prevThumbnail: string = '';
 	let prevImage_map: string = '';
 	let prevPDFFile: string = '';
+	let prevPDFFile_contract: string = '';
 	let prevBrochureFile: string = '';
 	let isFormSubmitted = false;
 	let pdfSource = ImgSourceEnum.PdfRemote;
+	let pdfSource_contract = ImgSourceEnum.PdfRemote;
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
@@ -113,6 +117,7 @@
 						location_title: exhibitionLang?.location_title ?? '',
 						map_title: exhibitionLang?.map_title ?? '',
 						pdf_files: exhibitionLang?.pdf_files ?? '',
+						contract_file: exhibitionLang?.contract_file ?? '',
 						brochure: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 							exhibitionLang.brochure
 						}`,
@@ -121,6 +126,7 @@
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 					prevPDFFile = exhibitionLang?.pdf_files;
+					prevPDFFile_contract = exhibitionLang?.contract_file;
 					prevBrochureFile = exhibitionLang?.brochure;
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
@@ -167,6 +173,35 @@
 
 		reader.readAsDataURL(file);
 	}
+
+	// handle pdf contract
+	function handleFileUpload_pdf_contract(e: Event) {
+		pdfSource_contract = ImgSourceEnum.PdfLocal;
+
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf_contract = file;
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.contract_file = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf_contract.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
 	// handle brochure
 	function handleFileUpload_brochure(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
@@ -353,6 +388,27 @@
 			} else {
 				for (let lang of exhibitionDataLang) {
 					lang.pdf_files = prevPDFFile;
+				}
+			}
+
+			if (imageFile_pdf_contract) {
+				for (let lang of exhibitionDataLang) {
+					const pdfFileData = fileName_pdf_contract.find(
+						(fileData) => fileData.lang === lang.language
+					);
+					if (pdfFileData) {
+						if (lang.contract_file) {
+							await data.supabase.storage.from('PDF').remove([lang.contract_file]);
+						}
+						const response = await data.supabase.storage
+							.from('PDF')
+							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf_contract!);
+						lang.contract_file = response.data?.path || '';
+					}
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.contract_file = prevPDFFile_contract;
 				}
 			}
 
@@ -649,6 +705,34 @@
 											{#if isFormSubmitted && !langData.brochure.trim()}
 												<p class="error-message">Please Upload brochure file</p>
 											{/if}
+										</Label>
+
+										<Label class="w-2/4 space-y-2 mb-2">
+											<span>Upload pdf contract </span>
+											<Fileupload
+												on:change={handleFileUpload_pdf_contract}
+												accept=".pdf"
+												class=" dark:bg-white"
+											/>
+
+											<div>
+												<button
+													on:click={() =>
+														pdfSource_contract == ImgSourceEnum.PdfLocal
+															? decodeBase64(langData?.contract_file ?? '')
+															: openPdfFile(langData?.contract_file ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+
+												<button
+													on:click={() =>
+														pdfSource_contract == ImgSourceEnum.PdfLocal
+															? decodeBase64(langData?.contract_file ?? '')
+															: openPdfFile(langData?.contract_file ?? '')}
+													class="cursor-pointer"
+												/>
+											</div>
 										</Label>
 									</div>
 

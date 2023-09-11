@@ -19,7 +19,7 @@
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 4;
+	const pageSize: number = 6;
 	let totalPages: number = 1;
 	let totalItems: any;
 
@@ -32,7 +32,7 @@
 			currentPage,
 			pageSize
 		);
-		console.log(result);
+		console.log($seatReservation);
 		// Recalculate the total number of pages
 		totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
@@ -109,7 +109,7 @@
 			);
 			totalItems = result.count || 0;
 			totalPages = Math.ceil(totalItems / pageSize);
-			console.log(result);
+			// console.log(result);
 		} else {
 			const result = await getReservationData(
 				data.supabase,
@@ -234,7 +234,6 @@
 					class="w-3 h-3 ml-2 text-gray-500 dark:text-gray-500   "
 				/>
 			</Button>
-			<!-- bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-80 pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" -->
 			<Dropdown class="z-40 bg-[#e9ecefd2] dark:bg-gray-100 space-y-3 rounded">
 				<div class="flex items-center p-2 text-gray-900">
 					<input
@@ -266,7 +265,6 @@
 							/></svg
 						>
 					{:else}
-						<!-- clear filter  -->
 						<button on:click={clearFilters} class="">
 							<svg
 								width="24px"
@@ -335,12 +333,11 @@
 									<span>company name</span>
 								</div>
 							</th>
-
 							<th
 								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
-									<span>company phone_number</span>
+									<span>comments</span>
 								</div>
 							</th>
 							<th
@@ -352,7 +349,7 @@
 							</th>
 
 							<th
-								class="w-60 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+								class="w-14 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -381,7 +378,7 @@
 
 					<tbody class="dark:text-gray-300">
 						{#if $seatReservation.length > 0}
-							{#each $seatReservation as item, index (item.id)}
+							{#each $seatReservation as reservation, index}
 								<tr>
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
@@ -393,61 +390,41 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{item?.company?.company_name}
-										</div>
-									</td>
-
-									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-										<div>
-											{item?.company?.phone_number}
-										</div>
-									</td>
-									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-										<div>
-											{item?.exhibition?.exhibition_type}
+											{#each reservation?.companies as company}
+												<li>
+													{company?.company_name}
+												</li>
+											{/each}
 										</div>
 									</td>
 
 									<td
-										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 flex justify-between items-center gap-4"
+										class="max-w-screen-sm p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
 										<div>
+											{#each reservation?.comments as comment}
+												<li>{comment}</li>
+											{/each}
+										</div>
+									</td>
+
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{#each reservation.exhibitions as exhibition}
+												<li>{exhibition.exhibition_type}</li>
+											{/each}
+										</div>
+									</td>
+
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div class="text-center">
 											<button
 												on:click={() => {
-													goto(`/dashboard/reservation/detail/${item.id}`);
+													goto(`/dashboard/reservation/detail/${reservation.object_id}`);
 												}}
 												class="dark:text-gray-400 hover:underline"
 												>View
 											</button>
-										</div>
-
-										<div>
-											{#if item.status === ReservationStatusEnum.PENDING}
-												<div class="w-5 h-5 bg-[#F7CB73] rounded-full" />
-											{:else if item.status === ReservationStatusEnum.ACCEPT}
-												<div class="w-5 h-5 bg-green-600 rounded-full" />
-											{:else}
-												<div class="w-5 h-5 bg-red-600 rounded-full" />
-											{/if}
-										</div>
-
-										<div>
-											<select
-												class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg w-full focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
-												bind:value={item.status}
-												on:change={() => updateStatus(item.id, item.status)}
-												disabled={item.status === ReservationStatusEnum.REJECT}
-											>
-												<option value={ReservationStatusEnum.PENDING}
-													>{ReservationStatusEnum.PENDING}</option
-												>
-												<option value={ReservationStatusEnum.ACCEPT}
-													>{ReservationStatusEnum.ACCEPT}</option
-												>
-												<option value={ReservationStatusEnum.REJECT}
-													>{ReservationStatusEnum.REJECT}</option
-												>
-											</select>
 										</div>
 									</td>
 								</tr>

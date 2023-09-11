@@ -21,16 +21,17 @@
 	let fileName: string;
 	let fileName_map: string;
 	let fileName_pdf: any[] = [];
+	let fileName_pdf_contract: any[] = [];
 	let fileName_brochure: any[] = [];
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
+	let imageFile_pdf_contract: File | undefined;
 	let imageFile_brochure: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
 	let carouselImages: any = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
-	let pdfFiles: File[] = [];
 
 	let exhibitionsDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsObject: ExhibitionsModel = {
@@ -59,6 +60,7 @@
 			video_youtube_link: '',
 			title: '',
 			pdf_files: '',
+			contract_file: '',
 			description: '',
 			location: '',
 			location_title: '',
@@ -172,6 +174,17 @@
 			}
 		}
 
+		for (let file of fileName_pdf_contract) {
+			const responsePDF_contract = await data.supabase.storage
+				.from('PDF')
+				.upload(`pdfFiles/${file.fileName}`, imageFile_pdf_contract!);
+
+			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
+			if (langObj) {
+				langObj.contract_file = responsePDF_contract?.data?.path || '';
+			}
+		}
+
 		for (let file of fileName_brochure) {
 			const response3 = await data.supabase.storage
 				.from('image')
@@ -215,6 +228,7 @@
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 		// Insert data into Supabase
+		console.log(exhibitionsDataLang);
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
 
 		resetForm();
@@ -250,6 +264,7 @@
 				location: '',
 				location_title: '',
 				pdf_files: '',
+				contract_file: '',
 				brochure: '',
 				map_title: '',
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
@@ -275,6 +290,32 @@
 
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	function handleFileUpload_pdf_contract(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf_contract = file;
+
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.contract_file = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf_contract.push({
 				lang: selectedLanguageTab,
 				fileName: `${randomText}_${file.name}`
 			});
@@ -488,6 +529,25 @@
 											{#if isFormSubmitted && !langData?.brochure?.trim()}
 												<p class="error-message">Please Upload brochure image</p>
 											{/if}
+										</Label>
+
+										<Label class="w-1/2 space-y-2 mb-2">
+											<span>Upload pdf contract </span>
+
+											<Fileupload
+												on:change={handleFileUpload_pdf_contract}
+												accept=".pdf"
+												class="dark:bg-white"
+												placeholder="Upload"
+											/>
+
+											<div>
+												<button
+													on:click={() => decodeBase64(langData?.contract_file ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+											</div>
 										</Label>
 									</div>
 

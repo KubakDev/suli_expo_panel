@@ -6,11 +6,11 @@ export interface Reservation {
 	id?: number;
 	exhibition_id?: number;
 	object_id?: number;
-	comment?: string;
+	comments: string[];
 	services?: string[];
 	company_id?: number;
-	company?: CompanyType;
-	exhibition?: ExhibitionModel;
+	companies: CompanyType[];
+	exhibitions: ExhibitionModel[];
 	status?: ReservationStatusEnum;
 	created_at?: Date;
 }

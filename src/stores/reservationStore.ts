@@ -13,18 +13,23 @@ export const getReservationData = async (
 	page?: number,
 	pageSize?: number
 ) => {
-	let query = supabase
-		.from('seat_reservation')
-		.select(
-			`
-        *,
-        company(*),
-        exhibition(*)
-    `
-		)
-		.range((page! - 1) * pageSize!, page! * pageSize! - 1)
-		.limit(pageSize!)
-		.order('created_at', { ascending: false });
+	let query = await supabase.rpc('get_seat_reservations', {
+		page_num: page,
+		page_size: pageSize
+	});
+
+	//  supabase
+	// 	.from('seat_reservation')
+	// 	.select(
+	// 		`
+	//     *,
+	//     company(*),
+	//     exhibition(*)
+	// `
+	// 	)
+	// 	.range((page! - 1) * pageSize!, page! * pageSize! - 1)
+	// 	.limit(pageSize!)
+	// 	.order('created_at', { ascending: false });
 
 	let countQuery = supabase.from('seat_reservation').select('count', { count: 'exact' });
 
@@ -81,7 +86,6 @@ export const getReservationData = async (
 
 		// show the message if data is not found
 		if (!dataFound) {
-
 			seatReservation.set([]); // Clear existing data if no matching data found
 			return [];
 		}
@@ -98,7 +102,8 @@ export const getReservationData = async (
 		countQuery = countQuery.in('exhibition_id', filters);
 	}
 
-	const { data } = await query.order('id');
+	const { data } = await query;
+
 	const { count } = await countQuery;
 
 	const result = {
@@ -110,7 +115,12 @@ export const getReservationData = async (
 	return result;
 };
 
-export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: any, reservationData?: Reservation) => {
+export const updateData = async (
+	supabase: SupabaseClient,
+	id: number,
+	updatedFields: any,
+	reservationData?: Reservation
+) => {
 	const { data, error } = await supabase
 		.from('seat_reservation')
 		.update(updatedFields)
@@ -138,8 +148,8 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 			contactInfo: contactInfoResponse.data,
 			status: updatedFields.status
 		})
-	}).then(() => { });
-	console.log(reservationData)
+	}).then(() => {});
+	console.log(reservationData);
 	// return data;
 };
 
@@ -161,7 +171,7 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 		throw error;
 	}
 
-	// 
+	//
 	seatReservation.set(data as Reservation[]);
 	return data as Reservation;
 };
