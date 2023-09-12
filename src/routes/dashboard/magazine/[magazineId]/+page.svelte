@@ -49,7 +49,7 @@
 	let pdf_files: PDFModel[] = [];
 
 	//**** get data from db and put it into the fields ****//
-	async function  () {
+	async function getMagazineData() {
 		await data.supabase
 			.from('magazine')
 			.select('*,magazine_languages(*)')
