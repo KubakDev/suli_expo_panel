@@ -9,16 +9,18 @@
 
 	$: ({ supabase } = data);
 	let designs: SeatLayoutModel[] | undefined;
+	let seatsAreaFieldsType = [];
 	async function getData() {
 		if (!supabase) return;
 		const seatsData = await supabase.from('seat_layout').select('*');
-
+		seatsData.data =
+			seatsData.data?.filter((seat) => {
+				return seat.type == SeatsLayoutTypeEnum.AREAFIELDS;
+			}) ?? [];
 		seatsData.data =
 			seatsData.data?.filter((seat) => {
 				return seat.type !== SeatsLayoutTypeEnum.AREAFIELDS;
 			}) ?? [];
-
-		console.log(seatsData.data);
 		designs = seatsData.data?.map((seat) => {
 			return seat as SeatLayoutModel;
 		});

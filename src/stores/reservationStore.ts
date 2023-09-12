@@ -148,7 +148,7 @@ export const updateData = async (
 			contactInfo: contactInfoResponse.data,
 			status: updatedFields.status
 		})
-	}).then(() => {});
+	}).then(() => { });
 	console.log(reservationData);
 	// return data;
 };
