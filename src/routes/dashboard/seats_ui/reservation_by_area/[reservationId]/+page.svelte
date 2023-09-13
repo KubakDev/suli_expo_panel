@@ -17,19 +17,21 @@
 		DropdownItem,
 		Tabs,
 		TabItem,
-		Spinner,
-		Textarea
+		Textarea,
+		Spinner
 	} from 'flowbite-svelte';
-	import type { ExhibitionsModel } from '../../../../models/exhibitionModel';
-	import { exhibitions, getData } from '../../../../stores/exhibitionStore';
-	import { SeatServiceStatusEnum } from '../../../../models/seatServiceStatusEnum';
-	import { LanguageEnum } from '../../../../models/languageEnum';
-	import type { SeatPrivacyPolicyModel } from '../../../../models/addSeatDataModel';
-	import { addNewToast } from '../../../../stores/toastStore';
-	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
+	import type { ExhibitionsModel } from '../../../../../models/exhibitionModel';
+	import { exhibitions, getData } from '../../../../../stores/exhibitionStore';
+	import { SeatServiceStatusEnum } from '../../../../../models/seatServiceStatusEnum';
+	import { LanguageEnum } from '../../../../../models/languageEnum';
+	import type { SeatPrivacyPolicyModel } from '../../../../../models/addSeatDataModel';
+	import { addNewToast } from '../../../../../stores/toastStore';
+	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
 	import { onMount } from 'svelte';
-	import RequiredFieldsComponent from './requiredFields.svelte';
-	import { SeatsLayoutTypeEnum } from '../../../../models/seatsLayoutTypeEnum';
+	import RequiredFieldsComponent from '../requiredFields.svelte';
+	import { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
+	import { page } from '$app/stores';
+	import UploadContractFile from '../uploadContractFile.svelte';
 
 	export let data: any;
 	interface areaType {
@@ -42,6 +44,7 @@
 		name: string;
 		isActive?: boolean;
 		privacy_policy?: string;
+		price_per_meter?: number;
 	} = {
 		exhibition: undefined,
 		name: '',
@@ -52,21 +55,39 @@
 		Object.keys(SeatServiceStatusEnum) as Array<keyof typeof SeatServiceStatusEnum>
 	).map((key) => SeatServiceStatusEnum[key]);
 
-	let languageEnumKeys = Object.values(LanguageEnum);
+	let languageEnumKeys: string[] = Object.values(LanguageEnum);
 
 	let formSubmitted = false;
 	let dropdownOpen = false;
 	let isActiveDropdownOpen = false;
 	let areas: areaType[] = [];
 	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
-
 	let newArea: areaType = {
 		area: '',
 		quantity: 0
 	};
 	onMount(async () => {
 		await getData(data.supabase);
+		await getSeatDetail();
 	});
+	async function getSeatDetail() {
+		await data.supabase
+			.from('seat_layout')
+			.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
+			.eq('id', $page.params.reservationId)
+			.single()
+			.then((response: any) => {
+				seatInfoData.exhibition = response.data.exhibition;
+				seatInfoData.name = response.data.name;
+				seatInfoData.isActive = response.data.is_active;
+				seatInfoData.privacy_policy = response.data.seat_privacy_policy_lang;
+				privacyPolicyLang = response.data.seat_privacy_policy_lang;
+				seatInfoData.price_per_meter = response.data.price_per_meter;
+				if (response.data.areas) {
+					areas = JSON.parse(response.data.areas);
+				}
+			});
+	}
 	function addNewArea() {
 		areas.push(newArea);
 		areas = [...areas];
@@ -80,7 +101,7 @@
 		areas = [...areas];
 	}
 
-	async function addNewSeat() {
+	async function updatedSeat() {
 		formSubmitted = true;
 		const supabase = data.supabase;
 
@@ -88,9 +109,6 @@
 			return;
 		}
 		loading = true;
-		console.log(seatInfoData);
-		console.log(privacyPolicyLang);
-		console.log(areas);
 		if (seatInfoData.isActive) {
 			await supabase
 				.from('seat_layout')
@@ -98,15 +116,16 @@
 				.eq('exhibition', seatInfoData.exhibition?.id);
 		}
 		const areasArray = JSON.stringify(areas);
-		console.log(`${areasArray}`);
 		await supabase
-			.rpc('insert_seat_and_seat_privacy', {
+			.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
 					name: seatInfoData.name,
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
-					type: SeatsLayoutTypeEnum.AREAFIELDS
+					type: SeatsLayoutTypeEnum.AREAFIELDS,
+					price_per_meter: seatInfoData.price_per_meter,
+					id: $page.params.reservationId
 				},
 				privacy_lang_data: privacyPolicyLang
 			})
@@ -118,14 +137,15 @@
 					title: 'Success',
 					duration: 1000
 				});
+				getSeatDetail();
 			})
 			.catch(() => {
 				loading = false;
 			});
 	}
-	function addPrivacyPolicyLang(description: string, lang: string) {
+	function addPrivacyPolicyLang(description: any, lang: string) {
 		privacyPolicyLang = privacyPolicyLang.filter((x) => x.language !== lang);
-		privacyPolicyLang.push({ description, language: lang as LanguageEnum });
+		privacyPolicyLang.push({ description: description.value, language: lang as LanguageEnum });
 	}
 </script>
 
@@ -144,6 +164,13 @@
 							bind:value={seatInfoData.name}
 						/></ButtonGroup
 					>
+					<ButtonGroup class="" size="sm">
+						<InputAddon>price per meter</InputAddon><Input
+							type="text"
+							size="sm"
+							bind:value={seatInfoData.price_per_meter}
+						/></ButtonGroup
+					>
 					<Button
 						color={!seatInfoData.exhibition && formSubmitted ? 'red' : 'light'}
 						outline
@@ -153,6 +180,7 @@
 			white-space: nowrap;
 			overflow: hidden;
 			"
+						disabled={true}
 						><Chevron
 							>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
 								? seatInfoData.exhibition.exhibition_languages[0].title
@@ -161,7 +189,7 @@
 								: 'choose an exhibition'}</Chevron
 						></Button
 					>
-					<Dropdown bind:open={dropdownOpen} ulClass="dropdownUi py-1 w-full">
+					<Dropdown bind:open={dropdownOpen} ulClass="dropdownUi py-1 w-full" disabled={true}>
 						{#if $exhibitions}
 							{#each $exhibitions as exhibition}
 								<DropdownItem on:click={() => (dropdownOpen = false)}>
@@ -215,8 +243,8 @@
 							</DropdownItem>
 						{/each}
 					</Dropdown>
-					<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
 					<div class=" col-span-3">
+						<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
 						<Tabs>
 							{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
@@ -226,7 +254,7 @@
 										rows="8"
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
-										on:input={(e) => addPrivacyPolicyLang(e.target?.value ?? '', lang)}
+										on:input={(e) => addPrivacyPolicyLang(e.target ?? '', lang)}
 									/>
 								</TabItem>
 							{/each}
@@ -273,14 +301,23 @@
 					</Table>
 				</div>
 				<div class="flex justify-end mt-10">
-					<Button type="submit" on:click={addNewSeat}>Submit</Button>
+					<Button type="submit" on:click={updatedSeat}>
+						{#if loading}
+							<Spinner class="mr-3" size="4" />
+						{/if}
+						Submit</Button
+					>
 				</div>
 			</TabItem>
 			<TabItem title="add Company Info Required Data">
 				<RequiredFieldsComponent
 					exhibitionId={seatInfoData.exhibition?.id}
 					supabase={data.supabase}
+					detail={true}
 				/>
+			</TabItem>
+			<TabItem title="upload contract file">
+				<UploadContractFile exhibitionId={seatInfoData.exhibition?.id} supabase={data.supabase} />
 			</TabItem>
 		</Tabs>
 	</div>

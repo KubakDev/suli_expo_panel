@@ -1,9 +1,14 @@
 <script lang="ts">
 	import type { SupabaseClient } from '@supabase/supabase-js';
 	import { Checkbox, Button } from 'flowbite-svelte';
+	import { onMount } from 'svelte';
+	import { addNewToast } from '../../../../stores/toastStore';
+	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
 
 	export let exhibitionId: number | null | undefined;
 	export let supabase: SupabaseClient;
+	export let detail: boolean | null | undefined = null;
+
 	let allCompanyInfoFields: {
 		name: string;
 		status: boolean;
@@ -42,6 +47,29 @@
 		}
 	];
 
+	onMount(() => {
+		if (detail) {
+			getRequiredFiledData();
+		}
+	});
+	async function getRequiredFiledData() {
+		await supabase
+			.from('required_company_fields_exhibition')
+			.select('*')
+			.eq('exhibition_id', exhibitionId)
+			.single()
+			.then((response) => {
+				if (response.data) {
+					let requiredFields = response.data.fields;
+					allCompanyInfoFields.forEach((field) => {
+						if (requiredFields.includes(field.name)) {
+							field.status = true;
+						}
+					});
+					allCompanyInfoFields = [...allCompanyInfoFields];
+				}
+			});
+	}
 	async function addRequiredFields() {
 		let requiredFields: string[] = [];
 		allCompanyInfoFields.forEach((field) => {
@@ -53,10 +81,18 @@
 			.from('required_company_fields_exhibition')
 			.delete()
 			.eq('exhibition_id', exhibitionId);
-		await supabase.from('required_company_fields_exhibition').insert({
+		const response = await supabase.from('required_company_fields_exhibition').insert({
 			exhibition_id: exhibitionId,
 			fields: `{${requiredFields.join(',')}}`
 		});
+		if (!response.error) {
+			addNewToast({
+				type: ToastTypeEnum.SUCCESS,
+				message: 'required fields added successfully',
+				title: 'Success',
+				duration: 1000
+			});
+		}
 	}
 </script>
 

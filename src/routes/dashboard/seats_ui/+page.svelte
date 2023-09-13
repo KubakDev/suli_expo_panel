@@ -9,11 +9,11 @@
 
 	$: ({ supabase } = data);
 	let designs: SeatLayoutModel[] | undefined;
-	let seatsAreaFieldsType = [];
+	let seatsAreaFieldsType: SeatLayoutModel[] = [];
 	async function getData() {
 		if (!supabase) return;
 		const seatsData = await supabase.from('seat_layout').select('*');
-		seatsData.data =
+		seatsAreaFieldsType =
 			seatsData.data?.filter((seat) => {
 				return seat.type == SeatsLayoutTypeEnum.AREAFIELDS;
 			}) ?? [];
@@ -35,6 +35,15 @@
 
 	function createNewDesign() {
 		goto(`seats_ui/create`);
+	}
+	function getAreaDetail(area?: string) {
+		let result = [];
+		if (area) {
+			try {
+				result = JSON.parse(area);
+			} catch (e) {}
+		}
+		return result;
 	}
 </script>
 
@@ -72,4 +81,85 @@
 			{/each}
 		{/if}
 	</div>
+	<div class="px-4 mt-10 w-full lg:w-10/12">
+		<div class="my-6 flex w-full justify-between">
+			<div><h1 class="text-white text-lg font-bold">reservation by area</h1></div>
+			<div>
+				<Button on:click={() => goto('seats_ui/reservation_by_area')}>add new area</Button>
+			</div>
+		</div>
+		<table class="min-w-full border-collapse">
+			<thead>
+				<tr>
+					<th class="table_header">
+						<div class="flex items-center gap-2">name</div>
+					</th>
+					<th class="table_header">
+						<div class="flex items-center gap-2">is active</div>
+					</th>
+					<th class="table_header">
+						<div class="flex items-center gap-2">ares</div>
+					</th>
+					<th class="table_header">
+						<div class="flex items-center gap-2">go to detail</div>
+					</th>
+				</tr>
+			</thead>
+
+			<tbody class="dark:text-gray-300">
+				{#each seatsAreaFieldsType as seat}
+					<tr class="border-2 border-[#edeff2] text-white">
+						<td>
+							<div>{seat.name}</div>
+						</td>
+						<td>
+							{#if seat.is_active}
+								<div class="flex items-center">
+									<div class="mx-2 bg-[#31c48d] rounded-full h-3 w-3" />
+									Active
+								</div>
+							{:else}
+								<div class="flex items-center">
+									<div class="mx-2 bg-[#cc2827] rounded-full h-3 w-3" />
+									Inactive
+								</div>
+							{/if}
+						</td>
+						<td>
+							<div>
+								{#each getAreaDetail(seat.areas) as areaDetail}
+									<div class="my-3">
+										area: {areaDetail.area} M<span class="mx-4">
+											quantity:{areaDetail.quantity}
+										</span>
+									</div>
+								{/each}
+							</div>
+						</td>
+
+						<td>
+							<Button class="m-2" on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)}
+								>Detail</Button
+							>
+						</td>
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
 </div>
+
+<style>
+	.table_header {
+		padding: 0.75rem;
+		font-weight: 600;
+		font-weight: 600;
+		background-color: #e9ecefd2;
+		color: rgb(75 85 99 / var(--tw-text-opacity));
+		font-size: 0.875rem;
+		line-height: 1.25rem;
+
+		border-width: 1px;
+		display: table-cell;
+	}
+</style>

@@ -100,6 +100,11 @@
 	function getServices(service: string) {
 		return JSON.parse(service ?? '');
 	}
+	function exportFile(reservation: any) {
+		window.open(
+			import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL + '/' + reservation?.file_url
+		);
+	}
 </script>
 
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
@@ -136,6 +141,9 @@
 					</th>
 					<th class="table_header dark:border-gray-800">
 						<div class="flex items-center gap-2">export contract data</div>
+					</th>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex items-center gap-2">export excel sheet</div>
 					</th>
 				</tr>
 			</thead>
@@ -215,6 +223,9 @@
 						</td>
 						<td>
 							<Button class="mx-2" on:click={() => exportContract(reservation)}>export</Button>
+						</td>
+						<td>
+							<Button class="mx-2" on:click={() => exportFile(reservation)}>download</Button>
 						</td>
 					</tr>
 				{/each}

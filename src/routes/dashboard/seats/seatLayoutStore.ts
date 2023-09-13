@@ -24,6 +24,7 @@ export interface SeatLayoutModel {
 	exhibition: number | undefined;
 	design: JSON | undefined;
 	is_active?: boolean;
+	areas?: string
 }
 
 const createSeatLayoutStore = () => {
