@@ -3,7 +3,8 @@
 	import {
 		seatReservation,
 		getReservationData,
-		updateData
+		updateData,
+		seatReservationTotalCount
 	} from '../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -14,48 +15,42 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
 	export let data;
-	let selectedExhibition: number[];
+	let selectedExhibition: number | undefined;
+	let p_company_name: string | undefined;
+	let p_phone_number: string | undefined;
+	let p_type: string | undefined;
+	let p_email: string | undefined;
 	let searchQuery: string = '';
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 6;
-	let totalPages: number = 1;
+	const pageSize: number = 4;
 	let totalItems: any;
+	let totalPages = 1;
+
+	$: {
+		console.log('//', $seatReservationTotalCount);
+	}
 
 	async function fetchReservationData() {
 		let result: any = await getReservationData(
 			data.supabase,
-			selectedExhibition,
-			searchField,
-			searchQuery,
 			currentPage,
-			pageSize
+			pageSize,
+			selectedExhibition,
+			p_company_name,
+			p_phone_number,
+			p_type,
+			p_email
 		);
 		console.log($seatReservation);
-		// Recalculate the total number of pages
-		totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
+		if ($seatReservation && $seatReservation[0] && $seatReservation[0]?.total_count) {
+			totalItems = $seatReservation[0]?.total_count;
+			totalPages = Math.ceil(totalItems / pageSize);
+		}
 	}
 
 	onMount(fetchReservationData);
-
-	async function updateStatus(itemID: any, selectedStatus: any) {
-		const updatedData = $seatReservation.map((reservation) => {
-			if (itemID === reservation.id) {
-				return { ...reservation, status: selectedStatus };
-			}
-			return reservation;
-		});
-
-		for (const reservation of updatedData) {
-			if (itemID === reservation.id) {
-				await updateData(data.supabase, reservation?.id ?? 0, { status: selectedStatus });
-			}
-		}
-
-		fetchData();
-	}
 
 	let exhibitionData: ExhibitionModel[] = [];
 
@@ -76,65 +71,36 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
-		currentPage++;
-		if (currentPage > totalPages) {
-			currentPage = 1;
-		}
-
-		// await fetchReservationData();
-		const result = await getReservationData(
-			data.supabase,
-			selectedExhibition ? [selectedExhibition] : undefined,
-			searchField ? searchField : undefined,
-			searchQuery ? searchQuery : undefined,
-			currentPage,
-			pageSize
-		);
-		totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
-	}
-
-	async function filterByExhibition() {
-		currentPage = 1;
-		await fetchReservationData();
-		if (selectedExhibition !== null) {
-			const result = await getReservationData(
-				data.supabase,
-				[selectedExhibition],
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-			// console.log(result);
+	function filterByExhibition() {
+		if (selectedExhibition) {
+			const selected = exhibitionData.find((item) => item.id === selectedExhibition);
+			if (selected) {
+				selectedExhibition = selected.id;
+			}
 		} else {
-			const result = await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
+			selectedExhibition = null;
 		}
+		currentPage = 1;
+		fetchReservationData();
 	}
 
 	//create checkboxes
-	const options = ['company name', 'company phoneNumber', 'company email'];
+	const options = ['company name', 'company phoneNumber', 'company email', 'company type'];
 	let checked: any = {};
 
 	function selectOneCheckbox(index: number) {
 		const option = options[index];
 
+		// Reset values to their default states
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_type = undefined;
+		p_email = undefined;
+
+		// Then set the value for the selected option
 		for (const opt of options) {
 			checked[opt] = false;
 		}
-
 		checked[option] = true;
 
 		switch (option) {
@@ -147,60 +113,54 @@
 			case 'company email':
 				searchField = 'emailField';
 				break;
+			case 'company type':
+				searchField = 'typeField';
+				break;
 			default:
 				searchField = null;
 		}
 
 		isOptionSelected = true;
-		filterByCompany();
 	}
 
 	async function filterByCompany() {
+		switch (searchField) {
+			case 'companyNameField':
+				p_company_name = searchQuery;
+				break;
+			case 'phoneNumberField':
+				p_phone_number = searchQuery;
+				break;
+			case 'emailField':
+				p_email = searchQuery;
+				break;
+			case 'typeField':
+				p_type = searchQuery;
+				break;
+			default:
+				break;
+		}
+
 		await fetchReservationData();
 		currentPage = 1;
-
-		if (isOptionSelected && searchQuery && searchField !== null) {
-			const filters = selectedExhibition && [selectedExhibition];
-
-			const result = await getReservationData(
-				data.supabase,
-				filters,
-				searchField,
-				searchQuery,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-			// seatReservation.set(filteredData);
-		} else {
-			const result = await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-		}
 	}
 
-	// clear filter
 	function clearFilters() {
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_type = undefined;
+		p_email = undefined;
+		searchQuery = '';
 		isOptionSelected = false;
-
 		for (const opt of options) {
-			checked[opt] = false; // Deselect all checkboxes
+			checked[opt] = false;
 		}
+		fetchReservationData();
+	}
 
-		searchQuery = ''; // Clear the search query
-		searchField = null; // Clear the search field
-		selectedExhibition = [];
-		// Reset the reservation data
-		getReservationData(data.supabase, undefined, undefined, undefined, currentPage, pageSize);
+	async function goToPage(page: number) {
+		currentPage = page;
+		await fetchReservationData();
 	}
 </script>
 
@@ -223,7 +183,6 @@
 				{/each}
 			</select>
 		</div>
-
 		<!-- filtering by company -->
 		<div>
 			<Button
@@ -265,6 +224,7 @@
 							/></svg
 						>
 					{:else}
+						<!-- clear filter  -->
 						<button on:click={clearFilters} class="">
 							<svg
 								width="24px"
@@ -378,22 +338,20 @@
 
 					<tbody class="dark:text-gray-300">
 						{#if $seatReservation.length > 0}
-							{#each $seatReservation as reservation, index}
+							{#each $seatReservation as reservation}
 								<tr>
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
 									>
 										<div>
-											{index + 1}
+											{reservation.object_id}
 										</div>
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{#each reservation?.companies as company}
-												<li>
-													{company?.company_name}
-												</li>
+											{#each reservation.companies as item}
+												<div><li>{item.company_name}</li></div>
 											{/each}
 										</div>
 									</td>
@@ -402,17 +360,15 @@
 										class="max-w-screen-sm p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
 										<div>
-											{#each reservation?.comments as comment}
-												<li>{comment}</li>
+											{#each reservation.comments as comment}
+												<div><li>{comment}</li></div>
 											{/each}
 										</div>
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{#each reservation.exhibitions as exhibition}
-												<li>{exhibition.exhibition_type}</li>
-											{/each}
+											{reservation.exhibitions[0].exhibition_type}
 										</div>
 									</td>
 
@@ -436,6 +392,7 @@
 				</table>
 
 				<!-- Add pagination -->
+				<!-- <Pagination {currentPage} {totalPages} {goToPage} /> -->
 				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>
