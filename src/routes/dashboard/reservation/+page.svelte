@@ -3,7 +3,8 @@
 	import {
 		seatReservation,
 		getReservationData,
-		updateData
+		updateData,
+		seatReservationTotalCount
 	} from '../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -14,48 +15,42 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
 	export let data;
-	let selectedExhibition: number[];
+	let selectedExhibition: number | undefined;
+	let p_company_name: string | undefined;
+	let p_phone_number: string | undefined;
+	let p_type: string | undefined;
+	let p_email: string | undefined;
 	let searchQuery: string = '';
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 6;
-	let totalPages: number = 1;
+	const pageSize: number = 4;
 	let totalItems: any;
+	let totalPages = 1;
+
+	$: {
+		console.log('//', $seatReservationTotalCount);
+	}
 
 	async function fetchReservationData() {
 		let result: any = await getReservationData(
 			data.supabase,
-			selectedExhibition,
-			searchField,
-			searchQuery,
 			currentPage,
-			pageSize
+			pageSize,
+			selectedExhibition,
+			p_company_name,
+			p_phone_number,
+			p_type,
+			p_email
 		);
-		console.log($seatReservation);
-		// Recalculate the total number of pages
-		totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
+		// console.log($seatReservation);
+		if ($seatReservation && $seatReservation[0] && $seatReservation[0]?.total_count) {
+			totalItems = $seatReservation[0]?.total_count;
+			totalPages = Math.ceil(totalItems / pageSize);
+		}
 	}
 
 	onMount(fetchReservationData);
-
-	async function updateStatus(itemID: any, selectedStatus: any) {
-		const updatedData = $seatReservation.map((reservation) => {
-			if (itemID === reservation.id) {
-				return { ...reservation, status: selectedStatus };
-			}
-			return reservation;
-		});
-
-		for (const reservation of updatedData) {
-			if (itemID === reservation.id) {
-				await updateData(data.supabase, reservation?.id ?? 0, { status: selectedStatus });
-			}
-		}
-
-		fetchData();
-	}
 
 	let exhibitionData: ExhibitionModel[] = [];
 
@@ -76,52 +71,17 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
-		currentPage++;
-		if (currentPage > totalPages) {
-			currentPage = 1;
-		}
-
-		// await fetchReservationData();
-		const result = await getReservationData(
-			data.supabase,
-			selectedExhibition ? [selectedExhibition] : undefined,
-			searchField ? searchField : undefined,
-			searchQuery ? searchQuery : undefined,
-			currentPage,
-			pageSize
-		);
-		totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
-	}
-
-	async function filterByExhibition() {
-		currentPage = 1;
-		await fetchReservationData();
-		if (selectedExhibition !== null) {
-			const result = await getReservationData(
-				data.supabase,
-				[selectedExhibition],
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-			// console.log(result);
+	function filterByExhibition() {
+		if (selectedExhibition) {
+			const selected = exhibitionData.find((item) => item.id === selectedExhibition);
+			if (selected) {
+				selectedExhibition = selected.id;
+			}
 		} else {
-			const result = await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
+			selectedExhibition = null;
 		}
+		currentPage = 1;
+		fetchReservationData();
 	}
 
 	//create checkboxes
@@ -131,10 +91,16 @@
 	function selectOneCheckbox(index: number) {
 		const option = options[index];
 
+		// Reset values to their default states
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_type = undefined;
+		p_email = undefined;
+
+		// Then set the value for the selected option
 		for (const opt of options) {
 			checked[opt] = false;
 		}
-
 		checked[option] = true;
 
 		switch (option) {
@@ -152,55 +118,43 @@
 		}
 
 		isOptionSelected = true;
-		filterByCompany();
 	}
 
 	async function filterByCompany() {
+		switch (searchField) {
+			case 'companyNameField':
+				p_company_name = searchQuery;
+				break;
+			case 'phoneNumberField':
+				p_phone_number = searchQuery;
+				break;
+			case 'emailField':
+				p_email = searchQuery;
+				break;
+			default:
+				break;
+		}
+
 		await fetchReservationData();
 		currentPage = 1;
-
-		if (isOptionSelected && searchQuery && searchField !== null) {
-			const filters = selectedExhibition && [selectedExhibition];
-
-			const result = await getReservationData(
-				data.supabase,
-				filters,
-				searchField,
-				searchQuery,
-				currentPage,
-				pageSize
-			);
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-			// seatReservation.set(filteredData);
-		} else {
-			const result = await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
-
-			totalItems = result.count || 0;
-			totalPages = Math.ceil(totalItems / pageSize);
-		}
 	}
 
-	// clear filter
 	function clearFilters() {
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_type = undefined;
+		p_email = undefined;
+		searchQuery = '';
 		isOptionSelected = false;
-
 		for (const opt of options) {
-			checked[opt] = false; // Deselect all checkboxes
+			checked[opt] = false;
 		}
+		fetchReservationData();
+	}
 
-		searchQuery = ''; // Clear the search query
-		searchField = null; // Clear the search field
-		selectedExhibition = [];
-		// Reset the reservation data
-		getReservationData(data.supabase, undefined, undefined, undefined, currentPage, pageSize);
+	async function goToPage(page: number) {
+		currentPage = page;
+		await fetchReservationData();
 	}
 </script>
 
@@ -223,7 +177,6 @@
 				{/each}
 			</select>
 		</div>
-
 		<!-- filtering by company -->
 		<div>
 			<Button
@@ -247,49 +200,9 @@
 					/>
 
 					{#if $seatReservation.length > 0}
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="24px"
-							height="24px"
-							viewBox="0 0 22 20"
-							id="filter"
-							><path
-								fill="none"
-								fill-rule="evenodd"
-								stroke="gray"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M20 0H0l8 9.46V16l4 2V9.46z"
-								transform="translate(1 1)"
-							/></svg
-						>
+						svg
 					{:else}
-						<button on:click={clearFilters} class="">
-							<svg
-								width="24px"
-								height="24px"
-								viewBox="0 0 24 24"
-								fill="none"
-								xmlns="http://www.w3.org/2000/svg"
-								><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-									id="SVGRepo_tracerCarrier"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/><g id="SVGRepo_iconCarrier">
-									<g id="Interface / Filter_Off">
-										<path
-											id="Vector"
-											d="M13 4H18.4C18.9601 4 19.2409 4 19.4548 4.10899C19.6429 4.20487 19.7948 4.35774 19.8906 4.5459C19.9996 4.75981 20 5.04005 20 5.6001V6.3448C20 6.58444 20 6.70551 19.9727 6.81942C19.9482 6.92146 19.9072 7.01893 19.8524 7.1084C19.7906 7.20931 19.7043 7.2958 19.5314 7.46875L18 9.00012M7.49961 4H5.59961C5.03956 4 4.75981 4 4.5459 4.10899C4.35774 4.20487 4.20487 4.35774 4.10899 4.5459C4 4.75981 4 5.04005 4 5.6001V6.33736C4 6.58195 4 6.70433 4.02763 6.81942C4.05213 6.92146 4.09263 7.01893 4.14746 7.1084C4.20928 7.20928 4.29591 7.29591 4.46875 7.46875L9.53149 12.5315C9.70443 12.7044 9.79044 12.7904 9.85228 12.8914C9.90711 12.9808 9.94816 13.0786 9.97266 13.1807C10 13.2946 10 13.4155 10 13.6552V18.411C10 19.2682 10 19.6971 10.1805 19.9552C10.3382 20.1806 10.5814 20.331 10.8535 20.3712C11.1651 20.4172 11.5487 20.2257 12.3154 19.8424L13.1154 19.4424C13.4365 19.2819 13.5966 19.2013 13.7139 19.0815C13.8176 18.9756 13.897 18.8485 13.9453 18.7083C14 18.5499 14 18.37 14 18.011V13.6626C14 13.418 14 13.2958 14.0276 13.1807C14.0521 13.0786 14.0926 12.9809 14.1475 12.8915C14.2091 12.7909 14.2952 12.7048 14.4669 12.5331L14.4688 12.5314L15.5001 11.5001M15.5001 11.5001L5 1M15.5001 11.5001L19 15"
-											stroke="gray"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										/>
-									</g>
-								</g></svg
-							></button
-						>
+						<button on:click={clearFilters} class="">svg</button>
 					{/if}
 				</div>
 
@@ -378,22 +291,20 @@
 
 					<tbody class="dark:text-gray-300">
 						{#if $seatReservation.length > 0}
-							{#each $seatReservation as reservation, index}
+							{#each $seatReservation as reservation}
 								<tr>
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
 									>
 										<div>
-											{index + 1}
+											{reservation.object_id}
 										</div>
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{#each reservation?.companies as company}
-												<li>
-													{company?.company_name}
-												</li>
+											{#each reservation.companies as item}
+												<div><li>{item.company_name}</li></div>
 											{/each}
 										</div>
 									</td>
@@ -402,17 +313,15 @@
 										class="max-w-screen-sm p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
 										<div>
-											{#each reservation?.comments as comment}
-												<li>{comment}</li>
+											{#each reservation.comments as comment}
+												<div><li>{comment}</li></div>
 											{/each}
 										</div>
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{#each reservation.exhibitions as exhibition}
-												<li>{exhibition.exhibition_type}</li>
-											{/each}
+											{reservation.exhibitions[0].exhibition_type}
 										</div>
 									</td>
 
@@ -436,6 +345,7 @@
 				</table>
 
 				<!-- Add pagination -->
+				<!-- <Pagination {currentPage} {totalPages} {goToPage} /> -->
 				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>

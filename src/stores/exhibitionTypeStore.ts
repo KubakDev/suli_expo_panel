@@ -11,7 +11,6 @@ export const getDataExhibition = async (supabase: SupabaseClient) => {
 			.from('exhibition')
 			.select('*,exhibition_languages(*)')
 			.or('deleted_status.is.null');
-		// 
 
 		return data as ExhibitionModel[];
 	} catch (error) {
