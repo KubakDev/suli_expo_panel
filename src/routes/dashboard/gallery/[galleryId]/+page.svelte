@@ -17,7 +17,9 @@
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
+
 
 	export let data;
 	let sliderImagesFile: File[] = [];
