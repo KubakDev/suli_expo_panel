@@ -44,6 +44,10 @@ export const load = async () => {
 			url: '/dashboard/reservation'
 		},
 		{
+			title: 'Company',
+			url: '/dashboard/companiesInfo'
+		},
+		{
 			title: 'Web Builder',
 			url: '/dashboard/web_builder/buildThemeColor'
 		},

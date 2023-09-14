@@ -1,33 +1,31 @@
 <script lang="ts">
-	import { afterUpdate, onDestroy, onMount, tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { fabric } from 'fabric';
 	import type { PageData } from '../$types';
 	import {
 		Button,
 		ButtonGroup,
 		Checkbox,
-		Chevron,
-		Dropdown,
 		Input,
 		InputAddon,
 		Modal,
-		Search,
+		Spinner,
 		TabItem,
 		Tabs,
 		Textarea
 	} from 'flowbite-svelte';
-	import { Minus, Plus } from 'svelte-heros-v2';
+	import { Minus, Plus, XMark } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import { page } from '$app/stores';
 	import { getSeatServices, seatServices } from '../../../../stores/seatServicesStore';
+	// @ts-ignore
 	import Sortable from 'sortablejs';
 	import { EditingMode } from '../../../../models/editingModeModel';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
-	import type { ExhibitionsModel } from '../../../../models/exhibitionModel';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 
 	let languageEnumKeys = Object.values(LanguageEnum);
@@ -42,6 +40,7 @@
 	let canvas: any;
 	let container: any;
 	let fillColor = '#000000'; // Default color
+	let favColors: string[] = [];
 
 	let isDown: boolean = false;
 	let points: any[] = [];
@@ -69,7 +68,7 @@
 
 	let objectDetail: {
 		selectable: boolean;
-		services: { id: number; isFree: boolean }[];
+		services: { id: number; unlimitedFree: boolean }[];
 		price: number;
 		description?: string;
 	} = {
@@ -153,15 +152,16 @@
 	}
 
 	onMount(async () => {
-		document.addEventListener('keydown', (event) => {
-			if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
-				// Ctrl+C: Copy the selected object
-				copySelectedObject();
-			} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-				// Ctrl+V: Paste the copied object
-				pasteCopiedObject();
-			}
-		});
+		await getFavColors();
+		// document.addEventListener('keydown', (event) => {
+		// 	if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+		// 		// Ctrl+C: Copy the selected object
+		// 		copySelectedObject();
+		// 	} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+		// 		// Ctrl+V: Paste the copied object
+		// 		pasteCopiedObject();
+		// 	}
+		// });
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
 
@@ -171,19 +171,9 @@
 			path.set({ stroke: 'red' });
 			canvas.renderAll();
 		});
-
-		// fabric.Object.prototype.set({
-		// 	borderColor: '#5d9cec',
-		// 	cornerColor: '#5d9cec',
-		// 	cornerSize: 12,
-		// 	cornerStyle: 'circle',
-		// 	transparentCorners: false,
-		// 	borderDashArray: [2, 2],
-		// 	padding: 10,
-		// 	cornerStrokeColor: '#ffffff',
-		// 	borderOpacityWhenMoving: 0.4
-		// });
-
+		canvas.imageSmoothingEnabled = false;
+		canvas.msImageSmoothingEnabled = false;
+		canvas.lineWidth = Math.round(2);
 		const supabase = data.supabase;
 
 		const pageId = $page.params.seatId;
@@ -198,9 +188,6 @@
 					currentSeatLayoutData = data;
 					exhibitionName = data.name;
 					const design = data.design;
-					// if (data && data['design']) {
-					// 	await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
-					// }
 
 					const width = design.width;
 					const height = design.height;
@@ -210,14 +197,8 @@
 					const widthRatio = containerWidth / width;
 					const heightRatio = containerHeight / height;
 
-					// container.style.height = `${containerWidth / aspectRatio}px`;
-
 					const currentHeight = containerWidth / aspectRatio;
-					console.log('container width: ', containerWidth);
-					console.log('design width: ', width);
-					console.log(containerHeight);
-					console.log(currentHeight);
-					console.log('ratio: ', widthRatio);
+
 					if (canvas) {
 						canvas.setDimensions({
 							width: containerWidth,
@@ -225,11 +206,6 @@
 						});
 					}
 					await canvas.loadFromJSON(design, async () => {
-						canvas.forEachObject((obj: any) => {
-							// obj.set('selectable', false);
-							// obj.set('lockMovementX', true);
-							// obj.set('lockMovementY', true);
-						});
 						canvas.width = containerWidth;
 						canvas.height = containerHeight;
 						if (canvas.backgroundImage) {
@@ -239,7 +215,6 @@
 						await tick(); // wait for the next update cycle
 
 						canvas.forEachObject((obj: any) => {
-							console.log(obj);
 							const scaleX = obj.scaleX;
 							const scaleY = obj.scaleY;
 							const left = obj.left;
@@ -248,10 +223,7 @@
 							const tempScaleY = scaleY * widthRatio;
 							const tempLeft = left * widthRatio;
 							const tempTop = top * widthRatio;
-							console.log(tempScaleX);
-							console.log(scaleX);
-							console.log(tempScaleY);
-							console.log(scaleY);
+
 							obj.scaleX = tempScaleX;
 							obj.scaleY = tempScaleY;
 							obj.left = tempLeft;
@@ -263,29 +235,7 @@
 						canvas.renderAll();
 					});
 
-					// for (var i = 0; i < canvas.width / gridSize; i++) {
-					// 	const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
-					// 		stroke: '#ccc',
-					// 		selectable: false
-					// 	});
-					// 	line.toObject = () => null;
-					// 	// This rect will not be included in canvas.toObject()
-					// 	const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
-					// 		stroke: '#ccc',
-					// 		selectable: false
-					// 	});
-					// 	line2.toObject = () => null;
-					// 	canvas.add(line);
-					// 	canvas.add(line2);
-					// 	canvas.sendToBack(line);
-					// 	canvas.sendToBack(line2);
-					// 	canvas.requestRenderAll();
-					// 	// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
-					// 	// canvas.add(customRect);
-					// }
-
 					canvas.renderAll();
-					// Ensure the border always stays in the back of other objects
 				});
 		} else {
 			const containerWidth = container?.offsetWidth;
@@ -304,12 +254,12 @@
 		});
 		updateLayers();
 		canvas.on('object:moving', function (options: fabric.IEvent) {
-			if (options.target) {
-				options.target.set({
-					left: Math.round(options.target.left! / gridSize) * gridSize,
-					top: Math.round(options.target.top! / gridSize) * gridSize
-				});
-			}
+			// if (options.target) {
+			// 	options.target.set({
+			// 		left: Math.round(options.target.left! / gridSize) * gridSize,
+			// 		top: Math.round(options.target.top! / gridSize) * gridSize
+			// 	});
+			// }
 		});
 		var panning = false;
 		var lastPosX: any, lastPosY: any;
@@ -333,7 +283,7 @@
 		let liveLine: any | null = null;
 		canvas.on('mouse:down', function (options: any) {
 			let pointer = canvas.getPointer(options.e);
-			console.log('bnar bnar bnar');
+
 			if (isAddingText) {
 				const text = new fabric.IText('Click to edit text', {
 					left: pointer.x,
@@ -347,8 +297,6 @@
 			}
 			if (isDrawing) {
 				points.push({ x: pointer.x, y: pointer.y });
-
-				// Draw a line from the last point to this point
 
 				liveLine = new fabric.Line(
 					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
@@ -566,8 +514,6 @@
 	}
 
 	function onObjectModified(selectedObject: any) {
-		// selectedObject.setCoords(); // Update object's coordinates after modifications
-		// if()
 		if (selectedObject.scaleX !== 1 || selectedObject.scaleY !== 1) {
 			itemWidth = selectedObject.getScaledWidth();
 			itemHeight = selectedObject.getScaledHeight();
@@ -578,8 +524,6 @@
 				},
 				{ silent: true }
 			);
-			// Reset scale to 1
-			// selectedObject.set({ scaleX: 1, scaleY: 1 }, { silent: true });
 			canvas.requestRenderAll();
 		}
 	}
@@ -673,8 +617,10 @@
 	function removeSelectedObject() {
 		let activeObject = canvas.getActiveObject();
 		if (activeObject) {
-			canvas.remove(activeObject);
-			canvas.requestRenderAll();
+			try {
+				canvas.remove(activeObject);
+				canvas.requestRenderAll();
+			} catch (e) {}
 		}
 	}
 
@@ -743,8 +689,8 @@
 		let index = objectDetail.services.findIndex((item) => item.id === service.id);
 		if (index === -1) {
 			objectDetail.services.push({
-				id: service.id,
-				isFree: false
+				id: service.id ?? 0,
+				unlimitedFree: false
 			});
 		} else {
 			objectDetail.services.splice(index, 1);
@@ -761,12 +707,30 @@
 		let selectedService = selectedObject.objectDetail?.services.find(
 			(item: any) => item.id === service.id
 		);
+		selectedService.unlimitedFree = !selectedService.unlimitedFree;
+
+		objectDetail = { ...selectedObject.objectDetail };
+	}
+	function addMaxFreeServiceCount(event: any, service: seatServicesModel) {
+		event.stopPropagation();
+		let selectedObject = canvas.getActiveObject();
+		let selectedService = selectedObject?.objectDetail?.services.find(
+			(item: any) => item.id === service.id
+		);
 		if (selectedService) {
-			selectedService.isFree = true;
-		} else {
-			addServiceToActiveObject(service);
-			addFreeService(event, service);
+			selectedService.maxFreeCount = +event.target?.value;
 		}
+
+		objectDetail = { ...selectedObject?.objectDetail };
+	}
+	function addMaxServiceCount(event: any, service: seatServicesModel) {
+		event.stopPropagation();
+		let selectedObject = canvas.getActiveObject();
+		let selectedService = selectedObject.objectDetail?.services.find(
+			(item: any) => item.id === service.id
+		);
+		selectedService.maxQuantityPerUser = +event.target?.value;
+
 		objectDetail = { ...selectedObject.objectDetail };
 	}
 
@@ -807,18 +771,41 @@
 			}
 		}
 	}
-	function addDescriptionToObjectDetail(description: string, lang: string) {
+	function addDescriptionToObjectDetail(description: any, lang: string) {
 		let selectedObject = canvas?.getActiveObject();
 		if (!selectedObject.objectDetail.descriptionLanguages) {
 			selectedObject.objectDetail.descriptionLanguages = [];
 		}
 		selectedObject.objectDetail.descriptionLanguages =
-			selectedObject.objectDetail.descriptionLanguages.filter((x) => x.language !== lang);
+			selectedObject.objectDetail.descriptionLanguages.filter((x: any) => x.language !== lang);
 		selectedObject.objectDetail.descriptionLanguages.push({
-			description,
+			description: description.value,
 			language: lang as LanguageEnum
 		});
 		objectDetailDescription = selectedObject.objectDetail.descriptionLanguages;
+	}
+
+	async function getFavColors() {
+		await data.supabase
+			.from('fav_colors')
+			.select('*')
+			.then((Response) => {
+				favColors = Response.data?.map((x) => x.color) as string[];
+			});
+	}
+
+	let newFavColor: string = '';
+	let addFavColorLoading = false;
+	async function addNewFavColor() {
+		if (!newFavColor) return;
+		if (!newFavColor.startsWith('#')) {
+			newFavColor = `#${newFavColor}`;
+		}
+		addFavColorLoading = true;
+		await data.supabase.from('fav_colors').insert([{ color: newFavColor }]);
+		await getFavColors();
+		newFavColor = '';
+		addFavColorLoading = false;
 	}
 </script>
 
@@ -868,7 +855,7 @@
 				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
 			</div>
 		</div>
-		<div class="p-4 bg-[#f2f3f7]">
+		<div class="p-4 bg-[#f2f3f7] overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
 					<Button on:click={addPropertiesToShape} class="w-full" outline>
@@ -877,7 +864,28 @@
 					</Button>
 				</div>
 			{/if}
+			<h1 class="mx-2">favourite Colors</h1>
+			<div class="flex flex-wrap">
+				{#each favColors as color}
+					<div class="h-8 w-12 rounded-sm m-1" style={`background-color:${color}`} />
+				{/each}
 
+				<ButtonGroup class="w-full my-3" size="sm">
+					<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<InputAddon class="cursor-pointer p-0">
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
+						<div class="w-full h-full p-2" on:click={addNewFavColor}>
+							{#if addFavColorLoading}
+								<Spinner />
+							{:else}
+								<Plus />
+							{/if}
+						</div>
+					</InputAddon>
+				</ButtonGroup>
+			</div>
 			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
 			<div class="grid grid-cols-2 gap-4 my-4">
 				<ButtonGroup class="w-full" size="sm">
@@ -955,43 +963,77 @@
 										placeholder={`add description for ${lang}`}
 										rows="8"
 										value={objectDetailDescription?.find((x) => x.language === lang)?.description}
-										on:input={(e) => addDescriptionToObjectDetail(e.target?.value ?? '', lang)}
+										on:input={(e) => addDescriptionToObjectDetail(e.target, lang)}
 									/>
 								</TabItem>
 							{/each}
 						</Tabs>
 					</div>
-					<Button id="placements" class="w-full"><Chevron>Services</Chevron></Button>
-					<Dropdown class="overflow-y-auto px-3 pb-3 text-sm mx-3 ">
-						<div slot="header" class="p-3">
-							<Search size="md" />
-						</div>
-						{#if $seatServices}
-							{#each $seatServices as service}
-								<!-- svelte-ignore a11y-click-events-have-key-events -->
-								<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-								<li
-									class={`
-									rounded p-2  dark:hover:bg-gray-600 cursor-pointer  my-1
-									${objectDetail.services.some((x) => x.id === service.id) ? 'bg-gray-300' : 'hover:bg-gray-100'}`}
-									on:click={() => {
-										addServiceToActiveObject(service);
-									}}
-								>
-									{#if service.seat_services_languages}
-										<div class="flex justify-between items-center">
-											<p>{service?.seat_services_languages[0]?.title}</p>
-											<p>{service.price}</p>
-											<Checkbox
-												class="cursor-pointer"
-												on:click={(event) => addFreeService(event, service)}>free</Checkbox
-											>
+					{#if $seatServices}
+						{#each $seatServices as service}
+							<div
+								class="bg-white w-full rounded-md my-2 flex flex-col justify-between items-center px-6 flex-wrap"
+							>
+								{#if service.seat_services_languages}
+									<div class="flex items-center">
+										<div class="m-1 text-lg font-bold text-[#e1b168]">
+											{service?.seat_services_languages[0]?.title}
 										</div>
-									{/if}
-								</li>
-							{/each}
-						{/if}
-					</Dropdown>
+										<div class="mx-3">
+											<h1>{service.price}</h1>
+										</div>
+									</div>
+								{/if}
+								<div class="flex items-center my-6 w-full justify-between">
+									<div class="flex items-center">
+										<Checkbox
+											class="cursor-pointer"
+											on:click={() => {
+												addServiceToActiveObject(service);
+											}}
+										/>
+										<p>select this service for this seat</p>
+									</div>
+									<div>
+										<h1>{service.price}</h1>
+									</div>
+								</div>
+								<div class="d grid-cols-1 mb-6 w-full">
+									<Input
+										type="number"
+										size="sm"
+										placeholder="max quantity for a user"
+										on:change={(e) => addMaxServiceCount(e, service)}
+										disabled={!objectDetail.services[0] ||
+											objectDetail.services.find((x) => x.id == service.id) == undefined}
+									/>
+
+									<div class="my-2">
+										<ButtonGroup class="w-full" size="sm">
+											<InputAddon
+												><div class="flex items-center">
+													<Checkbox
+														class="cursor-pointer"
+														on:click={(event) => addFreeService(event, service)}
+														disabled={!objectDetail.services[0] ||
+															objectDetail.services.find((x) => x.id == service.id) == undefined}
+													/>
+													<p>unlimited</p>
+												</div></InputAddon
+											>
+											<Input
+												id="input-addon-sm"
+												placeholder="max free quantity for a user"
+												on:change={(e) => addMaxFreeServiceCount(e, service)}
+												disabled={!objectDetail.services[0] ||
+													objectDetail.services.find((x) => x.id == service.id) == undefined}
+											/>
+										</ButtonGroup>
+									</div>
+								</div>
+							</div>
+						{/each}
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -1036,5 +1078,13 @@
 		top: -24px;
 		cursor: grab;
 		color: red;
+	}
+	div::-webkit-scrollbar {
+		width: 0.5em; /* Adjust as needed */
+	}
+
+	/* Style the scrollbar thumb (optional) */
+	div::-webkit-scrollbar-thumb {
+		background-color: transparent; /* Hide the scrollbar thumb */
 	}
 </style>

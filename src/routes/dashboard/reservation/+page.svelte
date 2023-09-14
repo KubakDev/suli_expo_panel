@@ -3,7 +3,8 @@
 	import {
 		seatReservation,
 		getReservationData,
-		updateData
+		updateData,
+		seatReservationTotalCount
 	} from '../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -14,45 +15,42 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
 	export let data;
-	let selectedExhibition: number[];
+	let selectedExhibition: number | undefined;
+	let p_company_name: string | undefined;
+	let p_phone_number: string | undefined;
+	let p_type: string | undefined;
+	let p_email: string | undefined;
 	let searchQuery: string = '';
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
 	const pageSize: number = 4;
-	let totalPages: number = 1;
+	let totalItems: any;
+	let totalPages = 1;
+
+	$: {
+		console.log('//', $seatReservationTotalCount);
+	}
 
 	async function fetchReservationData() {
-		let result = await getReservationData(
+		let result: any = await getReservationData(
 			data.supabase,
-			undefined,
-			undefined,
-			undefined,
 			currentPage,
-			pageSize
+			pageSize,
+			selectedExhibition,
+			p_company_name,
+			p_phone_number,
+			p_type,
+			p_email
 		);
-		// Recalculate the total number of pages
-		const totalItems = result.count || 0;
-		totalPages = Math.ceil(totalItems / pageSize);
-	}
-	onMount(fetchReservationData);
-
-	async function updateStatus(itemID: any, selectedStatus: any) {
-		const updatedData = $seatReservation.map((reservation) => {
-			if (itemID === reservation.id) {
-				return { ...reservation, status: selectedStatus };
-			}
-			return reservation;
-		});
-
-		for (const reservation of updatedData) {
-			if (itemID === reservation.id) {
-				await updateData(data.supabase, reservation?.id, { status: selectedStatus });
-			}
+		console.log($seatReservation);
+		if ($seatReservation && $seatReservation[0] && $seatReservation[0]?.total_count) {
+			totalItems = $seatReservation[0]?.total_count;
+			totalPages = Math.ceil(totalItems / pageSize);
 		}
-
-		fetchData();
 	}
+
+	onMount(fetchReservationData);
 
 	let exhibitionData: ExhibitionModel[] = [];
 
@@ -73,44 +71,36 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
-		currentPage = page;
-		await fetchReservationData();
-	}
-
-	async function filterByExhibition() {
-		if (selectedExhibition !== null) {
-			await getReservationData(
-				data.supabase,
-				[selectedExhibition],
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
+	function filterByExhibition() {
+		if (selectedExhibition) {
+			const selected = exhibitionData.find((item) => item.id === selectedExhibition);
+			if (selected) {
+				selectedExhibition = selected.id;
+			}
 		} else {
-			await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
+			selectedExhibition = null;
 		}
+		currentPage = 1;
+		fetchReservationData();
 	}
 
 	//create checkboxes
-	const options = ['company name', 'company phoneNumber', 'company email'];
+	const options = ['company name', 'company phoneNumber', 'company email', 'company type'];
 	let checked: any = {};
 
 	function selectOneCheckbox(index: number) {
 		const option = options[index];
 
+		// Reset values to their default states
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_type = undefined;
+		p_email = undefined;
+
+		// Then set the value for the selected option
 		for (const opt of options) {
 			checked[opt] = false;
 		}
-
 		checked[option] = true;
 
 		switch (option) {
@@ -123,54 +113,54 @@
 			case 'company email':
 				searchField = 'emailField';
 				break;
+			case 'company type':
+				searchField = 'typeField';
+				break;
 			default:
 				searchField = null;
 		}
 
 		isOptionSelected = true;
-		filterByCompany();
 	}
 
 	async function filterByCompany() {
-		console.log('Filtering by company with:', searchQuery, searchField);
-		if (isOptionSelected && searchQuery && searchField !== null) {
-			const filters = selectedExhibition && [selectedExhibition];
-
-			const filteredData = await getReservationData(
-				data.supabase,
-				filters,
-				searchField,
-				searchQuery,
-				currentPage,
-				pageSize
-			);
-			console.log(filteredData);
-			// seatReservation.set(filteredData);
-		} else {
-			await getReservationData(
-				data.supabase,
-				undefined,
-				undefined,
-				undefined,
-				currentPage,
-				pageSize
-			);
+		switch (searchField) {
+			case 'companyNameField':
+				p_company_name = searchQuery;
+				break;
+			case 'phoneNumberField':
+				p_phone_number = searchQuery;
+				break;
+			case 'emailField':
+				p_email = searchQuery;
+				break;
+			case 'typeField':
+				p_type = searchQuery;
+				break;
+			default:
+				break;
 		}
+
+		await fetchReservationData();
+		currentPage = 1;
 	}
 
-	// clear filter
 	function clearFilters() {
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_type = undefined;
+		p_email = undefined;
+		searchQuery = '';
 		isOptionSelected = false;
-
 		for (const opt of options) {
-			checked[opt] = false; // Deselect all checkboxes
+			checked[opt] = false;
 		}
+		fetchReservationData();
+	}
 
-		searchQuery = ''; // Clear the search query
-		searchField = null; // Clear the search field
-
-		// Reset the reservation data
-		getReservationData(data.supabase, undefined, undefined, undefined, currentPage, pageSize);
+	async function goToPage(page: number) {
+		currentPage = page;
+		await fetchReservationData();
 	}
 </script>
 
@@ -178,10 +168,6 @@
 	<div class="py-5 px-4 lg:px-0 flex justify-end gap-5">
 		<!-- filtering by exhibition -->
 		<div class="mb-6 w-44 flex flex-col">
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs "
-				>Filter By Exhibition Type</Label
-			>
-
 			<select
 				class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 				id="type"
@@ -197,12 +183,8 @@
 				{/each}
 			</select>
 		</div>
-
 		<!-- filtering by company -->
 		<div>
-			<Label for="website-admin" class="block mb-2 dark:text-gray-600 text-gray-500 text-xs  "
-				>Filter By company info</Label
-			>
 			<Button
 				class="py-2 font-medium text-center text-base  hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 			>
@@ -211,8 +193,7 @@
 					class="w-3 h-3 ml-2 text-gray-500 dark:text-gray-500   "
 				/>
 			</Button>
-			<!-- bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-80 pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" -->
-			<Dropdown class="bg-[#e9ecefd2] dark:bg-gray-100 space-y-3 rounded">
+			<Dropdown class="z-40 bg-[#e9ecefd2] dark:bg-gray-100 space-y-3 rounded">
 				<div class="flex items-center p-2 text-gray-900">
 					<input
 						type="search"
@@ -312,12 +293,11 @@
 									<span>company name</span>
 								</div>
 							</th>
-
 							<th
 								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
-									<span>company phone_number</span>
+									<span>comments</span>
 								</div>
 							</th>
 							<th
@@ -329,7 +309,7 @@
 							</th>
 
 							<th
-								class="w-60 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+								class="w-14 p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-start gap-2">
 									<span
@@ -358,72 +338,49 @@
 
 					<tbody class="dark:text-gray-300">
 						{#if $seatReservation.length > 0}
-							{#each $seatReservation as item, index (item.id)}
+							{#each $seatReservation as reservation}
 								<tr>
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
 									>
 										<div>
-											{index + 1}
+											{reservation.object_id}
 										</div>
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{item?.company?.company_name}
-										</div>
-									</td>
-
-									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-										<div>
-											{item?.company?.phone_number}
-										</div>
-									</td>
-									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-										<div>
-											{item?.exhibition?.exhibition_type}
+											{#each reservation.companies as item}
+												<div><li>{item.company_name}</li></div>
+											{/each}
 										</div>
 									</td>
 
 									<td
-										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 flex justify-between items-center gap-4"
+										class="max-w-screen-sm p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
 										<div>
+											{#each reservation.comments as comment}
+												<div><li>{comment}</li></div>
+											{/each}
+										</div>
+									</td>
+
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>
+											{reservation.exhibitions[0].exhibition_type}
+										</div>
+									</td>
+
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div class="text-center">
 											<button
 												on:click={() => {
-													goto(`/dashboard/reservation/detail/${item.id}`);
+													goto(`/dashboard/reservation/detail/${reservation.object_id}`);
 												}}
 												class="dark:text-gray-400 hover:underline"
 												>View
 											</button>
-										</div>
-
-										<div>
-											{#if item.status === ReservationStatusEnum.PENDING}
-												<div class="w-5 h-5 bg-[#F7CB73] rounded-full" />
-											{:else if item.status === ReservationStatusEnum.ACCEPT}
-												<div class="w-5 h-5 bg-green-600 rounded-full" />
-											{:else}
-												<div class="w-5 h-5 bg-red-600 rounded-full" />
-											{/if}
-										</div>
-
-										<div>
-											<select
-												class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg w-full focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
-												bind:value={item.status}
-												on:change={() => updateStatus(item.id, item.status)}
-											>
-												<option value={ReservationStatusEnum.PENDING}
-													>{ReservationStatusEnum.PENDING}</option
-												>
-												<option value={ReservationStatusEnum.ACCEPT}
-													>{ReservationStatusEnum.ACCEPT}</option
-												>
-												<option value={ReservationStatusEnum.REJECT}
-													>{ReservationStatusEnum.REJECT}</option
-												>
-											</select>
 										</div>
 									</td>
 								</tr>
@@ -435,6 +392,7 @@
 				</table>
 
 				<!-- Add pagination -->
+				<!-- <Pagination {currentPage} {totalPages} {goToPage} /> -->
 				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>

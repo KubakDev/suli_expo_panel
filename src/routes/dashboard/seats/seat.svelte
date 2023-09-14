@@ -169,7 +169,7 @@
 		if (firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50) {
 			// 10 is the threshold value
 			// Close the shape
-			console.log('firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50');
+
 			const line = `M ${firstPoint.x} ${firstPoint.y} L ${currentPoint.x} ${currentPoint.y}`;
 			paths.push(line);
 

@@ -23,6 +23,7 @@ export interface ExhibitionsModelLang {
 	video_youtube_link: string;
 	title: string;
 	pdf_files: string;
+	contract_file: string;
 	description: string;
 	location: string;
 	location_title: string;

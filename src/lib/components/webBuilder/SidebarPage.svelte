@@ -138,7 +138,7 @@
 		newTheme.color_palette_light = currentTheme;
 		changeTheme(newTheme);
 		changeCurrentTheme(newTheme?.color_palette_light);
-		// console.log($pageTheme);
+		//
 	}
 
 	async function changePageTheme_dark(currentTheme: any) {
@@ -153,7 +153,7 @@
 	$: {
 		light_theme_data = $theme.filter((item) => item.mode_type === ModeTypeEnum.LIGHT);
 		dark_theme_data = $theme.filter((item) => item.mode_type === ModeTypeEnum.DARK);
-		// console.log($selectedTheme);
+		//
 	}
 
 	//change theme data
@@ -264,7 +264,7 @@
 	//update page builder after changing the state of the checkbox state
 	async function updateStatus(e: any) {
 		const newStatus = e.target.checked;
-		// console.log(newStatus);
+		//
 		pageBuilder.status = newStatus;
 		pageBuilder.id = $pageTheme.id;
 		pageBuilder.componentId = $pageTheme.componentId;

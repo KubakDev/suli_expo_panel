@@ -18,11 +18,11 @@ export async function handleFileUpload(
 	};
 	try {
 		const compressedFile = await imageCompression(file, options);
-		console.log(file, compressedFile);
+
 
 		const reader = new FileReader();
 		reader.onloadend = () => {
-			console.log(reader);
+
 			exhibitionsObject.thumbnail = reader.result as string;
 			const randomText = getRandomTextNumber();
 			const newFileName = `${path}/${randomText}_${compressedFile.name}`;
@@ -31,6 +31,6 @@ export async function handleFileUpload(
 		};
 		reader.readAsDataURL(compressedFile);
 	} catch (error) {
-		console.log(error);
+
 	}
 }

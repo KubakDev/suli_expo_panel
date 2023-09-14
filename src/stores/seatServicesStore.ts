@@ -130,7 +130,7 @@ export const getSeatServicesByIds = async (supabase: SupabaseClient, ids: number
 			console.error(error);
 			throw error;
 		}
-		// console.log(data);
+		// 
 
 		return data;
 	} catch (error) {

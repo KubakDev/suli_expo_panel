@@ -95,8 +95,6 @@
 		let index = updatedThemes.findIndex((x) => x.id === item.id);
 		updatedThemes[index].active = true;
 
-		console.log(updatedThemes);
-
 		theme.set(updatedThemes);
 
 		await updateData(updatedThemes[index], data.supabase);
