@@ -15,7 +15,7 @@
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 4;
+	const pageSize: number = 12;
 	let totalPages: number = 1;
 	let totalItems: any;
 

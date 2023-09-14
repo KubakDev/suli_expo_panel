@@ -162,7 +162,7 @@
 			"
 						><Chevron
 							>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
-								? seatInfoData.exhibition.exhibition_languages[0].title
+								? seatInfoData.exhibition.exhibition_type
 								: !seatInfoData.exhibition && formSubmitted
 								? 'exhibition is required'
 								: 'choose an exhibition'}</Chevron
@@ -182,9 +182,7 @@
 							"
 										on:click={() => (seatInfoData.exhibition = exhibition)}
 									>
-										{exhibition.exhibition_languages
-											? exhibition.exhibition_languages[0].title
-											: ''}
+										{exhibition.exhibition_type ?? ''}
 									</div>
 								</DropdownItem>
 							{/each}

@@ -22,6 +22,7 @@
 	onMount(async () => {
 		try {
 			await getReservationsForCompany(data.supabase, companyId);
+			console.log($seatReservation);
 			await loadServiceTitles();
 			serviceTitlesLoaded = true;
 		} catch (error) {
@@ -76,6 +77,22 @@
 
 	onDestroy(() => {
 		clearCompanyDetail();
+	});
+
+	let reservedAreas: any = [];
+
+	onMount(() => {
+		if ($seatReservation) {
+			reservedAreas = $seatReservation
+				.map((item) => {
+					if (item.reserved_areas) {
+						return JSON.parse(item.reserved_areas);
+					}
+					return null;
+				})
+				.filter((area) => area !== null);
+		}
+		console.log(reservedAreas);
 	});
 </script>
 
@@ -179,6 +196,13 @@
 											<span>service & quantity </span>
 										</div>
 									</th>
+									<th
+										class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div class="flex items-center gap-2">
+											<span>reserved area </span>
+										</div>
+									</th>
 								</tr>
 							</thead>
 
@@ -195,7 +219,7 @@
 										<td
 											class="p-3 text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 										>
-											<div>{item.exhibition?.exhibition_type}</div>
+											<div>{item?.exhibition?.exhibition_type}</div>
 										</td>
 										<td
 											class="p-3 text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
@@ -206,7 +230,7 @@
 										<td
 											class="p-3 max-w-screen-md text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 										>
-											<div>{item.comment}</div>
+											<div>{item?.comment}</div>
 										</td>
 										<td
 											class="uppercase p-3 text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
@@ -234,6 +258,16 @@
 													</div>
 												{/each}
 											{/if}
+										</td>
+
+										<td
+											class="p-3 max-w-screen-md text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+										>
+											{#each reservedAreas as areas}
+												{#each areas as area}
+													<p>Area: {area.area}, Quantity: {area.quantity}</p>
+												{/each}
+											{/each}
 										</td>
 									</tr>
 								{/each}

@@ -82,69 +82,69 @@
 	} //**dropzone-sponsor**//
 
 	async function formSubmit() {
-		let hasDataForLanguage = true; //byankawa ba false
-		let isValidExhibitionsObject = true; //byankawa ba false
+		let hasDataForLanguage = false;
+		let isValidExhibitionsObject = false;
 
-		// for (let lang of exhibitionsDataLang) {
-		// 	const storyData = lang.story.trim();
-		// 	const title = lang.title.trim();
-		// 	const shortDescription = lang.description.trim();
-		// 	const link = lang.video_youtube_link.trim();
-		// 	const location = lang.location.trim();
-		// 	const location_title = lang.location_title.trim();
-		// 	const mapTitle = lang.map_title.trim();
+		for (let lang of exhibitionsDataLang) {
+			const storyData = lang.story.trim();
+			const title = lang.title.trim();
+			const shortDescription = lang.description.trim();
+			const link = lang.video_youtube_link.trim();
+			const location = lang.location.trim();
+			const location_title = lang.location_title.trim();
+			const mapTitle = lang.map_title.trim();
 
-		// 	const isStoryIsEmpty = isEmpty(storyData);
-		// 	const isTitleEmpty = isEmpty(title);
-		// 	const isShortDescriptionEmpty = isEmpty(shortDescription);
-		// 	const isLinkEmpty = isEmpty(link);
-		// 	const isLinkEmptyLocation = isEmpty(location);
-		// 	const isLinkEmptyLocation_title = isEmpty(location_title);
-		// 	const isMapTitle = isEmpty(mapTitle);
+			const isStoryIsEmpty = isEmpty(storyData);
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLinkEmpty = isEmpty(link);
+			const isLinkEmptyLocation = isEmpty(location);
+			const isLinkEmptyLocation_title = isEmpty(location_title);
+			const isMapTitle = isEmpty(mapTitle);
 
-		// 	if (
-		// 		!isEmpty(lang.pdf_files) ||
-		// 		!isEmpty(lang.brochure) ||
-		// 		!isStoryIsEmpty ||
-		// 		!isTitleEmpty ||
-		// 		!isShortDescriptionEmpty ||
-		// 		!isLinkEmpty ||
-		// 		!isLinkEmptyLocation ||
-		// 		!isMapTitle ||
-		// 		!isLinkEmptyLocation_title
-		// 	) {
-		// 		// All fields are non-empty for this language
-		// 		hasDataForLanguage = true;
-		// 		if (
-		// 			isEmpty(lang.pdf_files) ||
-		// 			isEmpty(lang.brochure) ||
-		// 			isStoryIsEmpty ||
-		// 			isTitleEmpty ||
-		// 			isShortDescriptionEmpty ||
-		// 			isLinkEmpty ||
-		// 			isLinkEmptyLocation ||
-		// 			isMapTitle ||
-		// 			isLinkEmptyLocation_title
-		// 		) {
-		// 			// At least one field is empty for this language
-		// 			hasDataForLanguage = false;
-		// 			break;
-		// 		}
-		// 	}
-		// }
+			if (
+				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
+				!isStoryIsEmpty ||
+				!isTitleEmpty ||
+				!isShortDescriptionEmpty ||
+				!isLinkEmpty ||
+				!isLinkEmptyLocation ||
+				!isMapTitle ||
+				!isLinkEmptyLocation_title
+			) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (
+					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
+					isStoryIsEmpty ||
+					isTitleEmpty ||
+					isShortDescriptionEmpty ||
+					isLinkEmpty ||
+					isLinkEmptyLocation ||
+					isMapTitle ||
+					isLinkEmptyLocation_title
+				) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
+		}
 
 		// Check if galleryObject has a valid thumbnail and at least one slider image
-		// if (
-		// 	!isEmpty(exhibitionsObject.thumbnail) &&
-		// 	sliderImagesFile.length > 0 &&
-		// 	sliderImagesFile_sponsor.length > 0 &&
-		// 	!isEmpty(exhibitionsObject.company_number) &&
-		// 	!isEmpty(exhibitionsObject.country_number) &&
-		// 	!isEmpty(exhibitionsObject.sponsor_title) &&
-		// 	!isEmpty(exhibitionsObject.exhibition_type)
-		// ) {
-		// 	isValidExhibitionsObject = true;
-		// }
+		if (
+			!isEmpty(exhibitionsObject.thumbnail) &&
+			sliderImagesFile.length > 0 &&
+			sliderImagesFile_sponsor.length > 0 &&
+			!isEmpty(exhibitionsObject.company_number) &&
+			!isEmpty(exhibitionsObject.country_number) &&
+			!isEmpty(exhibitionsObject.sponsor_title) &&
+			!isEmpty(exhibitionsObject.exhibition_type)
+		) {
+			isValidExhibitionsObject = true;
+		}
 
 		if (!hasDataForLanguage || !isValidExhibitionsObject) {
 			isFormSubmitted = true;
@@ -392,7 +392,7 @@
 						class=" dark:bg-white"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
-						<p class="error-message">Please Upload an Image</p>
+						<p class="error-message text-sm font-normal">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
@@ -435,7 +435,7 @@
 				<Label for="default-input" class="block mb-2">Exhibition Type</Label>
 				<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" />
 				{#if isFormSubmitted && !exhibitionsObject.exhibition_type.trim()}
-					<p class="error-message">Please enter an exhibition type</p>
+					<p class="error-message text-sm font-normal">Please enter an exhibition type</p>
 				{/if}
 			</div>
 
@@ -448,7 +448,7 @@
 						placeholder="Enter a number"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.country_number}
-						<p class="error-message">Required</p>
+						<p class="error-message text-sm font-normal">Required</p>
 					{/if}
 				</Label>
 			</div>
@@ -461,7 +461,7 @@
 						placeholder="Enter a number"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.company_number}
-						<p class="error-message">Required</p>
+						<p class="error-message text-sm font-normal">Required</p>
 					{/if}
 				</Label>
 			</div>
@@ -480,7 +480,7 @@
 								}}
 							>
 								<div class="px-5 py-10">
-									<div class="text-center w-full pb-10">
+									<div class="text-center w-full pb-5">
 										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
@@ -492,8 +492,8 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-									<div class="pb-5 flex gap-4 col-span-1">
-										<Label class="w-1/2 space-y-2 mb-2">
+									<div class="pb-5 flex flex-col lg:flex-row gap-4 col-span-1">
+										<Label class="lg:w-1/3 space-y-2 mb-2">
 											<span>Upload pdf file </span>
 
 											<Fileupload
@@ -504,7 +504,7 @@
 											/>
 
 											{#if isFormSubmitted && !langData?.pdf_files?.trim()}
-												<p class="error-message">Please Upload an pdf file</p>
+												<p class="error-message text-sm font-normal">Please Upload an pdf file</p>
 											{/if}
 
 											<div>
@@ -516,7 +516,7 @@
 											</div>
 										</Label>
 
-										<Label class="w-1/2 space-y-2 mb-2">
+										<Label class="lg:w-1/3 space-y-2 mb-2">
 											<span>Upload brochure image</span>
 
 											<Fileupload
@@ -527,11 +527,13 @@
 											/>
 
 											{#if isFormSubmitted && !langData?.brochure?.trim()}
-												<p class="error-message">Please Upload brochure image</p>
+												<p class="error-message text-sm font-normal">
+													Please Upload brochure image
+												</p>
 											{/if}
 										</Label>
 
-										<Label class="w-1/2 space-y-2 mb-2">
+										<Label class="lg:w-1/3 space-y-2 mb-2">
 											<span>Upload pdf contract </span>
 
 											<Fileupload
@@ -551,7 +553,7 @@
 										</Label>
 									</div>
 
-									<div class="pb-10 flex gap-3 col-span-1">
+									<div class="pb-0 flex gap-3 col-span-1">
 										<Label class="w-2/4 space-y-2 mb-2">
 											<Label for="title" class="mb-2">Link for youtube video</Label>
 											<Input
@@ -560,7 +562,9 @@
 												placeholder="Enter a link"
 											/>
 											{#if isFormSubmitted && !langData.video_youtube_link}
-												<p class="error-message">Please enter a link for youtube video</p>
+												<p class="error-message text-sm font-normal">
+													Please enter a link for youtube video
+												</p>
 											{/if}
 										</Label>
 
@@ -568,13 +572,13 @@
 											<Label for="title" class="mb-2">Map Title</Label>
 											<Input
 												type="text"
-												placeholder="Enter title"
+												placeholder="Enter map title"
 												bind:value={langData.map_title}
 												id="title"
 												name="title"
 											/>
 											{#if isFormSubmitted && !langData.map_title}
-												<p class="error-message">Please enter map title</p>
+												<p class="error-message text-sm font-normal">Please enter map title</p>
 											{/if}
 
 											<div>
@@ -587,16 +591,16 @@
 										</Label>
 									</div>
 
-									<div class="pb-10 flex gap-3 col-span-1">
+									<div class="pb-5 flex gap-3 col-span-1">
 										<Label class="w-2/3 space-y-2 mb-2">
 											<span>Location</span>
 											<Input
 												type="text"
 												bind:value={langData.location}
-												placeholder="Enter a link"
+												placeholder="Enter location"
 											/>
 											{#if isFormSubmitted && !langData.location}
-												<p class="error-message">Please enter a location</p>
+												<p class="error-message text-sm font-normal">Please enter a location</p>
 											{/if}
 										</Label>
 										<Label class="w-1/3 space-y-2 mb-2">
@@ -604,28 +608,30 @@
 											<Input
 												type="text"
 												bind:value={langData.location_title}
-												placeholder="Enter a link"
+												placeholder="Enter location title"
 											/>
 											{#if isFormSubmitted && !langData.location_title}
-												<p class="error-message">Please enter a location_title</p>
+												<p class="error-message text-sm font-normal">
+													Please enter a location_title
+												</p>
 											{/if}
 										</Label>
 									</div>
 
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="title" class="mb-2">Exhibition Title</Label>
 										<Input
 											type="text"
-											placeholder="Enter title"
+											placeholder="Exhibition title"
 											bind:value={langData.title}
 											id="title"
 											name="title"
 										/>
 										{#if isFormSubmitted && !langData.title.trim()}
-											<p class="error-message">Please enter a title</p>
+											<p class="error-message text-sm font-normal">Please enter a title</p>
 										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="story" class="mb-2">Exhibition Story</Label>
 										<Textarea
 											placeholder="Enter story"
@@ -635,11 +641,11 @@
 											name="story"
 										/>
 										{#if isFormSubmitted && !langData.story.trim()}
-											<p class="error-message">Please enter a story</p>
+											<p class="error-message text-sm font-normal">Please enter a story</p>
 										{/if}
 									</div>
 
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="textarea-id" class="mb-2">Short description</Label>
 										<Textarea
 											placeholder="Enter short description"
@@ -649,7 +655,7 @@
 											name="short_description"
 										/>
 										{#if isFormSubmitted && !langData.description.trim()}
-											<p class="error-message">Please enter a description</p>
+											<p class="error-message text-sm font-normal">Please enter a description</p>
 										{/if}
 									</div>
 								</div>
@@ -665,10 +671,10 @@
 					<Input
 						type="text"
 						bind:value={exhibitionsObject.sponsor_title}
-						placeholder="Enter a title for sponsor"
+						placeholder="sponsor title"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
-						<p class="error-message">Please enter a title for sponsor</p>
+						<p class="error-message text-sm font-normal">Please enter a title for sponsor</p>
 					{/if}
 				</div>
 				<div class="grid lg:grid-cols-2 pt-5">
@@ -677,7 +683,9 @@
 						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 						{#if isFormSubmitted && sliderImagesFile.length === 0}
-							<p class="error-message px-8">Please upload at least one image for the slider</p>
+							<p class="error-message text-sm font-normal px-8">
+								Please upload at least one image for the slider
+							</p>
 						{/if}
 					</Label>
 
@@ -686,7 +694,9 @@
 						<Label for="image" class=" px-8">Upload Sponsor Images</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
 						{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
-							<p class="error-message px-8">Please upload at least one image for the sponsor</p>
+							<p class="error-message text-sm font-normal px-8">
+								Please upload at least one image for the sponsor
+							</p>
 						{/if}
 					</Label>
 					<!-- upload sponsor image -->
