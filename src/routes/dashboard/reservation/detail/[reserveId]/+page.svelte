@@ -56,7 +56,7 @@
 			seatLayout = response.data.seat_layout;
 		}
 	}
-	async function updateStatus(itemID: any, selectedStatus: any) {
+	async function updateStatus(itemID: number, selectedStatus: string) {
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
 			await data.supabase
 				.from('seat_reservation')

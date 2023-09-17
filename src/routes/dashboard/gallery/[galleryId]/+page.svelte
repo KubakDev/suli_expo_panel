@@ -20,13 +20,20 @@
 
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
-
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';

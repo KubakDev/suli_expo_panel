@@ -20,7 +20,7 @@
 
 	let loading = false;
 	export let data: any;
-	export let openLightCard: any;
+	export let openLightCard: boolean;
 
 	let showToast = false;
 

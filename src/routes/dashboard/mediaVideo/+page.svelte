@@ -2,12 +2,8 @@
 	import { onMount } from 'svelte';
 	import { vedioStore, getData, deleteData } from '../../../stores/media_VideoStore';
 	import { goto } from '$app/navigation';
-	import { Button } from 'flowbite-svelte';
 	import Pagination from '../../../lib/components/pagination/Pagination.svelte';
-	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	//@ts-ignore
-	import Icon from 'svelte-icons-pack/Icon.svelte';
-	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import TableComponent from '$lib/components/TableComponent.svelte';
 
@@ -27,7 +23,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
+	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -37,7 +33,7 @@
 	}
 
 	// delete data
-	async function handleDelete(mediaVideoId: any) {
+	async function handleDelete(mediaVideoId: number) {
 		try {
 			await deleteData(mediaVideoId, data.supabase);
 
@@ -50,15 +46,8 @@
 		}
 	}
 
-	function calculateIndex(index: any) {
+	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
-	}
-
-	// convert html tag that return it from db to regular text
-	function extractText(html: any) {
-		const tempElement = document.createElement('div');
-		tempElement.innerHTML = html;
-		return tempElement.textContent || tempElement.innerText || '';
 	}
 
 	const columnTitle = [

@@ -3,7 +3,7 @@ import type { LanguageEnum } from './languageEnum';
 export interface GalleryModel {
 	id: number;
 	exhibition_id?: number;
-	images: string[];
+	images: string[] | string;
 	thumbnail: string;
 	exhibition_type?: string;
 	created_at?: Date;

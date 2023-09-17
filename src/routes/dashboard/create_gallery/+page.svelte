@@ -22,7 +22,15 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 	let isFormSubmitted = false;
 
@@ -104,13 +112,19 @@
 					.upload(`gallery/${randomText}_${image.name}`, image!)
 					.then((response) => {
 						if (response.data) {
-							galleryObject.images.push(response.data.path);
+							if (Array.isArray(galleryObject.images)) {
+								galleryObject.images.push(response.data.path);
+							}
 						}
 					});
 			}
 		}
 
-		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
+		let imagesArray: string[] = [];
+
+		if (Array.isArray(galleryObject.images)) {
+			imagesArray = galleryObject.images.map((image) => `"${image}"`);
+		}
 		galleryObject.images = `{${imagesArray.join(',')}}`;
 
 		insertData(galleryObject, galleryDataLang, data.supabase);
@@ -145,13 +159,14 @@
 		}
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectElement = event.target as HTMLSelectElement;
+		const selectedValue = selectElement.value;
 
 		if (selectedValue === 'Select Type') {
 			delete galleryObject.exhibition_id;
 		} else {
-			galleryObject.exhibition_id = selectedValue;
+			galleryObject.exhibition_id = parseInt(selectedValue, 0);
 		}
 	}
 

@@ -23,7 +23,15 @@
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let videoDataLang: VideoModelLang[] = [];

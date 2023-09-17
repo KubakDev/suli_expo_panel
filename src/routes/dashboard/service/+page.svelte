@@ -2,11 +2,9 @@
 	import { onMount } from 'svelte';
 	import { service, getData, deleteData } from '../../../stores/serviceStore';
 	import { goto } from '$app/navigation';
-	import { Button } from 'flowbite-svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
-	import { DarkMode } from 'flowbite-svelte';
 
 	//@ts-ignore
 	import Icon from 'svelte-icons-pack/Icon.svelte';
@@ -29,7 +27,7 @@
 	}
 
 	// delete data
-	async function handleDelete(serviceId: any) {
+	async function handleDelete(serviceId: number) {
 		try {
 			await deleteData(serviceId, data.supabase);
 			await fetchData(); // Fetch data again after deletion
@@ -48,7 +46,7 @@
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
 		flag = true;
-		items.forEach((item: any, index: any) => {
+		items.forEach((item: any, index: number) => {
 			item.position = index + 1;
 		});
 
@@ -72,12 +70,12 @@
 		}
 	}
 
-	async function swapItems(indexA: any, indexB: any) {
+	async function swapItems(indexA: number, indexB: number) {
 		const tempItem = items[indexA];
 		items[indexA] = items[indexB];
 		items[indexB] = tempItem;
 		flag = true;
-		items.forEach((item: any, index: any) => {
+		items.forEach((item: any, index: number) => {
 			item.position = index + 1;
 		});
 

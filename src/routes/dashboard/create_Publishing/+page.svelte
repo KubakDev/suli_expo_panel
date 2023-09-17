@@ -25,7 +25,16 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let publishingDataLang: PublishingModelLang[] = [];
@@ -114,7 +123,9 @@
 				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
 				.then((response) => {
 					if (response.data) {
-						publishingObject.pdf_files.push(response.data.path);
+						if (Array.isArray(publishingObject.pdf_files)) {
+							publishingObject.pdf_files.push(response.data.path);
+						}
 					}
 				});
 		}
@@ -126,15 +137,25 @@
 				.upload(`publishing/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
-						publishingObject.images.push(response.data.path);
+						if (Array.isArray(publishingObject.images)) {
+							publishingObject.images.push(response.data.path);
+						}
 					}
 				});
 		}
 
 		// Convert publishingObject.images and publishingObject.pdf_files to valid array string format
-		const imagesArray = publishingObject.images.map((image) => `"${image}"`);
-		const pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
+
+		let imagesArray: string[] = [];
+		if (Array.isArray(publishingObject.images)) {
+			imagesArray = publishingObject.images.map((image) => `"${image}"`);
+		}
 		publishingObject.images = `{${imagesArray.join(',')}}`;
+
+		let pdfFilesArray: string[] = [];
+		if (Array.isArray(publishingObject.pdf_files)) {
+			pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
+		}
 		publishingObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
 
 		// Insert data into Supabase

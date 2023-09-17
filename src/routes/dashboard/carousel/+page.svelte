@@ -22,7 +22,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
+	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -32,7 +32,7 @@
 	}
 
 	// delete data
-	async function handleDelete(carouselId: any) {
+	async function handleDelete(carouselId: number) {
 		try {
 			await deleteData(carouselId, data.supabase);
 			// alert('Carousel deleted successfully!');
@@ -45,7 +45,7 @@
 		}
 	}
 
-	function calculateIndex(index: any) {
+	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 

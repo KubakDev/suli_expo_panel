@@ -7,14 +7,10 @@
 	import TableComponent from '$lib/components/TableComponent.svelte';
 
 	export let data;
-	let aboutData: any = [];
-	let staffData: any = [];
 
 	async function fetchData() {
-		let result = await getData(data.supabase);
-		let staffResult = await getDataStaff(data.supabase);
-		aboutData = result;
-		staffData = staffResult;
+		await getData(data.supabase);
+		await getDataStaff(data.supabase);
 	}
 
 	onMount(fetchData);

@@ -16,7 +16,6 @@
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
-
 	export let data;
 	let isFormSubmitted = false;
 	let submitted = false;
@@ -25,7 +24,14 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let magazineDataLang: MagazineModelLang[] = [];
@@ -107,35 +113,54 @@
 		magazineObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
-		for (let pdf of pdfFiles) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('PDF')
-				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
-				.then((response) => {
-					if (response.data) {
-						magazineObject.pdf_files.push(response.data.path);
-					}
-				});
+
+		if (pdfFiles.length > 0) {
+			for (let pdf of pdfFiles) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('PDF')
+					.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf!)
+					.then((response) => {
+						if (response.data) {
+							if (Array.isArray(magazineObject.images)) {
+								magazineObject.pdf_files.push(response.data.path);
+							}
+						}
+					});
+			}
 		}
 
-		for (let image of sliderImagesFile) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('image')
-				.upload(`magazine/${randomText}_${image.name}`, image!)
-				.then((response) => {
-					if (response.data) {
-						magazineObject.images.push(response.data.path);
-					}
-				});
+		if (sliderImagesFile.length > 0) {
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('image')
+					.upload(`magazine/${randomText}_${image.name}`, image!)
+					.then((response) => {
+						if (response.data) {
+							if (Array.isArray(magazineObject.images)) {
+								magazineObject.images.push(response.data.path);
+							}
+						}
+					});
+			}
 		}
 
 		// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
-		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
-		const pdfFilesArray = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+
+		let imagesArray: string[] = [];
+
+		if (Array.isArray(magazineObject.images)) {
+			imagesArray = magazineObject.images.map((image) => `"${image}"`);
+		}
 		magazineObject.images = `{${imagesArray.join(',')}}`;
-		magazineObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
+
+		let imagesArray_pdf: string[] = [];
+
+		if (Array.isArray(magazineObject.pdf_files)) {
+			imagesArray_pdf = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+		}
+		magazineObject.pdf_files = `{${imagesArray_pdf.join(',')}}`;
 
 		// Insert data into Supabase
 		insertData(magazineObject, magazineDataLang, data.supabase);
