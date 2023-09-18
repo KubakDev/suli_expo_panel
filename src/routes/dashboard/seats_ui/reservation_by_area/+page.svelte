@@ -17,7 +17,6 @@
 		DropdownItem,
 		Tabs,
 		TabItem,
-		Spinner,
 		Textarea
 	} from 'flowbite-svelte';
 	import type { ExhibitionsModel } from '../../../../models/exhibitionModel';
@@ -97,7 +96,6 @@
 				.eq('exhibition', seatInfoData.exhibition?.id);
 		}
 		const areasArray = JSON.stringify(areas);
-		console.log(`${areasArray}`);
 		await supabase
 			.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {
