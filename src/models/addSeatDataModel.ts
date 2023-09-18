@@ -12,5 +12,6 @@ export interface InsertSeatDataModel {
 }
 export interface SeatPrivacyPolicyModel {
   language?: LanguageEnum,
-  description?: string
+  description?: string,
+  discount_description?: string,
 }

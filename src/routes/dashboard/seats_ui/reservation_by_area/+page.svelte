@@ -17,7 +17,8 @@
 		DropdownItem,
 		Tabs,
 		TabItem,
-		Textarea
+		Textarea,
+		Fileupload
 	} from 'flowbite-svelte';
 	import type { ExhibitionsModel } from '../../../../models/exhibitionModel';
 	import { exhibitions, getData } from '../../../../stores/exhibitionStore';
@@ -30,6 +31,7 @@
 	import RequiredFieldsComponent from './requiredFields.svelte';
 	import { SeatsLayoutTypeEnum } from '../../../../models/seatsLayoutTypeEnum';
 	import UploadContractFile from './uploadContractFile.svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	export let data: any;
 	interface areaType {
@@ -43,6 +45,7 @@
 		isActive?: boolean;
 		privacy_policy?: string;
 		price_per_meter?: number;
+		discounted_price?: number;
 	} = {
 		exhibition: undefined,
 		name: '',
@@ -60,6 +63,7 @@
 	let isActiveDropdownOpen = false;
 	let areas: areaType[] = [];
 	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
+	let excelFilePreviewSelected: File;
 
 	let newArea: areaType = {
 		area: '',
@@ -96,6 +100,19 @@
 				.eq('exhibition', seatInfoData.exhibition?.id);
 		}
 		const areasArray = JSON.stringify(areas);
+		let excel_preview_url = '';
+		if (excelFilePreviewSelected) {
+			const randomText = getRandomTextNumber();
+			await supabase.storage
+				.from('image')
+				.upload(
+					`seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
+					excelFilePreviewSelected
+				)
+				.then((response: any) => {
+					excel_preview_url = response.data.path;
+				});
+		}
 		await supabase
 			.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {
@@ -104,26 +121,67 @@
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
-					price_per_meter: seatInfoData.price_per_meter
+					price_per_meter: seatInfoData.price_per_meter,
+					discounted_price: seatInfoData.discounted_price,
+					excel_preview_url
 				},
 				privacy_lang_data: privacyPolicyLang
 			})
-			.then(() => {
+			.then((response: any) => {
 				loading = false;
-				addNewToast({
-					type: ToastTypeEnum.SUCCESS,
-					message: 'The Seat Added Successfully',
-					title: 'Success',
-					duration: 1000
-				});
+				if (response.error) {
+					addNewToast({
+						type: ToastTypeEnum.ERROR,
+						message: 'Failed To Update this seat',
+						title: 'Failed',
+						duration: 1000
+					});
+				} else {
+					addNewToast({
+						type: ToastTypeEnum.SUCCESS,
+						message: 'The Seat Added Successfully',
+						title: 'Success',
+						duration: 1000
+					});
+				}
 			})
 			.catch(() => {
+				addNewToast({
+					type: ToastTypeEnum.ERROR,
+					message: 'Failed To Update this seat',
+					title: 'Failed',
+					duration: 1000
+				});
 				loading = false;
 			});
 	}
 	function addPrivacyPolicyLang(description: any, lang: string) {
-		privacyPolicyLang = privacyPolicyLang.filter((x) => x.language !== lang);
-		privacyPolicyLang.push({ description: description.value, language: lang as LanguageEnum });
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.description = description.value;
+		} else {
+			privacyPolicyLang.push({
+				description: description,
+				language: lang as LanguageEnum,
+				discount_description: ''
+			});
+		}
+	}
+	function addDiscountDetail(discount_description: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.discount_description = discount_description.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: discount_description
+			});
+		}
+	}
+	function handleFileUpload(e: any) {
+		const fileInput = e.target as HTMLInputElement;
+		excelFilePreviewSelected = fileInput.files![0];
 	}
 </script>
 
@@ -149,6 +207,7 @@
 							bind:value={seatInfoData.price_per_meter}
 						/></ButtonGroup
 					>
+
 					<Button
 						color={!seatInfoData.exhibition && formSubmitted ? 'red' : 'light'}
 						outline
@@ -218,6 +277,25 @@
 							</DropdownItem>
 						{/each}
 					</Dropdown>
+					<ButtonGroup class="" size="sm">
+						<InputAddon>Discounted Price</InputAddon><Input
+							type="text"
+							size="sm"
+							bind:value={seatInfoData.discounted_price}
+						/></ButtonGroup
+					>
+					<br />
+					<div class="col-span-3 my-4">
+						<div class="max-w-[400px]">
+							<p>upload image for sheet preview</p>
+							<Fileupload
+								accept=".jpg, .jpeg, .png"
+								class=" dark:bg-white"
+								on:change={(event) => handleFileUpload(event)}
+							/>
+						</div>
+					</div>
+
 					<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
 					<div class=" col-span-3">
 						<Tabs>
@@ -230,6 +308,15 @@
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
 										on:input={(e) => addPrivacyPolicyLang(e.target ?? '', lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add discount description for  ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)
+											?.discount_description}
+										on:input={(e) => addDiscountDetail(e.target ?? '', lang)}
 									/>
 								</TabItem>
 							{/each}
