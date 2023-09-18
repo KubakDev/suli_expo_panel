@@ -2,13 +2,14 @@
 	import { Button, Tooltip } from 'flowbite-svelte';
 	import { SeatCustomShapes } from '../../../models/seatUi';
 	import { ChatBubbleBottomCenter, Pencil, Photo } from 'svelte-heros-v2';
-	import { fabric } from 'fabric';
+
 	import RemoveImageSvg from '$lib/images/icons/removeImage.svg';
 	import ReloadImageSvg from '$lib/images/icons/reloadImage.svg';
 	import SaveIconSvg from '$lib/images/icons/saveIcon.svg';
 	import LayerGroup from '$lib/images/icons/layerGroup.svg';
 	import LayerUnGroup from '$lib/images/icons/layerUnGroup.svg';
 	import { EditingMode } from '../../../models/editingModeModel';
+	const fabric = require('fabric').fabric;
 	import { createEventDispatcher } from 'svelte';
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
 
