@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { fabric } from 'fabric';
+	const fabric = require('fabric').fabric;
 	import type { Canvas } from 'fabric/fabric-impl';
 
 	export let data: any;
