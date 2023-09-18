@@ -19,7 +19,8 @@
 	let showModal = false;
 	let submitted = false;
 
-	let colorData: any = [];
+	let colorData: ColorTheme[] = [];
+
 	let newColorPallet: ColorTheme = {
 		name: '',
 		primaryColor: '',
@@ -34,6 +35,7 @@
 
 	async function fetchData() {
 		let result = await getData(data.supabase);
+		console.log(result);
 		colorData = result;
 	}
 

@@ -13,7 +13,16 @@
 	export let data;
 	let submitted = false;
 	let showToast = false;
-	let errorMessages: any = {};
+
+	interface ErrorMessages {
+		email?: string;
+		facebook_link?: string;
+		instagram_link?: string;
+		linkedin_link?: string;
+		youtube_link?: string;
+		twitter_link?: string;
+	}
+	let errorMessages: ErrorMessages = {};
 
 	let contactDataLang: ContactModelLang[] = [];
 	let contactData: ContactModel = {

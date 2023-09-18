@@ -4,7 +4,6 @@
 	import { updateData } from '../../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../../models/media_VideoModel';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -18,7 +17,15 @@
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';

@@ -2,7 +2,7 @@ import type { LanguageEnum } from './languageEnum';
 
 export interface AboutModel {
 	id: number;
-	image: string;
+	image?: string;
 	created_at?: Date;
 	about_languages?: AboutModelLang[];
 }

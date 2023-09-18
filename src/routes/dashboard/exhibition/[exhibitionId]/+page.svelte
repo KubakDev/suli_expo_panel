@@ -18,7 +18,6 @@
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
-	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
@@ -33,11 +32,22 @@
 	let imageFile_pdf: File | undefined;
 	let imageFile_pdf_contract: File | undefined;
 	let imageFile_brochure: File | undefined;
-	let fileName_pdf: any[] = [];
-	let fileName_pdf_contract: any[] = [];
-	let fileName_brochure: any[] = [];
-	let carouselImages: any = undefined;
-	let carouselImages_sponsor: any = undefined;
+	type FileNameType = {
+		lang: string;
+		fileName: string;
+	};
+	let fileName_pdf: FileNameType[] = [];
+	let fileName_pdf_contract: FileNameType[] = [];
+	let fileName_brochure: FileNameType[] = [];
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+	let carouselImages: CarouselImage[] | undefined = undefined;
+	let carouselImages_sponsor: CarouselImage[] | undefined = undefined;
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let prevImage_map: string = '';
@@ -169,6 +179,7 @@
 				lang: selectedLanguageTab,
 				fileName: `${randomText}_${file.name}`
 			});
+			console.log(fileName_pdf);
 		};
 
 		reader.readAsDataURL(file);
@@ -909,7 +920,7 @@
 											cardType={CardType.Flat}
 											title=""
 											short_description=""
-											thumbnail={langData.brochure ?? ''}
+											thumbnail={langData.brochure}
 											primaryColor="bg-primary"
 											startDate=""
 											endDate=""

@@ -21,7 +21,16 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 	let isFormSubmitted = false;
 
@@ -105,9 +114,11 @@
 				});
 		}
 
-		const imagesArray = newsObject.images.map((image) => `"${image}"`);
+		let imagesArray: string[] = [];
+		if (Array.isArray(newsObject.images)) {
+			imagesArray = newsObject.images.map((image) => `"${image}"`);
+		}
 		newsObject.images = `{${imagesArray.join(',')}}`;
-		//
 
 		//
 		newsObject.thumbnail = response.data?.path || '';
@@ -153,6 +164,7 @@
 
 	function getImagesObject() {
 		carouselImages = createCarouselImages(sliderImagesFile);
+		console.log(carouselImages);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}

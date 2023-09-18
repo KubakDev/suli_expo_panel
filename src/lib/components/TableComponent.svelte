@@ -7,7 +7,7 @@
 
 	export let calculateIndex: any;
 	export let handleDelete: any;
-	export let pageName: any;
+	export let pageName: string;
 	export let data: any;
 	export let columnTitle: any;
 
@@ -152,6 +152,7 @@
 											/></span
 										>
 									</button>
+
 									{#if pageName !== 'about' && pageName !== 'seatServices'}
 										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 									{/if}

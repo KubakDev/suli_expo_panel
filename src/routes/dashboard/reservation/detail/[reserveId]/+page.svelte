@@ -9,6 +9,8 @@
 	import { Button } from 'flowbite-svelte';
 	import { generateDocx } from '$lib/utils/generateContract';
 	import ReservedSeat from './reservedSeat.svelte';
+	import { exhibition } from '../../../../../stores/exhibitionTypeStore';
+	import moment from 'moment';
 
 	export let data;
 	interface reservationType {
@@ -25,12 +27,13 @@
 		reserved_areas?: string;
 		type: SeatsLayoutTypeEnum;
 	}
-	const objectId = $page.params.reserveId;
+	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | {} = undefined;
 
 	let reservations: reservationType[] = [];
 
 	onMount(async () => {
+		objectId = $page.params.reserveId;
 		getReservationData();
 	});
 	async function getReservationData() {
@@ -40,7 +43,7 @@
 			.eq('object_id', objectId)
 			.then((Response) => {
 				reservations = Response.data as reservationType[];
-				if (reservations[0].type != SeatsLayoutTypeEnum.AREAFIELDS) {
+				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
 					getSeatLayout();
 				}
 			});
@@ -50,13 +53,14 @@
 		const response = await data.supabase
 			.from('exhibition')
 			.select('*,seat_layout(*)', { count: 'exact' })
-			.eq('id', reservations[0].exhibition_id)
+			.eq('id', reservations[0]?.exhibition_id)
 			.single();
-		if (response.data.seat_layout) {
-			seatLayout = response.data.seat_layout;
+		if (response?.data?.seat_layout) {
+			seatLayout = response?.data?.seat_layout;
 		}
 	}
-	async function updateStatus(itemID: any, selectedStatus: any) {
+	async function updateStatus(itemID?: number, selectedStatus?: string) {
+		if (itemID == undefined || selectedStatus == undefined) return;
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
 			await data.supabase
 				.from('seat_reservation')
@@ -73,18 +77,33 @@
 		await data.supabase
 			.from('contract_decode_files')
 			.select('*')
-			.then((Response: any) => {
+			.eq('exhibition_id', reservationData.exhibition_id)
+			.then(async (Response: any) => {
 				let reservedAreasArray = reservationData.reserved_areas
 					? JSON.parse(reservationData.reserved_areas)
 					: [];
+				let price_per_meter = 0;
+				await data.supabase
+					.from('seat_layout')
+					.select('*')
+					.eq('exhibition', reservationData.exhibition_id)
+					.eq('is_active', true)
+					.single()
+					.then((response) => {
+						price_per_meter = response.data.price_per_meter;
+					});
 				let reservedAreas = reservedAreasArray?.map((data: any) => {
 					let result = {
 						id: data.id++,
 						area: data.area,
-						quantity: data.quantity
+						quantity: data.quantity,
+						pricePerMeter: price_per_meter,
+						totalPrice: data.quantity * price_per_meter,
+						discountedPrice: data.quantity * price_per_meter * 0.9
 					};
 					return result;
 				});
+				console.log(reservedAreas);
 				let docxData = {
 					company_name: reservationData.company?.company_name,
 					address: reservationData.company?.address,
@@ -92,7 +111,9 @@
 					manager_name: reservationData.company?.manager_name,
 					passport_number: reservationData.company?.passport_number,
 					working_field: reservationData.company?.working_field,
-					areas: reservedAreas
+					areas: reservedAreas,
+					date: moment(new Date()).format('DD/MM/YYYY'),
+					id: reservationData.company?.id
 				};
 				generateDocx(Response.data[0].decoded_file, docxData);
 			});

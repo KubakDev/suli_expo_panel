@@ -82,7 +82,7 @@
 	}
 
 	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
+	function decodeBase64(pdf_file: File) {
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(
@@ -91,7 +91,7 @@
 		}
 	}
 
-	function openPdfFile(pdf_file: any) {
+	function openPdfFile(pdf_file: File) {
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(

@@ -12,8 +12,7 @@
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
-	import { exhibition } from '../../../stores/exhibitionTypeStore';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -155,7 +154,7 @@
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 					/>
-					{#if isFormSubmitted && !seatServicesObject.icon.trim()}
+					{#if isFormSubmitted && !seatServicesObject?.icon?.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>

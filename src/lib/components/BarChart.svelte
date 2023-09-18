@@ -14,19 +14,30 @@
 	Chart.register(BarController, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 	export let data: any;
-	let canvas: any;
-	let chart;
+	let canvas: HTMLCanvasElement;
+	let chart: Chart;
 
 	onMount(() => {
 		fetchChartData();
 	});
+
+	//data type
+	interface ViewerDataForYear {
+		news_viewers: number;
+		exhibition_viewers: number;
+		suly_expo_viewers: number;
+	}
+
+	type YearlyViewerData = {
+		[year: string]: ViewerDataForYear;
+	};
 
 	// Process and create chart data
 	async function fetchChartData() {
 		await getAllViewersData(data.supabase);
 		console.log('all ', $AllViewersData);
 
-		const yearData: any = {};
+		const yearData: YearlyViewerData = {};
 
 		$AllViewersData.forEach((item) => {
 			const year = new Date(item.created_at ?? '').getFullYear();
@@ -37,9 +48,10 @@
 					suly_expo_viewers: 0
 				};
 			}
-			yearData[year].news_viewers += item.news_viewers;
-			yearData[year].exhibition_viewers += item.exhibition_viewers;
-			yearData[year].suly_expo_viewers += item.suly_expo_viewers;
+			yearData[year].news_viewers += item?.news_viewers || 0;
+			yearData[year].exhibition_viewers += item.exhibition_viewers || 0;
+			yearData[year].suly_expo_viewers += item.suly_expo_viewers || 0;
+			console.log(yearData);
 		});
 
 		const labels = Object.keys(yearData);
