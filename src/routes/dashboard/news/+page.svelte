@@ -39,7 +39,7 @@
 	}
 
 	// delete data
-	async function handleDelete(newsId: number) {
+	async function handleDelete(newsId: any) {
 		try {
 			await deleteData(newsId, data.supabase);
 			// alert('News deleted successfully!');

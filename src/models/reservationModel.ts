@@ -14,4 +14,5 @@ export interface Reservation {
 	exhibitions?: ExhibitionModel[];
 	status?: ReservationStatusEnum;
 	created_at?: Date;
+	reserved_areas?: string[];
 }

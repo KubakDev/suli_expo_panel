@@ -14,7 +14,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;

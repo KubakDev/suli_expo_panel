@@ -17,6 +17,7 @@
 	async function fetchData() {
 		await getData(data.supabase);
 		items = $exhibitions;
+		console.log(items);
 		flag = false;
 	}
 	onMount(fetchData);
@@ -26,7 +27,7 @@
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId: any) {
+	async function handleDelete(exhibitionId: number) {
 		try {
 			await data.supabase
 				.from('exhibition')
@@ -49,13 +50,14 @@
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
 		flag = true;
-		items.forEach((item: any, index: any) => {
+		items.forEach((item: any, index: number) => {
 			item.position = index + 1;
 		});
 
 		await updatePositions();
 		await fetchData(); // Fetch data again after updating positions
 		flag = false; // Set flag to false after data is fetched
+		console.log(items);
 	}
 
 	let supabase = data.supabase;

@@ -10,7 +10,22 @@
 	export let data;
 	let submitted = false;
 	let showToast = false;
-	let errorMessages: any = {};
+
+	interface ErrorMessages {
+		email?: string;
+		facebook_link?: string;
+		instagram_link?: string;
+		linkedin_link?: string;
+		youtube_link?: string;
+		twitter_link?: string;
+		location?: string;
+		phoneNumber_relations?: string;
+		phoneNumber_Administration?: string;
+		phoneNumber_Technical?: string;
+		phoneNumber_marketing?: string;
+	}
+	let errorMessages: ErrorMessages = {};
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let contactInfoDataLang: ContactModelLang[] = [];

@@ -16,7 +16,12 @@
 
 	const companyId = $page.params.companyId;
 	export let data;
-	export let serviceTitles: any = {};
+
+	type ServiceTitlesType = {
+		[key: number]: string;
+	};
+
+	let serviceTitles: ServiceTitlesType = {};
 	let serviceTitlesLoaded = false;
 
 	onMount(async () => {
@@ -47,7 +52,7 @@
 		});
 	}
 
-	async function getSeat_services(id: any) {
+	async function getSeat_services(id: number) {
 		let response = await data.supabase
 			.from('seat_services')
 			.select('*, seat_services_languages(title)')
@@ -59,7 +64,10 @@
 	}
 
 	// Function to format a date string as "year month date"
-	function formatDate(inputDate: any) {
+	function formatDate(inputDate: Date | undefined): string {
+		if (!inputDate) {
+			return '';
+		}
 		const date = new Date(inputDate);
 		const year = date.getFullYear();
 		const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -224,7 +232,7 @@
 										<td
 											class="p-3 text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 										>
-											<div>{formatDate(item.created_at)}</div>
+											<div>{formatDate(item.created_at || new Date())}</div>
 										</td>
 
 										<td

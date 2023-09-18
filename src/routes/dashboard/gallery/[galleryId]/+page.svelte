@@ -17,6 +17,7 @@
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
@@ -24,7 +25,15 @@
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';

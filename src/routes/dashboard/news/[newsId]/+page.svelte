@@ -11,14 +11,11 @@
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
-	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
@@ -27,7 +24,15 @@
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -149,7 +154,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				newsData.thumbnail = response.data?.path;
+				newsData.thumbnail = response.data?.path || '';
 			} else {
 				newsData.thumbnail = prevThumbnail;
 			}

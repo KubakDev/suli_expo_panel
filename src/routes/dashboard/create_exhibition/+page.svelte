@@ -30,7 +30,15 @@
 	let imageFile_brochure: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let exhibitionsDataLang: ExhibitionsModelLang[] = [];
@@ -203,7 +211,9 @@
 				.upload(`exhibition/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
-						exhibitionsObject.images.push(response.data.path);
+						if (Array.isArray(exhibitionsObject.images)) {
+							exhibitionsObject.images.push(response.data.path);
+						}
 					}
 				});
 		}
@@ -221,10 +231,16 @@
 		}
 
 		// Convert exhibitionsObject.images and exhibitionsObject.pdf_files to valid array string format
-		const imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
-		const imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
-
+		let imagesArray: string[] = [];
+		if (Array.isArray(exhibitionsObject.images)) {
+			imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
+		}
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
+
+		let imagesArray_sponsor: string[] = [];
+		if (Array.isArray(exhibitionsObject.sponsor_images)) {
+			imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
+		}
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 		// Insert data into Supabase
