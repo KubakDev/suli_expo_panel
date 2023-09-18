@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	const fabric = require("fabric").fabric;
 	import type { PageData } from '../$types';
 	import {
 		Button,
@@ -27,6 +26,7 @@
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
+	import { fabric } from 'fabric';
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 
@@ -738,7 +738,7 @@
 		const selectedObject = canvas.getActiveObject();
 
 		if (selectedObject) {
-			const copiedObject = fabric.util.object.clone(selectedObject);
+			const copiedObject = fabric?.util.object.clone(selectedObject);
 			copiedObject.set({
 				left: selectedObject.left + 10,
 				top: selectedObject.top + 10
@@ -750,7 +750,7 @@
 
 	function pasteCopiedObject() {
 		if (canvas.copiedObject) {
-			const pastedObject = fabric.util.object.clone(canvas.copiedObject);
+			const pastedObject = fabric?.util.object.clone(canvas.copiedObject);
 			pastedObject.set({
 				id: new Date().getTime()
 			});
@@ -809,236 +809,238 @@
 	}
 </script>
 
-<TopBarComponent
-	data={{
-		fillColor: fillColor,
-		strokeColor: strokeColor,
-		canvas: canvas,
-		isDrawing: isDrawing,
-		isAddingText: isAddingText,
-		container: container
-	}}
-	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
-	on:updateLayers={() => updateLayers()}
-	on:openAddSeatModal={() => openAddSeatModal()}
-/>
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
-	<AddSeatModalComponent
-		{data}
-		seatInfo={{
+{#if fabric}
+	<TopBarComponent
+		data={{
+			fillColor: fillColor,
+			strokeColor: strokeColor,
 			canvas: canvas,
-			seatId: $page.params.seatId
+			isDrawing: isDrawing,
+			isAddingText: isAddingText,
+			container: container
 		}}
-		on:closeModal={() => (addSeatModal = false)}
-		{currentSeatLayoutData}
+		on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
+		on:updateLayers={() => updateLayers()}
+		on:openAddSeatModal={() => openAddSeatModal()}
 	/>
-</Modal>
-<div class="flex flex-col w-full h-full flex-1">
-	<div class="w-full grid grid-cols-6 h-full">
-		<DrawingBar
-			data={{
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
+		<AddSeatModalComponent
+			{data}
+			seatInfo={{
 				canvas: canvas,
-				files: files,
-				objects: objects,
-				selectedObjectId: selectedObjectId,
-				fabric: fabric
+				seatId: $page.params.seatId
 			}}
-			on:updateLayers={() => updateLayers()}
+			on:closeModal={() => (addSeatModal = false)}
+			{currentSeatLayoutData}
 		/>
+	</Modal>
+	<div class="flex flex-col w-full h-full flex-1">
+		<div class="w-full grid grid-cols-6 h-full">
+			<DrawingBar
+				data={{
+					canvas: canvas,
+					files: files,
+					objects: objects,
+					selectedObjectId: selectedObjectId,
+					fabric: fabric
+				}}
+				on:updateLayers={() => updateLayers()}
+			/>
 
-		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
-			<canvas id="canvas" />
-			<div class="absolute bottom-10 right-10 w-40 flex justify-between">
-				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
-				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
-			</div>
-		</div>
-		<div class="p-4 bg-[#f2f3f7] overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
-			{#if canvas && isAnObjectSelected}
-				<div class="pb-4 w-full">
-					<Button on:click={addPropertiesToShape} class="w-full" outline>
-						<Checkbox checked={objectDetail.selectable} />
-						selectable
-					</Button>
+			<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
+				<canvas id="canvas" />
+				<div class="absolute bottom-10 right-10 w-40 flex justify-between">
+					<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
+					<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
 				</div>
-			{/if}
-			<h1 class="mx-2">favourite Colors</h1>
-			<div class="flex flex-wrap">
-				{#each favColors as color}
-					<div class="h-8 w-12 rounded-sm m-1" style={`background-color:${color}`} />
-				{/each}
-
-				<ButtonGroup class="w-full my-3" size="sm">
-					<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<InputAddon class="cursor-pointer p-0">
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
-						<!-- svelte-ignore a11y-no-static-element-interactions -->
-						<div class="w-full h-full p-2" on:click={addNewFavColor}>
-							{#if addFavColorLoading}
-								<Spinner />
-							{:else}
-								<Plus />
-							{/if}
-						</div>
-					</InputAddon>
-				</ButtonGroup>
 			</div>
-			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
-			<div class="grid grid-cols-2 gap-4 my-4">
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>W</InputAddon><Input
-						type="number"
-						size="sm"
-						disabled={itemWidth === null || itemWidth === undefined}
-						bind:value={itemWidth}
-						on:input={updateItemWidth}
-						placeholder="Width"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>H</InputAddon><Input
-						type="number"
-						size="sm"
-						disabled={itemWidth === null || itemWidth === undefined}
-						bind:value={itemHeight}
-						on:input={updateItemHeight}
-						placeholder="Height"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full col-span-2" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={radius === null || radius === undefined}
-						size="sm"
-						bind:value={radius}
-						on:input={updateCustomRectangle}
-						placeholder="Radius"
-					/></ButtonGroup
-				>
+			<div class="p-4 bg-[#f2f3f7] overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
+				{#if canvas && isAnObjectSelected}
+					<div class="pb-4 w-full">
+						<Button on:click={addPropertiesToShape} class="w-full" outline>
+							<Checkbox checked={objectDetail.selectable} />
+							selectable
+						</Button>
+					</div>
+				{/if}
+				<h1 class="mx-2">favourite Colors</h1>
+				<div class="flex flex-wrap">
+					{#each favColors as color}
+						<div class="h-8 w-12 rounded-sm m-1" style={`background-color:${color}`} />
+					{/each}
 
-				<div class="flex col-span-2">
+					<ButtonGroup class="w-full my-3" size="sm">
+						<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<InputAddon class="cursor-pointer p-0">
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							<!-- svelte-ignore a11y-no-static-element-interactions -->
+							<div class="w-full h-full p-2" on:click={addNewFavColor}>
+								{#if addFavColorLoading}
+									<Spinner />
+								{:else}
+									<Plus />
+								{/if}
+							</div>
+						</InputAddon>
+					</ButtonGroup>
+				</div>
+				<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
+				<div class="grid grid-cols-2 gap-4 my-4">
 					<ButtonGroup class="w-full" size="sm">
-						<InputAddon
-							><input
-								bind:value={strokeColor}
-								on:input={updateStrokeColor}
-								type="color"
-								id="stroke-color-picker"
-							/></InputAddon
-						><Input
-							disabled={strokeWidth === null || strokeWidth === undefined}
+						<InputAddon>W</InputAddon><Input
 							type="number"
 							size="sm"
-							bind:value={strokeWidth}
-							on:input={updateStrokeWidth}
-							placeholder="Stroke"
+							disabled={itemWidth === null || itemWidth === undefined}
+							bind:value={itemWidth}
+							on:input={updateItemWidth}
+							placeholder="Width"
 							let:props
 						/></ButtonGroup
 					>
-				</div>
-			</div>
-
-			{#if objectDetail.selectable}
-				<div class="w-full">
-					<ButtonGroup class="w-full mb-2" size="sm">
-						<InputAddon>Price</InputAddon><Input
+					<ButtonGroup class="w-full" size="sm">
+						<InputAddon>H</InputAddon><Input
 							type="number"
 							size="sm"
-							placeholder="select price"
-							bind:value={objectDetail.price}
+							disabled={itemWidth === null || itemWidth === undefined}
+							bind:value={itemHeight}
+							on:input={updateItemHeight}
+							placeholder="Height"
+							let:props
+						/></ButtonGroup
+					>
+					<ButtonGroup class="w-full col-span-2" size="sm">
+						<InputAddon>(</InputAddon><Input
+							type="number"
+							disabled={radius === null || radius === undefined}
+							size="sm"
+							bind:value={radius}
+							on:input={updateCustomRectangle}
+							placeholder="Radius"
 						/></ButtonGroup
 					>
 
-					<div class="mt-2 mb-6">
-						<Tabs>
-							{#each languageEnumKeys as lang}
-								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
-									<Textarea
-										id="textarea-id"
-										placeholder={`add description for ${lang}`}
-										rows="8"
-										value={objectDetailDescription?.find((x) => x.language === lang)?.description}
-										on:input={(e) => addDescriptionToObjectDetail(e.target, lang)}
-									/>
-								</TabItem>
-							{/each}
-						</Tabs>
+					<div class="flex col-span-2">
+						<ButtonGroup class="w-full" size="sm">
+							<InputAddon
+								><input
+									bind:value={strokeColor}
+									on:input={updateStrokeColor}
+									type="color"
+									id="stroke-color-picker"
+								/></InputAddon
+							><Input
+								disabled={strokeWidth === null || strokeWidth === undefined}
+								type="number"
+								size="sm"
+								bind:value={strokeWidth}
+								on:input={updateStrokeWidth}
+								placeholder="Stroke"
+								let:props
+							/></ButtonGroup
+						>
 					</div>
-					{#if $seatServices}
-						{#each $seatServices as service}
-							<div
-								class="bg-white w-full rounded-md my-2 flex flex-col justify-between items-center px-6 flex-wrap"
-							>
-								{#if service.seat_services_languages}
-									<div class="flex items-center">
-										<div class="m-1 text-lg font-bold text-[#e1b168]">
-											{service?.seat_services_languages[0]?.title}
+				</div>
+
+				{#if objectDetail.selectable}
+					<div class="w-full">
+						<ButtonGroup class="w-full mb-2" size="sm">
+							<InputAddon>Price</InputAddon><Input
+								type="number"
+								size="sm"
+								placeholder="select price"
+								bind:value={objectDetail.price}
+							/></ButtonGroup
+						>
+
+						<div class="mt-2 mb-6">
+							<Tabs>
+								{#each languageEnumKeys as lang}
+									<TabItem title={lang} open={lang === languageEnumKeys[0]}>
+										<Textarea
+											id="textarea-id"
+											placeholder={`add description for ${lang}`}
+											rows="8"
+											value={objectDetailDescription?.find((x) => x.language === lang)?.description}
+											on:input={(e) => addDescriptionToObjectDetail(e.target, lang)}
+										/>
+									</TabItem>
+								{/each}
+							</Tabs>
+						</div>
+						{#if $seatServices}
+							{#each $seatServices as service}
+								<div
+									class="bg-white w-full rounded-md my-2 flex flex-col justify-between items-center px-6 flex-wrap"
+								>
+									{#if service.seat_services_languages}
+										<div class="flex items-center">
+											<div class="m-1 text-lg font-bold text-[#e1b168]">
+												{service?.seat_services_languages[0]?.title}
+											</div>
+											<div class="mx-3">
+												<h1>{service.price}</h1>
+											</div>
 										</div>
-										<div class="mx-3">
+									{/if}
+									<div class="flex items-center my-6 w-full justify-between">
+										<div class="flex items-center">
+											<Checkbox
+												class="cursor-pointer"
+												on:click={() => {
+													addServiceToActiveObject(service);
+												}}
+											/>
+											<p>select this service for this seat</p>
+										</div>
+										<div>
 											<h1>{service.price}</h1>
 										</div>
 									</div>
-								{/if}
-								<div class="flex items-center my-6 w-full justify-between">
-									<div class="flex items-center">
-										<Checkbox
-											class="cursor-pointer"
-											on:click={() => {
-												addServiceToActiveObject(service);
-											}}
+									<div class="d grid-cols-1 mb-6 w-full">
+										<Input
+											type="number"
+											size="sm"
+											placeholder="max quantity for a user"
+											on:change={(e) => addMaxServiceCount(e, service)}
+											disabled={!objectDetail.services[0] ||
+												objectDetail.services.find((x) => x.id == service.id) == undefined}
 										/>
-										<p>select this service for this seat</p>
-									</div>
-									<div>
-										<h1>{service.price}</h1>
-									</div>
-								</div>
-								<div class="d grid-cols-1 mb-6 w-full">
-									<Input
-										type="number"
-										size="sm"
-										placeholder="max quantity for a user"
-										on:change={(e) => addMaxServiceCount(e, service)}
-										disabled={!objectDetail.services[0] ||
-											objectDetail.services.find((x) => x.id == service.id) == undefined}
-									/>
 
-									<div class="my-2">
-										<ButtonGroup class="w-full" size="sm">
-											<InputAddon
-												><div class="flex items-center">
-													<Checkbox
-														class="cursor-pointer"
-														on:click={(event) => addFreeService(event, service)}
-														disabled={!objectDetail.services[0] ||
-															objectDetail.services.find((x) => x.id == service.id) == undefined}
-													/>
-													<p>unlimited</p>
-												</div></InputAddon
-											>
-											<Input
-												id="input-addon-sm"
-												placeholder="max free quantity for a user"
-												on:change={(e) => addMaxFreeServiceCount(e, service)}
-												disabled={!objectDetail.services[0] ||
-													objectDetail.services.find((x) => x.id == service.id) == undefined}
-											/>
-										</ButtonGroup>
+										<div class="my-2">
+											<ButtonGroup class="w-full" size="sm">
+												<InputAddon
+													><div class="flex items-center">
+														<Checkbox
+															class="cursor-pointer"
+															on:click={(event) => addFreeService(event, service)}
+															disabled={!objectDetail.services[0] ||
+																objectDetail.services.find((x) => x.id == service.id) == undefined}
+														/>
+														<p>unlimited</p>
+													</div></InputAddon
+												>
+												<Input
+													id="input-addon-sm"
+													placeholder="max free quantity for a user"
+													on:change={(e) => addMaxFreeServiceCount(e, service)}
+													disabled={!objectDetail.services[0] ||
+														objectDetail.services.find((x) => x.id == service.id) == undefined}
+												/>
+											</ButtonGroup>
+										</div>
 									</div>
 								</div>
-							</div>
-						{/each}
-					{/if}
-				</div>
-			{/if}
+							{/each}
+						{/if}
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style lang="scss">
 	canvas {
