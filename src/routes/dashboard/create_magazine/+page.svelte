@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/magazineStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { MagazineModel, MagazineModelLang } from '../../../models/magazineModel';
-	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
@@ -15,6 +12,9 @@
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -24,7 +24,14 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let magazineDataLang: MagazineModelLang[] = [];
@@ -37,24 +44,6 @@
 		id: 0
 	};
 
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 
@@ -68,22 +57,6 @@
 			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		// console.log(file);
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			magazineObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `magazine/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	//**dropzone**//
@@ -140,35 +113,54 @@
 		magazineObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
-		for (let pdf of pdfFiles) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('PDF')
-				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
-				.then((response) => {
-					if (response.data) {
-						magazineObject.pdf_files.push(response.data.path);
-					}
-				});
+
+		if (pdfFiles.length > 0) {
+			for (let pdf of pdfFiles) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('PDF')
+					.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf!)
+					.then((response) => {
+						if (response.data) {
+							if (Array.isArray(magazineObject.images)) {
+								magazineObject.pdf_files.push(response.data.path);
+							}
+						}
+					});
+			}
 		}
 
-		for (let image of sliderImagesFile) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('image')
-				.upload(`magazine/${randomText}_${image.name}`, image!)
-				.then((response) => {
-					if (response.data) {
-						magazineObject.images.push(response.data.path);
-					}
-				});
+		if (sliderImagesFile.length > 0) {
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('image')
+					.upload(`magazine/${randomText}_${image.name}`, image!)
+					.then((response) => {
+						if (response.data) {
+							if (Array.isArray(magazineObject.images)) {
+								magazineObject.images.push(response.data.path);
+							}
+						}
+					});
+			}
 		}
 
 		// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
-		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
-		const pdfFilesArray = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+
+		let imagesArray: string[] = [];
+
+		if (Array.isArray(magazineObject.images)) {
+			imagesArray = magazineObject.images.map((image) => `"${image}"`);
+		}
 		magazineObject.images = `{${imagesArray.join(',')}}`;
-		magazineObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
+
+		let imagesArray_pdf: string[] = [];
+
+		if (Array.isArray(magazineObject.pdf_files)) {
+			imagesArray_pdf = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+		}
+		magazineObject.pdf_files = `{${imagesArray_pdf.join(',')}}`;
 
 		// Insert data into Supabase
 		insertData(magazineObject, magazineDataLang, data.supabase);
@@ -206,7 +198,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete magazineObject.exhibition_id;
 		} else {
@@ -215,20 +207,16 @@
 	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		// console.log('test//', carouselImages);
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -246,8 +234,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, magazineObject, setImageFile, setFileName, 'magazine')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !magazineObject.thumbnail.trim()}
@@ -256,30 +245,7 @@
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<div class="mb-6">
-					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
-					<ButtonGroup class="w-full">
-						<select
-							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<option>Select Type</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</div>
+				<InsertExhibitionType {handleSelectChange} {data} />
 			</div>
 		</div>
 

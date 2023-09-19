@@ -169,7 +169,7 @@
 		if (firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50) {
 			// 10 is the threshold value
 			// Close the shape
-			console.log('firstPoint && distanceBetweenPoints(firstPoint, currentPoint) <= 50');
+
 			const line = `M ${firstPoint.x} ${firstPoint.y} L ${currentPoint.x} ${currentPoint.y}`;
 			paths.push(line);
 
@@ -206,7 +206,6 @@
 
 				group = d3.select(svg).append('g').attr('id', randomNmaeText);
 				// .attr('transform', `translate(${5},${5}) `);
-				console.log('path path ', group);
 
 				// seatGroup
 				// 	.select('text')
@@ -241,10 +240,9 @@
 				// 	.attr('cy', 5)
 				// 	.attr('r', 3)
 				// 	.attr('fill', 'black');
-				console.log('first point', startPoint);
 			} else {
 				const line = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
-				console.log('the else ', line);
+
 				paths.push(line); // Add the line to the existing paths
 				group
 					.selectAll('path')
@@ -276,7 +274,7 @@
 	}
 
 	function onMouseMove(event: MouseEvent) {
-		// console.log('onMouseMove: ', event.offsetX, event.offsetY);
+		//
 		if (startPoint) {
 			// Update line preview
 			const previewLine = `M ${startPoint.x} ${startPoint.y} L ${event.offsetX} ${event.offsetY}`;
@@ -303,10 +301,6 @@
 			const groupHeight = group.node().getBoundingClientRect().height;
 			const groupX = group.node().getBoundingClientRect().x;
 			const groupY = group.node().getBoundingClientRect().y;
-			console.log('groupWidth ', groupWidth);
-			console.log('groupHeight ', groupHeight);
-			console.log('groupX ', groupX);
-			console.log('groupY ', groupY);
 
 			// get group postion relative to svg
 			const groupXX = group.node().getBoundingClientRect().x - svg.getBoundingClientRect().x;
@@ -316,7 +310,6 @@
 
 			// get all path and subtract the group position
 			const paths = group.selectAll('path').nodes();
-			console.log('paths ', paths);
 
 			paths.forEach((path: any) => {
 				// get d attribute
@@ -343,9 +336,6 @@
 			});
 
 			group.attr('transform', `translate(${groupXX},${groupYY}) `);
-
-			console.log('groupX ', groupXX);
-			console.log('groupY ', groupYY);
 
 			// random string with number
 			const randomString = Math.random().toString(36).substring(7);
@@ -390,7 +380,7 @@
 		image: string | null = null
 	) {
 		let seatGroup;
-		console.log('image', image);
+
 		if (image == 'image') {
 			seatGroup = item.select('image');
 		} else {
@@ -434,9 +424,9 @@
 
 	// function onMouseWeel(event: any) {
 	// 	const svgSelection: any = d3.select('#svgContainer');
-	// 	console.log('svgSelection ', svgSelection);
+	//
 	// 	const y = event.deltaY;
-	// 	console.log('y ', y);
+	//
 	// 	svgSelection.attr('transform', `scale(${y})`);
 
 	// 	const zoom = d3
@@ -461,7 +451,6 @@
 	// }
 
 	function onAreaSizeClick(areaType: AreaType) {
-		console.log('areaType', areaType);
 		selectedAreaSize = areaType;
 		seatLayoutStore.setAreaSize(areaType);
 
@@ -470,7 +459,7 @@
 		// // advanced usage
 		// setTimeout(() => {
 		// 	const elem = document.getElementById('container');
-		// 	console.log('elem ', elem);
+		//
 		// 	const panzoom = Panzoom(elem!, {
 		// 		maxScale: 5,
 		// 		disablePan: false
@@ -479,7 +468,7 @@
 		// 	panzoom.pan(10, 10);
 		// 	panzoom.zoom(1, { animate: true });
 		// 	elem!.parentElement!.addEventListener('wheel', (event) => {
-		// 		console.log('event ', event);
+		//
 		// 		panzoom.zoomWithWheel(event);
 		// 	});
 		// }, 100);
@@ -488,7 +477,6 @@
 	}
 
 	async function onFileUpload(e: any) {
-		console.log('onFileUpload', e);
 		const file = e.target.files[0] as File;
 		const aspectRatio = await getImageAspectRatio(file);
 
@@ -505,7 +493,6 @@
 		reader.readAsDataURL(file);
 		selectedAreaSize = aspectRatio;
 		seatLayoutStore.setAreaSize(selectedAreaSize);
-		console.log('aspectRatio', aspectRatio);
 	}
 
 	function getImageAspectRatio(file: File): Promise<number> {
@@ -539,10 +526,7 @@
 		const rectHeight = rect.attr('height');
 
 		// calculate the percentage change in width and height
-		console.log('newWidth', newWidth);
-		console.log('newHeight', newHeight);
-		console.log('rectWidth', rectWidth);
-		console.log('rectHeight', rectHeight);
+
 		const percChangeWidth = newWidth / parseFloat(rectWidth);
 		const percChangeHeight = newHeight / parseFloat(rectHeight);
 
@@ -557,10 +541,7 @@
 			const y = pathDArray[2];
 
 			// new x and y
-			console.log('x', x);
-			console.log('y', y);
-			console.log('percChangeWidth', percChangeWidth);
-			console.log('percChangeHeight', percChangeHeight);
+
 			const newX = parseFloat(x) * percChangeWidth;
 			const newY = parseFloat(y) * percChangeHeight;
 

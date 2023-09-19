@@ -2,12 +2,12 @@
 	import { onMount } from 'svelte';
 	import { contactData, getData, deleteData } from '../../../stores/contactStor';
 	import { goto } from '$app/navigation';
-	import { Button, Modal } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	//@ts-ignore
 
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
+	import InsertButton from '$lib/components/InsertButton.svelte';
 
 	export let data;
 
@@ -22,7 +22,7 @@
 	}
 
 	// delete data
-	async function handleDelete(contactInfo_id: any) {
+	async function handleDelete(contactInfo_id: number) {
 		try {
 			await deleteData(contactInfo_id, data.supabase);
 			await fetchData();
@@ -33,32 +33,8 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="py-5 px-4 lg:px-0 flex justify-end">
-		<Button
-			on:click={createContact}
-			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
-		>
-			<svg
-				width="20px"
-				height="20px"
-				viewBox="0 0 20 20"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-			>
-				<g id="SVGRepo_bgCarrier" stroke-width="0" />
-
-				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-
-				<g id="SVGRepo_iconCarrier">
-					<path
-						fill="#6b6b6b"
-						fill-rule="evenodd"
-						d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"
-					/>
-				</g>
-			</svg>
-		</Button>
-	</div>
+	<!-- insert new data -->
+	<InsertButton insertData={createContact} />
 
 	<!-- table data -->
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
@@ -366,7 +342,6 @@
 								{/if}
 								<td
 									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button

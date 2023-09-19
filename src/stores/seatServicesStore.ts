@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
 import type { seatServicesModel, seatServicesModelLang } from '../models/seatServicesModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ServiceModel, ServiceModelLang } from '../models/serviceModel';
 
 export const seatServices = writable<seatServicesModel[]>([]);
 
@@ -119,3 +118,23 @@ export const updateSeatService = async (
 	}
 };
 
+// get  data by id
+export const getSeatServicesByIds = async (supabase: SupabaseClient, ids: number[]) => {
+	try {
+		const { data, error } = await supabase
+			.from('seat_services')
+			.select('*,seat_services_languages(*)')
+			.in('id', ids);
+
+		if (error) {
+			console.error(error);
+			throw error;
+		}
+		// 
+
+		return data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
+};

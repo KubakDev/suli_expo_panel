@@ -1,25 +1,15 @@
 <script lang="ts">
-	import {
-		Label,
-		Input,
-		Fileupload,
-		Textarea,
-		Img,
-		ButtonGroup,
-		InputAddon
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/serviceStore';
-	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { ServiceModel, ServiceModelLang } from '../../../models/serviceModel';
-	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
+	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -39,24 +29,6 @@
 		onPrimaryColor: '#D8C4B6'
 	};
 
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 
@@ -74,7 +46,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -82,7 +54,7 @@
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `service/${randomText}_${file.name}`; // Append random text to the file name
 
-			// console.log('serviceObject////////////', serviceObject);
+			//
 		};
 
 		reader.readAsDataURL(file);
@@ -186,32 +158,7 @@
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<div class="mb-6">
-					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
-					<ButtonGroup class="w-full">
-						<select
-
-							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<option>Select Type</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white ">
-
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</div>
+				<InsertExhibitionType {handleSelectChange} {data} />
 			</div>
 		</div>
 

@@ -13,7 +13,16 @@
 	export let data;
 	let submitted = false;
 	let showToast = false;
-	let errorMessages: any = {};
+
+	interface ErrorMessages {
+		email?: string;
+		facebook_link?: string;
+		instagram_link?: string;
+		linkedin_link?: string;
+		youtube_link?: string;
+		twitter_link?: string;
+	}
+	let errorMessages: ErrorMessages = {};
 
 	let contactDataLang: ContactModelLang[] = [];
 	let contactData: ContactModel = {
@@ -26,7 +35,7 @@
 		created_at: new Date()
 	};
 	const id = $page.params.contactInfoId;
-	// console.log($page.params);
+	//
 
 	//**** get data from db and put it into the fields ****//
 	async function getcontactData() {

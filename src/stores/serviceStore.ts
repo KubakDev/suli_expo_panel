@@ -39,7 +39,7 @@ export const getData = async (supabase: SupabaseClient) => {
 			.order('position', { ascending: true });
 
 		service.set(data ?? []);
-		// console.log(data);
+		// 
 	} catch (error) {
 		console.error(error);
 		throw error;
@@ -78,7 +78,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_service_and_service_lang', {
 			service_data: serviceObject,
 			service_lang_data: serviceDataLang

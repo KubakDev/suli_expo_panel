@@ -4,10 +4,7 @@
 	import { insertData } from '../../../stores/publishingStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { PublishingModel, PublishingModelLang } from '../../../models/publishingModel';
-	import { onMount } from 'svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
@@ -16,6 +13,9 @@
 
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -25,7 +25,16 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let publishingDataLang: PublishingModelLang[] = [];
@@ -38,24 +47,6 @@
 		id: 0
 	};
 
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 
@@ -68,22 +59,6 @@
 			long_description: '',
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		// console.log(file);
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			publishingObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `publishing/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	//**dropzone**//
@@ -148,7 +123,9 @@
 				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
 				.then((response) => {
 					if (response.data) {
-						publishingObject.pdf_files.push(response.data.path);
+						if (Array.isArray(publishingObject.pdf_files)) {
+							publishingObject.pdf_files.push(response.data.path);
+						}
 					}
 				});
 		}
@@ -160,15 +137,25 @@
 				.upload(`publishing/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
-						publishingObject.images.push(response.data.path);
+						if (Array.isArray(publishingObject.images)) {
+							publishingObject.images.push(response.data.path);
+						}
 					}
 				});
 		}
 
 		// Convert publishingObject.images and publishingObject.pdf_files to valid array string format
-		const imagesArray = publishingObject.images.map((image) => `"${image}"`);
-		const pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
+
+		let imagesArray: string[] = [];
+		if (Array.isArray(publishingObject.images)) {
+			imagesArray = publishingObject.images.map((image) => `"${image}"`);
+		}
 		publishingObject.images = `{${imagesArray.join(',')}}`;
+
+		let pdfFilesArray: string[] = [];
+		if (Array.isArray(publishingObject.pdf_files)) {
+			pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
+		}
 		publishingObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
 
 		// Insert data into Supabase
@@ -207,7 +194,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete publishingObject.exhibition_id;
 		} else {
@@ -216,20 +203,16 @@
 	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		// console.log('test//', carouselImages);
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -247,7 +230,8 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Publishing Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
+						on:change={(event) =>
+							handleFileUpload(event, publishingObject, setImageFile, setFileName, 'publishing')}
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 					/>
@@ -257,30 +241,7 @@
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<div class="mb-6">
-					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
-					<ButtonGroup class="w-full">
-						<select
-							class="dark:text-black border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<option>Select Type</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</div>
+				<InsertExhibitionType {handleSelectChange} {data} />
 			</div>
 		</div>
 

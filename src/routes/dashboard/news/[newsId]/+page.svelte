@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { updateData } from '../../../../stores/newsStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
@@ -11,20 +11,28 @@
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
-	
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -39,25 +47,6 @@
 	};
 	const id = $page.params.newsId;
 	let images: ImagesModel[] = [];
-
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//
 	async function getNewsData() {
@@ -77,8 +66,8 @@
 					created_at: result.data?.created_at
 				};
 
-				// console.log('news data get db thumbnail : ////////', newsData.thumbnail);
-				// console.log('news data get db images: ////////', newsData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
@@ -97,7 +86,7 @@
 				}
 				newsDataLang = [...newsDataLang];
 				newsData = { ...newsData };
-				getImagesObject();
+				carouselImages = getImagesObject(newsData);
 			});
 	}
 
@@ -111,28 +100,9 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload thumbnail image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		// console.log(file);
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			newsData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `news/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(newsData);
-		};
-		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		console.log(sliderImagesFile);
 	}
 
 	//get image
@@ -144,7 +114,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 
@@ -184,7 +154,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				newsData.thumbnail = response.data?.path;
+				newsData.thumbnail = response.data?.path || '';
 			} else {
 				newsData.thumbnail = prevThumbnail;
 			}
@@ -195,7 +165,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`news/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						newsData.images.push(responseMultiple.data?.path);
@@ -222,15 +192,14 @@
 	}
 
 	function imageChanges(e: any) {
-		console.log(e.detail);
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				console.log(image);
+
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -240,7 +209,7 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('carouselImages data :::::', carouselImages);
+		//
 	}
 
 	function handleSelectChange(event: any) {
@@ -252,22 +221,11 @@
 		}
 	}
 
-	//get thumbnail
-	function getImagesObject() {
-		carouselImages = newsData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		// console.log('print //', carouselImages);
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -287,44 +245,16 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, newsData, setImageFile, setFileName, 'news')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 				</Label>
 			</div>
 
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<ButtonGroup class="w-full">
-						<select
-							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<!-- Use JavaScript ternary operator to handle selected option -->
-							<option value="Select Type" selected={newsData.exhibition_id === undefined}>
-								Select Type
-							</option>
-							{#each exhibitionData as exhibition}
-								<!-- Use JavaScript ternary operator to handle selected option -->
-								<option value={exhibition.id} selected={newsData.exhibition_id === exhibition.id}>
-									{exhibition.exhibition_type}
-								</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white ">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</Label>
+				<UpdateExhibitionType {handleSelectChange} pageData={newsData} {data} />
 			</div>
 
 			<div class="col-span-1">
@@ -420,6 +350,7 @@
 					</button>
 				</div>
 			</div>
+
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="News List">

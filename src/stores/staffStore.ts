@@ -78,7 +78,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_staff_and_staff_lang', {
 			staff_data: staffObject,
 			staff_lang_data: staffDataLang

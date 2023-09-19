@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Button, Modal, Checkbox, Toggle, Select } from 'flowbite-svelte';
+	import { Label, Input, Modal, Select } from 'flowbite-svelte';
 	import {
 		insertData,
 		updateData,
@@ -19,7 +19,8 @@
 	let showModal = false;
 	let submitted = false;
 
-	let colorData: any = [];
+	let colorData: ColorTheme[] = [];
+
 	let newColorPallet: ColorTheme = {
 		name: '',
 		primaryColor: '',
@@ -34,6 +35,7 @@
 
 	async function fetchData() {
 		let result = await getData(data.supabase);
+		console.log(result);
 		colorData = result;
 	}
 
@@ -95,8 +97,6 @@
 		let index = updatedThemes.findIndex((x) => x.id === item.id);
 		updatedThemes[index].active = true;
 
-		console.log(updatedThemes);
-
 		theme.set(updatedThemes);
 
 		await updateData(updatedThemes[index], data.supabase);
@@ -117,9 +117,9 @@
 	<!-- show data on the table -->
 
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
-		<Button
+		<button
 			on:click={() => (showModal = true)}
-			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
+			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2 p-2 rounded-sm shadow-md border"
 		>
 			<svg
 				width="20px"
@@ -140,7 +140,7 @@
 					/>
 				</g>
 			</svg>
-		</Button>
+		</button>
 	</div>
 
 	<!-- table data -->
@@ -338,11 +338,26 @@
 											{/if}
 										</div>
 										<div>
-											<Toggle
+											<!-- <Toggle
 												class="rounded px-2   hover:bg-gray-100 dark:hover:bg-gray-600"
 												checked={item.active}
 												on:change={() => toggleChanged(item)}
-											/>
+											/> -->
+
+											<div class="flex justify-end items-center mr-5">
+												<label class="relative inline-flex items-center cursor-pointer">
+													<input
+														on:change={() => toggleChanged(item)}
+														type="checkbox"
+														value=""
+														class="sr-only peer"
+														bind:checked={item.active}
+													/>
+													<div
+														class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"
+													/>
+												</label>
+											</div>
 										</div>
 									</div>
 

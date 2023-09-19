@@ -1,10 +1,6 @@
 export const load = async () => {
 	const pages = [
 		{
-			title: 'Home',
-			url: '/dashboard'
-		},
-		{
 			title: 'Promotions',
 			url: '/dashboard/promotions'
 		},
@@ -26,6 +22,10 @@ export const load = async () => {
 			url: '/dashboard/seats_ui'
 		},
 		{
+			title: 'seatServices',
+			url: '/dashboard/seatServices'
+		},
+		{
 			title: 'Carousel',
 			url: '/dashboard/carousel'
 		},
@@ -38,9 +38,14 @@ export const load = async () => {
 			title: 'Contact',
 			url: '/dashboard/contactInfo'
 		},
+
 		{
-			title: 'Seat Services',
-			url: '/dashboard/seatServices'
+			title: 'Reservation',
+			url: '/dashboard/reservation'
+		},
+		{
+			title: 'Company',
+			url: '/dashboard/companiesInfo'
 		},
 		{
 			title: 'Web Builder',

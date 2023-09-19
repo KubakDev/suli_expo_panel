@@ -2,13 +2,13 @@
 	import { onMount } from 'svelte';
 	import { exhibitions, getData } from '../../../stores/exhibitionStore';
 	import { goto } from '$app/navigation';
-	import { Button } from 'flowbite-svelte';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
 	//@ts-ignore
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
+	import InsertButton from '$lib/components/InsertButton.svelte';
 
 	export let data;
 	let items: any = [];
@@ -17,6 +17,7 @@
 	async function fetchData() {
 		await getData(data.supabase);
 		items = $exhibitions;
+		console.log(items);
 		flag = false;
 	}
 	onMount(fetchData);
@@ -26,7 +27,7 @@
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId: any) {
+	async function handleDelete(exhibitionId: number) {
 		try {
 			await data.supabase
 				.from('exhibition')
@@ -43,19 +44,20 @@
 
 	function handleDndConsider(e: any) {
 		items = e.detail.items;
-		// console.log(items);
+		//
 	}
 
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
 		flag = true;
-		items.forEach((item: any, index: any) => {
+		items.forEach((item: any, index: number) => {
 			item.position = index + 1;
 		});
 
 		await updatePositions();
 		await fetchData(); // Fetch data again after updating positions
 		flag = false; // Set flag to false after data is fetched
+		console.log(items);
 	}
 
 	let supabase = data.supabase;
@@ -73,37 +75,25 @@
 			}
 		}
 	}
+
+	async function swapItems(indexA: any, indexB: any) {
+		const tempItem = items[indexA];
+		items[indexA] = items[indexB];
+		items[indexB] = tempItem;
+		flag = true;
+		items.forEach((item: any, index: any) => {
+			item.position = index + 1;
+		});
+
+		await updatePositions();
+		await fetchData(); // Fetch data again after updating positions
+		flag = false; // Set flag to false after data is fetched
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="flex justify-end">
-		<div class="py-5 px-4 lg:px-0 flex justify-end">
-			<Button
-				on:click={createExhibition}
-				class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2"
-			>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 20 20"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-				>
-					<g id="SVGRepo_bgCarrier" stroke-width="0" />
-
-					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-
-					<g id="SVGRepo_iconCarrier">
-						<path
-							fill="#6b6b6b"
-							fill-rule="evenodd"
-							d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"
-						/>
-					</g>
-				</svg>
-			</Button>
-		</div>
-	</div>
+	<!-- insert new data -->
+	<InsertButton insertData={createExhibition} />
 
 	<!-- table data -->
 
@@ -118,6 +108,14 @@
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
+								</div>
+							</th>
+
+							<th
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
+							>
+								<div class="flex justify-center items-center gap-2">
+									<span>sort</span>
 								</div>
 							</th>
 
@@ -255,14 +253,64 @@
 					>
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
-
 								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
 										>{index + 1}</span
 									>
-
 								</td>
-
+								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold">
+										<button on:click={() => swapItems(index, index - 1)} disabled={index === 0}>
+											<svg
+												fill="#d4d2d2"
+												height="20px"
+												width="20px"
+												version="1.1"
+												id="Layer_1"
+												xmlns="http://www.w3.org/2000/svg"
+												xmlns:xlink="http://www.w3.org/1999/xlink"
+												viewBox="0 0 512 512"
+												enable-background="new 0 0 512 512"
+												xml:space="preserve"
+												><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+													id="SVGRepo_tracerCarrier"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												/><g id="SVGRepo_iconCarrier">
+													<polygon
+														points="245,0 74.3,213.3 202.3,213.3 202.3,512 287.7,512 287.7,213.3 415.7,213.3 "
+													/>
+												</g></svg
+											></button
+										>
+										<button
+											on:click={() => swapItems(index, index + 1)}
+											disabled={index === items.length - 1}
+										>
+											<svg
+												fill="#d4d2d2"
+												height="20px"
+												width="20px"
+												version="1.1"
+												id="Layer_1"
+												xmlns="http://www.w3.org/2000/svg"
+												xmlns:xlink="http://www.w3.org/1999/xlink"
+												viewBox="0 0 512 512"
+												enable-background="new 0 0 512 512"
+												xml:space="preserve"
+												><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
+													id="SVGRepo_tracerCarrier"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												/><g id="SVGRepo_iconCarrier">
+													<polygon
+														points="283.7,298.7 283.7,0 198.3,0 198.3,298.7 70.3,298.7 241,512 411.7,298.7 "
+													/>
+												</g></svg
+											></button
+										>
+									</span>
+								</td>
 								<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
@@ -295,9 +343,7 @@
 									</td>
 								{/if}
 								<td
-
 									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button

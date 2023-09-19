@@ -1,14 +1,18 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, Img } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, Img, Select } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertDataToSeatService } from '../../../stores/seatServicesStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import type { seatServicesModel, seatServicesModelLang } from '../../../models/seatServicesModel';
+	import {
+		SeatServiceTypeEnum,
+		type seatServicesModel,
+		type seatServicesModelLang
+	} from '../../../models/seatServicesModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -23,7 +27,10 @@
 	let seatServicesObject: seatServicesModel = {
 		id: 0,
 		icon: '',
+		quantity: 0,
+		discount: 0,
 		price: 0,
+		type: SeatServiceTypeEnum.SINGULAR,
 		created_at: new Date()
 	};
 
@@ -91,7 +98,7 @@
 
 		const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
 
-		// console.log(response);
+		//
 		seatServicesObject.icon = response.data?.path ?? '';
 
 		insertDataToSeatService(seatServicesObject, seatServicesDataLang, data.supabase);
@@ -109,6 +116,9 @@
 		seatServicesObject = {
 			icon: '',
 			price: 0,
+			quantity: 0,
+			discount: 0,
+			type: SeatServiceTypeEnum.SINGULAR,
 			created_at: new Date(),
 			id: 0
 		};
@@ -144,18 +154,68 @@
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 					/>
-					{#if isFormSubmitted && !seatServicesObject.icon.trim()}
+					{#if isFormSubmitted && !seatServicesObject?.icon?.trim()}
 						<p class="error-message">Please Upload an Image</p>
+					{/if}
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Quantity</Label>
+					<Input
+						type="number"
+						bind:value={seatServicesObject.quantity}
+						placeholder="Enter a number"
+						min="0"
+					/>
+					{#if isFormSubmitted && !seatServicesObject.quantity}
+						<p class="error-message">Please Enter quantity number</p>
 					{/if}
 				</Label>
 			</div>
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
-					<Label for="icon" class="mb-2">Enter price</Label>
-					<Input type="number" bind:value={seatServicesObject.price} placeholder="Enter a number" />
+					<label for="type" class="block font-normal">Type</label>
+					<Select
+						bind:value={seatServicesObject.type}
+						id="type"
+						name="type"
+						size="md"
+						placeholder="Please select a valid type"
+					>
+						<option value={SeatServiceTypeEnum.SINGULAR}>{SeatServiceTypeEnum.SINGULAR}</option>
+						<option value={SeatServiceTypeEnum.PLURAL}>{SeatServiceTypeEnum.PLURAL}</option>
+					</Select>
+				</Label>
+			</div>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-4 px-4">
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Price</Label>
+					<Input
+						type="number"
+						bind:value={seatServicesObject.price}
+						placeholder="Enter a number"
+						min="0"
+					/>
 					<p class="text-xs text-gray-500">
 						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
 					</p>
+				</Label>
+			</div>
+
+			<div class="col-span-1">
+				<Label class="space-y-2 mb-2">
+					<Label for="icon" class="mb-2">Discount</Label>
+					<Input
+						type="number"
+						bind:value={seatServicesObject.discount}
+						placeholder="Enter a number"
+						min="0"
+					/>
 				</Label>
 			</div>
 		</div>

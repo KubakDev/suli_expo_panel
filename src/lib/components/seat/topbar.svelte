@@ -2,7 +2,7 @@
 	import { Button, Tooltip } from 'flowbite-svelte';
 	import { SeatCustomShapes } from '../../../models/seatUi';
 	import { ChatBubbleBottomCenter, Pencil, Photo } from 'svelte-heros-v2';
-	import { fabric } from 'fabric';
+
 	import RemoveImageSvg from '$lib/images/icons/removeImage.svg';
 	import ReloadImageSvg from '$lib/images/icons/reloadImage.svg';
 	import SaveIconSvg from '$lib/images/icons/saveIcon.svg';
@@ -10,6 +10,8 @@
 	import LayerUnGroup from '$lib/images/icons/layerUnGroup.svg';
 	import { EditingMode } from '../../../models/editingModeModel';
 	import { createEventDispatcher } from 'svelte';
+	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
+	import {fabric } from 'fabric';
 
 	class MyGroup extends fabric.Group {
 		groupId: number;
@@ -36,7 +38,6 @@
 	);
 
 	function createCustomShape(shape?: SeatCustomShapes) {
-		console.log('create new Item', shape);
 		if (shape === undefined) return;
 		let customShape;
 		switch (shape) {
@@ -124,7 +125,6 @@
 					const canvasHeight = containerWidth! / imageRatio;
 
 					data.canvas?.setHeight(canvasHeight);
-
 					data.canvas?.setBackgroundImage(image, data.canvas?.renderAll.bind(data.canvas), {
 						scaleX: data.canvas?.width! / image!.width!,
 						scaleY: data.canvas?.height! / image!.height!
@@ -132,6 +132,7 @@
 				};
 			};
 			reader.readAsDataURL(file);
+			data.canvas?.renderAll();
 		};
 		input.click();
 	}
@@ -162,7 +163,6 @@
 			group.destroy();
 			data.canvas?.remove(group);
 			group.forEachObject(function (obj: any) {
-				console.log(obj);
 				obj.groupId = undefined;
 			});
 			group.groupId = undefined;
@@ -175,109 +175,110 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
+{#if fabric}
+	<div class="flex justify-between bg-backgroundComponent border-b border-gray-500 h-16">
+		<div class="flex justify-between">
+			<div class="mx-2 flex justify-center items-center customShape">
+				{#each customShapes as shape}
+					<div
+						class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
+						on:click={() => createCustomShape(shape)}
+					>
+						<div class={`${shape} bg-black cursor-pointer hover:bg-secondary `} />
+					</div>
+					<Tooltip placement="bottom">{`Add ${shape}`}</Tooltip>
+				{/each}
+			</div>
 
-<div class="flex justify-between bg-backgroundComponent border-b border-gray-500 h-16">
-	<div class="flex justify-between">
-		<div class="mx-2 flex justify-center items-center customShape">
-			{#each customShapes as shape}
+			<Button
+				class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
+				size="lg"
+				color={data?.canvas && data?.canvas?.isDrawingMode ? 'primary' : 'none'}
+				on:click={() =>
+					dispatch('toggleDrawingMode', {
+						type: EditingMode.Draw
+					})}
+			>
+				<Pencil size="20" class=" outline-none" />
+				<Tooltip placement="bottom">draw a shape</Tooltip>
+			</Button>
+			<Button
+				class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
+				size="lg"
+				color={data?.isDrawing ? 'primary' : 'none'}
+				on:click={() =>
+					dispatch('toggleDrawingMode', {
+						type: EditingMode.Line
+					})}
+			>
+				<Pencil size="20" class="  dark:text-green-700 outline-none " />
+				<Tooltip placement="bottom">draw auto organize shape</Tooltip>
+			</Button>
+			<Button
+				id="group-button"
+				class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
+				size="lg"
+				color={data?.isAddingText ? 'primary' : 'none'}
+				on:click={() =>
+					dispatch('toggleDrawingMode', {
+						type: EditingMode.Text
+					})}><ChatBubbleBottomCenter /></Button
+			>
+			<Tooltip placement="bottom">Add Text</Tooltip>
+			<div class="mx-2 flex justify-center items-center customShape">
 				<div
 					class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
-					on:click={() => createCustomShape(shape)}
+					on:click={selectImageForBackground}
 				>
-					<div class={`${shape} bg-black cursor-pointer hover:bg-secondary `} />
+					<Photo size="20" class=" outline-none" />
 				</div>
-				<Tooltip placement="bottom">{`Add ${shape}`}</Tooltip>
-			{/each}
-		</div>
+				<Tooltip placement="bottom">Add background Image</Tooltip>
+			</div>
 
-		<Button
-			class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
-			size="lg"
-			color={data?.canvas && data?.canvas?.isDrawingMode ? 'primary' : 'none'}
-			on:click={() =>
-				dispatch('toggleDrawingMode', {
-					type: EditingMode.Draw
-				})}
-		>
-			<Pencil size="20" class=" outline-none" />
-			<Tooltip placement="bottom">draw a shape</Tooltip>
-		</Button>
-		<Button
-			class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
-			size="lg"
-			color={data?.isDrawing ? 'primary' : 'none'}
-			on:click={() =>
-				dispatch('toggleDrawingMode', {
-					type: EditingMode.Line
-				})}
-		>
-			<Pencil size="20" class="  dark:text-green-700 outline-none " />
-			<Tooltip placement="bottom">draw auto organize shape</Tooltip>
-		</Button>
-		<Button
-			id="group-button"
-			class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
-			size="lg"
-			color={data?.isAddingText ? 'primary' : 'none'}
-			on:click={() =>
-				dispatch('toggleDrawingMode', {
-					type: EditingMode.Text
-				})}><ChatBubbleBottomCenter /></Button
-		>
-		<Tooltip placement="bottom">Add Text</Tooltip>
-		<div class="mx-2 flex justify-center items-center customShape">
 			<div
 				class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
-				on:click={selectImageForBackground}
+				on:click={toggleBackgroundImage}
 			>
-				<Photo size="20" class=" outline-none" />
+				<img
+					src={backgroundImageSelected == false ? ReloadImageSvg : RemoveImageSvg}
+					alt="notFound"
+					class="object-fill"
+					style="height: 20px;"
+				/>
 			</div>
-			<Tooltip placement="bottom">Add background Image</Tooltip>
+			<Tooltip placement="bottom">toggle background image</Tooltip>
+
+			<div
+				class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
+				on:click={groupObjects}
+			>
+				<img src={LayerGroup} alt="notFound" class="object-fill" style="height: 20px;" />
+			</div>
+			<Tooltip placement="bottom">Group Layers</Tooltip>
+
+			<div
+				class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
+				on:click={unGroupObjects}
+			>
+				<img src={LayerUnGroup} alt="notFound" class="object-fill" style="height: 20px;" />
+			</div>
+			<Tooltip placement="bottom">Ungroup layers</Tooltip>
 		</div>
 
-		<div
-			class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
-			on:click={toggleBackgroundImage}
-		>
-			<img
-				src={backgroundImageSelected == false ? ReloadImageSvg : RemoveImageSvg}
-				alt="notFound"
-				class="object-fill"
-				style="height: 20px;"
-			/>
-		</div>
-		<Tooltip placement="bottom">toggle background image</Tooltip>
-
-		<div
-			class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
-			on:click={groupObjects}
-		>
-			<img src={LayerGroup} alt="notFound" class="object-fill" style="height: 20px;" />
-		</div>
-		<Tooltip placement="bottom">Group Layers</Tooltip>
-
-		<div
-			class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
-			on:click={unGroupObjects}
-		>
-			<img src={LayerUnGroup} alt="notFound" class="object-fill" style="height: 20px;" />
-		</div>
-		<Tooltip placement="bottom">Ungroup layers</Tooltip>
-	</div>
-
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div class=" mx-12">
-		<div
-			class="h-full flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
-			on:click={() => dispatch('openAddSeatModal')}
-		>
-			<Button outline>
-				<img src={SaveIconSvg} alt="notFound" class="object-fill mx-1" style="height: 20px;" />
-				Save Seat
-			</Button>
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<div class=" mx-12">
+			<div
+				class="h-full flex justify-center items-center px-2 rounded-sm hover:bg-gray-300 cursor-pointer"
+				on:click={() => dispatch('openAddSeatModal')}
+			>
+				<Button outline>
+					<img src={SaveIconSvg} alt="notFound" class="object-fill mx-1" style="height: 20px;" />
+					Save Seat
+				</Button>
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style lang="scss">
 	.customShape {

@@ -10,13 +10,28 @@
 	export let data;
 	let submitted = false;
 	let showToast = false;
-	let errorMessages: any = {};
+
+	interface ErrorMessages {
+		email?: string;
+		facebook_link?: string;
+		instagram_link?: string;
+		linkedin_link?: string;
+		youtube_link?: string;
+		twitter_link?: string;
+		location?: string;
+		phoneNumber_relations?: string;
+		phoneNumber_Administration?: string;
+		phoneNumber_Technical?: string;
+		phoneNumber_marketing?: string;
+	}
+	let errorMessages: ErrorMessages = {};
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let contactInfoDataLang: ContactModelLang[] = [];
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
-	// console.log(languageEnumKeys);
+	//
 
 	const languageEnumLength = languageEnumKeys.length;
 
@@ -185,7 +200,6 @@
 
 	<div class="px-0 lg:px-10 py-10 m-10">
 		<Form class="form" {submitted}>
-
 			<div class="grid grid-cols-3 gap-x-2 gap-y-8">
 				<div class="w-full h-16 mb-8 lg:mb-0">
 					<Label for="administration" class="mb-2">Facebook</Label>

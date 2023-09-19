@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { updateData } from '../../../../stores/publishingStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
@@ -13,12 +13,14 @@
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import type { PDFModel } from '../../../../models/pdfModel';
 	import { goto } from '$app/navigation';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -28,7 +30,15 @@
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -47,25 +57,6 @@
 	const id = $page.params.publishingId;
 	let images: ImagesModel[] = [];
 	let pdf_files: PDFModel[] = [];
-	let exhibitionData: ExhibitionModel[] = [];
-
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 
 	//**** get data from db and put it into the fields ****//
 	async function getPublishingData() {
@@ -86,8 +77,8 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				console.log('publishing data get db pdf files : ////////', publishingData.pdf_files);
-				console.log('publishing data get db images: ////////', publishingData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				pdf_files = getPdfFile();
@@ -110,7 +101,7 @@
 				}
 				publishingDataLang = [...publishingDataLang];
 				publishingData = { ...publishingData };
-				getImagesObject();
+				carouselImages = getImagesObject(publishingData);
 			});
 	}
 
@@ -124,27 +115,10 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//**for upload publishing image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		// console.log(file);
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			publishingData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber();
-			fileName = `publishing/${randomText}_${file.name}`;
-		};
-		reader.readAsDataURL(file);
-	} //**for upload publishing image**//
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
-		// console.log(sliderImagesFile);
+		//
 	}
 
 	//**pdf files**//
@@ -164,7 +138,7 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
 	}
 
@@ -177,7 +151,7 @@
 				imgSource: ImgSourceEnum.PdfRemote
 			};
 		});
-		// console.log('first pdf file ', result);
+		//
 		return result;
 	}
 
@@ -235,7 +209,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`publishing/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple img:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						publishingData.images.push(responseMultiple.data?.path);
@@ -256,7 +230,7 @@
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
 						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
-					// console.log('responseMultiple pdf:', responseMultiple);
+					//
 
 					if (responseMultiple.data?.path) {
 						publishingData.pdf_files.push(responseMultiple.data.path);
@@ -271,7 +245,7 @@
 			publishingData.pdf_files = `{${pdfArray.join(',')}}`;
 
 			updateData(publishingData, publishingDataLang, data.supabase);
-			console.log('result before store :', publishingData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/publishing');
@@ -284,13 +258,13 @@
 
 	//update images
 	function imageChanges(e: any) {
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				// console.log('///////', image);
+				//
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -300,12 +274,12 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		// console.log('carouselImages data :::::', carouselImages);
+		//
 	}
 
 	//update pdf file
 	function pdfChanges(e: any) {
-		// console.log(e.detail);
+		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((files: any) => {
@@ -314,13 +288,12 @@
 				const newFile = { ...files };
 				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
 				// customImages.push(newFile);
-				console.log('first');
 			} else {
 				// customImages.push(files);
 			}
 		});
 		existingPDFfiles = result;
-		// console.log('carouselImages data :::::', existingPDFfiles);
+		//
 	}
 
 	function handleSelectChange(event: any) {
@@ -332,21 +305,11 @@
 		}
 	}
 
-	function getImagesObject() {
-		carouselImages = publishingData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		// console.log('print //', carouselImages);
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -366,8 +329,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Publishing Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, publishingData, setImageFile, setFileName, 'publishing')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !publishingData.thumbnail.trim()}
@@ -376,39 +340,7 @@
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<ButtonGroup class="w-full">
-						<select
-							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<!-- Use JavaScript ternary operator to handle selected option -->
-							<option value="Select Type" selected={publishingData.exhibition_id === undefined}>
-								Select Type
-							</option>
-							{#each exhibitionData as exhibition}
-								<!-- Use JavaScript ternary operator to handle selected option -->
-								<option
-									value={exhibition.id}
-									selected={publishingData.exhibition_id === exhibition.id}
-								>
-									{exhibition.exhibition_type}
-								</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white ">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</Label>
+				<UpdateExhibitionType {handleSelectChange} pageData={publishingData} {data} />
 			</div>
 		</div>
 

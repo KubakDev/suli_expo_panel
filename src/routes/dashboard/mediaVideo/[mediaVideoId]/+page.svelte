@@ -1,24 +1,31 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { updateData } from '../../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../../models/media_VideoModel';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -33,25 +40,16 @@
 	};
 
 	const id = $page.params.mediaVideoId;
-	let exhibitionData: ExhibitionModel[] = [];
 
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
+	//get video youtube image if exist
+	const youtubeRegex =
+		/(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
+	function getYouTubeId(url: string): string | null {
+		const match = youtubeRegex.exec(url);
 
-	onMount(fetchData);
+		return match ? match[1] : null;
+	}
 
 	//**** get data from db and put it into the fields ****//
 	async function getVideoData() {
@@ -65,11 +63,13 @@
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
 					link: result.data?.link,
-					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
+					thumbnail: result.data?.thumbnail
+						? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${result.data?.thumbnail}`
+						: `https://img.youtube.com/vi/${getYouTubeId(result.data?.link ?? '')}/hqdefault.jpg`
 				};
 
-				// console.log('video data get db thumbnail : ////////', mediaVideoData.thumbnail);
-				// console.log('video data get db images: ////////', mediaVideoData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.media_video_languages.findIndex(
@@ -92,6 +92,7 @@
 				mediaVideoData = { ...mediaVideoData };
 			});
 	}
+
 	onMount(async () => {
 		await getVideoData();
 	});
@@ -101,23 +102,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload videio image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		// console.log(file);
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			mediaVideoData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber();
-			fileName = `mediaVideoPictures/${randomText}_${file.name}`;
-		};
-		reader.readAsDataURL(file);
-	}
 
 	//**Handle submit**//
 
@@ -167,7 +151,7 @@
 			}
 
 			updateData(mediaVideoData, mediaVideoDataLang, data.supabase);
-			console.log('result before store :', mediaVideoData);
+
 			setTimeout(() => {
 				showToast = false;
 				goto('/dashboard/mediaVideo');
@@ -185,6 +169,13 @@
 		} else {
 			mediaVideoData.exhibition_id = selectedValue;
 		}
+	}
+
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -204,46 +195,15 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, mediaVideoData, setImageFile, setFileName, 'videoObjectData')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 				</Label>
 			</div>
 			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<ButtonGroup class="w-full">
-						<select
-							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<!-- Use JavaScript ternary operator to handle selected option -->
-							<option value="Select Type" selected={mediaVideoData.exhibition_id === undefined}>
-								Select Type
-							</option>
-							{#each exhibitionData as exhibition}
-								<!-- Use JavaScript ternary operator to handle selected option -->
-								<option
-									value={exhibition.id}
-									selected={mediaVideoData.exhibition_id === exhibition.id}
-								>
-									{exhibition.exhibition_type}
-								</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white ">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</Label>
+				<UpdateExhibitionType {handleSelectChange} pageData={mediaVideoData} {data} />
 			</div>
 
 			<div class="col-span-1">
@@ -343,7 +303,6 @@
 				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="Video List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-
 							<div class="flex justify-start items-start">
 								{#each mediaVideoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}

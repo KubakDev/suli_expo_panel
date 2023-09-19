@@ -14,8 +14,8 @@ export const insertData = async (
 			carousel_data: carouselObject,
 			carousel_data_lang: carouselDataLang
 		});
-		// console.log(carouselDataLang);
-		console.log(data);
+		// 
+
 		carousel.update((currentCarousel) => {
 			if (data) {
 				return [...(currentCarousel || []), ...data];
@@ -42,8 +42,8 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 
 		const { count } = await supabase.from('carousel').select('count', { count: 'exact' });
 
-		console.log('/////////', count);
-		// console.log('data : ', data);
+
+		// 
 		const result = {
 			data: data,
 			count: count
@@ -89,7 +89,7 @@ export const updateData = async (
 	supabase: SupabaseClient
 ) => {
 	try {
-		console.log('first');
+
 		const { data, error } = await supabase.rpc('update_carousel_and_carousel_lang', {
 			carousel_data: carouselObject,
 			carousel_lang_data: carouselDataLang

@@ -2,18 +2,18 @@
 	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/newsStore';
-	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { NewsModel, NewsModelLang } from '../../../models/newsModel';
-	import { onMount } from 'svelte';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
-	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 
@@ -21,7 +21,16 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 	let isFormSubmitted = false;
 
@@ -34,24 +43,6 @@
 		id: 0
 	};
 
-	let exhibitionData: ExhibitionModel[] = [];
-	const fetchData = async () => {
-		try {
-			exhibitionData = await getDataExhibition(data.supabase);
-
-			let uniqueTypes = exhibitionData.filter((item, index, array) => {
-				return !array
-					.slice(0, index)
-					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
-			});
-			exhibitionData = uniqueTypes;
-			console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
-	};
-
-	onMount(fetchData);
 	// Calculate the length of LanguageEnum
 	const languageEnumKeys = Object.keys(LanguageEnum);
 
@@ -65,21 +56,6 @@
 			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			newsObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `news/${randomText}_${file.name}`;
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	//**dropzone**//
@@ -138,11 +114,13 @@
 				});
 		}
 
-		const imagesArray = newsObject.images.map((image) => `"${image}"`);
+		let imagesArray: string[] = [];
+		if (Array.isArray(newsObject.images)) {
+			imagesArray = newsObject.images.map((image) => `"${image}"`);
+		}
 		newsObject.images = `{${imagesArray.join(',')}}`;
-		// console.log('newsObject ::::', newsObject);
 
-		// console.log(response);
+		//
 		newsObject.thumbnail = response.data?.path || '';
 
 		insertData(newsObject, newsDataLang, data.supabase);
@@ -176,7 +154,7 @@
 
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
-		console.log(event.target);
+
 		if (selectedValue === 'Select Type') {
 			delete newsObject.exhibition_id;
 		} else {
@@ -184,23 +162,18 @@
 		}
 	}
 
-	//get thumbnail
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			// console.log('//', sliderImagesFile);
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		console.log('test//', carouselImages);
-
+		carouselImages = createCarouselImages(sliderImagesFile);
+		console.log(carouselImages);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -218,8 +191,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, newsObject, setImageFile, setFileName, 'news')}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
 
@@ -230,31 +204,7 @@
 			</div>
 
 			<div class="col-span-1">
-				<div class="mb-6">
-					<Label for="website-admin" class="block mb-2">Exhibition Type</Label>
-					<ButtonGroup class="w-full">
-						<select
-							class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-
-							id="type"
-							name="type"
-							on:change={handleSelectChange}
-						>
-							<option>Select Type</option>
-							{#each exhibitionData as exhibition}
-								<option value={exhibition.id}>{exhibition.exhibition_type}</option>
-							{/each}
-						</select>
-						<InputAddon class="bg-white">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-								<path d="M0 0h24v24H0z" fill="none" />
-								<path
-									d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 2v3H6V4h12zM5 20V9h14v11H5zm3-7h2v2H8v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"
-								/>
-							</svg>
-						</InputAddon>
-					</ButtonGroup>
-				</div>
+				<InsertExhibitionType {handleSelectChange} {data} />
 			</div>
 
 			<div class="col-span-1">

@@ -3,19 +3,19 @@ import type { SeatDesignModel, SeatLayoutModel } from "./seatLayoutStore";
 
 export async function showSelectedDesign(design: SeatLayoutModel, d3: any, placeHolder: string) {
     // show seat desing inside svg
-    console.log(design);
+
     await new Promise((resolve) => setTimeout(resolve, 500));
     const container = d3.select(placeHolder);
     // get contianer width and height
     const htmlElemtn = container.node() as HTMLElement;
-    console.log('htmlElemtn', htmlElemtn);
+
 
     const containerWidth = htmlElemtn.clientWidth;
     const containerHeight = htmlElemtn.clientHeight;
-    console.log('containerHeight', containerHeight);
-    console.log('containerWidth', containerWidth);
-    
-   
+
+
+
+
     // return;
     // show seat design inside svg
     let seats = [];

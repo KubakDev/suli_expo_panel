@@ -30,14 +30,6 @@
 	}
 	onMount(async () => {
 		await seatImageItemStore.getAllSeatItems();
-		setTimeout(() => {
-			console.log('//////////');
-			onShapeSelected({
-				id: 1,
-				name: 'yy',
-				image_url: 'https://cdn-icons-png.flaticon.com/512/4436/4436481.png'
-			});
-		}, 3000);
 	});
 
 	function addImages() {
@@ -46,43 +38,47 @@
 	}
 
 	function onShapeSelected(image: SeatImageItemModel | null = null) {
-		// let iconCanvas = new data.fabric.StaticCanvas('');
-		// iconCanvas.setWidth(50);
-		// iconCanvas.setHeight(50);
+		let iconCanvas = new data.fabric.StaticCanvas('');
+		iconCanvas.setWidth(50);
+		iconCanvas.setHeight(50);
 
-		data.fabric.Image.fromURL(image?.image_url!, function (img: any) {
-			// Adjust the properties of the image if needed
-			img.set({
-				left: 100,
-				top: 100,
-				scaleX: 0.5,
-				scaleY: 0.5
-			});
-			// img.id = new Date().getTime();
-			// Add the image to the canvas
+		data.fabric.Image.fromURL(
+			image?.image_url!,
+			function (img: any) {
+				// Adjust the properties of the image if needed
+				img.set({
+					left: 100,
+					top: 100,
+					scaleX: 0.5,
+					scaleY: 0.5
+				});
+				img.id = new Date().getTime();
+				// Add the image to the canvas
 
-			// let scale = Math.max(
-			// 	iconCanvas.getWidth() / img.width!,
-			// 	iconCanvas.getHeight() / img.height!
-			// );
-			// const newImg = new data.fabric.Image(img.getElement(), {
-			// 	scaleX: scale,
-			// 	scaleY: scale,
-			// 	left: iconCanvas.getWidth() / 2,
-			// 	top: iconCanvas.getHeight() / 2,
-			// 	originX: 'center',
-			// 	originY: 'center'
-			// });
-			// iconCanvas.add(newImg);
-			// iconCanvas.renderAll();
+				let scale = Math.max(
+					iconCanvas.getWidth() / img.width!,
+					iconCanvas.getHeight() / img.height!
+				);
+				const newImg = new data.fabric.Image(img.getElement(), {
+					scaleX: scale,
+					scaleY: scale,
+					left: iconCanvas.getWidth() / 2,
+					top: iconCanvas.getHeight() / 2,
+					originX: 'center',
+					originY: 'center'
+				});
+				iconCanvas.add(newImg);
+				iconCanvas.renderAll();
 
-			// let iconDataURL = canvasToDataUrl(iconCanvas);
-			// img.icon = iconDataURL;
+				let iconDataURL = canvasToDataUrl(iconCanvas);
+				img.icon = iconDataURL;
 
-			data.canvas?.add(img);
-			data.canvas?.renderAll();
-			// dispatch('updateLayers');
-		});
+				data.canvas?.add(img);
+				data.canvas?.renderAll();
+				dispatch('updateLayers');
+			},
+			{ crossOrigin: 'anonymous' }
+		);
 	}
 	async function onImageSubmit() {
 		if (itemName === '') {
@@ -130,7 +126,6 @@
 		}
 	}
 	function removeSelectedObject() {
-		console.log('here');
 		let activeObject = data.canvas.getActiveObject();
 		if (activeObject) {
 			data.canvas.remove(activeObject);
@@ -223,11 +218,12 @@
 									data.canvas.setActiveObject(eachObject);
 									data.canvas.requestRenderAll();
 								}
-								// console.log('Shape with ID ' + object.id + ' is selected.');
+								//
 							});
 						}
 					}}
 				>
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div class="flex justify-between w-full items-center">
 						<div class="flex justify-center items-center">
 							{#if object.icon}
@@ -250,6 +246,7 @@
 								</ul>
 							{/if}
 						</div>
+						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div
 							class="text-end px-3 hover:bg-gray-200 w-10 h-8 rounded flex justify-center items-center"
 							on:click={removeSelectedObject}

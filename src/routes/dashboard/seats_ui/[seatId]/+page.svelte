@@ -6,21 +6,22 @@
 		Button,
 		ButtonGroup,
 		Checkbox,
-		Chevron,
-		Dropdown,
 		Input,
 		InputAddon,
 		Modal,
-		Search
+		Spinner,
+		TabItem,
+		Tabs,
+		Textarea
 	} from 'flowbite-svelte';
-	import { Minus, Plus } from 'svelte-heros-v2';
+	import { Minus, Plus, XMark } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import { page } from '$app/stores';
 	import { getSeatServices, seatServices } from '../../../../stores/seatServicesStore';
+	// @ts-ignore
 	import Sortable from 'sortablejs';
 	import { EditingMode } from '../../../../models/editingModeModel';
-	import { getImage } from '$lib/utils/getImage';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
@@ -34,10 +35,12 @@
 	iconCanvas.setWidth(50);
 	iconCanvas.setHeight(50);
 
+	let currentSeatLayoutData: any = {};
 	export let data: PageData;
 	let canvas: any;
 	let container: any;
 	let fillColor = '#000000'; // Default color
+	let favColors: string[] = [];
 
 	let isDown: boolean = false;
 	let points: any[] = [];
@@ -57,17 +60,17 @@
 	let files: any;
 	let selectedObjectId: number = 0;
 
-	let bottomRightRadius = 0;
-	let bottomLeftRadius = 0;
-	let topLeftRadius = 0;
-	let topRightRadius = 0;
+	let radius: null | undefined | number = null;
 	let isAddingText = false;
 	let objects: any[] = [];
 
+	let objectDetailDescription: { language?: LanguageEnum; description?: string }[] = [];
+
 	let objectDetail: {
 		selectable: boolean;
-		services: seatServicesModel[];
+		services: { id: number; unlimitedFree: boolean }[];
 		price: number;
+		description?: string;
 	} = {
 		selectable: false,
 		services: [],
@@ -135,140 +138,114 @@
 				width: container.offsetWidth,
 				height: container.offsetHeight
 			});
-			console.log(container.offsetWidth / container.offsetHeight);
-			// Create a rectangle with no fill, only a stroke (border)
-			// Create a rectangle with no fill, only a stroke (border)
 		}
 	};
 
-	async function updateCustomRectangle(value: any, type: string) {
+	async function updateCustomRectangle() {
 		var activeObject = canvas.getActiveObject();
+		activeObject.set({
+			rx: radius,
+			ry: radius
+		});
 
-		// const allProperty = activeObject.toObject();
-
-		// remove active object
-		if (activeObject) {
-			await canvas.remove(activeObject);
-			await canvas.requestRenderAll();
-		} else {
-			return;
-		}
-
-		const radius = parseInt(value.target.value);
-		switch (type) {
-			case 'tl':
-				topLeftRadius = radius;
-				break;
-			case 'tr':
-				topRightRadius = radius;
-				break;
-			case 'bl':
-				bottomLeftRadius = radius;
-				break;
-			case 'br':
-				bottomRightRadius = radius;
-				break;
-			default:
-				break;
-		}
-		// create pathdata from allProperty
-		var pathData = [
-			`M ${topLeftRadius} 0`,
-			`Q 0 0 0 ${topLeftRadius}`,
-			`L 0 ${200 - bottomRightRadius}`,
-			`Q 0 200 ${bottomLeftRadius} 200`,
-			`L ${200 - topRightRadius} 200`,
-			`Q 200 200 200 ${200 - topRightRadius}`,
-			`L 200 ${topRightRadius}`,
-			`Q 200 0 ${200 - topRightRadius} 0`,
-			`L ${topLeftRadius} 0`,
-			`Z`
-		];
-
-		// add Property to path
-
-		const data = new fabric.Path(pathData.join(' '));
-		canvas.add(data);
 		canvas.requestRenderAll();
 	}
 
 	onMount(async () => {
+		await getFavColors();
+		// document.addEventListener('keydown', (event) => {
+		// 	if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+		// 		// Ctrl+C: Copy the selected object
+		// 		copySelectedObject();
+		// 	} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+		// 		// Ctrl+V: Paste the copied object
+		// 		pasteCopiedObject();
+		// 	}
+		// });
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
-		// var customRect = createCustomRectangle();
 
 		canvas = new Seat.fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
-
-			// canvas.isDrawingMode = false;
 			canvas.renderAll();
-
-			// You can save `path` to a database here, if you want
 		});
-
-		fabric.Object.prototype.set({
-			borderColor: '#5d9cec',
-			cornerColor: '#5d9cec',
-			cornerSize: 12,
-			cornerStyle: 'circle',
-			transparentCorners: false,
-			borderDashArray: [2, 2],
-			padding: 10,
-			cornerStrokeColor: '#ffffff',
-			borderOpacityWhenMoving: 0.4
-		});
-
+		canvas.imageSmoothingEnabled = false;
+		canvas.msImageSmoothingEnabled = false;
+		canvas.lineWidth = Math.round(2);
 		const supabase = data.supabase;
 
 		const pageId = $page.params.seatId;
 		if (pageId !== 'create') {
 			supabase
 				.from('seat_layout')
-				.select('*')
+				.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
 				.eq('id', pageId)
 				.single()
 				.then(async (result) => {
 					const data: any = result.data;
+					currentSeatLayoutData = data;
 					exhibitionName = data.name;
 					const design = data.design;
-					if (data && data['design']) {
-						await canvas.loadFromJSON(data['design'], canvas.renderAll.bind(canvas));
-					}
 
-					for (var i = 0; i < canvas.width / gridSize; i++) {
-						const line = new fabric.Line([i * gridSize, 0, i * gridSize, canvas.height], {
-							stroke: '#ccc',
-							selectable: false
+					const width = design.width;
+					const height = design.height;
+					const aspectRatio = width / height;
+					const containerWidth = container?.offsetWidth;
+					const containerHeight = container?.offsetHeight;
+					const widthRatio = containerWidth / width;
+					const heightRatio = containerHeight / height;
+
+					const currentHeight = containerWidth / aspectRatio;
+
+					if (canvas) {
+						canvas.setDimensions({
+							width: containerWidth,
+							height: currentHeight
 						});
-						line.toObject = () => null;
-						// This rect will not be included in canvas.toObject()
-						const line2 = new fabric.Line([0, i * gridSize, canvas.width, i * gridSize], {
-							stroke: '#ccc',
-							selectable: false
-						});
-						line2.toObject = () => null;
-						canvas.add(line);
-						canvas.add(line2);
-						canvas.sendToBack(line);
-						canvas.sendToBack(line2);
-						canvas.requestRenderAll();
-						// customRect.set({ left: 10, top: 10, fill: '#D81B60' });
-						// canvas.add(customRect);
 					}
-					const prevCanvasWidth = design.width;
-					const prevCanvasHeight = design.height;
+					await canvas.loadFromJSON(design, async () => {
+						canvas.width = containerWidth;
+						canvas.height = containerHeight;
+						if (canvas.backgroundImage) {
+							canvas.backgroundImage.scaleX = canvas.backgroundImage.scaleX * widthRatio;
+							canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
+						}
+						await tick(); // wait for the next update cycle
 
-					const prevCanvasRatio = prevCanvasWidth / prevCanvasHeight;
+						canvas.forEachObject((obj: any) => {
+							const scaleX = obj.scaleX;
+							const scaleY = obj.scaleY;
+							const left = obj.left;
+							const top = obj.top;
+							const tempScaleX = scaleX * widthRatio;
+							const tempScaleY = scaleY * widthRatio;
+							const tempLeft = left * widthRatio;
+							const tempTop = top * widthRatio;
 
-					const newCanvasHeight = container.offsetWidth / prevCanvasRatio;
-					canvas.setWidth(container.offsetHeight);
+							obj.scaleX = tempScaleX;
+							obj.scaleY = tempScaleY;
+							obj.left = tempLeft;
+							obj.top = tempTop;
 
-					canvas.setHeight(newCanvasHeight);
+							obj.setCoords();
+						});
+
+						canvas.renderAll();
+					});
+
 					canvas.renderAll();
-					// Ensure the border always stays in the back of other objects
 				});
+		} else {
+			const containerWidth = container?.offsetWidth;
+			const containerHeight = container?.offsetHeight;
+			if (canvas) {
+				canvas.setDimensions({
+					width: containerWidth,
+					height: containerHeight
+				});
+			}
 		}
 
 		// Handle object removed
@@ -306,6 +283,7 @@
 		let liveLine: any | null = null;
 		canvas.on('mouse:down', function (options: any) {
 			let pointer = canvas.getPointer(options.e);
+
 			if (isAddingText) {
 				const text = new Seat.fabric.IText('Click to edit text', {
 					left: pointer.x,
@@ -368,6 +346,8 @@
 				lastPosX = options.e.clientX;
 				lastPosY = options.e.clientY;
 			}
+			canvas.renderAll();
+			canvas.requestRenderAll();
 		});
 
 		canvas.on('mouse:move', function (opt: any) {
@@ -446,17 +426,43 @@
 		});
 
 		canvas.on('selection:created', function (event: any) {
-			var selectedObject = event.selected[0];
-			const index = canvas.getObjects().indexOf(selectedObject);
-			setSelectedObjectValue(selectedObject);
+			objectDetail = {
+				selectable: false,
+				services: [],
+				price: 0
+			};
+			radius = 0;
+			canvas.forEachObject((obj: any) => {
+				if (obj.id === event.selected[0].id) {
+					if (obj.objectDetail) {
+						objectDetail = obj.objectDetail;
+						objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
+					}
+					setSelectedObjectValue(obj);
+				}
+			});
 		});
 		canvas.on('selection:updated', function (event: any) {
-			var selectedObject = event.selected[0];
-			setSelectedObjectValue(selectedObject);
+			objectDetail = {
+				selectable: false,
+				services: [],
+				price: 0
+			};
+			radius = 0;
+			canvas.forEachObject((obj: any) => {
+				if (obj.id === event.selected[0].id) {
+					if (obj.objectDetail) {
+						objectDetail = obj.objectDetail;
+						objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
+					}
+					setSelectedObjectValue(obj);
+				}
+			});
 		});
 
 		canvas.on('selection:cleared', function (event: any) {
 			clearAllInput();
+			radius = null;
 		});
 
 		canvas.on('object:modified', function (event: any) {
@@ -465,9 +471,8 @@
 		});
 
 		window.addEventListener('keydown', function (e) {
-			// keyCode 46 corresponds to the Delete key
 			const selectedObject = canvas.getActiveObject();
-			if (e.key === 'Delete' || e.key === 'Backspace') {
+			if (e.key === 'Delete') {
 				removeSelectedObject();
 			}
 			handleKeydown(e, selectedObject);
@@ -496,14 +501,19 @@
 	function clearAllInput() {
 		strokeWidth = null;
 		itemWidth = null;
+		radius = null;
 		itemHeight = null;
 		isAnObjectSelected = false;
+		objectDetail = {
+			selectable: false,
+			services: [],
+			price: 0
+		};
 		selectedObjectId = 0;
+		objectDetailDescription = [];
 	}
 
 	function onObjectModified(selectedObject: any) {
-		// selectedObject.setCoords(); // Update object's coordinates after modifications
-		// if()
 		if (selectedObject.scaleX !== 1 || selectedObject.scaleY !== 1) {
 			itemWidth = selectedObject.getScaledWidth();
 			itemHeight = selectedObject.getScaledHeight();
@@ -514,8 +524,6 @@
 				},
 				{ silent: true }
 			);
-			// Reset scale to 1
-			// selectedObject.set({ scaleX: 1, scaleY: 1 }, { silent: true });
 			canvas.requestRenderAll();
 		}
 	}
@@ -528,7 +536,6 @@
 		itemWidth = selectedObject.width;
 		itemHeight = selectedObject.height;
 		isAnObjectSelected = true;
-		// canvas.bringToFront(selectedObject);
 	}
 
 	async function openAddSeatModal() {
@@ -610,8 +617,10 @@
 	function removeSelectedObject() {
 		let activeObject = canvas.getActiveObject();
 		if (activeObject) {
-			canvas.remove(activeObject);
-			canvas.requestRenderAll();
+			try {
+				canvas.remove(activeObject);
+				canvas.requestRenderAll();
+			} catch (e) {}
 		}
 	}
 
@@ -668,7 +677,9 @@
 	function addPropertiesToShape() {
 		let selectedObject = canvas.getActiveObject();
 		selectedObject.set({
-			selectable: !objectDetail.selectable
+			objectDetail: {
+				selectable: !objectDetail.selectable
+			}
 		});
 		objectDetail.selectable = !objectDetail.selectable;
 		canvas.requestRenderAll();
@@ -677,7 +688,10 @@
 		let selectedObject = canvas.getActiveObject();
 		let index = objectDetail.services.findIndex((item) => item.id === service.id);
 		if (index === -1) {
-			objectDetail.services.push(service);
+			objectDetail.services.push({
+				id: service.id ?? 0,
+				unlimitedFree: false
+			});
 		} else {
 			objectDetail.services.splice(index, 1);
 		}
@@ -835,167 +849,202 @@
 				on:updateLayers={() => updateLayers()}
 			/>
 
-		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
-			<canvas id="canvas" />
-			<div class="absolute bottom-10 right-10 w-40 flex justify-between">
-				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
-				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
-			</div>
-		</div>
-		<div class="p-4 bg-secondary">
-			{#if canvas && isAnObjectSelected}
-				<div class="pb-4 w-full">
-					<Button on:click={addPropertiesToShape} class="w-full" outline>
-						<Checkbox checked={objectDetail.selectable} />
-
-						selectable
-					</Button>
+			<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
+				<canvas id="canvas" />
+				<div class="absolute bottom-10 right-10 w-40 flex justify-between">
+					<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
+					<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
 				</div>
-			{/if}
+			</div>
+			<div class="p-4 bg-[#f2f3f7] overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
+				{#if canvas && isAnObjectSelected}
+					<div class="pb-4 w-full">
+						<Button on:click={addPropertiesToShape} class="w-full" outline>
+							<Checkbox checked={objectDetail.selectable} />
+							selectable
+						</Button>
+					</div>
+				{/if}
+				<h1 class="mx-2">favourite Colors</h1>
+				<div class="flex flex-wrap">
+					{#each favColors as color}
+						<div class="h-8 w-12 rounded-sm m-1" style={`background-color:${color}`} />
+					{/each}
 
-			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
-			<div class="grid grid-cols-2 gap-4 my-4">
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>W</InputAddon><Input
-						type="number"
-						size="sm"
-						disabled={itemWidth === null || itemWidth === undefined}
-						bind:value={itemWidth}
-						on:input={updateItemWidth}
-						placeholder="Width"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>H</InputAddon><Input
-						type="number"
-						size="sm"
-						disabled={itemWidth === null || itemWidth === undefined}
-						bind:value={itemHeight}
-						on:input={updateItemHeight}
-						placeholder="Height"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={topLeftRadius === null || topLeftRadius === undefined}
-						size="sm"
-						value={topLeftRadius}
-						on:input={(value) => updateCustomRectangle(value, 'tl')}
-						placeholder="Radius"
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={topRightRadius === null || topRightRadius === undefined}
-						size="sm"
-						value={topRightRadius}
-						on:input={(value) => updateCustomRectangle(value, 'tr')}
-						placeholder="Radius"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={bottomLeftRadius === null || bottomLeftRadius === undefined}
-						size="sm"
-						value={bottomLeftRadius}
-						on:input={(value) => updateCustomRectangle(value, 'bl')}
-						placeholder="Radius"
-						let:props
-					/></ButtonGroup
-				>
-				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>(</InputAddon><Input
-						type="number"
-						disabled={bottomRightRadius === null || bottomRightRadius === undefined}
-						size="sm"
-						value={bottomRightRadius}
-						on:input={(value) => updateCustomRectangle(value, 'br')}
-						placeholder="Radius"
-						let:props
-					/></ButtonGroup
-				>
-				<div class="flex col-span-2">
+					<ButtonGroup class="w-full my-3" size="sm">
+						<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<InputAddon class="cursor-pointer p-0">
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
+							<!-- svelte-ignore a11y-no-static-element-interactions -->
+							<div class="w-full h-full p-2" on:click={addNewFavColor}>
+								{#if addFavColorLoading}
+									<Spinner />
+								{:else}
+									<Plus />
+								{/if}
+							</div>
+						</InputAddon>
+					</ButtonGroup>
+				</div>
+				<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
+				<div class="grid grid-cols-2 gap-4 my-4">
 					<ButtonGroup class="w-full" size="sm">
-						<InputAddon
-							><input
-								bind:value={strokeColor}
-								on:input={updateStrokeColor}
-								type="color"
-								id="stroke-color-picker"
-							/></InputAddon
-						><Input
-							disabled={strokeWidth === null || strokeWidth === undefined}
+						<InputAddon>W</InputAddon><Input
 							type="number"
 							size="sm"
-							bind:value={strokeWidth}
-							on:input={updateStrokeWidth}
-							placeholder="Stroke"
+							disabled={itemWidth === null || itemWidth === undefined}
+							bind:value={itemWidth}
+							on:input={updateItemWidth}
+							placeholder="Width"
 							let:props
 						/></ButtonGroup
 					>
-				</div>
-			</div>
-			{#if objectDetail.selectable}
-				<div class="w-full">
-					<ButtonGroup class="w-full mb-2" size="sm">
-						<InputAddon>Price</InputAddon><Input
+					<ButtonGroup class="w-full" size="sm">
+						<InputAddon>H</InputAddon><Input
 							type="number"
 							size="sm"
-							placeholder="select price"
-							bind:value={objectDetail.price}
+							disabled={itemWidth === null || itemWidth === undefined}
+							bind:value={itemHeight}
+							on:input={updateItemHeight}
+							placeholder="Height"
+							let:props
 						/></ButtonGroup
 					>
-					<Button id="placements" class="w-full"><Chevron>Services</Chevron></Button>
-					<Dropdown class="overflow-y-auto px-3 pb-3 text-sm mx-3 ">
-						<div slot="header" class="p-3">
-							<Search size="md" />
+					<ButtonGroup class="w-full col-span-2" size="sm">
+						<InputAddon>(</InputAddon><Input
+							type="number"
+							disabled={radius === null || radius === undefined}
+							size="sm"
+							bind:value={radius}
+							on:input={updateCustomRectangle}
+							placeholder="Radius"
+						/></ButtonGroup
+					>
+
+					<div class="flex col-span-2">
+						<ButtonGroup class="w-full" size="sm">
+							<InputAddon
+								><input
+									bind:value={strokeColor}
+									on:input={updateStrokeColor}
+									type="color"
+									id="stroke-color-picker"
+								/></InputAddon
+							><Input
+								disabled={strokeWidth === null || strokeWidth === undefined}
+								type="number"
+								size="sm"
+								bind:value={strokeWidth}
+								on:input={updateStrokeWidth}
+								placeholder="Stroke"
+								let:props
+							/></ButtonGroup
+						>
+					</div>
+				</div>
+
+				{#if objectDetail.selectable}
+					<div class="w-full">
+						<ButtonGroup class="w-full mb-2" size="sm">
+							<InputAddon>Price</InputAddon><Input
+								type="number"
+								size="sm"
+								placeholder="select price"
+								bind:value={objectDetail.price}
+							/></ButtonGroup
+						>
+
+						<div class="mt-2 mb-6">
+							<Tabs>
+								{#each languageEnumKeys as lang}
+									<TabItem title={lang} open={lang === languageEnumKeys[0]}>
+										<Textarea
+											id="textarea-id"
+											placeholder={`add description for ${lang}`}
+											rows="8"
+											value={objectDetailDescription?.find((x) => x.language === lang)?.description}
+											on:input={(e) => addDescriptionToObjectDetail(e.target, lang)}
+										/>
+									</TabItem>
+								{/each}
+							</Tabs>
 						</div>
 						{#if $seatServices}
 							{#each $seatServices as service}
-								<!-- svelte-ignore a11y-click-events-have-key-events -->
-								<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-								<li
-									class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
-									on:click={() => {
-										addServiceToActiveObject(service);
-									}}
+								<div
+									class="bg-white w-full rounded-md my-2 flex flex-col justify-between items-center px-6 flex-wrap"
 								>
 									{#if service.seat_services_languages}
-										<div class="flex justify-between">
-											<Checkbox
-												disabled={true}
-												class="cursor-pointer"
-												checked={objectDetail.services.some((x) => x.id === service.id)}
-												>{service.seat_services_languages[0].title}</Checkbox
-											>
-
-											<img
-												src={getImage(service.icon)}
-												class="w-8 h-8 rounded-full mr-3"
-												alt="niaaaa"
-											/>
+										<div class="flex items-center">
+											<div class="m-1 text-lg font-bold text-[#e1b168]">
+												{service?.seat_services_languages[0]?.title}
+											</div>
+											<div class="mx-3">
+												<h1>{service.price}</h1>
+											</div>
 										</div>
 									{/if}
-								</li>
+									<div class="flex items-center my-6 w-full justify-between">
+										<div class="flex items-center">
+											<Checkbox
+												class="cursor-pointer"
+												on:click={() => {
+													addServiceToActiveObject(service);
+												}}
+											/>
+											<p>select this service for this seat</p>
+										</div>
+										<div>
+											<h1>{service.price}</h1>
+										</div>
+									</div>
+									<div class="d grid-cols-1 mb-6 w-full">
+										<Input
+											type="number"
+											size="sm"
+											placeholder="max quantity for a user"
+											on:change={(e) => addMaxServiceCount(e, service)}
+											disabled={!objectDetail.services[0] ||
+												objectDetail.services.find((x) => x.id == service.id) == undefined}
+										/>
+
+										<div class="my-2">
+											<ButtonGroup class="w-full" size="sm">
+												<InputAddon
+													><div class="flex items-center">
+														<Checkbox
+															class="cursor-pointer"
+															on:click={(event) => addFreeService(event, service)}
+															disabled={!objectDetail.services[0] ||
+																objectDetail.services.find((x) => x.id == service.id) == undefined}
+														/>
+														<p>unlimited</p>
+													</div></InputAddon
+												>
+												<Input
+													id="input-addon-sm"
+													placeholder="max free quantity for a user"
+													on:change={(e) => addMaxFreeServiceCount(e, service)}
+													disabled={!objectDetail.services[0] ||
+														objectDetail.services.find((x) => x.id == service.id) == undefined}
+												/>
+											</ButtonGroup>
+										</div>
+									</div>
+								</div>
 							{/each}
 						{/if}
-					</Dropdown>
-				</div>
-			{/if}
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style lang="scss">
 	canvas {
 		border: 1px solid black;
-		width: 100% !important;
 	}
 	.custom-cursor {
 		cursor: crosshair;
@@ -1031,5 +1080,13 @@
 		top: -24px;
 		cursor: grab;
 		color: red;
+	}
+	div::-webkit-scrollbar {
+		width: 0.5em; /* Adjust as needed */
+	}
+
+	/* Style the scrollbar thumb (optional) */
+	div::-webkit-scrollbar-thumb {
+		background-color: transparent; /* Hide the scrollbar thumb */
 	}
 </style>

@@ -4,6 +4,7 @@
 	import { XMark } from 'svelte-heros-v2';
 	import { ImgSourceEnum } from '../../models/imgSourceEnum';
 	import type { PDFModel } from '../../models/pdfModel';
+	import { Shadow } from 'svelte-loading-spinners';
 
 	export let data: { pdfFiles?: PDFModel[] } = {};
 	let pdfFiles: PDFModel[] = data.pdfFiles ?? [];
@@ -19,7 +20,6 @@
 	let imageFiles: File[] = [];
 
 	function addImage(e: Event) {
-		// console.log('//////e', e);
 		const fileInput = e.target as HTMLInputElement;
 		const totalFiles = fileInput?.files?.length; // Total number of files being uploaded
 		for (let file of fileInput!.files!) {
@@ -47,7 +47,7 @@
 					uploadCount = 0; // Reset the upload count after all images are uploaded
 				}
 
-				// console.log('File name:', pdfFiles);
+				//
 			};
 			reader.readAsDataURL(file);
 		}
@@ -82,7 +82,7 @@
 	}
 
 	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
+	function decodeBase64(pdf_file: File) {
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(
@@ -91,7 +91,7 @@
 		}
 	}
 
-	function openPdfFile(pdf_file: any) {
+	function openPdfFile(pdf_file: File) {
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(

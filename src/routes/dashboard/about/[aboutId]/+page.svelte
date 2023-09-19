@@ -16,7 +16,16 @@
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -79,7 +88,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile = file;
-		// console.log(file);
+		//
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
@@ -87,7 +96,7 @@
 
 			const randomText = getRandomTextNumber(); // Generate random text
 			fileName = `about/${randomText}_${file.name}`; // Append random text to the file name
-			// console.log(aboutData);
+			//
 		};
 		reader.readAsDataURL(file);
 	} //**for upload image image**//
@@ -135,7 +144,7 @@
 			} else {
 				aboutData.image = prevThumbnail;
 			}
-			// console.log('////data before submission :', aboutData, 'language :', aboutDataLang);
+			//
 			updateData(aboutData, aboutDataLang, data.supabase);
 
 			setTimeout(() => {
@@ -165,7 +174,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="image" class="mb-2">Upload About Image</Label>
 					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					{#if isFormSubmitted && !aboutData.image.trim()}
+					{#if isFormSubmitted && !aboutData?.image?.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
@@ -236,15 +245,15 @@
 					</div>
 				</form>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+				<Tabs style="underline" contentClass="dark:bg-gray-900">
 					<TabItem open title="About List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
 								{#each aboutDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
-											cardType={CardType.Main}
+											cardType={CardType?.Main}
 											title=""
 											short_description={langData.short_description}
 											thumbnail={aboutData.image}
