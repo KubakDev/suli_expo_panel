@@ -141,13 +141,13 @@
 					areas: `${areasArray}`,
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
-					id: $page.params.reservationId
+					id: $page.params.reservationId,
+					discounted_price: seatInfoData.discounted_price
 				},
 				privacy_lang_data: privacyPolicyLang
 			})
 			.then((response: any) => {
 				loading = false;
-				console.log(response);
 				if (response.error) {
 					addNewToast({
 						type: ToastTypeEnum.ERROR,
