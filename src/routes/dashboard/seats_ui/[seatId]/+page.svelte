@@ -1,5 +1,5 @@
-<script lang="ts" type="module">
-	import * as Seat from 'fabric';
+<script lang="ts">
+	import { fabric } from "fabric";
 	import { onMount, tick } from 'svelte';
 	import type { PageData } from '../$types';
 	import {
@@ -30,7 +30,7 @@
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 
-	let iconCanvas = new Seat.fabric.StaticCanvas('');
+	let iconCanvas = new  fabric.StaticCanvas('');
 	let addSeatModal = false;
 	iconCanvas.setWidth(50);
 	iconCanvas.setHeight(50);
@@ -165,7 +165,7 @@
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
 
-		canvas = new Seat.fabric.Canvas('canvas', { isDrawingMode: false });
+		canvas = new  fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
@@ -253,7 +253,7 @@
 			updateLayers();
 		});
 		updateLayers();
-		canvas.on('object:moving', function (options: Seat.fabric.IEvent) {
+		canvas.on('object:moving', function (options:  fabric.IEvent) {
 			// if (options.target) {
 			// 	options.target.set({
 			// 		left: Math.round(options.target.left! / gridSize) * gridSize,
@@ -285,7 +285,7 @@
 			let pointer = canvas.getPointer(options.e);
 
 			if (isAddingText) {
-				const text = new Seat.fabric.IText('Click to edit text', {
+				const text = new  fabric.IText('Click to edit text', {
 					left: pointer.x,
 					top: pointer.y,
 					fontSize: 20,
@@ -298,7 +298,7 @@
 			if (isDrawing) {
 				points.push({ x: pointer.x, y: pointer.y });
 
-				liveLine = new Seat.fabric.Line(
+				liveLine = new  fabric.Line(
 					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
 					{
 						stroke: 'red',
@@ -318,7 +318,7 @@
 					points[points.length - 1] = points[0];
 
 					// Close the shape
-					let polygon: any = new Seat.fabric.Polygon(points, {
+					let polygon: any = new  fabric.Polygon(points, {
 						stroke: 'red',
 						fill: 'transparent',
 						strokeWidth: 1,
@@ -365,7 +365,7 @@
 			}
 
 			if (panning && spacePressed) {
-				var delta = new Seat.fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+				var delta = new  fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
 				canvas.relativePan(delta);
 				lastPosX = opt.e.clientX;
 				lastPosY = opt.e.clientY;
@@ -385,7 +385,7 @@
 		document.getElementById('group-button')?.addEventListener('click', () => {
 			let activeObjects = canvas.getActiveObjects();
 			if (activeObjects.length > 0) {
-				let group = new Seat.fabric.Group(activeObjects, {
+				let group = new  fabric.Group(activeObjects, {
 					objectCaching: false
 				});
 
@@ -738,7 +738,7 @@
 		const selectedObject = canvas.getActiveObject();
 
 		if (selectedObject) {
-			const copiedObject = Seat.fabric?.util.object.clone(selectedObject);
+			const copiedObject =  fabric?.util.object.clone(selectedObject);
 			copiedObject.set({
 				left: selectedObject.left + 10,
 				top: selectedObject.top + 10
@@ -750,7 +750,7 @@
 
 	function pasteCopiedObject() {
 		if (canvas.copiedObject) {
-			const pastedObject = Seat.fabric?.util.object.clone(canvas.copiedObject);
+			const pastedObject =  fabric?.util.object.clone(canvas.copiedObject);
 			pastedObject.set({
 				id: new Date().getTime()
 			});
@@ -809,7 +809,7 @@
 	}
 </script>
 
-{#if Seat.fabric}
+{#if  fabric}
 	<TopBarComponent
 		data={{
 			fillColor: fillColor,
@@ -844,7 +844,7 @@
 					files: files,
 					objects: objects,
 					selectedObjectId: selectedObjectId,
-					fabric: Seat.fabric
+					fabric:  fabric
 				}}
 				on:updateLayers={() => updateLayers()}
 			/>
