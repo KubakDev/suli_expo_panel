@@ -86,6 +86,7 @@
 				seatInfoData.privacy_policy = response.data.seat_privacy_policy_lang;
 				privacyPolicyLang = response.data.seat_privacy_policy_lang;
 				seatInfoData.price_per_meter = response.data.price_per_meter;
+				seatInfoData.discounted_price = response.data.discounted_price;
 				if (response.data.areas) {
 					areas = JSON.parse(response.data.areas);
 				}
