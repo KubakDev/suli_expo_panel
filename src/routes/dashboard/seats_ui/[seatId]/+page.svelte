@@ -1,6 +1,6 @@
-<script lang="ts">
-	import { afterUpdate, onDestroy, onMount } from 'svelte';
-	import { fabric } from 'fabric';
+<script lang="ts" type="module">
+	import * as Seat from 'fabric';
+	import { onMount, tick } from 'svelte';
 	import type { PageData } from '../$types';
 	import {
 		Button,
@@ -25,8 +25,11 @@
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
+	import { LanguageEnum } from '../../../../models/languageEnum';
 
-	let iconCanvas = new fabric.StaticCanvas('');
+	let languageEnumKeys = Object.values(LanguageEnum);
+
+	let iconCanvas = new Seat.fabric.StaticCanvas('');
 	let addSeatModal = false;
 	iconCanvas.setWidth(50);
 	iconCanvas.setHeight(50);
@@ -194,8 +197,7 @@
 		await getSeatServices(data.supabase, 1, 15);
 		// var customRect = createCustomRectangle();
 
-		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
-		adjustCanvasSize();
+		canvas = new Seat.fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
@@ -274,13 +276,13 @@
 			updateLayers();
 		});
 		updateLayers();
-		canvas.on('object:moving', function (options: fabric.IEvent) {
-			if (options.target) {
-				options.target.set({
-					left: Math.round(options.target.left! / gridSize) * gridSize,
-					top: Math.round(options.target.top! / gridSize) * gridSize
-				});
-			}
+		canvas.on('object:moving', function (options: Seat.fabric.IEvent) {
+			// if (options.target) {
+			// 	options.target.set({
+			// 		left: Math.round(options.target.left! / gridSize) * gridSize,
+			// 		top: Math.round(options.target.top! / gridSize) * gridSize
+			// 	});
+			// }
 		});
 		var panning = false;
 		var lastPosX: any, lastPosY: any;
@@ -305,7 +307,7 @@
 		canvas.on('mouse:down', function (options: any) {
 			let pointer = canvas.getPointer(options.e);
 			if (isAddingText) {
-				const text = new fabric.IText('Click to edit text', {
+				const text = new Seat.fabric.IText('Click to edit text', {
 					left: pointer.x,
 					top: pointer.y,
 					fontSize: 20,
@@ -318,9 +320,7 @@
 			if (isDrawing) {
 				points.push({ x: pointer.x, y: pointer.y });
 
-				// Draw a line from the last point to this point
-
-				liveLine = new fabric.Line(
+				liveLine = new Seat.fabric.Line(
 					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
 					{
 						stroke: 'red',
@@ -340,7 +340,7 @@
 					points[points.length - 1] = points[0];
 
 					// Close the shape
-					let polygon: any = new fabric.Polygon(points, {
+					let polygon: any = new Seat.fabric.Polygon(points, {
 						stroke: 'red',
 						fill: 'transparent',
 						strokeWidth: 1,
@@ -385,7 +385,7 @@
 			}
 
 			if (panning && spacePressed) {
-				var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+				var delta = new Seat.fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
 				canvas.relativePan(delta);
 				lastPosX = opt.e.clientX;
 				lastPosY = opt.e.clientY;
@@ -405,7 +405,7 @@
 		document.getElementById('group-button')?.addEventListener('click', () => {
 			let activeObjects = canvas.getActiveObjects();
 			if (activeObjects.length > 0) {
-				let group = new fabric.Group(activeObjects, {
+				let group = new Seat.fabric.Group(activeObjects, {
 					objectCaching: false
 				});
 
@@ -687,45 +687,153 @@
 		});
 		canvas.requestRenderAll();
 	}
+	function addFreeService(event: Event, service: seatServicesModel) {
+		event.stopPropagation();
+		let selectedObject = canvas.getActiveObject();
+		let selectedService = selectedObject.objectDetail?.services.find(
+			(item: any) => item.id === service.id
+		);
+		selectedService.unlimitedFree = !selectedService.unlimitedFree;
+
+		objectDetail = { ...selectedObject.objectDetail };
+	}
+	function addMaxFreeServiceCount(event: any, service: seatServicesModel) {
+		event.stopPropagation();
+		let selectedObject = canvas.getActiveObject();
+		let selectedService = selectedObject?.objectDetail?.services.find(
+			(item: any) => item.id === service.id
+		);
+		if (selectedService) {
+			selectedService.maxFreeCount = +event.target?.value;
+		}
+
+		objectDetail = { ...selectedObject?.objectDetail };
+	}
+	function addMaxServiceCount(event: any, service: seatServicesModel) {
+		event.stopPropagation();
+		let selectedObject = canvas.getActiveObject();
+		let selectedService = selectedObject.objectDetail?.services.find(
+			(item: any) => item.id === service.id
+		);
+		selectedService.maxQuantityPerUser = +event.target?.value;
+
+		objectDetail = { ...selectedObject.objectDetail };
+	}
+
+	function copySelectedObject() {
+		const selectedObject = canvas.getActiveObject();
+
+		if (selectedObject) {
+			const copiedObject = Seat.fabric?.util.object.clone(selectedObject);
+			copiedObject.set({
+				left: selectedObject.left + 10,
+				top: selectedObject.top + 10
+			});
+
+			canvas.copiedObject = copiedObject;
+		}
+	}
+
+	function pasteCopiedObject() {
+		if (canvas.copiedObject) {
+			const pastedObject = Seat.fabric?.util.object.clone(canvas.copiedObject);
+			pastedObject.set({
+				id: new Date().getTime()
+			});
+			canvas.add(pastedObject);
+			canvas.setActiveObject(pastedObject);
+			canvas.renderAll();
+			updateLayers();
+		}
+	}
+	$: {
+		if (objectDetail && canvas) {
+			let selectedObject = canvas?.getActiveObject();
+			if (selectedObject) {
+				selectedObject.set({
+					objectDetail: objectDetail
+				});
+				canvas.renderAll();
+			}
+		}
+	}
+	function addDescriptionToObjectDetail(description: any, lang: string) {
+		let selectedObject = canvas?.getActiveObject();
+		if (!selectedObject.objectDetail.descriptionLanguages) {
+			selectedObject.objectDetail.descriptionLanguages = [];
+		}
+		selectedObject.objectDetail.descriptionLanguages =
+			selectedObject.objectDetail.descriptionLanguages.filter((x: any) => x.language !== lang);
+		selectedObject.objectDetail.descriptionLanguages.push({
+			description: description.value,
+			language: lang as LanguageEnum
+		});
+		objectDetailDescription = selectedObject.objectDetail.descriptionLanguages;
+	}
+
+	async function getFavColors() {
+		await data.supabase
+			.from('fav_colors')
+			.select('*')
+			.then((Response) => {
+				favColors = Response.data?.map((x) => x.color) as string[];
+			});
+	}
+
+	let newFavColor: string = '';
+	let addFavColorLoading = false;
+	async function addNewFavColor() {
+		if (!newFavColor) return;
+		if (!newFavColor.startsWith('#')) {
+			newFavColor = `#${newFavColor}`;
+		}
+		addFavColorLoading = true;
+		await data.supabase.from('fav_colors').insert([{ color: newFavColor }]);
+		await getFavColors();
+		newFavColor = '';
+		addFavColorLoading = false;
+	}
 </script>
 
-<TopBarComponent
-	data={{
-		fillColor: fillColor,
-		strokeColor: strokeColor,
-		canvas: canvas,
-		isDrawing: isDrawing,
-		isAddingText: isAddingText,
-		container: container
-	}}
-	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
-	on:updateLayers={() => updateLayers()}
-	on:openAddSeatModal={() => openAddSeatModal()}
-/>
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<Modal bind:open={addSeatModal} size="sm" autoclose={false} class="w-full">
-	<AddSeatModalComponent
-		{data}
-		seatInfo={{
+{#if Seat.fabric}
+	<TopBarComponent
+		data={{
+			fillColor: fillColor,
+			strokeColor: strokeColor,
 			canvas: canvas,
-			seatId: $page.params.seatId
+			isDrawing: isDrawing,
+			isAddingText: isAddingText,
+			container: container
 		}}
-		on:closeModal={() => (addSeatModal = false)}
+		on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
+		on:updateLayers={() => updateLayers()}
+		on:openAddSeatModal={() => openAddSeatModal()}
 	/>
-</Modal>
-<div class="flex flex-col w-full h-full flex-1">
-	<div class="w-full grid grid-cols-6 h-full">
-		<DrawingBar
-			data={{
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
+		<AddSeatModalComponent
+			{data}
+			seatInfo={{
 				canvas: canvas,
-				files: files,
-				objects: objects,
-				selectedObjectId: selectedObjectId,
-				fabric: fabric
+				seatId: $page.params.seatId
 			}}
-			on:updateLayers={() => updateLayers()}
+			on:closeModal={() => (addSeatModal = false)}
+			{currentSeatLayoutData}
 		/>
+	</Modal>
+	<div class="flex flex-col w-full h-full flex-1">
+		<div class="w-full grid grid-cols-6 h-full">
+			<DrawingBar
+				data={{
+					canvas: canvas,
+					files: files,
+					objects: objects,
+					selectedObjectId: selectedObjectId,
+					fabric: Seat.fabric
+				}}
+				on:updateLayers={() => updateLayers()}
+			/>
 
 		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
 			<canvas id="canvas" />
