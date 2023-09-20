@@ -11,6 +11,7 @@
 	import ReservedSeat from './reservedSeat.svelte';
 	import { exhibition } from '../../../../../stores/exhibitionTypeStore';
 	import moment from 'moment';
+	import { LanguageEnum } from '../../../../../models/languageEnum';
 
 	export let data;
 	interface reservationType {
@@ -39,7 +40,7 @@
 	async function getReservationData() {
 		await data.supabase
 			.from('seat_reservation')
-			.select('*,company(*),exhibition(*)')
+			.select('*,company(*),exhibition(*,exhibition_languages(*))')
 			.eq('object_id', objectId)
 			.then((Response) => {
 				reservations = Response.data as reservationType[];
@@ -59,6 +60,61 @@
 			seatLayout = response?.data?.seat_layout;
 		}
 	}
+	function statusMessage(status: ReservationStatusEnum, lang: LanguageEnum) {
+		let result = '';
+		if (lang == LanguageEnum.EN) {
+			switch (status) {
+				case ReservationStatusEnum.ACCEPT:
+					result = 'this reserve is accepted by admin';
+					return result;
+				case ReservationStatusEnum.REJECT:
+					result = 'this reserve is rejected by admin';
+					return result;
+			}
+		}
+		if (lang == LanguageEnum.CKB) {
+			switch (status) {
+				case ReservationStatusEnum.ACCEPT:
+					result = 'داواکاری شوێنگرتن وەرگیرا';
+					return result;
+				case ReservationStatusEnum.REJECT:
+					result = 'داواکاری شوێنگرتن ڕەتکرایەوە';
+					return result;
+			}
+		}
+		if (lang == LanguageEnum.AR) {
+			switch (status) {
+				case ReservationStatusEnum.ACCEPT:
+					result = 'قبلت';
+					return result;
+				case ReservationStatusEnum.REJECT:
+					result = 'مرفوض';
+					return result;
+			}
+		}
+		return result;
+	}
+	function addNotificationData(reserveData: any, lang: LanguageEnum) {
+		return {
+			message: statusMessage(reserveData.status!, lang),
+			language: lang,
+			company_id: reserveData.company.id,
+			exhibition_name:
+				reserveData.exhibition?.exhibition_languages?.find(
+					(exhibitionLanguage: any) => exhibitionLanguage.language == lang
+				)?.title ?? '',
+			seen: false,
+			status: reserveData.status,
+			unique_id:
+				reserveData.id +
+				'-' +
+				reserveData.company.id +
+				'-' +
+				reserveData.exhibition_id +
+				'-' +
+				reserveData.status
+		};
+	}
 	async function updateStatus(itemID?: number, selectedStatus?: string) {
 		if (itemID == undefined || selectedStatus == undefined) return;
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
@@ -71,8 +127,21 @@
 			.from('seat_reservation')
 			.update({ status: selectedStatus })
 			.eq('id', itemID);
+
 		getReservationData();
+		reservations.map(async (reserveData) => {
+			if (reserveData.status == ReservationStatusEnum.PENDING) return;
+			await data.supabase
+				.from('notification')
+				.insert([
+					addNotificationData(reserveData, LanguageEnum.EN),
+					addNotificationData(reserveData, LanguageEnum.CKB),
+					addNotificationData(reserveData, LanguageEnum.AR)
+				])
+				.then((response) => {});
+		});
 	}
+
 	async function exportContract(reservationData: reservationType) {
 		await data.supabase
 			.from('contract_decode_files')
@@ -103,7 +172,6 @@
 					};
 					return result;
 				});
-				console.log(reservedAreas);
 				let docxData = {
 					company_name: reservationData.company?.company_name,
 					address: reservationData.company?.address,
