@@ -48,6 +48,7 @@
 		privacy_policy?: string;
 		price_per_meter?: number;
 		discounted_price?: number;
+		extra_discount?: number;
 	} = {
 		exhibition: undefined,
 		name: '',
@@ -87,6 +88,7 @@
 				privacyPolicyLang = response.data.seat_privacy_policy_lang;
 				seatInfoData.price_per_meter = response.data.price_per_meter;
 				seatInfoData.discounted_price = response.data.discounted_price;
+				seatInfoData.extra_discount = response.data.extra_discount;
 				if (response.data.areas) {
 					areas = JSON.parse(response.data.areas);
 				}
@@ -143,7 +145,8 @@
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
 					id: $page.params.reservationId,
-					discounted_price: seatInfoData.discounted_price
+					discounted_price: seatInfoData.discounted_price,
+					extra_discount: seatInfoData.extra_discount
 				},
 				privacy_lang_data: privacyPolicyLang
 			})
@@ -184,7 +187,8 @@
 			privacyPolicyLang.push({
 				description: description,
 				language: lang as LanguageEnum,
-				discount_description: ''
+				discount_description: '',
+				extra_discount_description: ''
 			});
 		}
 	}
@@ -196,7 +200,21 @@
 			privacyPolicyLang.push({
 				description: '',
 				language: lang as LanguageEnum,
-				discount_description: discount_description
+				discount_description: discount_description,
+				extra_discount_description: ''
+			});
+		}
+	}
+	function addPrivacyPolicyExtraDiscountDescription(description: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.extra_discount_description = description.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: description
 			});
 		}
 	}
@@ -307,6 +325,13 @@
 							bind:value={seatInfoData.discounted_price}
 						/></ButtonGroup
 					>
+					<ButtonGroup class="" size="sm">
+						<InputAddon>Extra Discounted Price</InputAddon><Input
+							type="text"
+							size="sm"
+							bind:value={seatInfoData.extra_discount}
+						/></ButtonGroup
+					>
 					<br />
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
@@ -339,6 +364,15 @@
 										value={privacyPolicyLang?.find((x) => x.language === lang)
 											?.discount_description}
 										on:input={(e) => addDiscountDetail(e.target ?? '', lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add extra discount description for  ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)
+											?.extra_discount_description}
+										on:input={(e) => addPrivacyPolicyExtraDiscountDescription(e.target ?? '', lang)}
 									/>
 								</TabItem>
 							{/each}
