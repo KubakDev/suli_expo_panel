@@ -146,7 +146,8 @@
 					price_per_meter: seatInfoData.price_per_meter,
 					id: $page.params.reservationId,
 					discounted_price: seatInfoData.discounted_price,
-					extra_discount: seatInfoData.extra_discount
+					extra_discount: seatInfoData.extra_discount,
+					excel_preview_url
 				},
 				privacy_lang_data: privacyPolicyLang
 			})
