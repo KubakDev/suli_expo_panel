@@ -25,7 +25,7 @@ export const getReservationData = async (
 		p_email: p_email
 	});
 
-	// console.log(data[0]?.total_count);
+	// 
 	seatReservationTotalCount.set(data[0]?.total_count);
 	seatReservation.set(data);
 };
@@ -41,7 +41,7 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 		throw error;
 	}
 
-	console.log('Updated data:', data);
+
 	return data;
 };
 
@@ -63,7 +63,7 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 		throw error;
 	}
 
-	// console.log('Fetched data by ID:', data);
+	// 
 	seatReservation.set(data as Reservation[]);
 	return data as Reservation;
 };
@@ -85,7 +85,7 @@ export const getReservationsForCompany = async (supabase: SupabaseClient, compan
 		throw error;
 	}
 
-	// console.log(data);
+	// 
 
 	seatReservation.set(data);
 };

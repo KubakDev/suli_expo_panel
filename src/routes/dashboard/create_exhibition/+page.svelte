@@ -244,7 +244,7 @@
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 		// Insert data into Supabase
-		console.log(exhibitionsDataLang);
+
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
 
 		resetForm();

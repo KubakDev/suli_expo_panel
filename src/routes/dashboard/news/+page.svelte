@@ -12,7 +12,7 @@
 	let newsData = [];
 	let totalPages = 1;
 
-	//
+	onMount(() => {});
 
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
@@ -88,6 +88,7 @@
 	<InsertButton insertData={createNews} />
 
 	<!-- table data -->
+
 	<TableComponent {calculateIndex} {handleDelete} pageName="news" data={$news} {columnTitle} />
 
 	<!-- Add pagination -->

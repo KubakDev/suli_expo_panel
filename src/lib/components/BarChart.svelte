@@ -35,7 +35,6 @@
 	// Process and create chart data
 	async function fetchChartData() {
 		await getAllViewersData(data.supabase);
-		console.log('all ', $AllViewersData);
 
 		const yearData: YearlyViewerData = {};
 
@@ -51,7 +50,6 @@
 			yearData[year].news_viewers += item?.news_viewers || 0;
 			yearData[year].exhibition_viewers += item.exhibition_viewers || 0;
 			yearData[year].suly_expo_viewers += item.suly_expo_viewers || 0;
-			console.log(yearData);
 		});
 
 		const labels = Object.keys(yearData);

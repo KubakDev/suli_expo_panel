@@ -179,7 +179,6 @@
 				lang: selectedLanguageTab,
 				fileName: `${randomText}_${file.name}`
 			});
-			console.log(fileName_pdf);
 		};
 
 		reader.readAsDataURL(file);

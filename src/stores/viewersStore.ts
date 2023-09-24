@@ -12,7 +12,7 @@ export const getViewerData = async (
 	dateString?: Date
 ) => {
 	try {
-		console.log('date', dateString);
+
 		let query = supabase
 			.from('viewers')
 			.select('*')

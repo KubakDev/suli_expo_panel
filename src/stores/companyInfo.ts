@@ -47,7 +47,7 @@ export const getCompanyData = async (
 	}
 
 	if (data && data.length === 0) {
-		console.log(`No data found for search query: ${searchQuery}`);
+
 		companyInfo.set([]); // Clear existing data if no matching data found
 		return [];
 	}
