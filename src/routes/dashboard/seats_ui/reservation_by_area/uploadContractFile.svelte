@@ -74,7 +74,7 @@
 		{#each languages as lang}
 			<TabItem
 				title={lang}
-				active={selectedLanguage === lang || lang === LanguageEnum.EN}
+				open={selectedLanguage ? selectedLanguage === lang : lang === LanguageEnum.EN}
 				on:click={() => (selectedLanguage = lang)}
 				class="transition duration-300 hover:bg-gray-200 p-2 rounded"
 			>
