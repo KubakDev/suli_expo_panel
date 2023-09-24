@@ -11,7 +11,7 @@
 	import { EditingMode } from '../../../models/editingModeModel';
 	import { createEventDispatcher } from 'svelte';
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
-	import {fabric } from 'fabric';
+	import { fabric } from 'fabric';
 
 	class MyGroup extends fabric.Group {
 		groupId: number;

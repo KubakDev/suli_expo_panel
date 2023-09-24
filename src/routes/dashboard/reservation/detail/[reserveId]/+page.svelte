@@ -5,15 +5,16 @@
 	import type { CompanyType } from '../../../../../models/companyModel';
 	import type { ExhibitionModel } from '../../../../../models/exhibitionTypeModel';
 	import { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
-
 	import { Button } from 'flowbite-svelte';
 	import { generateDocx } from '$lib/utils/generateContract';
 	import ReservedSeat from './reservedSeat.svelte';
-	import { exhibition } from '../../../../../stores/exhibitionTypeStore';
 	import moment from 'moment';
 	import { LanguageEnum } from '../../../../../models/languageEnum';
 
 	export let data;
+
+	let languages = Object.values(LanguageEnum);
+
 	interface reservationType {
 		id?: number;
 		exhibition_id?: number;
@@ -142,16 +143,30 @@
 		});
 	}
 
-	async function exportContract(reservationData: reservationType) {
+	let totalPrice = 0;
+	let totalArea = 0;
+	let totalRawPrice = 0;
+	async function exportContract(reservationData: reservationType, lang: LanguageEnum) {
+		console.log(lang);
+
 		await data.supabase
 			.from('contract_decode_files')
 			.select('*')
 			.eq('exhibition_id', reservationData.exhibition_id)
+			.eq('language', lang)
 			.then(async (Response: any) => {
+				if (Response.data.length === 0) {
+					console.error(
+						`No contract found for language ${lang} and exhibition ID ${reservationData.exhibition_id}`
+					);
+					return;
+				}
+
 				let reservedAreasArray = reservationData.reserved_areas
 					? JSON.parse(reservationData.reserved_areas)
 					: [];
 				let price_per_meter = 0;
+
 				await data.supabase
 					.from('seat_layout')
 					.select('*')
@@ -161,6 +176,7 @@
 					.then((response) => {
 						price_per_meter = response.data.price_per_meter;
 					});
+
 				let reservedAreas = reservedAreasArray?.map((data: any) => {
 					let result = {
 						id: data.id++,
@@ -172,6 +188,10 @@
 					};
 					return result;
 				});
+
+				reservedAreas.map((area: any) => {
+					totalArea += +area.area * +area.quantity;
+				});
 				let docxData = {
 					company_name: reservationData.company?.company_name,
 					address: reservationData.company?.address,
@@ -181,11 +201,20 @@
 					working_field: reservationData.company?.working_field,
 					areas: reservedAreas,
 					date: moment(new Date()).format('DD/MM/YYYY'),
-					id: reservationData.company?.id
+					id: reservationData.company?.id,
+					email: reservationData.company?.email,
+					pricePerMeter: price_per_meter,
+					totalArea,
+					totalRawPrice,
+					totalPrice
 				};
+
+				console.log(Response.data[0].decoded_file);
+				console.log(docxData);
 				generateDocx(Response.data[0].decoded_file, docxData);
 			});
 	}
+
 	function getServices(service: string) {
 		return JSON.parse(service ?? '');
 	}
@@ -282,7 +311,7 @@
 											<h3>service name : {getServices(service)?.serviceDetail?.title}</h3>
 											<h3>quantity : {getServices(service)?.quantity}</h3>
 											<h3>price : {getServices(service)?.serviceDetail?.price}</h3>
-											<h3>discpunt: {getServices(service)?.serviceDetail?.discount}</h3>
+											<h3>discount: {getServices(service)?.serviceDetail?.discount}</h3>
 											<h3>total price : {getServices(service)?.totalPrice}</h3>
 										</div>
 									{/each}
@@ -311,7 +340,11 @@
 							</div>
 						</td>
 						<td>
-							<Button class="mx-2" on:click={() => exportContract(reservation)}>export</Button>
+							{#each languages as lang}
+								<Button class="mx-2" on:click={() => exportContract(reservation, lang)}
+									>export {lang}</Button
+								>
+							{/each}
 						</td>
 						<td>
 							<Button class="mx-2" on:click={() => exportFile(reservation)}>download</Button>
