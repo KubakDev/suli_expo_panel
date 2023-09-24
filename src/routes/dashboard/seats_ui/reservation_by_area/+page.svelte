@@ -114,6 +114,7 @@
 					excel_preview_url = response.data.path;
 				});
 		}
+
 		await supabase
 			.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {

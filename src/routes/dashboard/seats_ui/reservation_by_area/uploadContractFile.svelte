@@ -1,35 +1,52 @@
 <script lang="ts">
 	import type { SupabaseClient } from '@supabase/supabase-js';
-	import { Button } from 'flowbite-svelte';
+	import { TabItem, Tabs } from 'flowbite-svelte';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
-	import { load } from '../../../+page';
+	import { onMount } from 'svelte';
+	import { LanguageEnum } from '../../../../models/languageEnum';
 
 	export let exhibitionId: number | null | undefined;
+
 	export let supabase: SupabaseClient;
 
-	let fileInput;
-	let base64Output;
-	let fileName = '';
 	let loading = false;
+
+	let selectedLanguage: LanguageEnum = LanguageEnum.EN;
+	let languages = Object.values(LanguageEnum);
+	let fileContent: { [key in LanguageEnum]?: string } = {};
+	let uploadedFileName: { [key in LanguageEnum]?: string } = {};
+
+	onMount(() => {
+		selectedLanguage = LanguageEnum.EN;
+	});
+
 	async function handleFileChange(event: any) {
 		const file = event.target.files[0];
-		fileName = file.name;
 		if (file) {
+			uploadedFileName[selectedLanguage] = file.name;
+
 			const reader = new FileReader();
 			reader.onload = async function (e: any) {
-				base64Output = e.target.result.split(',')[1];
 				//
+				fileContent[selectedLanguage] = e.target.result.split(',')[1];
+
 				loading = true;
-				await supabase.from('contract_decode_files').delete().eq('exhibition_id', exhibitionId);
+				await supabase
+					.from('contract_decode_files')
+					.delete()
+					.eq('exhibition_id', exhibitionId)
+					.eq('language', selectedLanguage);
+
 				supabase
 					.from('contract_decode_files')
 					.insert([
 						{
 							exhibition_id: exhibitionId,
-							decoded_file: base64Output
+							decoded_file: fileContent[selectedLanguage],
+							language: selectedLanguage
 						}
-					] as any)
+					])
 					.then((response) => {
 						if (response.error) {
 							addNewToast({
@@ -38,8 +55,10 @@
 							});
 						} else {
 							addNewToast({
+								title: 'Success',
+								duration: 1000,
 								type: ToastTypeEnum.SUCCESS,
-								message: 'File uploaded successfully'
+								message: 'File uploaded successfully for ' + file.name
 							});
 						}
 					});
@@ -50,17 +69,44 @@
 	}
 </script>
 
-<div class="min-h-[700px] flex flex-col justify-center items-center">
-	<label for="file-input" class="file-input-container"> Upload File </label>
+<div class="flex flex-col justify-center items-center p-10 bg-gray-100 w-full">
+	<Tabs contentClass="dark:bg-gray-900 p-6 bg-white rounded-lg shadow-md">
+		{#each languages as lang}
+			<TabItem
+				title={lang}
+				active={selectedLanguage === lang || lang === LanguageEnum.EN}
+				on:click={() => (selectedLanguage = lang)}
+				class="transition duration-300 hover:bg-gray-200 p-2 rounded"
+			>
+				<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold mb-3">
+					{#if lang === 'ar'}
+						{`أضف البيانات إلى اللغة العربية`}
+					{:else if lang === 'ckb'}
+						{`زیاد کردنی داتا بە زمانی کوردی`}
+					{:else}
+						Add data for <span class="uppercase">{`${lang}`}</span> language
+					{/if}
+				</h1>
+				<p class="mb-4 text-gray-500">For other languages, navigate between tabs.</p>
 
-	<input
-		id="file-input"
-		bind:this={fileInput}
-		type="file"
-		on:change={handleFileChange}
-		style="display: none;"
-	/>
-	<p>{fileName}</p>
+				<div class="py-5">
+					<label
+						for={`file-input-${lang}`}
+						class="file-input-container hover:bg-yellow-400 transition duration-300"
+					>
+						Upload File
+					</label>
+					<input
+						id={`file-input-${lang}`}
+						type="file"
+						on:change={handleFileChange}
+						style="display: none;"
+					/>
+					<p class="mt-2 text-sm text-gray-600">{uploadedFileName[lang] || 'No file chosen'}</p>
+				</div>
+			</TabItem>
+		{/each}
+	</Tabs>
 </div>
 
 <style>
@@ -71,7 +117,7 @@
 
 	/* Style the input to make it look better */
 	input[type='file'] {
-		font-size: 0; /* Make the input font size zero */
+		font-size: 0;
 		position: absolute;
 		z-index: -1;
 	}
@@ -84,5 +130,6 @@
 		border-radius: 5px;
 		cursor: pointer;
 		display: inline-block;
+		transition: background-color 0.3s;
 	}
 </style>
