@@ -35,7 +35,7 @@
 
 	async function fetchData() {
 		let result = await getData(data.supabase);
-		console.log(result);
+
 		colorData = result;
 	}
 

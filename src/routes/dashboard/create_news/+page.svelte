@@ -164,7 +164,7 @@
 
 	function getImagesObject() {
 		carouselImages = createCarouselImages(sliderImagesFile);
-		console.log(carouselImages);
+
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}

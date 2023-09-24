@@ -19,7 +19,7 @@
 			const reader = new FileReader();
 			reader.onload = async function (e: any) {
 				base64Output = e.target.result.split(',')[1];
-				// console.log(base64Output);
+				//
 				loading = true;
 				await supabase.from('contract_decode_files').delete().eq('exhibition_id', exhibitionId);
 				supabase

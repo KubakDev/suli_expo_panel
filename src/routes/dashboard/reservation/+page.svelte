@@ -29,7 +29,6 @@
 	let totalPages = 1;
 
 	$: {
-		console.log('//', $seatReservationTotalCount);
 	}
 
 	async function fetchReservationData() {
@@ -43,7 +42,7 @@
 			p_type,
 			p_email
 		);
-		console.log($seatReservation);
+
 		if ($seatReservation && $seatReservation[0] && $seatReservation[0]?.total_count) {
 			totalItems = $seatReservation[0]?.total_count;
 			totalPages = Math.ceil(totalItems / pageSize);

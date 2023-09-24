@@ -17,7 +17,7 @@
 	async function fetchData() {
 		await getData(data.supabase);
 		items = $exhibitions;
-		console.log(items);
+
 		flag = false;
 	}
 	onMount(fetchData);
@@ -57,7 +57,6 @@
 		await updatePositions();
 		await fetchData(); // Fetch data again after updating positions
 		flag = false; // Set flag to false after data is fetched
-		console.log(items);
 	}
 
 	let supabase = data.supabase;

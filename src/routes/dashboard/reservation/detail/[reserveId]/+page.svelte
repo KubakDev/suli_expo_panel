@@ -183,6 +183,7 @@
 					date: moment(new Date()).format('DD/MM/YYYY'),
 					id: reservationData.company?.id
 				};
+
 				generateDocx(Response.data[0].decoded_file, docxData);
 			});
 	}

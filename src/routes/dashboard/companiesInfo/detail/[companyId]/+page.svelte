@@ -27,12 +27,10 @@
 	onMount(async () => {
 		try {
 			await getReservationsForCompany(data.supabase, companyId);
-			console.log($seatReservation);
+
 			await loadServiceTitles();
 			serviceTitlesLoaded = true;
-		} catch (error) {
-			console.log(error);
-		}
+		} catch (error) {}
 	});
 
 	async function loadServiceTitles() {
@@ -79,7 +77,7 @@
 	// get  company title
 	async function findCompanyName() {
 		await getCompanyDataById(data.supabase, parseInt(companyId));
-		// console.log($companyInfo);
+		//
 	}
 	onMount(findCompanyName);
 
@@ -100,7 +98,6 @@
 				})
 				.filter((area) => area !== null);
 		}
-		console.log(reservedAreas);
 	});
 </script>
 

@@ -27,7 +27,7 @@
 			currentPage,
 			pageSize
 		);
-		console.log($companyInfo);
+
 		totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
 	}
