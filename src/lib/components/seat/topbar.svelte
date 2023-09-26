@@ -11,7 +11,7 @@
 	import { EditingMode } from '../../../models/editingModeModel';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
-	import { fabric } from 'fabric';
+	// import { fabric } from 'fabric';
 
 	let fabricInstance: any = null;
 
@@ -53,7 +53,7 @@
 		let customShape;
 		switch (shape) {
 			case SeatCustomShapes.Rectangle:
-				customShape = new fabric.Rect({
+				customShape = new fabricInstance.Rect({
 					width: 100,
 					height: 50,
 					fill: data?.fillColor,
@@ -63,7 +63,7 @@
 				break;
 
 			case SeatCustomShapes.Circle:
-				customShape = new fabric.Circle({
+				customShape = new fabricInstance.Circle({
 					radius: 50,
 					fill: data?.fillColor,
 					left: 0,
@@ -72,7 +72,7 @@
 				break;
 
 			case SeatCustomShapes.Ellipse:
-				customShape = new fabric.Ellipse({
+				customShape = new fabricInstance.Ellipse({
 					rx: 50,
 					ry: 25,
 					fill: data?.fillColor,
@@ -82,7 +82,7 @@
 				break;
 
 			case SeatCustomShapes.Line:
-				customShape = new fabric.Line([50, 100, 200, 200], {
+				customShape = new fabricInstance.Line([50, 100, 200, 200], {
 					fill: data?.fillColor,
 					stroke: data?.strokeColor ?? 'black',
 					strokeWidth: 5,
@@ -92,7 +92,7 @@
 				break;
 
 			case SeatCustomShapes.Triangle:
-				customShape = new fabric.Triangle({
+				customShape = new fabricInstance.Triangle({
 					width: 100,
 					height: 100,
 					fill: data?.fillColor,
@@ -117,7 +117,7 @@
 				let imgObj = new Image();
 				imgObj.src = event.target.result;
 				imgObj.onload = () => {
-					let image = new fabric.Image(imgObj);
+					let image = new fabricInstance.Image(imgObj);
 					image.set({
 						left: 0,
 						top: 0,
