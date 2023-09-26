@@ -9,16 +9,27 @@
 	import LayerGroup from '$lib/images/icons/layerGroup.svg';
 	import LayerUnGroup from '$lib/images/icons/layerUnGroup.svg';
 	import { EditingMode } from '../../../models/editingModeModel';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
 	import { fabric } from 'fabric';
 
-	class MyGroup extends fabric.Group {
-		groupId: number;
+	let fabricInstance: any = null;
 
-		constructor(items: fabric.Object[], options: any = {}) {
-			super(items, options);
-			this.groupId = options.groupId;
+	onMount(async () => {
+		setTimeout(async () => {
+			const { fabric } = await import('fabric');
+			fabricInstance = fabric;
+		}, 1000);
+	});
+
+	if(fabricInstance){
+		class MyGroup extends fabricInstance.Group {
+			groupId: number;
+	
+			constructor(items: fabric.Object[], options: any = {}) {
+				super(items, options);
+				this.groupId = options.groupId;
+			}
 		}
 	}
 	const dispatch = createEventDispatcher();
@@ -146,15 +157,17 @@
 		}
 	}
 	function groupObjects() {
-		let activeObjects = data.canvas?.getActiveObjects();
-		if (activeObjects) {
-			data.canvas?.discardActiveObject();
-			const group = new MyGroup(activeObjects, { groupId: Date.now() });
-			group._objects.forEach((obj: any) => {
-				obj.groupId = group.groupId; // Add groupId to each object
-			});
-			data.canvas?.add(group);
-			data.canvas?.requestRenderAll();
+		if(fabricInstance){
+			let activeObjects = data.canvas?.getActiveObjects();
+			if (activeObjects) {
+				data.canvas?.discardActiveObject();
+				const group = new MyGroup(activeObjects, { groupId: Date.now() });
+				group._objects.forEach((obj: any) => {
+					obj.groupId = group.groupId; // Add groupId to each object
+				});
+				data.canvas?.add(group);
+				data.canvas?.requestRenderAll();
+			}
 		}
 	}
 	function unGroupObjects() {
@@ -175,7 +188,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-{#if fabric}
+{#if fabricInstance}
 	<div class="flex justify-between bg-backgroundComponent border-b border-gray-500 h-16">
 		<div class="flex justify-between">
 			<div class="mx-2 flex justify-center items-center customShape">
