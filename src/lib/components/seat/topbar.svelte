@@ -13,17 +13,15 @@
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
 	// import { fabric } from 'fabric';
 
-	let fabricInstance: any = null;
+	let fabric: any = null;
 
 	onMount(async () => {
-		setTimeout(async () => {
-			const { fabric } = await import('fabric');
-			fabricInstance = fabric;
-		}, 1000);
+		const fabricModule = await import('fabric');
+    	fabric = fabricModule.fabric;
 	});
 
-	if(fabricInstance){
-		class MyGroup extends fabricInstance.Group {
+	if(fabric){
+		class MyGroup extends fabric.Group {
 			groupId: number;
 	
 			constructor(items: fabric.Object[], options: any = {}) {
@@ -53,7 +51,7 @@
 		let customShape;
 		switch (shape) {
 			case SeatCustomShapes.Rectangle:
-				customShape = new fabricInstance.Rect({
+				customShape = new fabric.Rect({
 					width: 100,
 					height: 50,
 					fill: data?.fillColor,
@@ -63,7 +61,7 @@
 				break;
 
 			case SeatCustomShapes.Circle:
-				customShape = new fabricInstance.Circle({
+				customShape = new fabric.Circle({
 					radius: 50,
 					fill: data?.fillColor,
 					left: 0,
@@ -72,7 +70,7 @@
 				break;
 
 			case SeatCustomShapes.Ellipse:
-				customShape = new fabricInstance.Ellipse({
+				customShape = new fabric.Ellipse({
 					rx: 50,
 					ry: 25,
 					fill: data?.fillColor,
@@ -82,7 +80,7 @@
 				break;
 
 			case SeatCustomShapes.Line:
-				customShape = new fabricInstance.Line([50, 100, 200, 200], {
+				customShape = new fabric.Line([50, 100, 200, 200], {
 					fill: data?.fillColor,
 					stroke: data?.strokeColor ?? 'black',
 					strokeWidth: 5,
@@ -92,7 +90,7 @@
 				break;
 
 			case SeatCustomShapes.Triangle:
-				customShape = new fabricInstance.Triangle({
+				customShape = new fabric.Triangle({
 					width: 100,
 					height: 100,
 					fill: data?.fillColor,
@@ -117,7 +115,7 @@
 				let imgObj = new Image();
 				imgObj.src = event.target.result;
 				imgObj.onload = () => {
-					let image = new fabricInstance.Image(imgObj);
+					let image = new fabric.Image(imgObj);
 					image.set({
 						left: 0,
 						top: 0,
@@ -157,7 +155,7 @@
 		}
 	}
 	function groupObjects() {
-		if(fabricInstance){
+		if(fabric){
 			let activeObjects = data.canvas?.getActiveObjects();
 			if (activeObjects) {
 				data.canvas?.discardActiveObject();
@@ -188,7 +186,7 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-{#if fabricInstance}
+{#if fabric}
 	<div class="flex justify-between bg-backgroundComponent border-b border-gray-500 h-16">
 		<div class="flex justify-between">
 			<div class="mx-2 flex justify-center items-center customShape">
