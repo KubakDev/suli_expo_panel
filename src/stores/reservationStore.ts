@@ -12,7 +12,6 @@ export const getReservationData = async (
 	selectedExhibition?: number,
 	p_company_name?: string,
 	p_phone_number?: string,
-	p_type?: string,
 	p_email?: string
 ) => {
 	let { data } = await supabase.rpc('get_seat_reservations', {
@@ -21,11 +20,11 @@ export const getReservationData = async (
 		p_exhibition_id: selectedExhibition,
 		p_company_name: p_company_name,
 		p_phone_number: p_phone_number,
-		p_type: p_type,
+		p_type: null,
 		p_email: p_email
 	});
 
-	// 
+	//
 	seatReservationTotalCount.set(data[0]?.total_count);
 	seatReservation.set(data);
 };
@@ -40,7 +39,6 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 		console.error('Error updating data:', error);
 		throw error;
 	}
-
 
 	return data;
 };
@@ -63,7 +61,7 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 		throw error;
 	}
 
-	// 
+	//
 	seatReservation.set(data as Reservation[]);
 	return data as Reservation;
 };
@@ -85,7 +83,7 @@ export const getReservationsForCompany = async (supabase: SupabaseClient, compan
 		throw error;
 	}
 
-	// 
+	//
 
 	seatReservation.set(data);
 };

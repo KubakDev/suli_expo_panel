@@ -168,42 +168,42 @@
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
-								<span>#</span>
+								<span>Primary Color</span>
 							</div>
 						</th>
 						<th
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
-								<span>#</span>
+								<span>Secondary Color</span>
 							</div>
 						</th>
 						<th
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
-								<span>#</span>
+								<span>overlay Primary Color</span>
 							</div>
 						</th>
 						<th
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
-								<span>#</span>
+								<span>overlay Secondary Color</span>
 							</div>
 						</th>
 						<th
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
-								<span>#</span>
+								<span>background color</span>
 							</div>
 						</th>
 						<th
 							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
-								<span>#</span>
+								<span>overlay background color</span>
 							</div>
 						</th>
 						<th
@@ -243,10 +243,12 @@
 				<tbody>
 					{#each $theme as item, index (item.id)}
 						<tr>
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="w-3 p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center text-gray-500">{index + 1}</div>
 							</td>
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td
+								class="w-44 p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+							>
 								<div class="flex justify-center">
 									<p class="w-20 p-2 rounded dark:text-white font-sans">
 										{item.name}

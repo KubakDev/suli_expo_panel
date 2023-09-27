@@ -44,6 +44,10 @@
 		{
 			name: 'address',
 			status: false
+		},
+		{
+			name: 'country',
+			status: false
 		}
 	];
 
