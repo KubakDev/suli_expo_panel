@@ -30,7 +30,7 @@
 			status: false
 		},
 		{
-			name: 'working_fields',
+			name: 'working_field',
 			status: false
 		},
 		{

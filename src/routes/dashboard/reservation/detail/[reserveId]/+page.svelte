@@ -10,6 +10,7 @@
 	import ReservedSeat from './reservedSeat.svelte';
 	import moment from 'moment';
 	import { LanguageEnum } from '../../../../../models/languageEnum';
+	import { convertNumberToWord } from '$lib/utils/numberToWordLang';
 
 	export let data;
 
@@ -168,7 +169,10 @@
 			pricePerMeter,
 			totalArea,
 			totalRawPrice,
-			totalPrice
+			totalPrice,
+			totalPriceText: convertNumberToWord(totalPrice, lang),
+			totalRawPriceText: convertNumberToWord(totalRawPrice, lang),
+			totalAreaText: convertNumberToWord(totalArea, lang)
 		};
 		await data.supabase
 			.from('contract_decode_files')
