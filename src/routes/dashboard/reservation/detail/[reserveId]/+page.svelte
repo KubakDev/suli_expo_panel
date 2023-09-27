@@ -230,7 +230,7 @@
 		);
 	}
 </script>
-
+<!-- comment  -->
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
 	<div class="w-full lg:w-9/12">
 		<table class="min-w-full border-collapse">
