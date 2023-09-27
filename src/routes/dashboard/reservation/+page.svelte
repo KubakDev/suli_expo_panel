@@ -18,7 +18,6 @@
 	let selectedExhibition: number | undefined;
 	let p_company_name: string | undefined;
 	let p_phone_number: string | undefined;
-	let p_type: string | undefined;
 	let p_email: string | undefined;
 	let searchQuery: string = '';
 	let searchField: string | null = null;
@@ -39,7 +38,6 @@
 			selectedExhibition,
 			p_company_name,
 			p_phone_number,
-			p_type,
 			p_email
 		);
 
@@ -84,7 +82,7 @@
 	}
 
 	//create checkboxes
-	const options = ['company name', 'company phoneNumber', 'company email', 'company type'];
+	const options = ['company name', 'company phoneNumber', 'company email'];
 	let checked: any = {};
 
 	function selectOneCheckbox(index: number) {
@@ -93,7 +91,6 @@
 		// Reset values to their default states
 		p_company_name = undefined;
 		p_phone_number = undefined;
-		p_type = undefined;
 		p_email = undefined;
 
 		// Then set the value for the selected option
@@ -111,9 +108,6 @@
 				break;
 			case 'company email':
 				searchField = 'emailField';
-				break;
-			case 'company type':
-				searchField = 'typeField';
 				break;
 			default:
 				searchField = null;
@@ -133,9 +127,6 @@
 			case 'emailField':
 				p_email = searchQuery;
 				break;
-			case 'typeField':
-				p_type = searchQuery;
-				break;
 			default:
 				break;
 		}
@@ -147,7 +138,6 @@
 	function clearFilters() {
 		p_company_name = undefined;
 		p_phone_number = undefined;
-		p_type = undefined;
 		p_email = undefined;
 		searchQuery = '';
 		isOptionSelected = false;

@@ -9,16 +9,25 @@
 	import LayerGroup from '$lib/images/icons/layerGroup.svg';
 	import LayerUnGroup from '$lib/images/icons/layerUnGroup.svg';
 	import { EditingMode } from '../../../models/editingModeModel';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
-	import { fabric } from 'fabric';
+	// import { fabric } from 'fabric';
 
-	class MyGroup extends fabric.Group {
-		groupId: number;
+	let fabric: any = null;
 
-		constructor(items: fabric.Object[], options: any = {}) {
-			super(items, options);
-			this.groupId = options.groupId;
+	onMount(async () => {
+		const fabricModule = await import('fabric');
+    	fabric = fabricModule.fabric;
+	});
+
+	if(fabric){
+		class MyGroup extends fabric.Group {
+			groupId: number;
+	
+			constructor(items: fabric.Object[], options: any = {}) {
+				super(items, options);
+				this.groupId = options.groupId;
+			}
 		}
 	}
 	const dispatch = createEventDispatcher();
@@ -146,15 +155,17 @@
 		}
 	}
 	function groupObjects() {
-		let activeObjects = data.canvas?.getActiveObjects();
-		if (activeObjects) {
-			data.canvas?.discardActiveObject();
-			const group = new MyGroup(activeObjects, { groupId: Date.now() });
-			group._objects.forEach((obj: any) => {
-				obj.groupId = group.groupId; // Add groupId to each object
-			});
-			data.canvas?.add(group);
-			data.canvas?.requestRenderAll();
+		if(fabric){
+			let activeObjects = data.canvas?.getActiveObjects();
+			if (activeObjects) {
+				data.canvas?.discardActiveObject();
+				const group = new MyGroup(activeObjects, { groupId: Date.now() });
+				group._objects.forEach((obj: any) => {
+					obj.groupId = group.groupId; // Add groupId to each object
+				});
+				data.canvas?.add(group);
+				data.canvas?.requestRenderAll();
+			}
 		}
 	}
 	function unGroupObjects() {

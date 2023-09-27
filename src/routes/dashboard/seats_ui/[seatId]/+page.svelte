@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fabric } from "fabric";
+	// import { fabric } from "fabric";
 	import { onMount, tick } from 'svelte';
 	import type { PageData } from '../$types';
 	import {
@@ -30,14 +30,12 @@
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 
-	let iconCanvas = new  fabric.StaticCanvas('');
+	let fabric:any = null;
 	let addSeatModal = false;
-	iconCanvas.setWidth(50);
-	iconCanvas.setHeight(50);
 
 	let currentSeatLayoutData: any = {};
 	export let data: PageData;
-	let canvas: any;
+	let canvas: any = null;
 	let container: any;
 	let fillColor = '#000000'; // Default color
 	let favColors: string[] = [];
@@ -79,79 +77,13 @@
 	let isAnObjectSelected = false;
 
 	// Function to update layers
-	const updateLayers = () => {
-		objects = canvas
-			.getObjects()
-			.filter((object: any) => !(object.type !== 'group' && object.groupId !== undefined))
-			.map((object: any, index: number) => {
-				if (object.type === 'group') {
-					// This object is a group, add group-specific information
-					return {
-						id: object.id,
-						icon: object.icon,
-						type: object.type,
-						isGroup: true,
-						children: object._objects.map((child: any, childIndex: number) => {
-							return {
-								id: childIndex,
-								type: child.type
-							};
-						})
-					};
-				} else {
-					return {
-						icon: object.icon,
-						id: object.id,
-						type: object.type,
-						isGroup: false
-					};
-				}
-			});
-		const el = document.getElementById('layers');
-		const sortable = Sortable.create(el, {
-			onEnd: (evt: any) => {
-				const id = evt.item.dataset.id;
-				const object = canvas.getObjects().find((obj: any) => obj.id == id);
-				if (object) {
-					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
-					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
-					// Ensure index is within array bounds.
-					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
-					// Move the object to the new position.
-
-					object.moveTo(newIndex);
-					// Rerender canvas.
-					canvas.renderAll();
-					// Update the layers in the UI.
-					// updateLayers();
-				}
-			}
-		});
-	};
-
-	$: {
-		images = $seatImageItemStore;
-	}
-	const adjustCanvasSize = () => {
-		if (canvas) {
-			canvas.setDimensions({
-				width: container.offsetWidth,
-				height: container.offsetHeight
-			});
-		}
-	};
-
-	async function updateCustomRectangle() {
-		var activeObject = canvas.getActiveObject();
-		activeObject.set({
-			rx: radius,
-			ry: radius
-		});
-
-		canvas.requestRenderAll();
-	}
-
 	onMount(async () => {
+		const fabricModule = await import('fabric');
+    	fabric = fabricModule.fabric;
+
+		let iconCanvas = new  fabric.StaticCanvas('');
+		iconCanvas.setWidth(50);
+		iconCanvas.setHeight(50);
 		await getFavColors();
 		// document.addEventListener('keydown', (event) => {
 		// 	if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
@@ -390,7 +322,7 @@
 				});
 
 				// Modify the position of each object to be relative to the group
-				group._objects.forEach((object) => {
+				group._objects.forEach((object:any) => {
 					object.set({
 						left: object.left! - group.left!,
 						top: object.top! - group.top!
@@ -478,6 +410,78 @@
 			handleKeydown(e, selectedObject);
 		});
 	});
+	const updateLayers = () => {
+		objects = canvas
+			.getObjects()
+			.filter((object: any) => !(object.type !== 'group' && object.groupId !== undefined))
+			.map((object: any, index: number) => {
+				if (object.type === 'group') {
+					// This object is a group, add group-specific information
+					return {
+						id: object.id,
+						icon: object.icon,
+						type: object.type,
+						isGroup: true,
+						children: object._objects.map((child: any, childIndex: number) => {
+							return {
+								id: childIndex,
+								type: child.type
+							};
+						})
+					};
+				} else {
+					return {
+						icon: object.icon,
+						id: object.id,
+						type: object.type,
+						isGroup: false
+					};
+				}
+			});
+		const el = document.getElementById('layers');
+		const sortable = Sortable.create(el, {
+			onEnd: (evt: any) => {
+				const id = evt.item.dataset.id;
+				const object = canvas.getObjects().find((obj: any) => obj.id == id);
+				if (object) {
+					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
+					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
+					// Ensure index is within array bounds.
+					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
+					// Move the object to the new position.
+
+					object.moveTo(newIndex);
+					// Rerender canvas.
+					canvas.renderAll();
+					// Update the layers in the UI.
+					// updateLayers();
+				}
+			}
+		});
+	};
+
+	$: {
+		images = $seatImageItemStore;
+	}
+	const adjustCanvasSize = () => {
+		if (canvas) {
+			canvas.setDimensions({
+				width: container.offsetWidth,
+				height: container.offsetHeight
+			});
+		}
+	};
+
+	async function updateCustomRectangle() {
+		var activeObject = canvas.getActiveObject();
+		activeObject.set({
+			rx: radius,
+			ry: radius
+		});
+
+		canvas.requestRenderAll();
+	}
+
 
 	function handleKeydown(event: any, selectedObject: any) {
 		let movingPixel = 1;

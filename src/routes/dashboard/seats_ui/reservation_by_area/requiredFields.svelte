@@ -30,7 +30,7 @@
 			status: false
 		},
 		{
-			name: 'working_fields',
+			name: 'working_field',
 			status: false
 		},
 		{
@@ -43,6 +43,10 @@
 		},
 		{
 			name: 'address',
+			status: false
+		},
+		{
+			name: 'country',
 			status: false
 		}
 	];
