@@ -29,6 +29,7 @@
 		created_at?: Date;
 		reserved_areas?: string;
 		type: SeatsLayoutTypeEnum;
+		extra_discount_checked?: boolean;
 	}
 	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | {} = undefined;
@@ -270,10 +271,15 @@
 					</th>
 					<th class="table_header dark:border-gray-800">
 						<div class="flex flex-col items-center gap-2 justify-between">
+							extra discount check status
+						</div></th
+					>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex flex-col items-center gap-2 justify-between">
 							contract file
-							<div class="flex items-center">
+							<!-- <div class="flex items-center">
 								<Checkbox bind:checked={extraDiscountChecked} />enable extra discount
-							</div>
+							</div> -->
 						</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
@@ -294,12 +300,14 @@
 
 						<td>
 							<div class="min-w-[100px]">
-								<img
-									src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
-										?.logo_url}"
-									alt=""
-									class="rounded-full w-16 h-16 m-3"
-								/>
+								{#if reservation.company?.logo_url}
+									<img
+										src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
+											?.logo_url}"
+										alt=""
+										class="rounded-full w-16 h-16 m-3"
+									/>
+								{/if}
 							</div>
 						</td>
 
@@ -363,6 +371,18 @@
 										>{ReservationStatusEnum.REJECT}</option
 									>
 								</select>
+							</div>
+						</td>
+						<td>
+							<div class="w-full flex justify-center">
+								<div
+									class="min-w-[80px] h-[50px] flex justify-center items-center rounded-xl p-3"
+									style=" {reservation.extra_discount_checked
+										? 'background-color: #00bf2d;color:white'
+										: 'background-color:#edeff2'};"
+								>
+									{reservation.extra_discount_checked ? 'checked' : 'not checked'}
+								</div>
 							</div>
 						</td>
 						<td>
