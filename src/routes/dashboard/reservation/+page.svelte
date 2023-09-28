@@ -23,12 +23,9 @@
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 10;
+	const pageSize: number = 15;
 	let totalItems: any;
 	let totalPages = 1;
-
-	$: {
-	}
 
 	async function fetchReservationData() {
 		let result: any = await getReservationData(
