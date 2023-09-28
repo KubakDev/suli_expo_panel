@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Trash } from 'svelte-heros-v2';
+	import { PencilSquare, Trash } from 'svelte-heros-v2';
 	import {
 		Input,
 		Label,
@@ -19,7 +19,8 @@
 		TabItem,
 		Textarea,
 		Spinner,
-		Fileupload
+		Fileupload,
+		Modal
 	} from 'flowbite-svelte';
 	import type { ExhibitionsModel } from '../../../../../models/exhibitionModel';
 	import { exhibitions, getData } from '../../../../../stores/exhibitionStore';
@@ -54,6 +55,7 @@
 		name: '',
 		isActive: undefined
 	};
+	let isOpenEditModal = false;
 	let loading = false;
 	let serviceStatus = (
 		Object.keys(SeatServiceStatusEnum) as Array<keyof typeof SeatServiceStatusEnum>
@@ -223,8 +225,49 @@
 		const fileInput = e.target as HTMLInputElement;
 		excelFilePreviewSelected = fileInput.files![0];
 	}
+	let selectedEditArea = {
+		area: '',
+		quantity: 0,
+		index: 0
+	};
+
+	function openEditModal(index: number) {
+		isOpenEditModal = true;
+		Object.assign(selectedEditArea, areas[index]);
+		selectedEditArea.index = index;
+	}
+	function editSelectedArea() {
+		areas[selectedEditArea.index] = selectedEditArea;
+		areas = [...areas];
+		isOpenEditModal = false;
+	}
 </script>
 
+<Modal title="edit Area" bind:open={isOpenEditModal} class="bg-white max-w-sm mx-auto " autoclose>
+	<div class=" w-full">
+		<div class="my-2">
+			<Label for="last_name" class="mb-2">Area By Meter</Label>
+			<Input
+				type="number"
+				id="last_name"
+				placeholder="add area"
+				bind:value={selectedEditArea.area}
+			/>
+		</div>
+		<div>
+			<Label for="company" class="mb-2">Quantity</Label>
+			<Input
+				type="number"
+				id="company"
+				placeholder="add quantity"
+				bind:value={selectedEditArea.quantity}
+			/>
+		</div>
+		<div class="mt-6 w-full flex justify-end">
+			<Button on:click={editSelectedArea}>Edit</Button>
+		</div>
+	</div></Modal
+>
 <div class="w-full h-full flex flex-col justify-center items-center">
 	<div class="bg-[#f9fafb] w-7/12 p-14 rounded-lg">
 		<Tabs>
@@ -412,7 +455,13 @@
 									<TableBodyCell>{area.area}M</TableBodyCell>
 									<TableBodyCell>{area.quantity}</TableBodyCell>
 									<TableBodyCell>
-										<Trash class="text-danger cursor-pointer" on:click={() => deleteArea(index)} />
+										<div class="flex gap-2">
+											<PencilSquare class=" cursor-pointer" on:click={() => openEditModal(index)} />
+											<Trash
+												class="text-danger cursor-pointer"
+												on:click={() => deleteArea(index)}
+											/>
+										</div>
 									</TableBodyCell>
 								</TableBodyRow>
 							{/each}
