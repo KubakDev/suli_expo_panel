@@ -234,6 +234,7 @@
 		);
 	}
 </script>
+
 <!-- comment  -->
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
 	<div class="w-full lg:w-9/12">
@@ -292,11 +293,18 @@
 						</td>
 
 						<td>
-							<div>{reservation.company?.logo_url}</div>
+							<div class="min-w-[100px]">
+								<img
+									src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
+										?.logo_url}"
+									alt=""
+									class="rounded-full w-16 h-16 m-3"
+								/>
+							</div>
 						</td>
 
 						<td>
-							<div>{reservation.company?.comment}</div>
+							<div>{reservation.comment}</div>
 						</td>
 						<td>
 							<div>{reservation.company?.address}</div>
