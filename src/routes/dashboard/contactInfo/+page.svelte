@@ -26,9 +26,7 @@
 		try {
 			await deleteData(contactInfo_id, data.supabase);
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting Information:', error);
-		}
+		} catch (error) {}
 	}
 </script>
 

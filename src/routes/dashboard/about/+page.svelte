@@ -35,9 +35,7 @@
 			// alert('member deleted successfully!');
 
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting member:', error);
-		}
+		} catch (error) {}
 	}
 
 	const columnTitle = [

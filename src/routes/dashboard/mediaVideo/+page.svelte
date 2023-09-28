@@ -41,9 +41,7 @@
 				currentPage = totalPages;
 			}
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting MediaVideo:', error);
-		}
+		} catch (error) {}
 	}
 
 	function calculateIndex(index: number) {

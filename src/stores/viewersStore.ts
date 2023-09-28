@@ -29,14 +29,14 @@ export const getViewerData = async (
 		const { data, error } = await query;
 
 		if (error) {
-			console.error('Error fetching viewer data:', error);
+
 		} else {
 			if (data && data.length > 0) {
 				viewerData.set(data[0] as Viewers);
 			}
 		}
 	} catch (error) {
-		console.error('Error fetching viewer data:', error);
+
 	}
 };
 
@@ -49,11 +49,11 @@ export const getAllViewersData = async (supabase: SupabaseClient) => {
 			.order('created_at', { ascending: false });
 
 		if (error) {
-			console.error('Error fetching viewer data:', error);
+
 		} else {
 			AllViewersData.set(data ?? []);
 		}
 	} catch (error) {
-		console.error('Error fetching viewer data:', error);
+
 	}
 };

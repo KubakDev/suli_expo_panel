@@ -47,9 +47,7 @@
 				currentPage = totalPages;
 			}
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting gallery:', error);
-		}
+		} catch (error) {}
 	}
 
 	function calculateIndex(index: any) {

@@ -42,7 +42,7 @@ export const getCompanyData = async (
 
 	const { data, error } = await query;
 	if (error) {
-		console.error('Error fetching company data:', error);
+
 		return [];
 	}
 
@@ -72,7 +72,7 @@ export const getCompanyDataById = async (supabase: SupabaseClient, id: number) =
 		}
 		companyDetail.set(data);
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

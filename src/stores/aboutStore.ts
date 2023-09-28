@@ -26,7 +26,7 @@ export const insertData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -41,7 +41,7 @@ export const getData = async (supabase: SupabaseClient) => {
 
 		about.set(data as AboutModel[]);
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -83,7 +83,7 @@ export const updateData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

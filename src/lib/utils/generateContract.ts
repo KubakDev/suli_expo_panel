@@ -13,7 +13,7 @@ export const generateDocx = (decodedFile: string, data: any) => {
   try {
     doc.render();
   } catch (error) {
-    console.error(error);
+
   }
   const generatedDocx = doc.getZip().generate({
     type: 'blob',
@@ -22,6 +22,6 @@ export const generateDocx = (decodedFile: string, data: any) => {
 
   const downloadLink = document.createElement('a');
   downloadLink.href = URL.createObjectURL(generatedDocx);
-  downloadLink.download = 'generated.docx';
+  downloadLink.download = `${data.company_name}.docx`;
   downloadLink.click();
 };

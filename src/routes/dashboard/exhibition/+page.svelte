@@ -35,9 +35,7 @@
 				.eq('id', exhibitionId);
 
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting exhibition:', error);
-		}
+		} catch (error) {}
 	}
 
 	const flipDurationMs = 300;
@@ -70,7 +68,6 @@
 				.eq('id', item.id);
 
 			if (error) {
-				console.error('Error updating position:', error);
 			}
 		}
 	}

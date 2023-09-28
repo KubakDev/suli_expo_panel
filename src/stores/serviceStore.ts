@@ -25,7 +25,7 @@ export const insertData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -41,7 +41,7 @@ export const getData = async (supabase: SupabaseClient) => {
 		service.set(data ?? []);
 		// 
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -66,7 +66,7 @@ export const deleteData = async (serviceId: number, supabase: SupabaseClient) =>
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -108,7 +108,7 @@ export const updateData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

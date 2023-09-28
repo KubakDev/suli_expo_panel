@@ -40,9 +40,7 @@
 				currentPage = totalPages;
 			}
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting carousel:', error);
-		}
+		} catch (error) {}
 	}
 
 	function calculateIndex(index: number) {

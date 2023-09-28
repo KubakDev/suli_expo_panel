@@ -53,7 +53,7 @@
 		if (id) {
 			seatLayoutId = parseInt(id);
 		}
-		if(seatLayoutModel) {
+		if (seatLayoutModel) {
 			seatLayoutName = seatLayoutModel.name;
 		}
 	});
@@ -379,7 +379,6 @@
 			});
 
 		if (error) {
-			console.error('Error uploading image:', error.message);
 			return null;
 		} else {
 			const imageUrl = data?.path;

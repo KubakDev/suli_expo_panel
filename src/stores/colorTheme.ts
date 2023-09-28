@@ -15,7 +15,7 @@ export const insertData = async (colorThemeObject: ColorTheme, supabase: Supabas
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -46,7 +46,7 @@ export const updateData = async (colorThemeObject: ColorTheme, supabase: Supabas
 		getData(supabase);
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -64,7 +64,7 @@ export const deleteData = async (id: number, supabase: SupabaseClient) => {
 			return currentData.filter((item) => item.id !== id);
 		});
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

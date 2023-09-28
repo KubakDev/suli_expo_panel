@@ -26,7 +26,7 @@ export const insertData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -53,7 +53,7 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 		magazine.set(data ?? []);
 		return result;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -78,7 +78,7 @@ export const deleteData = async (magazineId: number, supabase: SupabaseClient) =
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -120,7 +120,7 @@ export const updateData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

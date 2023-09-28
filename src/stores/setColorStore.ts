@@ -9,7 +9,7 @@ export const getSetColorData = async (color: SetColorModel) => {
 		setColor.set(color);
 		// 
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
