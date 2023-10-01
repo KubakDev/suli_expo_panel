@@ -39,9 +39,7 @@
 				currentPage = totalPages;
 			}
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting magazine:', error);
-		}
+		} catch (error) {}
 	}
 
 	function calculateIndex(index: any) {

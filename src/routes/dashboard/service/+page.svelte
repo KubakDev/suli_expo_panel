@@ -31,9 +31,7 @@
 		try {
 			await deleteData(serviceId, data.supabase);
 			await fetchData(); // Fetch data again after deletion
-		} catch (error) {
-			console.error('Error deleting service:', error);
-		}
+		} catch (error) {}
 	}
 
 	const flipDurationMs = 300;
@@ -65,7 +63,6 @@
 				.eq('id', item.id);
 
 			if (error) {
-				console.error('Error updating position:', error);
 			}
 		}
 	}

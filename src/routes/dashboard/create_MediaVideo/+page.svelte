@@ -54,9 +54,7 @@
 			});
 			exhibitionData = uniqueTypes;
 			//
-		} catch (error) {
-			console.error(error);
-		}
+		} catch (error) {}
 	};
 
 	onMount(fetchData);

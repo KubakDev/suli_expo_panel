@@ -108,7 +108,7 @@
 			await deleteData(newsId, data.supabase);
 			await fetchData();
 		} catch (error) {
-			// console.error('Error deleting Theme:', error);
+			//
 		}
 	}
 </script>

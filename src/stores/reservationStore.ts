@@ -36,7 +36,7 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 		.eq('id', id);
 
 	if (error) {
-		console.error('Error updating data:', error);
+
 		throw error;
 	}
 
@@ -57,7 +57,7 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 		.single();
 
 	if (error) {
-		console.error('Error fetching data by ID:', error);
+
 		throw error;
 	}
 
@@ -79,7 +79,7 @@ export const getReservationsForCompany = async (supabase: SupabaseClient, compan
 		.eq('company_id', companyId);
 
 	if (error) {
-		console.error('Error fetching reservation count for company:', error);
+
 		throw error;
 	}
 

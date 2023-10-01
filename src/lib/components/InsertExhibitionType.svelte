@@ -18,9 +18,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-		} catch (error) {
-			console.error(error);
-		}
+		} catch (error) {}
 	};
 
 	onMount(fetchData);

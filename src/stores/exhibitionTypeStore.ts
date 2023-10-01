@@ -14,7 +14,7 @@ export const getDataExhibition = async (supabase: SupabaseClient) => {
 
 		return data as ExhibitionModel[];
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

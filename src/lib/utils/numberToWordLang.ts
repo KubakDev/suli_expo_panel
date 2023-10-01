@@ -4,7 +4,6 @@ import { convertNumber2ku } from './numberToKurdishWord';
 import { LanguageEnum } from '../../models/languageEnum';
 
 export function convertNumberToWord(number: number, lang: string) {
-  console.log(number)
   if (lang == LanguageEnum.CKB) {
     return convertNumber2ku(number);
 

@@ -13,7 +13,8 @@
 	import { convertNumberToWord } from '$lib/utils/numberToWordLang';
 
 	export let data;
-
+	let loadedTotalPrice = false;
+	let loading = false;
 	let languages = Object.values(LanguageEnum);
 	let discountedPrice = 0;
 	interface reservationType {
@@ -29,6 +30,7 @@
 		created_at?: Date;
 		reserved_areas?: string;
 		type: SeatsLayoutTypeEnum;
+		extra_discount_checked?: boolean;
 	}
 	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | {} = undefined;
@@ -41,19 +43,21 @@
 		getReservationData();
 	});
 	async function getReservationData() {
+		loading = true;
 		await data.supabase
 			.from('seat_reservation')
 			.select('*,company(*),exhibition(*,exhibition_languages(*))')
 			.eq('object_id', objectId)
-			.then((Response) => {
+			.then(async (Response) => {
 				reservations = Response.data as reservationType[];
 				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
 				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
-					getSeatLayout();
+					await getSeatLayout();
 				}
 				exhibitionId = reservations[0]?.exhibition?.id ?? 0;
 				calculateTotalPrice();
 			});
+		loading = false;
 	}
 
 	async function getSeatLayout() {
@@ -122,6 +126,7 @@
 		};
 	}
 	async function updateStatus(itemID?: number, selectedStatus?: string) {
+		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
 			await data.supabase
@@ -224,6 +229,7 @@
 					totalRawPrice += +seatArea.quantity * pricePerMeter * +seatArea.area;
 				});
 			});
+		loadedTotalPrice = true;
 	}
 	function getServices(service: string) {
 		return JSON.parse(service ?? '');
@@ -234,6 +240,7 @@
 		);
 	}
 </script>
+
 <!-- comment  -->
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
 	<div class="w-full lg:w-9/12">
@@ -269,11 +276,11 @@
 					</th>
 					<th class="table_header dark:border-gray-800">
 						<div class="flex flex-col items-center gap-2 justify-between">
-							contract file
-							<div class="flex items-center">
-								<Checkbox bind:checked={extraDiscountChecked} />enable extra discount
-							</div>
-						</div>
+							extra discount check status
+						</div></th
+					>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex flex-col items-center gap-2 justify-between">contract file</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
 						<div class="flex items-center gap-2">export excel sheet</div>
@@ -292,11 +299,20 @@
 						</td>
 
 						<td>
-							<div>{reservation.company?.logo_url}</div>
+							<div class="min-w-[100px]">
+								{#if reservation.company?.logo_url}
+									<img
+										src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
+											?.logo_url}"
+										alt=""
+										class="rounded-full w-16 h-16 m-3"
+									/>
+								{/if}
+							</div>
 						</td>
 
 						<td>
-							<div>{reservation.company?.comment}</div>
+							<div>{reservation.comment}</div>
 						</td>
 						<td>
 							<div>{reservation.company?.address}</div>
@@ -343,7 +359,7 @@
 									class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 									bind:value={reservation.status}
 									on:change={() => updateStatus(reservation?.id, reservation.status)}
-									disabled={reservation.status === ReservationStatusEnum.REJECT}
+									disabled={reservation.status === ReservationStatusEnum.REJECT || loading}
 								>
 									<option value={ReservationStatusEnum.PENDING}
 										>{ReservationStatusEnum.PENDING}</option
@@ -358,14 +374,30 @@
 							</div>
 						</td>
 						<td>
+							<div class="w-full flex justify-center">
+								<div
+									class="min-w-[80px] h-[50px] flex justify-center items-center rounded-xl p-3"
+									style=" {reservation.extra_discount_checked
+										? 'background-color: #00bf2d;color:white'
+										: 'background-color:#edeff2'};"
+								>
+									{reservation.extra_discount_checked ? 'checked' : 'not checked'}
+								</div>
+							</div>
+						</td>
+						<td>
 							{#each languages as lang}
-								<Button class="m-2" on:click={() => exportContract(reservation, lang)}
-									>export {lang}</Button
+								<Button
+									disabled={!loadedTotalPrice}
+									class="m-2"
+									on:click={() => exportContract(reservation, lang)}>export {lang}</Button
 								>
 							{/each}
 						</td>
 						<td>
-							<Button class="mx-2" on:click={() => exportFile(reservation)}>download</Button>
+							<Button class="mx-2" on:click={() => exportFile(reservation)} disabled={loading}
+								>download</Button
+							>
 						</td>
 						<td>
 							<div class="mx-4">

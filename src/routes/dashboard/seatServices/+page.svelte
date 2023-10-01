@@ -52,7 +52,7 @@
 	// 		}
 	// 		await fetchData();
 	// 	} catch (error) {
-	// 		console.error('Error deleting seatServices:', error);
+	//
 	// 	}
 	// }
 

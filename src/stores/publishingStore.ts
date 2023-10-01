@@ -25,7 +25,7 @@ export const insertData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -52,7 +52,7 @@ export const getData = async (supabase: SupabaseClient, page: number, pageSize: 
 		publishing.set(data ?? []);
 		return result;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -77,7 +77,7 @@ export const deleteData = async (publishingId: number, supabase: SupabaseClient)
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -119,7 +119,7 @@ export const updateData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

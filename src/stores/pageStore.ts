@@ -20,7 +20,7 @@ export const insertPageData = async (PageTypeObject: PageData, supabase: Supabas
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -47,7 +47,7 @@ export const updatePageData = async (updatedPageData: PageData, supabase: Supaba
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

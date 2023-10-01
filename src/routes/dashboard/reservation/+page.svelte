@@ -23,12 +23,9 @@
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 4;
+	const pageSize: number = 15;
 	let totalItems: any;
 	let totalPages = 1;
-
-	$: {
-	}
 
 	async function fetchReservationData() {
 		let result: any = await getReservationData(
@@ -61,9 +58,7 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-		} catch (error) {
-			console.error(error);
-		}
+		} catch (error) {}
 	};
 
 	onMount(fetchData);
