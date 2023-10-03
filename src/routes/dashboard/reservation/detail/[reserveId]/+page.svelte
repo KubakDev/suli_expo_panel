@@ -5,7 +5,7 @@
 	import type { CompanyType } from '../../../../../models/companyModel';
 	import type { ExhibitionModel } from '../../../../../models/exhibitionTypeModel';
 	import type { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
-	import { Button, Checkbox } from 'flowbite-svelte';
+	import { Button, Checkbox, Modal } from 'flowbite-svelte';
 	import { generateDocx } from '$lib/utils/generateContract';
 	import ReservedSeat from './reservedSeat.svelte';
 	import moment from 'moment';
@@ -32,6 +32,8 @@
 		type: SeatsLayoutTypeEnum;
 		extra_discount_checked?: boolean;
 	}
+	let openPreviewImage = false;
+	let selectedImageUrlForPreview = '';
 	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | any[] = undefined;
 	let extraDiscountChecked = false;
@@ -258,38 +260,51 @@
 	}
 </script>
 
+<Modal bind:open={openPreviewImage} autoclose outsideclose>
+	<!-- svelte-ignore a11y-missing-attribute -->
+	<img src={selectedImageUrlForPreview} class="rounded-lg w-full h-full min-w-[150px] pt-8" />
+</Modal>
 <!-- comment  -->
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
-	<div class="w-full lg:w-9/12">
+	<div class="w-full lg:w-9/12 overflow-x-auto">
 		<table class="min-w-full border-collapse">
 			<thead>
 				<tr>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">company name</div>
+						<div class="flex items-center gap-2 mx-[50px]">company name</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">avatar</div>
+						<div class="flex items-center gap-2 mx-[50px]">avatar</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">comment</div>
+						<div class="flex items-center gap-2 mx-[50px]">country</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">company address</div>
+						<div class="flex items-center gap-2 mx-[50px]">passport images</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">company phone number</div>
+						<div class="flex items-center gap-2 mx-[50px]">user images</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">exhibition type</div>
+						<div class="flex items-center gap-2 mx-[50px]">comment</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">reserved areas</div>
+						<div class="flex items-center gap-2 mx-[50px]">company address</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">services</div>
+						<div class="flex items-center gap-2 mx-[50px]">company phone number</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
-						<div class="flex items-center gap-2">change status</div>
+						<div class="flex items-center gap-2 mx-[50px]">exhibition type</div>
+					</th>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex items-center gap-2 mx-[50px]">reserved areas</div>
+					</th>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex items-center gap-2 mx-[50px]">services</div>
+					</th>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex items-center gap-2 mx-[50px]">change status</div>
 					</th>
 					<th class="table_header dark:border-gray-800">
 						<div class="flex flex-col items-center gap-2 justify-between">
@@ -311,7 +326,7 @@
 			<tbody class="dark:text-gray-300">
 				{#each reservations as reservation}
 					<tr class="border-2 border-[#edeff2]">
-						<td>
+						<td class="">
 							<div>{reservation.company?.company_name}</div>
 						</td>
 
@@ -324,6 +339,56 @@
 										alt=""
 										class="rounded-full w-16 h-16 m-3"
 									/>
+								{/if}
+							</div>
+						</td>
+						<td>
+							<div>
+								{reservation?.company?.country}
+							</div>
+						</td>
+						<td>
+							<div class="w-[100px]">
+								{#if reservation.company?.passport_image}
+									{#each reservation.company?.passport_image as image}
+										<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+										<!-- svelte-ignore a11y-click-events-have-key-events -->
+										<img
+											src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
+											alt=""
+											class="rounded-lg w-full h-16 min-w-[150px] cursor-pointer"
+											on:click={() => {
+												openPreviewImage = true;
+												selectedImageUrlForPreview =
+													import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + image;
+											}}
+										/>
+										<br />
+									{/each}
+								{/if}
+							</div>
+						</td>
+						<td>
+							<div class="w-[100px]">
+								{#if reservation.company?.user_image}
+									<!-- {#each reservation.company?.user_image as image} -->
+									<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+									<!-- svelte-ignore a11y-click-events-have-key-events -->
+									<img
+										src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
+											?.user_image}"
+										alt=""
+										class="rounded-lg w-full h-16 min-w-[150px] cursor-pointer"
+										on:click={() => {
+											openPreviewImage = true;
+											selectedImageUrlForPreview =
+												import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL +
+												'/' +
+												reservation.company?.user_image;
+										}}
+									/>
+									<br />
+									<!-- {/each} -->
 								{/if}
 							</div>
 						</td>
@@ -456,5 +521,18 @@
 
 		border-width: 1px;
 		display: table-cell;
+	}
+	td {
+		/* background-color: red; */
+		border: 2px solid #edeff2;
+		text-align: center;
+	}
+	td div {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		padding: 0 30px;
 	}
 </style>
