@@ -55,6 +55,7 @@
 		name: '',
 		isActive: undefined
 	};
+	let excel_preview_url = '';
 	let isOpenEditModal = false;
 	let loading = false;
 	let serviceStatus = (
@@ -91,6 +92,7 @@
 				seatInfoData.price_per_meter = response.data.price_per_meter;
 				seatInfoData.discounted_price = response.data.discounted_price;
 				seatInfoData.extra_discount = response.data.extra_discount;
+				excel_preview_url = response.data.excel_preview_url;
 				if (response.data.areas) {
 					areas = JSON.parse(response.data.areas);
 				}
@@ -124,7 +126,7 @@
 				.eq('exhibition', seatInfoData.exhibition?.id);
 		}
 		const areasArray = JSON.stringify(areas);
-		let excel_preview_url = '';
+
 		if (excelFilePreviewSelected) {
 			const randomText = getRandomTextNumber();
 			await supabase.storage
