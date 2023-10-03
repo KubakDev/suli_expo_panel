@@ -4,7 +4,7 @@
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { CompanyType } from '../../../../../models/companyModel';
 	import type { ExhibitionModel } from '../../../../../models/exhibitionTypeModel';
-	import { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
+	import type { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
 	import { Button, Checkbox } from 'flowbite-svelte';
 	import { generateDocx } from '$lib/utils/generateContract';
 	import ReservedSeat from './reservedSeat.svelte';
