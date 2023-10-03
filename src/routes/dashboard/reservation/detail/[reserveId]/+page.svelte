@@ -33,7 +33,7 @@
 		extra_discount_checked?: boolean;
 	}
 	let objectId = $page.params.reserveId;
-	let seatLayout: undefined | {} = undefined;
+	let seatLayout: undefined | any[] = undefined;
 	let extraDiscountChecked = false;
 	let reservations: reservationType[] = [];
 	let reservedSeatData: any = [];
@@ -51,9 +51,9 @@
 			.then(async (Response) => {
 				reservations = Response.data as reservationType[];
 				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
-				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
-					await getSeatLayout();
-				}
+				// if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
+				await getSeatLayout();
+				// }
 				exhibitionId = reservations[0]?.exhibition?.id ?? 0;
 				calculateTotalPrice();
 			});
@@ -125,7 +125,7 @@
 				reserveData.status
 		};
 	}
-	async function updateStatus(itemID?: number, selectedStatus?: string) {
+	async function updateStatus(itemID?: number, selectedStatus?: string, reservationData?: any) {
 		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
@@ -138,19 +138,36 @@
 			.from('seat_reservation')
 			.update({ status: selectedStatus })
 			.eq('id', itemID);
-
-		getReservationData();
-		reservations.map(async (reserveData) => {
-			if (reserveData.status == ReservationStatusEnum.PENDING) return;
+		if (selectedStatus == ReservationStatusEnum.REJECT) {
+			let activeSeat = seatLayout?.find((seat) => seat.is_active == true);
+			let seatAreasData = JSON.parse(activeSeat?.areas);
+			let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
+			userReservedAreas.map((userReservedArea: any) => {
+				let areaIndex = seatAreasData.findIndex((area: any) => area.area == userReservedArea.area);
+				seatAreasData[areaIndex].quantity =
+					seatAreasData[areaIndex].quantity + userReservedArea.quantity;
+			});
 			await data.supabase
-				.from('notification')
-				.insert([
-					addNotificationData(reserveData, LanguageEnum.EN),
-					addNotificationData(reserveData, LanguageEnum.CKB),
-					addNotificationData(reserveData, LanguageEnum.AR)
-				])
-				.then((response) => {});
-		});
+				.from('seat_layout')
+				.update({
+					areas: JSON.stringify(seatAreasData)
+				})
+				.eq('id', activeSeat.id)
+				.then(() => {
+					getReservationData();
+					reservations.map(async (reserveData) => {
+						if (reserveData.status == ReservationStatusEnum.PENDING) return;
+						await data.supabase
+							.from('notification')
+							.insert([
+								addNotificationData(reserveData, LanguageEnum.EN),
+								addNotificationData(reserveData, LanguageEnum.CKB),
+								addNotificationData(reserveData, LanguageEnum.AR)
+							])
+							.then((response) => {});
+					});
+				});
+		}
 	}
 
 	let totalPrice = 0;
@@ -358,7 +375,7 @@
 								<select
 									class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 									bind:value={reservation.status}
-									on:change={() => updateStatus(reservation?.id, reservation.status)}
+									on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
 									disabled={reservation.status === ReservationStatusEnum.REJECT || loading}
 								>
 									<option value={ReservationStatusEnum.PENDING}
@@ -421,9 +438,9 @@
 				{/each}
 			</tbody>
 		</table>
-		{#if seatLayout}
+		<!-- {#if seatLayout}
 			<ReservedSeat data={seatLayout} reservedData={reservations[0]} />
-		{/if}
+		{/if} -->
 	</div>
 </div>
 
