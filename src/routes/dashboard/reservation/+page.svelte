@@ -37,7 +37,6 @@
 			p_phone_number,
 			p_email
 		);
-
 		if ($seatReservation && $seatReservation[0] && $seatReservation[0]?.total_count) {
 			totalItems = $seatReservation[0]?.total_count;
 			totalPages = Math.ceil(totalItems / pageSize);
@@ -145,6 +144,11 @@
 	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchReservationData();
+	}
+	function checkIfEdited(objectId: number) {
+		let reservation = $seatReservation.find((item) => item.object_id == objectId);
+		let editedField = reservation?.companies?.find((item) => item.edit == true);
+		return editedField ? true : false;
 	}
 </script>
 
@@ -357,14 +361,19 @@
 									</td>
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-										<div class="text-center">
-											<button
-												on:click={() => {
-													goto(`/dashboard/reservation/detail/${reservation.object_id}`);
-												}}
-												class="dark:text-gray-400 hover:underline"
-												>View
-											</button>
+										<div class="flex gap-1 items-center">
+											{#if reservation.object_id && checkIfEdited(reservation.object_id)}
+												<div class="h-4 w-4 bg-red-600 rounded-full" />
+											{/if}
+											<div class="text-center">
+												<button
+													on:click={() => {
+														goto(`/dashboard/reservation/detail/${reservation.object_id}`);
+													}}
+													class="dark:text-gray-400 hover:underline"
+													>View
+												</button>
+											</div>
 										</div>
 									</td>
 								</tr>

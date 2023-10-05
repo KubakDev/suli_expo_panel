@@ -16,5 +16,6 @@ export interface CompanyType {
 	working_field?: string;
 	passport_image?: string[];
 	user_image?: string[];
-	country?: string
+	country?: string;
+	edit?: boolean;
 }
