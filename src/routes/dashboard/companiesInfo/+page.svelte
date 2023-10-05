@@ -53,7 +53,7 @@
 	}
 
 	//create checkboxes
-	const options = ['company name', 'company phoneNumber', 'company email', 'company type'];
+	const options = ['company name', 'company phoneNumber', 'company email'];
 	let checked: any = {};
 
 	function selectOneCheckbox(index: number) {
@@ -74,9 +74,6 @@
 				break;
 			case 'company email':
 				searchField = 'emailField';
-				break;
-			case 'company type':
-				searchField = 'emailType';
 				break;
 		}
 
@@ -254,13 +251,6 @@
 									<span>company phone_number</span>
 								</div>
 							</th>
-							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
-							>
-								<div class="flex items-center gap-2">
-									<span>company type </span>
-								</div>
-							</th>
 
 							<th
 								class="flex justify-center items-center p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm"
@@ -313,11 +303,6 @@
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
 											{item?.phone_number}
-										</div>
-									</td>
-									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-										<div>
-											{item?.type}
 										</div>
 									</td>
 
