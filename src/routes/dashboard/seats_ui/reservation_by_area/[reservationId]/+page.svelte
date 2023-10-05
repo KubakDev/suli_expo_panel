@@ -114,7 +114,6 @@
 	async function updatedSeat() {
 		formSubmitted = true;
 		const supabase = data.supabase;
-
 		if (!seatInfoData.name || !seatInfoData.exhibition || seatInfoData.isActive == undefined) {
 			return;
 		}

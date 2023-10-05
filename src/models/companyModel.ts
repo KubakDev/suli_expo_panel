@@ -14,4 +14,8 @@ export interface CompanyType {
 	passport_number?: string;
 	manager_name?: string;
 	working_field?: string;
+	passport_image?: string[];
+	user_image?: string[];
+	country?: string;
+	edit?: boolean;
 }
