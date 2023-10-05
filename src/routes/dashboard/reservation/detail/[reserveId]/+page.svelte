@@ -43,6 +43,12 @@
 	onMount(async () => {
 		objectId = $page.params.reserveId;
 		getReservationData();
+		await data.supabase
+			.from('seat_reservation')
+			.update({
+				new_edit: false
+			})
+			.eq('object_id', objectId);
 	});
 	async function getReservationData() {
 		loading = true;
