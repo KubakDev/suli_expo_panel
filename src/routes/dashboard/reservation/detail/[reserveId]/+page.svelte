@@ -362,7 +362,7 @@
 										<img
 											src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
 											alt=""
-											class="rounded-lg w-full h-16 min-w-[150px] cursor-pointer"
+											class="rounded-lg w-full h-32 min-w-[150px] object-cover cursor-pointer"
 											on:click={() => {
 												openPreviewImage = true;
 												selectedImageUrlForPreview =
@@ -380,21 +380,20 @@
 									<!-- {#each reservation.company?.user_image as image} -->
 									<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
-									<img
-										src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
-											?.user_image}"
-										alt=""
-										class="rounded-lg w-full h-16 min-w-[150px] cursor-pointer"
-										on:click={() => {
-											openPreviewImage = true;
-											selectedImageUrlForPreview =
-												import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL +
-												'/' +
-												reservation.company?.user_image;
-										}}
-									/>
-									<br />
-									<!-- {/each} -->
+									{#each reservation.company?.user_image as image}
+										<img
+											src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
+											alt=""
+											class="rounded-lg w-full h-32 min-w-[150px] object-cover cursor-pointer"
+											on:click={() => {
+												openPreviewImage = true;
+												selectedImageUrlForPreview =
+													import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + image;
+											}}
+										/>
+										<br />
+										<!-- {/each} -->
+									{/each}
 								{/if}
 							</div>
 						</td>
