@@ -92,7 +92,7 @@
 						</div>
 						<div class="text-right">
 							<p class="text-5xl pb-5">
-								{$viewerData?.news_viewers}
+								{$viewerData?.news_viewers || 0}
 								<!-- <Countup
 									initial={0}
 									value={$viewerData?.news_viewers}
@@ -133,7 +133,7 @@
 						</div>
 						<div class="text-right">
 							<p class="text-5xl pb-5">
-								{$viewerData?.exhibition_viewers}
+								{$viewerData?.exhibition_viewers || 0}
 								<!-- <Countup
 									initial={0}
 									value={$viewerData?.exhibition_viewers}
@@ -192,7 +192,7 @@
 						</div>
 						<div class="text-right">
 							<p class="text-5xl pb-5">
-								{$viewerData?.suly_expo_viewers}
+								{$viewerData?.suly_expo_viewers || 0}
 								<!-- <Countup
 									initial={0}
 									value={$viewerData?.suly_expo_viewers}

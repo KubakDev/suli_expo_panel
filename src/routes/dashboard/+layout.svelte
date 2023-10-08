@@ -39,7 +39,7 @@
 <div class="app h-screen flex flex-col" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
 		<Navbar class="dark:bg-gray-900 bg-gray-900 border-b shadow-lg" let:hidden let:toggle>
-			<NavBrand href="/">
+			<NavBrand href="/dashboard">
 				<span
 					class="self-center whitespace-nowrap text-xl font-semibold text-gray-50 dark:text-white"
 					>SulyExpo</span

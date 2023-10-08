@@ -341,9 +341,14 @@
 	}
 
 	// handle brochure
+	let imageURL = '';
+
 	function handleFileUpload_brochure(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
+		// if (file) {
+		// 	imageURL = URL.createObjectURL(file);
+		// }
 		imageFile_brochure = file;
 		//
 
@@ -732,58 +737,61 @@
 				</div>
 			</div>
 
-			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
-					<TabItem open title="Exhibition List">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
-								{#each exhibitionsDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Main}
-											title={langData.title}
-											short_description={langData.description}
-											thumbnail={exhibitionsObject.thumbnail}
-											primaryColor="bg-primary"
-											startDate={exhibitionsObject.start_date}
-											endDate={exhibitionsObject.end_date}
-										/>
-									{/if}
-								{/each}
-							</div>
+			<div>
+				<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+					<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+						<TabItem open title="Exhibition List">
+							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+								<div class="flex justify-start items-start">
+									{#each exhibitionsDataLang as langData}
+										{#if langData.language === selectedLanguageTab}
+											<ExpoCard
+												cardType={CardType.Main}
+												title={langData.title}
+												short_description={langData.description}
+												thumbnail={exhibitionsObject.thumbnail}
+												primaryColor="bg-primary"
+												startDate={exhibitionsObject.start_date}
+												endDate={exhibitionsObject.end_date}
+											/>
+										{/if}
+									{/each}
+								</div>
 
-							<div />
-						</div>
-					</TabItem>
-					<TabItem open title="Brochure">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
-								{#each exhibitionsDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Flat}
-											title=""
-											short_description=""
-											thumbnail={langData.brochure ?? ''}
-											primaryColor="bg-primary"
-											startDate=""
-											endDate=""
-										/>
-									{/if}
-								{/each}
+								<div />
 							</div>
+						</TabItem>
+						<TabItem open title="Brochure">
+							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+								<div class="flex justify-start items-start">
+									{#each exhibitionsDataLang as langData}
+										{#if langData.language === selectedLanguageTab}
+											<!-- thumbnail={imageURL || langData.brochure} -->
+											<ExpoCard
+												cardType={CardType.Flat}
+												title=""
+												short_description=""
+												thumbnail={langData.brochure ?? ''}
+												primaryColor="bg-primary"
+												startDate=""
+												endDate=""
+											/>
+										{/if}
+									{/each}
+								</div>
 
-							<div />
-						</div>
-					</TabItem>
-					<TabItem title="Exhibition Detail">
-						{#each exhibitionsDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<DetailPage imagesCarousel={carouselImages} long_description="" />
-							{/if}
-						{/each}
-					</TabItem>
-				</Tabs>
+								<div />
+							</div>
+						</TabItem>
+						<TabItem title="Exhibition Detail">
+							{#each exhibitionsDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<DetailPage imagesCarousel={carouselImages} long_description="" />
+								{/if}
+							{/each}
+						</TabItem>
+					</Tabs>
+				</div>
 			</div>
 		</div>
 	</div>
