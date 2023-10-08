@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import {
+		seatReservationStatus,
 		seatReservation,
 		getReservationData,
-		updateData,
-		seatReservationTotalCount
+		getReservationDataByDependStatus,
+		seatReservationStatusTotalCount
 	} from '../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../models/reservationEnum';
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
@@ -13,6 +14,8 @@
 	import { Icon } from 'flowbite-svelte-icons';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
+	import { page } from '$app/stores';
+	import { activeUrlStore } from '../../../stores/Urlstore';
 
 	export let data;
 	let selectedExhibition: number | undefined;
@@ -23,12 +26,35 @@
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
-	const pageSize: number = 15;
+	const pageSize: number = 12;
 	let totalItems: any;
 	let totalPages = 1;
 
+	onMount(() => {
+		console.log($page);
+	});
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const pageFromUrl = Number(urlParams.get('currentPage')) || 1;
+		currentPage = pageFromUrl;
+		// fetchReservationData();
+	});
+
+	$: if (currentPage) {
+		fetchReservationData();
+	}
+	let initialPageLoad = true;
+	$: {
+		if (initialPageLoad) {
+			fetchReservationData();
+			fetchData();
+			initialPageLoad = false;
+		}
+	}
+
 	async function fetchReservationData() {
-		let result: any = await getReservationData(
+		await getReservationData(
 			data.supabase,
 			currentPage,
 			pageSize,
@@ -37,6 +63,7 @@
 			p_phone_number,
 			p_email
 		);
+
 		if ($seatReservation && $seatReservation[0] && $seatReservation[0]?.total_count) {
 			totalItems = $seatReservation[0]?.total_count;
 			totalPages = Math.ceil(totalItems / pageSize);
@@ -71,7 +98,7 @@
 		} else {
 			selectedExhibition = null;
 		}
-		currentPage = 1;
+		// currentPage = 1;
 		fetchReservationData();
 	}
 
@@ -126,7 +153,7 @@
 		}
 
 		await fetchReservationData();
-		currentPage = 1;
+		// currentPage = 1;
 	}
 
 	function clearFilters() {
@@ -143,17 +170,70 @@
 
 	async function goToPage(page: number) {
 		currentPage = page;
-		await fetchReservationData();
+
+		const newUrl = `${window.location.origin}${window.location.pathname}?currentPage=${page}`;
+		window.history.pushState({ path: newUrl }, '', newUrl);
+
+		if (selectedStatus !== undefined) {
+			await fetchReservationDataByStatus();
+		} else {
+			await fetchReservationData();
+		}
 	}
+
+	let selectedStatus: ReservationStatusEnum | undefined;
+
+	async function fetchReservationDataByStatus() {
+		if (selectedStatus !== undefined) {
+			await getReservationDataByDependStatus(data.supabase, selectedStatus, currentPage, pageSize);
+
+			totalItems = $seatReservationStatusTotalCount;
+			totalPages = Math.ceil(totalItems / pageSize);
+		} else {
+			seatReservationStatus.set([]); // Clear the filtered data store
+			await fetchReservationData();
+		}
+	}
+
 	function checkIfEdited(objectId: number) {
 		let reservation = $seatReservation.find((item) => item.object_id == objectId);
 		let editedField = reservation?.companies?.find((item) => item.edit == true);
 		return editedField ? true : false;
 	}
+
+	$: {
+		console.log($seatReservation);
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex justify-end gap-5">
+		<!-- filtering by status  -->
+		<div class="mb-6 w-44 flex flex-col">
+			<select
+				class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+				bind:value={selectedStatus}
+				on:change={fetchReservationDataByStatus}
+			>
+				<option value={undefined} class="bg-[#e9ecefd2] dark:bg-gray-100">All Status</option>
+				<option
+					value={ReservationStatusEnum.PENDING}
+					class="bg-[#e9ecefd2] dark:bg-gray-100 uppercase text-yellow-400 font-semibold"
+					>{ReservationStatusEnum.PENDING}</option
+				>
+				<option
+					value={ReservationStatusEnum.ACCEPT}
+					class="bg-[#e9ecefd2] dark:bg-gray-100 uppercase text-green-600 font-semibold"
+					>{ReservationStatusEnum.ACCEPT}</option
+				>
+				<option
+					value={ReservationStatusEnum.REJECT}
+					class="bg-[#e9ecefd2] dark:bg-gray-100 uppercase text-red-600 font-semibold"
+					>{ReservationStatusEnum.REJECT}</option
+				>
+			</select>
+		</div>
+
 		<!-- filtering by exhibition -->
 		<div class="mb-6 w-44 flex flex-col">
 			<select
@@ -325,7 +405,46 @@
 					</thead>
 
 					<tbody class="dark:text-gray-300">
-						{#if $seatReservation.length > 0}
+						{#if $seatReservationStatus.length > 0}
+							{#each $seatReservationStatus as reservationStatus}
+								<tr>
+									<td
+										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
+									>
+										<div>{reservationStatus.object_id}</div>
+									</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>{reservationStatus?.company?.company_name}</div>
+									</td>
+									<td
+										class="max-w-screen-sm p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
+									>
+										<div><li>{reservationStatus?.comment}</li></div>
+									</td>
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div>{reservationStatus?.exhibition?.exhibition_type}</div>
+									</td>
+
+									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+										<div class="flex gap-1 items-center">
+											{#if reservationStatus.object_id && checkIfEdited(reservationStatus.object_id)}
+												<div class="h-4 w-4 bg-red-600 rounded-full" />
+											{/if}
+											<div class="text-center">
+												<button
+													on:click={() => {
+														goto(`/dashboard/reservation/detail/${reservationStatus.object_id}`);
+													}}
+													class="dark:text-gray-400 hover:underline"
+												>
+													View
+												</button>
+											</div>
+										</div>
+									</td>
+								</tr>
+							{/each}
+						{:else if $seatReservation.length > 0}
 							{#each $seatReservation as reservation}
 								<tr>
 									<td
@@ -339,7 +458,7 @@
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
 											{#each reservation.companies as item}
-												<div><li>{item.company_name}</li></div>
+												<div><li>{item?.company_name}</li></div>
 											{/each}
 										</div>
 									</td>
@@ -348,7 +467,7 @@
 										class="max-w-screen-sm p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 									>
 										<div>
-											{#each reservation.comments as comment}
+											{#each reservation?.comments as comment}
 												<div><li>{comment}</li></div>
 											{/each}
 										</div>
@@ -356,7 +475,7 @@
 
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										<div>
-											{reservation.exhibitions[0].exhibition_type}
+											{reservation?.exhibitions[0]?.exhibition_type}
 										</div>
 									</td>
 
@@ -385,7 +504,6 @@
 				</table>
 
 				<!-- Add pagination -->
-				<!-- <Pagination {currentPage} {totalPages} {goToPage} /> -->
 				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>

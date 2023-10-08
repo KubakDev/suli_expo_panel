@@ -10,7 +10,6 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 
 	export let data;
-	let selectedExhibition: number[];
 	let searchQuery: string = '';
 	let searchField: string | null = null;
 	let isOptionSelected: boolean = false;

@@ -41,7 +41,7 @@ export const load = async () => {
 
 		{
 			title: 'Reservation',
-			url: '/dashboard/reservation'
+			url: `/dashboard/reservation?currentPage=1`
 		},
 		{
 			title: 'Company',

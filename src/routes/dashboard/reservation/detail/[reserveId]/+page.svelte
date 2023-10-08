@@ -5,12 +5,13 @@
 	import type { CompanyType } from '../../../../../models/companyModel';
 	import type { ExhibitionModel } from '../../../../../models/exhibitionTypeModel';
 	import type { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
-	import { Button, Checkbox, Modal } from 'flowbite-svelte';
+	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Modal } from 'flowbite-svelte';
 	import { generateDocx } from '$lib/utils/generateContract';
 	import ReservedSeat from './reservedSeat.svelte';
 	import moment from 'moment';
 	import { LanguageEnum } from '../../../../../models/languageEnum';
 	import { convertNumberToWord } from '$lib/utils/numberToWordLang';
+	import { browser } from '$app/environment';
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -184,7 +185,9 @@
 	let pricePerMeter = 0;
 	let reservedAreas: any = [];
 	let decodedFile = '';
+
 	async function exportContract(reservationData: reservationType, lang: LanguageEnum) {
+		console.log(reservationData);
 		let docxData = {
 			company_name: reservationData.company?.company_name,
 			address: reservationData.company?.address,
@@ -194,7 +197,7 @@
 			working_field: reservationData.company?.working_field,
 			areas: reservedAreas,
 			date: moment(new Date()).format('DD/MM/YYYY'),
-			id: reservationData.company?.id,
+			id: reservationData.object_id,
 			email: reservationData.company?.email,
 			pricePerMeter,
 			totalArea,
@@ -264,18 +267,77 @@
 			import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL + '/' + reservation?.file_url
 		);
 	}
+
+	function goBackToPreviewsPage() {
+		if (browser) {
+			window.history.back();
+		}
+	}
 </script>
 
 <Modal bind:open={openPreviewImage} autoclose outsideclose>
 	<!-- svelte-ignore a11y-missing-attribute -->
 	<img src={selectedImageUrlForPreview} class="rounded-lg w-full h-full min-w-[150px] pt-8" />
 </Modal>
-<!-- comment  -->
+
+<!-- content  -->
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
+	<!-- Title (BreadCrumb) -->
+	<!-- 
+	<div class="max-w-xs mx-auto pb-5">
+		<Breadcrumb
+			aria-label="Solid background breadcrumb example"
+			class="bg-gray-50 py-3 px-0 dark:bg-gray-900"
+		>
+			<button on:click={goBackToPreviewsPage}>back</button>
+			<BreadcrumbItem>
+				<svelte:fragment slot="icon">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						class="w-4 h-4"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5h-3a.75.75 0 010-1.5h3a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</svelte:fragment>Reservation List
+			</BreadcrumbItem>
+
+			<BreadcrumbItem>
+				<svelte:fragment slot="icon"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						class="w-4 h-4"
+					>
+						<path
+							fill-rule="evenodd"
+							d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z"
+							clip-rule="evenodd"
+						/>
+					</svg>
+				</svelte:fragment>
+				{#each reservations as reservation}
+					<span class="text-gray-900 dark:text-gray-200">
+						{reservation?.exhibition?.exhibition_type}
+					</span>
+				{/each}
+			</BreadcrumbItem>
+		</Breadcrumb>
+	</div> -->
+
 	<div class="w-full lg:w-9/12 overflow-x-auto">
 		<table class="min-w-full border-collapse">
 			<thead>
 				<tr>
+					<th class="table_header dark:border-gray-800">
+						<div class="flex items-center gap-2 mx-[50px]">reservation date</div>
+					</th>
 					<th class="table_header dark:border-gray-800">
 						<div class="flex items-center gap-2 mx-[50px]">company name</div>
 					</th>
@@ -332,6 +394,14 @@
 			<tbody class="dark:text-gray-300">
 				{#each reservations as reservation}
 					<tr class="border-2 border-[#edeff2]">
+						<td class="max-w-sm px-4">
+							<span
+								class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-lg text-gray-900 text-sm border"
+							>
+								{moment(reservation.created_at).format('DD-MM-YYYY hh:mm A').toString()}
+							</span>
+						</td>
+
 						<td class="">
 							<div>{reservation.company?.company_name}</div>
 						</td>
