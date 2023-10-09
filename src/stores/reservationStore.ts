@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
-import type { Reservation } from '../models/reservationModel';
+import type { Reservation, ReservationStatus } from '../models/reservationModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const seatReservation = writable<Reservation[]>([]);
-export const seatReservationStatus = writable<Reservation[]>([]);
+export const seatReservationStatus = writable<ReservationStatus[]>([]);
 export const seatReservationTotalCount = writable<number>();
 export const seatReservationStatusTotalCount = writable<number>();
 
@@ -52,6 +52,8 @@ export const getReservationDataByDependStatus = async (
 	}
 
 	seatReservationStatus.set(data ?? []);
+	console.log(data);
+
 	seatReservationStatusTotalCount.set(count ?? 0);
 };
 

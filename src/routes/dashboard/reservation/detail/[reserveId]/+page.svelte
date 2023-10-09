@@ -269,6 +269,7 @@
 	}
 
 	function goBackToPreviewsPage() {
+		console.log(document.referrer);
 		if (browser) {
 			window.history.back();
 		}
@@ -283,7 +284,7 @@
 <!-- content  -->
 <div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
 	<!-- Title (BreadCrumb) -->
-	<!-- 
+
 	<div class="max-w-xs mx-auto pb-5">
 		<Breadcrumb
 			aria-label="Solid background breadcrumb example"
@@ -329,7 +330,7 @@
 				{/each}
 			</BreadcrumbItem>
 		</Breadcrumb>
-	</div> -->
+	</div>
 
 	<div class="w-full lg:w-9/12 overflow-x-auto">
 		<table class="min-w-full border-collapse">
@@ -398,7 +399,11 @@
 							<span
 								class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-lg text-gray-900 text-sm border"
 							>
-								{moment(reservation.created_at).format('DD-MM-YYYY hh:mm A').toString()}
+								{#if reservation.created_at}
+									{moment(reservation.created_at).format('DD-MM-YYYY hh:mm A').toString()}
+								{:else}
+									does not exist
+								{/if}
 							</span>
 						</td>
 

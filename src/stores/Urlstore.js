@@ -1,3 +1,3 @@
 import { writable } from 'svelte/store';
 
-export const activeUrlStore = writable(''); 
+export const activeUrlStore = writable('/'); 
