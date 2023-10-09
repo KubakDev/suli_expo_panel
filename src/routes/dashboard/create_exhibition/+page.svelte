@@ -38,6 +38,7 @@
 	};
 
 	let carouselImages: CarouselImage[] | undefined = undefined;
+	let carouselImages_sponsor: CarouselImage[] | undefined = undefined;
 
 	let selectedLanguageTab = LanguageEnum.EN;
 
@@ -86,7 +87,7 @@
 	//**dropzone-sponsor**//
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
 		sliderImagesFile_sponsor = e.detail;
-		getImagesObject();
+		getImagesObject_sponsor();
 	} //**dropzone-sponsor**//
 
 	async function formSubmit() {
@@ -287,6 +288,69 @@
 			});
 		}
 	}
+
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
+		//
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsObject.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `exhibition/${randomText}_${file.name}`;
+
+			//
+		};
+
+		reader.readAsDataURL(file);
+	}
+	function handleFileUploadMap(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_map = file;
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsObject.image_map = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName_map = `exhibition/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	// handle brochure
+	function handleFileUpload_brochure(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+
+		imageFile_brochure = file;
+
+		const lang = selectedLanguageTab;
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.brochure = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_brochure.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}_${file.name}`
+			});
+
+			exhibitionsDataLang = [...exhibitionsDataLang];
+		};
+
+		reader.readAsDataURL(file);
+	}
+
 	function handleFileUpload_pdf(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
@@ -340,56 +404,19 @@
 		reader.readAsDataURL(file);
 	}
 
-	// handle brochure
-	let imageURL = '';
-
-	function handleFileUpload_brochure(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		// if (file) {
-		// 	imageURL = URL.createObjectURL(file);
-		// }
-		imageFile_brochure = file;
-		//
-
-		const lang = selectedLanguageTab; // Get the selected language
-
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			for (let lang of exhibitionsDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.brochure = reader.result as '';
-				}
-			}
-
-			const randomText = getRandomTextNumber();
-			fileName_brochure.push({
-				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
-			});
-		};
-
-		reader.readAsDataURL(file);
-	}
-
 	function getImagesObject() {
 		carouselImages = createCarouselImages(sliderImagesFile);
+
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
 	}
-	function setImageFile(file: File) {
-		imageFile = file;
-	}
-	function setFileName(name: string) {
-		fileName = name;
-	}
-	function setImageFile_map(file: File) {
-		imageFile_map = file;
-	}
-	function setFileName_map(name: string) {
-		fileName_map = name;
+	function getImagesObject_sponsor() {
+		carouselImages_sponsor = createCarouselImages(sliderImagesFile_sponsor);
+
+		if (carouselImages_sponsor.length <= 0) {
+			carouselImages_sponsor = undefined;
+		}
 	}
 </script>
 
@@ -407,8 +434,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(event, exhibitionsObject, setImageFile, setFileName, 'exhibition')}
+						on:change={handleFileUploadThumbnail}
 						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
@@ -422,14 +448,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
 					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(
-								event,
-								exhibitionsObject,
-								setImageFile_map,
-								setFileName_map,
-								'exhibition'
-							)}
+						on:change={handleFileUploadMap}
 						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 						lang={selectedLanguageTab}
@@ -740,7 +759,7 @@
 			<div>
 				<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
 					<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
-						<TabItem open title="Exhibition List">
+						<TabItem open title="Exhibition Image">
 							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 								<div class="flex justify-start items-start">
 									{#each exhibitionsDataLang as langData}
@@ -761,12 +780,32 @@
 								<div />
 							</div>
 						</TabItem>
+						<TabItem open title="Map">
+							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+								<div class="flex justify-start items-start">
+									{#each exhibitionsDataLang as langData}
+										{#if langData.language === selectedLanguageTab}
+											<ExpoCard
+												cardType={CardType.Main}
+												title={langData.title}
+												short_description=""
+												thumbnail={exhibitionsObject.image_map}
+												primaryColor="bg-primary"
+												startDate=""
+												endDate=""
+											/>
+										{/if}
+									{/each}
+								</div>
+
+								<div />
+							</div>
+						</TabItem>
 						<TabItem open title="Brochure">
 							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 								<div class="flex justify-start items-start">
 									{#each exhibitionsDataLang as langData}
 										{#if langData.language === selectedLanguageTab}
-											<!-- thumbnail={imageURL || langData.brochure} -->
 											<ExpoCard
 												cardType={CardType.Flat}
 												title=""
@@ -783,10 +822,17 @@
 								<div />
 							</div>
 						</TabItem>
-						<TabItem title="Exhibition Detail">
+						<TabItem title="Detail">
 							{#each exhibitionsDataLang as langData}
 								{#if langData.language === selectedLanguageTab}
-									<DetailPage imagesCarousel={carouselImages} long_description="" />
+									<DetailPage cardType={CardType.Flat} imagesCarousel={carouselImages} />
+								{/if}
+							{/each}
+						</TabItem>
+						<TabItem title="Sponsors">
+							{#each exhibitionsDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<DetailPage cardType={CardType.Flat} imagesCarousel={carouselImages_sponsor} />
 								{/if}
 							{/each}
 						</TabItem>

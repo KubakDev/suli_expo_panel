@@ -197,7 +197,7 @@
 			working_field: reservationData.company?.working_field,
 			areas: reservedAreas,
 			date: moment(new Date()).format('DD/MM/YYYY'),
-			id: reservationData.object_id,
+			id: reservationData.company_id,
 			email: reservationData.company?.email,
 			pricePerMeter,
 			totalArea,
