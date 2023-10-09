@@ -13,7 +13,6 @@
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 
@@ -64,6 +63,23 @@
 		getImagesObject();
 	} //**dropzone**//
 
+	//handle thumbnail images
+
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			newsObject.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `news/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
 	async function formSubmit() {
 		let hasDataForLanguage = false;
 		let isValidNewsObject = false;
@@ -191,8 +207,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(event, newsObject, setImageFile, setFileName, 'news')}
+						on:change={handleFileUploadThumbnail}
 						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>

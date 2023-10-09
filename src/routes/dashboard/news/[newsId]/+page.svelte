@@ -221,11 +221,21 @@
 		}
 	}
 
-	function setImageFile(file: File) {
+	//  handle thumbnail image change
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
 		imageFile = file;
-	}
-	function setFileName(name: string) {
-		fileName = name;
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			newsData.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `news/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
 	}
 </script>
 
@@ -245,8 +255,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(event, newsData, setImageFile, setFileName, 'news')}
+						on:change={handleFileUploadThumbnail}
 						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
@@ -377,7 +386,7 @@
 						{#each newsDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage
-									bind:imagesCarousel={carouselImages}
+									imagesCarousel={carouselImages}
 									long_description={langData.long_description}
 								/>
 							{/if}

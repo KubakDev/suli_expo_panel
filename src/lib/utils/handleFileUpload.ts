@@ -19,10 +19,8 @@ export async function handleFileUpload(
 	try {
 		const compressedFile = await imageCompression(file, options);
 
-
 		const reader = new FileReader();
 		reader.onloadend = () => {
-
 			exhibitionsObject.thumbnail = reader.result as string;
 			const randomText = getRandomTextNumber();
 			const newFileName = `${path}/${randomText}_${compressedFile.name}`;
@@ -30,7 +28,5 @@ export async function handleFileUpload(
 			setFileName(newFileName);
 		};
 		reader.readAsDataURL(compressedFile);
-	} catch (error) {
-
-	}
+	} catch (error) {}
 }

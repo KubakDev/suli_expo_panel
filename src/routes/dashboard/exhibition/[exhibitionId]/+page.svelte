@@ -17,7 +17,6 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
@@ -156,6 +155,36 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsData.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `exhibition/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
+	function handleFileUploadMap(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_map = file;
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsData.image_map = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName_map = `exhibition/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
+
 	// handle pdf
 	function handleFileUpload_pdf(e: Event) {
 		pdfSource = ImgSourceEnum.PdfLocal;
@@ -163,7 +192,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_pdf = file;
-		const lang = selectedLanguageTab; // Get the selected language
+		const lang = selectedLanguageTab;
 
 		const reader = new FileReader();
 
@@ -233,6 +262,7 @@
 				lang: selectedLanguageTab,
 				fileName: `${randomText}_${file.name}`
 			});
+			exhibitionDataLang = [...exhibitionDataLang];
 		};
 
 		reader.readAsDataURL(file);
@@ -565,8 +595,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(event, exhibitionsData, setImageFile, setFileName, 'exhibition')}
+						on:change={handleFileUploadThumbnail}
 						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
@@ -579,14 +608,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
 					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(
-								event,
-								exhibitionsData,
-								setImageFile_map,
-								setFileName_map,
-								'exhibition'
-							)}
+						on:change={handleFileUploadMap}
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 						lang={selectedLanguageTab}
@@ -931,13 +953,6 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem title="Detail">
-						{#each exhibitionDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
-							{/if}
-						{/each}
-					</TabItem>
 
 					<TabItem title="Map">
 						{#each exhibitionDataLang as langData}
@@ -954,11 +969,17 @@
 							{/if}
 						{/each}
 					</TabItem>
-
+					<TabItem title="Detail">
+						{#each exhibitionDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
+							{/if}
+						{/each}
+					</TabItem>
 					<TabItem title="Sponsor">
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
-								<DetailPage bind:imagesCarousel={carouselImages_sponsor} long_description="" />
+								<DetailPage imagesCarousel={carouselImages_sponsor} long_description="" />
 							{/if}
 						{/each}
 					</TabItem>
