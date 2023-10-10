@@ -12,6 +12,7 @@
 	import { LanguageEnum } from '../../../../../models/languageEnum';
 	import { convertNumberToWord } from '$lib/utils/numberToWordLang';
 	import { browser } from '$app/environment';
+	import { text } from '@sveltejs/kit';
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -41,6 +42,7 @@
 	let reservations: reservationType[] = [];
 	let reservedSeatData: any = [];
 	let exhibitionId = 0;
+
 	onMount(async () => {
 		objectId = $page.params.reserveId;
 		getReservationData();
@@ -51,6 +53,7 @@
 			})
 			.eq('object_id', objectId);
 	});
+
 	async function getReservationData() {
 		loading = true;
 		await data.supabase
@@ -282,57 +285,55 @@
 </Modal>
 
 <!-- content  -->
-<div class="w-full flex flex-col py-32 items-center" style="min-height: calc(100vh - 80px);">
-	<!-- Title (BreadCrumb) -->
-
-	<div class="max-w-xs mx-auto pb-5">
-		<Breadcrumb
-			aria-label="Solid background breadcrumb example"
-			class="bg-gray-50 py-3 px-0 dark:bg-gray-900"
-		>
-			<button on:click={goBackToPreviewsPage}>back</button>
-			<BreadcrumbItem>
-				<svelte:fragment slot="icon">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-						class="w-4 h-4"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5h-3a.75.75 0 010-1.5h3a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				</svelte:fragment>Reservation List
-			</BreadcrumbItem>
-
-			<BreadcrumbItem>
-				<svelte:fragment slot="icon"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-						fill="currentColor"
-						class="w-4 h-4"
-					>
-						<path
-							fill-rule="evenodd"
-							d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				</svelte:fragment>
-				{#each reservations as reservation}
-					<span class="text-gray-900 dark:text-gray-200">
-						{reservation?.exhibition?.exhibition_type}
-					</span>
-				{/each}
-			</BreadcrumbItem>
-		</Breadcrumb>
-	</div>
-
+<div
+	class="w-full flex flex-col py-32 items-center"
+	style="min-height: calc(100vh - 80px); flex-direction: column;"
+>
 	<div class="w-full lg:w-9/12 overflow-x-auto">
+		<!-- Title (BreadCrumb) -->
+		<div class="flex justify-start items-start mb-5">
+			<Breadcrumb aria-label="Solid background breadcrumb example">
+				<BreadcrumbItem>
+					<svelte:fragment slot="icon">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							class="w-4 h-4"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5h-3a.75.75 0 010-1.5h3a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</svelte:fragment>
+				</BreadcrumbItem>
+				<button on:click={goBackToPreviewsPage}>Reservation List</button>
+				<BreadcrumbItem>
+					<svelte:fragment slot="icon"
+						><svg
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 24 24"
+							fill="currentColor"
+							class="w-4 h-4"
+						>
+							<path
+								fill-rule="evenodd"
+								d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					</svelte:fragment>
+					{#each reservations as reservation}
+						<span class="text-gray-500 dark:text-gray-400">
+							{reservation?.exhibition?.exhibition_type}
+						</span>
+					{/each}
+				</BreadcrumbItem>
+			</Breadcrumb>
+		</div>
+
 		<table class="min-w-full border-collapse">
 			<thead>
 				<tr>
