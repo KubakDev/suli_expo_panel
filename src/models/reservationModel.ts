@@ -27,7 +27,7 @@ export interface ReservationStatus {
 	services?: string[];
 	company_id?: number;
 	companies?: CompanyType[];
-	company?: CompanyType;
+	company?: CompanyType[];
 	exhibition?: ExhibitionModel[];
 	status?: ReservationStatusEnum;
 	created_at?: Date;
