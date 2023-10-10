@@ -1,11 +1,13 @@
 import { writable } from 'svelte/store';
-import type { Reservation } from '../models/reservationModel';
+import type { Reservation, ReservationStatus } from '../models/reservationModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const seatReservation = writable<Reservation[]>([]);
-export const seatReservationStatus = writable<Reservation[]>([]);
+export const seatReservationStatus = writable<ReservationStatus[]>([]);
+export const seatReservationEdited = writable<ReservationStatus[]>([]);
 export const seatReservationTotalCount = writable<number>();
 export const seatReservationStatusTotalCount = writable<number>();
+export const seatReservationEditedTotalCount = writable<number>();
 
 export const getReservationData = async (
 	supabase: SupabaseClient,
@@ -51,8 +53,33 @@ export const getReservationDataByDependStatus = async (
 		return;
 	}
 
-	seatReservationStatus.set(data ?? []);
-	seatReservationStatusTotalCount.set(count ?? 0);
+	seatReservation.set(data ?? []);
+	seatReservationTotalCount.set(count ?? 0);
+	// console.log(data);
+};
+
+export const getReservationDataByDependEdited = async (
+	supabase: SupabaseClient,
+	selectedEdited: string,
+	page: number,
+	pageSize: number
+) => {
+	const startIndex = (page - 1) * pageSize;
+	const endIndex = startIndex + pageSize - 1;
+
+	let { data, error, count } = await supabase
+		.from('seat_reservation')
+		.select('*,company(*),exhibition(*,exhibition_languages(*))', { count: 'exact' })
+		.eq('new_edit', selectedEdited)
+		.range(startIndex, endIndex);
+	// console.log(selectedEdited);
+	if (error) {
+		console.error('Error fetching data:', error);
+		return;
+	}
+	seatReservation.set(data ?? []);
+	seatReservationTotalCount.set(count ?? 0);
+	// console.log(data);
 };
 
 export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: any) => {
