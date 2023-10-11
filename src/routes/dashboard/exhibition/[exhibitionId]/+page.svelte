@@ -572,8 +572,6 @@
 	// 	}
 	// }
 	async function formSubmit() {
-		showToast = true;
-
 		exhibitionsData.images = [];
 		exhibitionsData.sponsor_images = [];
 
@@ -600,9 +598,68 @@
 			exhibitionsData.image_map = prevImage_map;
 		}
 
-		// Handle pdf, contract and brochure files similarly as above...
+		if (imageFile_pdf) {
+			for (let lang of exhibitionDataLang) {
+				const pdfFileData = fileName_pdf.find((fileData) => fileData.lang === lang.language);
+				if (pdfFileData) {
+					if (lang.pdf_files) {
+						await data.supabase.storage.from('PDF').remove([lang.pdf_files]);
+					}
+					const response = await data.supabase.storage
+						.from('PDF')
+						.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
+					lang.pdf_files = response.data?.path || '';
+				}
+			}
+		} else {
+			for (let lang of exhibitionDataLang) {
+				lang.pdf_files = prevPDFFile;
+			}
+		}
 
-		// ***insert images*****//
+		if (imageFile_pdf_contract) {
+			for (let lang of exhibitionDataLang) {
+				const pdfFileContract = fileName_pdf_contract.find(
+					(fileData) => fileData.lang === lang.language
+				);
+				if (pdfFileContract) {
+					if (lang.contract_file) {
+						await data.supabase.storage.from('PDF').remove([lang.contract_file]);
+					}
+					const response = await data.supabase.storage
+						.from('PDF')
+						.upload(`pdfFiles/${pdfFileContract.fileName}`, pdfFileContract.file!);
+					lang.contract_file = response.data?.path || '';
+				}
+			}
+		} else {
+			for (let lang of exhibitionDataLang) {
+				lang.contract_file = prevPDFFile_contract;
+			}
+		}
+
+		if (imageFile_brochure) {
+			for (let lang of exhibitionDataLang) {
+				const brochureFileData = fileName_brochure.find(
+					(fileData) => fileData.lang === lang.language
+				);
+				if (brochureFileData) {
+					if (lang.brochure) {
+						await data.supabase.storage.from('image').remove([lang.pdf_files]);
+					}
+					const response = await data.supabase.storage
+						.from('image')
+						.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
+					lang.brochure = response.data?.path || '';
+				}
+			}
+		} else {
+			for (let lang of exhibitionDataLang) {
+				lang.brochure = prevBrochureFile;
+			}
+		}
+
+		// ***insert images *****//
 		if (sliderImagesFile.length > 0) {
 			for (let image of sliderImagesFile) {
 				const randomText = getRandomTextNumber();
@@ -615,16 +672,13 @@
 				}
 			}
 		}
-
 		for (let image of existingImages) {
 			exhibitionsData.images.push(image);
 		}
-
-		// Convert exhibition.images to a valid array string format
 		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
 		exhibitionsData.images = `{${imagesArray.join(',')}}`;
 
-		// ***insert sponsor images*****//
+		// ***insert sponsor images *****//
 		if (sliderImagesFile_sponsor.length > 0) {
 			for (let image of sliderImagesFile_sponsor) {
 				const randomText = getRandomTextNumber();
@@ -637,20 +691,15 @@
 				}
 			}
 		}
-
 		for (let image of existingImages_sponsor) {
 			exhibitionsData.sponsor_images.push(image);
 		}
-
-		// Convert exhibition.sponsor_images to a valid array string format
 		const imagesArray_sponsor = exhibitionsData.sponsor_images.map((image) => `"${image}"`);
 		exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
-		// Update data and handle redirection
 		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
 		setTimeout(() => {
-			showToast = false;
 			goto('/dashboard/exhibition');
 		}, 1000);
 	}
