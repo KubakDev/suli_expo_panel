@@ -3,11 +3,7 @@ import type { Reservation, ReservationStatus } from '../models/reservationModel'
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const seatReservation = writable<Reservation[]>([]);
-export const seatReservationStatus = writable<ReservationStatus[]>([]);
-export const seatReservationEdited = writable<ReservationStatus[]>([]);
 export const seatReservationTotalCount = writable<number>();
-export const seatReservationStatusTotalCount = writable<number>();
-export const seatReservationEditedTotalCount = writable<number>();
 
 export const getReservationData = async (
 	supabase: SupabaseClient,
@@ -28,7 +24,6 @@ export const getReservationData = async (
 		p_email: p_email
 	});
 
-	//
 	seatReservationTotalCount.set(data[0]?.total_count);
 	seatReservation.set(data);
 };

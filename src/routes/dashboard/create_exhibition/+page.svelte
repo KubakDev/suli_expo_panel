@@ -197,7 +197,7 @@
 		for (let file of fileName_brochure) {
 			const response3 = await data.supabase.storage
 				.from('image')
-				.upload(`exhibition/${file.fileName}`, imageFile_brochure!);
+				.upload(`exhibition/${file.fileName}`, file.file!);
 
 			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
 			if (langObj) {
@@ -299,7 +299,7 @@
 		reader.onloadend = () => {
 			exhibitionsObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName = `exhibition/${randomText}_${file.name}`;
+			fileName = `exhibition/${randomText}`;
 
 			//
 		};
@@ -315,7 +315,7 @@
 		reader.onloadend = () => {
 			exhibitionsObject.image_map = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName_map = `exhibition/${randomText}_${file.name}`;
+			fileName_map = `exhibition/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -342,7 +342,8 @@
 			const randomText = getRandomTextNumber();
 			fileName_brochure.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `${randomText}`,
+				file: file
 			});
 
 			exhibitionsDataLang = [...exhibitionsDataLang];
@@ -371,7 +372,7 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `${randomText}`
 			});
 		};
 
@@ -397,7 +398,8 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf_contract.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `${randomText}_${file.name}`,
+				file: file
 			});
 		};
 

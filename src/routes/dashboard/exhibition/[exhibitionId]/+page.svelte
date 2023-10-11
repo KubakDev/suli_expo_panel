@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { updateData, exhibitions } from '../../../../stores/exhibitionStore';
+	import { updateData } from '../../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../../models/exhibitionModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
@@ -31,9 +31,11 @@
 	let imageFile_pdf: File | undefined;
 	let imageFile_pdf_contract: File | undefined;
 	let imageFile_brochure: File | undefined;
+
 	type FileNameType = {
 		lang: string;
 		fileName: string;
+		file: File;
 	};
 	let fileName_pdf: FileNameType[] = [];
 	let fileName_pdf_contract: FileNameType[] = [];
@@ -56,6 +58,7 @@
 	let isFormSubmitted = false;
 	let pdfSource = ImgSourceEnum.PdfRemote;
 	let pdfSource_contract = ImgSourceEnum.PdfRemote;
+	let brochureSource_contract = ImgSourceEnum.remote;
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
@@ -127,16 +130,14 @@
 						map_title: exhibitionLang?.map_title ?? '',
 						pdf_files: exhibitionLang?.pdf_files ?? '',
 						contract_file: exhibitionLang?.contract_file ?? '',
-						brochure: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
-							exhibitionLang.brochure
-						}`,
+						brochure: exhibitionLang?.brochure ?? '',
 						language:
 							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 					prevPDFFile = exhibitionLang?.pdf_files;
-					prevPDFFile_contract = exhibitionLang?.contract_file;
 					prevBrochureFile = exhibitionLang?.brochure;
+					prevPDFFile_contract = exhibitionLang?.contract_file;
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
@@ -165,7 +166,7 @@
 		reader.onloadend = () => {
 			exhibitionsData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName = `exhibition/${randomText}_${file.name}`;
+			fileName = `exhibition/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -179,7 +180,7 @@
 		reader.onloadend = () => {
 			exhibitionsData.image_map = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName_map = `exhibition/${randomText}_${file.name}`;
+			fileName_map = `exhibition/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -206,7 +207,7 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `${randomText}`
 			});
 		};
 
@@ -234,7 +235,7 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf_contract.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `${randomText}`
 			});
 		};
 
@@ -242,27 +243,48 @@
 	}
 
 	// handle brochure
+
+	let brochureSourceMap: Record<string, ImgSourceEnum> = {};
+
+	$: {
+		languageEnumKeys.forEach((key) => {
+			brochureSourceMap[LanguageEnum[key as keyof typeof LanguageEnum]] = ImgSourceEnum.remote;
+		});
+	}
+
 	function handleFileUpload_brochure(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_brochure = file;
-		const lang = selectedLanguageTab; // Get the selected language
+		const lang = selectedLanguageTab;
 
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			for (let lang of exhibitionDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.brochure = reader.result as '';
-				}
+			const updatedBrochure = exhibitionDataLang.find(
+				(lang) => lang.language === selectedLanguageTab
+			);
+			if (updatedBrochure) {
+				updatedBrochure.brochure = reader.result as string;
+				brochureSourceMap[selectedLanguageTab] = ImgSourceEnum.local;
+
+				console.log(
+					'Specific Language Brochure Source Updated:',
+					selectedLanguageTab,
+					brochureSourceMap
+				);
 			}
 
 			const randomText = getRandomTextNumber();
 			fileName_brochure.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `brochure_${selectedLanguageTab}_${randomText}`,
+				file: file
 			});
+
 			exhibitionDataLang = [...exhibitionDataLang];
+
+			console.log('Exhibition Data Lang:', exhibitionDataLang);
 		};
 
 		reader.readAsDataURL(file);
@@ -339,8 +361,8 @@
 			const isMapTitleEmpty = isEmpty(mapTitle);
 
 			if (
-				// !isEmpty(lang.pdf_files) ||
-				// !isEmpty(lang.brochure) ||
+				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
 				!isStoryIsEmpty ||
 				!isTitleEmpty ||
 				!isShortDescriptionEmpty ||
@@ -352,8 +374,8 @@
 				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (
-					// isEmpty(lang.pdf_files) ||
-					// isEmpty(lang.brochure) ||
+					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
 					isStoryIsEmpty ||
 					isTitleEmpty ||
 					isShortDescriptionEmpty ||
@@ -459,12 +481,11 @@
 					);
 					if (brochureFileData) {
 						if (lang.brochure) {
-							await data.supabase.storage.from('image').remove([lang.brochure]);
+							await data.supabase.storage.from('image').remove([lang.pdf_files]);
 						}
 						const response = await data.supabase.storage
 							.from('image')
-							.upload(`exhibition/${brochureFileData.fileName}`, imageFile_brochure!);
-
+							.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
 						lang.brochure = response.data?.path || '';
 					}
 				}
@@ -564,18 +585,6 @@
 		});
 		carouselImages_sponsor = customImages;
 		existingImages_sponsor = result;
-	}
-	function setImageFile(file: File) {
-		imageFile = file;
-	}
-	function setFileName(name: string) {
-		fileName = name;
-	}
-	function setImageFile_map(file: File) {
-		imageFile_map = file;
-	}
-	function setFileName_map(name: string) {
-		fileName_map = name;
 	}
 </script>
 
@@ -932,27 +941,6 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem open title="Brochure">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
-								{#each exhibitionDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Flat}
-											title=""
-											short_description=""
-											thumbnail={langData.brochure}
-											primaryColor="bg-primary"
-											startDate=""
-											endDate=""
-										/>
-									{/if}
-								{/each}
-							</div>
-
-							<div />
-						</div>
-					</TabItem>
 
 					<TabItem title="Map">
 						{#each exhibitionDataLang as langData}
@@ -969,10 +957,41 @@
 							{/if}
 						{/each}
 					</TabItem>
+
+					<TabItem open title="Brochure">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+							<div class="flex justify-start items-start">
+								{#each exhibitionDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Flat}
+											title=""
+											short_description=""
+											thumbnail={brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local
+												? langData.brochure
+												: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
+														langData.brochure
+												  }`}
+											primaryColor="bg-primary"
+											startDate=""
+											endDate=""
+										/>
+										{#if brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local}
+											<p>Local Image</p>
+										{:else}
+											<p>Remote Image</p>
+										{/if}
+									{/if}
+								{/each}
+							</div>
+							<div />
+						</div>
+					</TabItem>
+
 					<TabItem title="Detail">
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
-								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
+								<DetailPage imagesCarousel={carouselImages} long_description="" />
 							{/if}
 						{/each}
 					</TabItem>
