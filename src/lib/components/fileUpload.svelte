@@ -40,17 +40,17 @@
 					}
 				];
 
-				uploadCount++; // Increment the upload count for each uploaded image
+				uploadCount++;
 
 				if (uploadCount === totalFiles) {
-					isUploading = false; // Set isUploading to false when all images are uploaded
-					uploadCount = 0; // Reset the upload count after all images are uploaded
+					isUploading = false;
+					uploadCount = 0;
 				}
 			};
 			reader.readAsDataURL(file);
 		}
 
-		isUploading = true; // Set isUploading to true when images start uploading
+		isUploading = true;
 	}
 
 	function deleteImage(index: number) {
