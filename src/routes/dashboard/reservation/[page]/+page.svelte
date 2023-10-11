@@ -69,7 +69,7 @@
 		fetchData(); // Uncomment if needed
 	});
 
-	function filterByExhibition() {
+	async function filterByExhibition() {
 		if (selectedExhibition) {
 			const selected = exhibitionData.find((item) => item.id === selectedExhibition);
 			if (selected) {
@@ -81,7 +81,8 @@
 		}
 
 		sessionStorage.setItem('selectedExhibition', selectedExhibition?.toString() || '');
-		fetchReservationData();
+		await fetchReservationData();
+		currentPage = 1;
 	}
 
 	async function fetchReservationDataByStatus() {
@@ -91,7 +92,8 @@
 			totalPages = Math.ceil(totalItems / pageSize);
 		} else {
 			await fetchReservationData();
-			currentPage = 1;
+			clearAllFilters();
+			// currentPage = 1;
 		}
 
 		sessionStorage.setItem('selectedStatus', selectedStatus || '');
@@ -103,6 +105,8 @@
 			await getReservationDataByDependEdited(data.supabase, selectedEdited, currentPage, pageSize);
 		} else {
 			await fetchReservationData();
+			clearAllFilters();
+			// currentPage = 1;
 		}
 
 		totalItems = $seatReservationTotalCount;
@@ -126,7 +130,7 @@
 	}
 
 	async function fetchReservationData() {
-		let result: any = await getReservationData(
+		await getReservationData(
 			data.supabase,
 			currentPage,
 			pageSize,
@@ -211,6 +215,7 @@
 		}
 
 		await fetchReservationData();
+		currentPage = 1;
 	}
 
 	function clearFilters() {
@@ -233,10 +238,33 @@
 		return editedField ? true : false;
 	}
 
-	// create sersies number
+	// create Series  number
 	let startingSerialNumber: any = null;
 	$: if (totalItems != null && currentPage != null && pageSize != null) {
 		startingSerialNumber = totalItems - (currentPage - 1) * pageSize;
+	}
+
+	// clear all filters
+	function clearAllFilters() {
+		p_company_name = undefined;
+		p_phone_number = undefined;
+		p_email = undefined;
+		searchQuery = '';
+		isOptionSelected = false;
+		selectedStatus = undefined;
+		selectedEdited = undefined;
+		selectedExhibition = null;
+
+		for (const opt of options) {
+			checked[opt] = false;
+		}
+		currentPage = 1;
+		// Remove the status and edited filters from session storage
+		sessionStorage.removeItem('selectedStatus');
+		sessionStorage.removeItem('selectedEdited');
+		sessionStorage.removeItem('selectedExhibition');
+
+		fetchReservationData();
 	}
 </script>
 
@@ -250,10 +278,30 @@
 		</div>
 		<!-- filtering -->
 		<div class="flex flex-col lg:flex-row justify-end items-center gap-2">
+			<!-- clear All filters  -->
+			<div class="w-44 flex flex-col justify-end">
+				<button
+					class="text-center font-medium focus:ring-4 focus:outline-none inline-flex items-center justify-center px-5 py-2 tetx-xl bg-gray-200 border border-gray-300 dark:text-gray-900 dark:bg-[#e0e1dd] dark:hover:bg-gray-300 focus:ring-gray-300 dark:focus:ring-gray-900 rounded"
+					on:click={clearAllFilters}
+				>
+					Clear Filter
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="red"
+						class="w-6 h-6 ml-2"
+					>
+						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+					</svg>
+				</button>
+			</div>
+
 			<!-- filtering by new_edit  -->
 			<div class="w-44 flex flex-col justify-end">
 				<select
-					class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+					class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 					bind:value={selectedEdited}
 					on:change={fetchReservationDataByEdited}
 				>
@@ -266,7 +314,7 @@
 			<!-- filtering by status  -->
 			<div class="w-44 flex flex-col justify-end">
 				<select
-					class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+					class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 					bind:value={selectedStatus}
 					on:change={fetchReservationDataByStatus}
 				>
@@ -292,7 +340,7 @@
 			<!-- filtering by exhibition -->
 			<div class="w-48 flex flex-col justify-end">
 				<select
-					class="font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
+					class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
 					id="type"
 					name="type"
 					bind:value={selectedExhibition}
@@ -475,7 +523,11 @@
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
 									>
-										<div>{startingSerialNumber !== null ? startingSerialNumber - index : ''}</div>
+										<div>
+											{#if startingSerialNumber != null && startingSerialNumber > 0}
+												<div>{startingSerialNumber - index}</div>
+											{/if}
+										</div>
 									</td>
 									<td
 										class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell w-10"
