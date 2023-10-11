@@ -207,7 +207,8 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}`
+				fileName: `${randomText}`,
+				file: file
 			});
 		};
 
@@ -235,7 +236,8 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf_contract.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}`
+				fileName: `${randomText}`,
+				file: file
 			});
 		};
 
@@ -393,7 +395,7 @@
 
 		if (
 			!isEmpty(exhibitionsData.thumbnail) &&
-			exhibitionsData.images.length > 0 &&
+			// exhibitionsData.images.length > 0 &&
 			exhibitionsData.sponsor_images.length > 0 &&
 			exhibitionsData.country_number > 0 &&
 			exhibitionsData.company_number > 0 &&
@@ -443,7 +445,7 @@
 						}
 						const response = await data.supabase.storage
 							.from('PDF')
-							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf!);
+							.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
 						lang.pdf_files = response.data?.path || '';
 					}
 				}
@@ -455,16 +457,16 @@
 
 			if (imageFile_pdf_contract) {
 				for (let lang of exhibitionDataLang) {
-					const pdfFileData = fileName_pdf_contract.find(
+					const pdfFileContract = fileName_pdf_contract.find(
 						(fileData) => fileData.lang === lang.language
 					);
-					if (pdfFileData) {
+					if (pdfFileContract) {
 						if (lang.contract_file) {
 							await data.supabase.storage.from('PDF').remove([lang.contract_file]);
 						}
 						const response = await data.supabase.storage
 							.from('PDF')
-							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf_contract!);
+							.upload(`pdfFiles/${pdfFileContract.fileName}`, pdfFileContract.file!);
 						lang.contract_file = response.data?.path || '';
 					}
 				}
@@ -976,11 +978,6 @@
 											startDate=""
 											endDate=""
 										/>
-										{#if brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local}
-											<p>Local Image</p>
-										{:else}
-											<p>Remote Image</p>
-										{/if}
 									{/if}
 								{/each}
 							</div>

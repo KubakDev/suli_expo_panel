@@ -12,7 +12,6 @@
 	import { isEmpty } from 'validator';
 	import { decodeBase64 } from '$lib/utils/decodeBase64';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 
@@ -175,7 +174,7 @@
 		for (let file of fileName_pdf) {
 			const responsePDF = await data.supabase.storage
 				.from('PDF')
-				.upload(`pdfFiles/${file.fileName}`, imageFile_pdf!);
+				.upload(`pdfFiles/${file.fileName}`, file.file!);
 
 			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
 			if (langObj) {
@@ -186,7 +185,7 @@
 		for (let file of fileName_pdf_contract) {
 			const responsePDF_contract = await data.supabase.storage
 				.from('PDF')
-				.upload(`pdfFiles/${file.fileName}`, imageFile_pdf_contract!);
+				.upload(`pdfFiles/${file.fileName}`, file.file!);
 
 			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
 			if (langObj) {
@@ -300,8 +299,6 @@
 			exhibitionsObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber();
 			fileName = `exhibition/${randomText}`;
-
-			//
 		};
 
 		reader.readAsDataURL(file);
@@ -372,7 +369,8 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}`
+				fileName: `${randomText}`,
+				file: file
 			});
 		};
 
