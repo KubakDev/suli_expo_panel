@@ -105,6 +105,7 @@
 		}, 1000);
 	}
 
+	//  create reset form
 	function resetForm() {
 		submitted = false;
 
