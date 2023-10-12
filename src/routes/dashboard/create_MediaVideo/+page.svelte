@@ -15,6 +15,7 @@
 	import type { ExhibitionModel } from '../../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { onMount } from 'svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -22,7 +23,15 @@
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let videoDataLang: VideoModelLang[] = [];
@@ -44,10 +53,8 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-			// console.log(uniqueTypes);
-		} catch (error) {
-			console.error(error);
-		}
+			//
+		} catch (error) {}
 	};
 
 	onMount(fetchData);
@@ -63,22 +70,6 @@
 			long_description: '',
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			videoObjectData.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `mediaVideoPictures/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	async function formSubmit() {
@@ -167,6 +158,13 @@
 			videoObjectData.exhibition_id = selectedValue;
 		}
 	}
+
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
+	}
 </script>
 
 <div style="min-height: calc(100vh - 160px);">
@@ -183,8 +181,15 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(
+								event,
+								videoObjectData,
+								setImageFile,
+								setFileName,
+								'videoObjectData'
+							)}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 				</Label>

@@ -10,7 +10,8 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
-	import imageCompression from 'browser-image-compression';
+	import { decodeBase64 } from '$lib/utils/decodeBase64';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
 	export let data;
 
@@ -19,16 +20,26 @@
 	let fileName: string;
 	let fileName_map: string;
 	let fileName_pdf: any[] = [];
+	let fileName_pdf_contract: any[] = [];
 	let fileName_brochure: any[] = [];
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
+	let imageFile_pdf_contract: File | undefined;
 	let imageFile_brochure: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+	let carouselImages_sponsor: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
-	let pdfFiles: File[] = [];
 
 	let exhibitionsDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsObject: ExhibitionsModel = {
@@ -57,6 +68,7 @@
 			video_youtube_link: '',
 			title: '',
 			pdf_files: '',
+			contract_file: '',
 			description: '',
 			location: '',
 			location_title: '',
@@ -65,119 +77,6 @@
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
 	}
-
-	// handle pdf
-	function handleFileUpload_pdf(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile_pdf = file;
-		// console.log(file.name);
-		console.log(imageFile_pdf.name);
-		const lang = selectedLanguageTab; // Get the selected language
-
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			for (let lang of exhibitionsDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.pdf_files = reader.result as '';
-				}
-			}
-
-			const randomText = getRandomTextNumber();
-			fileName_pdf.push({
-				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
-			});
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	// handle brochure
-	function handleFileUpload_brochure(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile_brochure = file;
-		// console.log(file.name);
-		console.log(imageFile_brochure.name);
-		const lang = selectedLanguageTab; // Get the selected language
-
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			for (let lang of exhibitionsDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.brochure = reader.result as '';
-				}
-			}
-
-			const randomText = getRandomTextNumber();
-			fileName_brochure.push({
-				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
-			});
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	//handle image map
-	function handleFileUpload_ImageMap(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile_map = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			exhibitionsObject.image_map = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName_map = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	async function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-
-		// Compute the aspect ratio and derive the desired width based on a fixed height of 650px
-		const originalImage = new Image();
-		originalImage.src = URL.createObjectURL(file);
-
-		await new Promise((resolve) => {
-			originalImage.onload = resolve;
-		});
-
-		const aspectRatio = originalImage.width / originalImage.height;
-		const desiredWidth = 650 * aspectRatio;
-
-		const options = {
-			// maxSizeMB: 1, // (maximum file size in MB)
-			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
-			useWebWorker: true
-		};
-
-		try {
-			const compressedFile = await imageCompression(file, options);
-
-			// Now use compressedFile instead of file
-			imageFile = compressedFile;
-			console.log('Upload', imageFile);
-
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				exhibitionsObject.thumbnail = reader.result as string;
-				const randomText = getRandomTextNumber(); // Generate random text
-				fileName = `exhibition/${randomText}_${compressedFile.name}`; // Append random text to the file name
-			};
-			reader.readAsDataURL(compressedFile);
-		} catch (error) {
-			console.error('Error compressing the image:', error);
-		}
-	}
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
@@ -187,73 +86,73 @@
 	//**dropzone-sponsor**//
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
 		sliderImagesFile_sponsor = e.detail;
-		getImagesObject();
+		getImagesObject_sponsor();
 	} //**dropzone-sponsor**//
 
 	async function formSubmit() {
-		let hasDataForLanguage = true; //byankawa ba false
-		let isValidExhibitionsObject = true; //byankawa ba false
+		let hasDataForLanguage = false;
+		let isValidExhibitionsObject = false;
 
-		// for (let lang of exhibitionsDataLang) {
-		// 	const storyData = lang.story.trim();
-		// 	const title = lang.title.trim();
-		// 	const shortDescription = lang.description.trim();
-		// 	const link = lang.video_youtube_link.trim();
-		// 	const location = lang.location.trim();
-		// 	const location_title = lang.location_title.trim();
-		// 	const mapTitle = lang.map_title.trim();
+		for (let lang of exhibitionsDataLang) {
+			const storyData = lang.story.trim();
+			const title = lang.title.trim();
+			const shortDescription = lang.description.trim();
+			const link = lang.video_youtube_link.trim();
+			const location = lang.location.trim();
+			const location_title = lang.location_title.trim();
+			const mapTitle = lang.map_title.trim();
 
-		// 	const isStoryIsEmpty = isEmpty(storyData);
-		// 	const isTitleEmpty = isEmpty(title);
-		// 	const isShortDescriptionEmpty = isEmpty(shortDescription);
-		// 	const isLinkEmpty = isEmpty(link);
-		// 	const isLinkEmptyLocation = isEmpty(location);
-		// 	const isLinkEmptyLocation_title = isEmpty(location_title);
-		// 	const isMapTitle = isEmpty(mapTitle);
+			const isStoryIsEmpty = isEmpty(storyData);
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLinkEmpty = isEmpty(link);
+			const isLinkEmptyLocation = isEmpty(location);
+			const isLinkEmptyLocation_title = isEmpty(location_title);
+			const isMapTitle = isEmpty(mapTitle);
 
-		// 	if (
-		// 		!isEmpty(lang.pdf_files) ||
-		// 		!isEmpty(lang.brochure) ||
-		// 		!isStoryIsEmpty ||
-		// 		!isTitleEmpty ||
-		// 		!isShortDescriptionEmpty ||
-		// 		!isLinkEmpty ||
-		// 		!isLinkEmptyLocation ||
-		// 		!isMapTitle ||
-		// 		!isLinkEmptyLocation_title
-		// 	) {
-		// 		// All fields are non-empty for this language
-		// 		hasDataForLanguage = true;
-		// 		if (
-		// 			isEmpty(lang.pdf_files) ||
-		// 			isEmpty(lang.brochure) ||
-		// 			isStoryIsEmpty ||
-		// 			isTitleEmpty ||
-		// 			isShortDescriptionEmpty ||
-		// 			isLinkEmpty ||
-		// 			isLinkEmptyLocation ||
-		// 			isMapTitle ||
-		// 			isLinkEmptyLocation_title
-		// 		) {
-		// 			// At least one field is empty for this language
-		// 			hasDataForLanguage = false;
-		// 			break;
-		// 		}
-		// 	}
-		// }
+			if (
+				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
+				!isStoryIsEmpty ||
+				!isTitleEmpty ||
+				!isShortDescriptionEmpty ||
+				!isLinkEmpty ||
+				!isLinkEmptyLocation ||
+				!isMapTitle ||
+				!isLinkEmptyLocation_title
+			) {
+				// All fields are non-empty for this language
+				hasDataForLanguage = true;
+				if (
+					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
+					isStoryIsEmpty ||
+					isTitleEmpty ||
+					isShortDescriptionEmpty ||
+					isLinkEmpty ||
+					isLinkEmptyLocation ||
+					isMapTitle ||
+					isLinkEmptyLocation_title
+				) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
+				}
+			}
+		}
 
 		// Check if galleryObject has a valid thumbnail and at least one slider image
-		// if (
-		// 	!isEmpty(exhibitionsObject.thumbnail) &&
-		// 	sliderImagesFile.length > 0 &&
-		// 	sliderImagesFile_sponsor.length > 0 &&
-		// 	!isEmpty(exhibitionsObject.company_number) &&
-		// 	!isEmpty(exhibitionsObject.country_number) &&
-		// 	!isEmpty(exhibitionsObject.sponsor_title) &&
-		// 	!isEmpty(exhibitionsObject.exhibition_type)
-		// ) {
-		// 	isValidExhibitionsObject = true;
-		// }
+		if (
+			!isEmpty(exhibitionsObject.thumbnail) &&
+			sliderImagesFile.length > 0 &&
+			sliderImagesFile_sponsor.length > 0 &&
+			!isEmpty(exhibitionsObject.company_number) &&
+			!isEmpty(exhibitionsObject.country_number) &&
+			!isEmpty(exhibitionsObject.sponsor_title) &&
+			!isEmpty(exhibitionsObject.exhibition_type)
+		) {
+			isValidExhibitionsObject = true;
+		}
 
 		if (!hasDataForLanguage || !isValidExhibitionsObject) {
 			isFormSubmitted = true;
@@ -273,20 +172,31 @@
 		exhibitionsObject.image_map = response2.data?.path || '';
 
 		for (let file of fileName_pdf) {
-			const response3 = await data.supabase.storage
+			const responsePDF = await data.supabase.storage
 				.from('PDF')
-				.upload(`pdfFiles/${file.fileName}`, imageFile_pdf!);
+				.upload(`pdfFiles/${file.fileName}`, file.file!);
 
 			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
 			if (langObj) {
-				langObj.pdf_files = response3?.data?.path || '';
+				langObj.pdf_files = responsePDF?.data?.path || '';
+			}
+		}
+
+		for (let file of fileName_pdf_contract) {
+			const responsePDF_contract = await data.supabase.storage
+				.from('PDF')
+				.upload(`pdfFiles/${file.fileName}`, file.file!);
+
+			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
+			if (langObj) {
+				langObj.contract_file = responsePDF_contract?.data?.path || '';
 			}
 		}
 
 		for (let file of fileName_brochure) {
 			const response3 = await data.supabase.storage
 				.from('image')
-				.upload(`exhibition/${file.fileName}`, imageFile_brochure!);
+				.upload(`exhibition/${file.fileName}`, file.file!);
 
 			const langObj = exhibitionsDataLang.find((lang) => lang.language === file.lang);
 			if (langObj) {
@@ -298,10 +208,12 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`exhibition/${randomText}_${image.name}`, image!)
+				.upload(`exhibition/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
-						exhibitionsObject.images.push(response.data.path);
+						if (Array.isArray(exhibitionsObject.images)) {
+							exhibitionsObject.images.push(response.data.path);
+						}
 					}
 				});
 		}
@@ -310,7 +222,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`exhibition/${randomText}_${image.name}`, image!)
+				.upload(`exhibition/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
 						exhibitionsObject.sponsor_images.push(response.data.path);
@@ -319,13 +231,20 @@
 		}
 
 		// Convert exhibitionsObject.images and exhibitionsObject.pdf_files to valid array string format
-		const imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
-		const imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
-
+		let imagesArray: string[] = [];
+		if (Array.isArray(exhibitionsObject.images)) {
+			imagesArray = exhibitionsObject.images.map((image) => `"${image}"`);
+		}
 		exhibitionsObject.images = `{${imagesArray.join(',')}}`;
+
+		let imagesArray_sponsor: string[] = [];
+		if (Array.isArray(exhibitionsObject.sponsor_images)) {
+			imagesArray_sponsor = exhibitionsObject.sponsor_images.map((image) => `"${image}"`);
+		}
 		exhibitionsObject.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 		// Insert data into Supabase
+
 		insertData(exhibitionsObject, exhibitionsDataLang, data.supabase);
 
 		resetForm();
@@ -361,6 +280,7 @@
 				location: '',
 				location_title: '',
 				pdf_files: '',
+				contract_file: '',
 				brochure: '',
 				map_title: '',
 				language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
@@ -368,30 +288,134 @@
 		}
 	}
 
-	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
 		//
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsObject.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `exhibition/${randomText}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
+	function handleFileUploadMap(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_map = file;
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsObject.image_map = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName_map = `exhibition/${randomText}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	// handle brochure
+	function handleFileUpload_brochure(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+
+		imageFile_brochure = file;
+
+		const lang = selectedLanguageTab;
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.brochure = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_brochure.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}`,
+				file: file
+			});
+
+			exhibitionsDataLang = [...exhibitionsDataLang];
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	function handleFileUpload_pdf(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf = file;
+		//
+
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.pdf_files = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}`,
+				file: file
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	function handleFileUpload_pdf_contract(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf_contract = file;
+
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionsDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.contract_file = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf_contract.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}`,
+				file: file
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	function getImagesObject() {
+		carouselImages = createCarouselImages(sliderImagesFile);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
 	}
+	function getImagesObject_sponsor() {
+		carouselImages_sponsor = createCarouselImages(sliderImagesFile_sponsor);
 
-	// decode pdf_file
-	function decodeBase64(pdf_file: any) {
-		const newWindow = window.open();
-		if (newWindow !== null) {
-			newWindow.document.write(
-				'<iframe src="' + pdf_file + '" width="100%" height="100%"></iframe>'
-			);
+		if (carouselImages_sponsor.length <= 0) {
+			carouselImages_sponsor = undefined;
 		}
 	}
 </script>
@@ -410,12 +434,12 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png, .svg"
+						on:change={handleFileUploadThumbnail}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
-						<p class="error-message">Please Upload an Image</p>
+						<p class="error-message text-sm font-normal">Please Upload an Image</p>
 					{/if}
 				</Label>
 			</div>
@@ -424,8 +448,8 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
 					<Fileupload
-						on:change={handleFileUpload_ImageMap}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={handleFileUploadMap}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 						lang={selectedLanguageTab}
 					/>
@@ -451,7 +475,7 @@
 				<Label for="default-input" class="block mb-2">Exhibition Type</Label>
 				<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" />
 				{#if isFormSubmitted && !exhibitionsObject.exhibition_type.trim()}
-					<p class="error-message">Please enter an exhibition type</p>
+					<p class="error-message text-sm font-normal">Please enter an exhibition type</p>
 				{/if}
 			</div>
 
@@ -464,7 +488,7 @@
 						placeholder="Enter a number"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.country_number}
-						<p class="error-message">Required</p>
+						<p class="error-message text-sm font-normal">Required</p>
 					{/if}
 				</Label>
 			</div>
@@ -477,7 +501,7 @@
 						placeholder="Enter a number"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.company_number}
-						<p class="error-message">Required</p>
+						<p class="error-message text-sm font-normal">Required</p>
 					{/if}
 				</Label>
 			</div>
@@ -496,7 +520,7 @@
 								}}
 							>
 								<div class="px-5 py-10">
-									<div class="text-center w-full pb-10">
+									<div class="text-center w-full pb-5">
 										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
@@ -508,8 +532,8 @@
 										</h1>
 										<p>for other language navigate between tabs</p>
 									</div>
-									<div class="pb-5 flex gap-4 col-span-1">
-										<Label class="w-1/2 space-y-2 mb-2">
+									<div class="pb-5 flex flex-col lg:flex-row gap-4 col-span-1">
+										<Label class="lg:w-1/3 space-y-2 mb-2">
 											<span>Upload pdf file </span>
 
 											<Fileupload
@@ -520,7 +544,7 @@
 											/>
 
 											{#if isFormSubmitted && !langData?.pdf_files?.trim()}
-												<p class="error-message">Please Upload an pdf file</p>
+												<p class="error-message text-sm font-normal">Please Upload an pdf file</p>
 											{/if}
 
 											<div>
@@ -532,7 +556,7 @@
 											</div>
 										</Label>
 
-										<Label class="w-1/2 space-y-2 mb-2">
+										<Label class="lg:w-1/3 space-y-2 mb-2">
 											<span>Upload brochure image</span>
 
 											<Fileupload
@@ -543,12 +567,33 @@
 											/>
 
 											{#if isFormSubmitted && !langData?.brochure?.trim()}
-												<p class="error-message">Please Upload brochure image</p>
+												<p class="error-message text-sm font-normal">
+													Please Upload brochure image
+												</p>
 											{/if}
+										</Label>
+
+										<Label class="lg:w-1/3 space-y-2 mb-2">
+											<span>Upload pdf contract </span>
+
+											<Fileupload
+												on:change={handleFileUpload_pdf_contract}
+												accept=".pdf"
+												class="dark:bg-white"
+												placeholder="Upload"
+											/>
+
+											<div>
+												<button
+													on:click={() => decodeBase64(langData?.contract_file ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+											</div>
 										</Label>
 									</div>
 
-									<div class="pb-10 flex gap-3 col-span-1">
+									<div class="pb-0 flex gap-3 col-span-1">
 										<Label class="w-2/4 space-y-2 mb-2">
 											<Label for="title" class="mb-2">Link for youtube video</Label>
 											<Input
@@ -557,7 +602,9 @@
 												placeholder="Enter a link"
 											/>
 											{#if isFormSubmitted && !langData.video_youtube_link}
-												<p class="error-message">Please enter a link for youtube video</p>
+												<p class="error-message text-sm font-normal">
+													Please enter a link for youtube video
+												</p>
 											{/if}
 										</Label>
 
@@ -565,13 +612,13 @@
 											<Label for="title" class="mb-2">Map Title</Label>
 											<Input
 												type="text"
-												placeholder="Enter title"
+												placeholder="Enter map title"
 												bind:value={langData.map_title}
 												id="title"
 												name="title"
 											/>
 											{#if isFormSubmitted && !langData.map_title}
-												<p class="error-message">Please enter map title</p>
+												<p class="error-message text-sm font-normal">Please enter map title</p>
 											{/if}
 
 											<div>
@@ -584,16 +631,16 @@
 										</Label>
 									</div>
 
-									<div class="pb-10 flex gap-3 col-span-1">
+									<div class="pb-5 flex gap-3 col-span-1">
 										<Label class="w-2/3 space-y-2 mb-2">
 											<span>Location</span>
 											<Input
 												type="text"
 												bind:value={langData.location}
-												placeholder="Enter a link"
+												placeholder="Enter location"
 											/>
 											{#if isFormSubmitted && !langData.location}
-												<p class="error-message">Please enter a location</p>
+												<p class="error-message text-sm font-normal">Please enter a location</p>
 											{/if}
 										</Label>
 										<Label class="w-1/3 space-y-2 mb-2">
@@ -601,28 +648,30 @@
 											<Input
 												type="text"
 												bind:value={langData.location_title}
-												placeholder="Enter a link"
+												placeholder="Enter location title"
 											/>
 											{#if isFormSubmitted && !langData.location_title}
-												<p class="error-message">Please enter a location_title</p>
+												<p class="error-message text-sm font-normal">
+													Please enter a location_title
+												</p>
 											{/if}
 										</Label>
 									</div>
 
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="title" class="mb-2">Exhibition Title</Label>
 										<Input
 											type="text"
-											placeholder="Enter title"
+											placeholder="Exhibition title"
 											bind:value={langData.title}
 											id="title"
 											name="title"
 										/>
 										{#if isFormSubmitted && !langData.title.trim()}
-											<p class="error-message">Please enter a title</p>
+											<p class="error-message text-sm font-normal">Please enter a title</p>
 										{/if}
 									</div>
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="story" class="mb-2">Exhibition Story</Label>
 										<Textarea
 											placeholder="Enter story"
@@ -632,11 +681,11 @@
 											name="story"
 										/>
 										{#if isFormSubmitted && !langData.story.trim()}
-											<p class="error-message">Please enter a story</p>
+											<p class="error-message text-sm font-normal">Please enter a story</p>
 										{/if}
 									</div>
 
-									<div class="pb-10">
+									<div class="pb-5">
 										<Label for="textarea-id" class="mb-2">Short description</Label>
 										<Textarea
 											placeholder="Enter short description"
@@ -646,7 +695,7 @@
 											name="short_description"
 										/>
 										{#if isFormSubmitted && !langData.description.trim()}
-											<p class="error-message">Please enter a description</p>
+											<p class="error-message text-sm font-normal">Please enter a description</p>
 										{/if}
 									</div>
 								</div>
@@ -662,10 +711,10 @@
 					<Input
 						type="text"
 						bind:value={exhibitionsObject.sponsor_title}
-						placeholder="Enter a title for sponsor"
+						placeholder="sponsor title"
 					/>
 					{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
-						<p class="error-message">Please enter a title for sponsor</p>
+						<p class="error-message text-sm font-normal">Please enter a title for sponsor</p>
 					{/if}
 				</div>
 				<div class="grid lg:grid-cols-2 pt-5">
@@ -674,7 +723,9 @@
 						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 						{#if isFormSubmitted && sliderImagesFile.length === 0}
-							<p class="error-message px-8">Please upload at least one image for the slider</p>
+							<p class="error-message text-sm font-normal px-8">
+								Please upload at least one image for the slider
+							</p>
 						{/if}
 					</Label>
 
@@ -683,7 +734,9 @@
 						<Label for="image" class=" px-8">Upload Sponsor Images</Label>
 						<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
 						{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
-							<p class="error-message px-8">Please upload at least one image for the sponsor</p>
+							<p class="error-message text-sm font-normal px-8">
+								Please upload at least one image for the sponsor
+							</p>
 						{/if}
 					</Label>
 					<!-- upload sponsor image -->
@@ -703,58 +756,88 @@
 				</div>
 			</div>
 
-			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
-					<TabItem open title="Exhibition List">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
-								{#each exhibitionsDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Main}
-											title={langData.title}
-											short_description={langData.description}
-											thumbnail={exhibitionsObject.thumbnail}
-											primaryColor="bg-primary"
-											startDate={exhibitionsObject.start_date}
-											endDate={exhibitionsObject.end_date}
-										/>
-									{/if}
-								{/each}
-							</div>
+			<div>
+				<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
+					<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+						<TabItem open title="Exhibition Image">
+							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+								<div class="flex justify-start items-start">
+									{#each exhibitionsDataLang as langData}
+										{#if langData.language === selectedLanguageTab}
+											<ExpoCard
+												cardType={CardType.Main}
+												title={langData.title}
+												short_description={langData.description}
+												thumbnail={exhibitionsObject.thumbnail}
+												primaryColor="bg-primary"
+												startDate={exhibitionsObject.start_date}
+												endDate={exhibitionsObject.end_date}
+											/>
+										{/if}
+									{/each}
+								</div>
 
-							<div />
-						</div>
-					</TabItem>
-					<TabItem open title="Brochure">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
-								{#each exhibitionsDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Flat}
-											title=""
-											short_description=""
-											thumbnail={langData.brochure ?? ''}
-											primaryColor="bg-primary"
-											startDate=""
-											endDate=""
-										/>
-									{/if}
-								{/each}
+								<div />
 							</div>
+						</TabItem>
+						<TabItem open title="Map">
+							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+								<div class="flex justify-start items-start">
+									{#each exhibitionsDataLang as langData}
+										{#if langData.language === selectedLanguageTab}
+											<ExpoCard
+												cardType={CardType.Main}
+												title={langData.title}
+												short_description=""
+												thumbnail={exhibitionsObject.image_map}
+												primaryColor="bg-primary"
+												startDate=""
+												endDate=""
+											/>
+										{/if}
+									{/each}
+								</div>
 
-							<div />
-						</div>
-					</TabItem>
-					<TabItem title="Exhibition Detail">
-						{#each exhibitionsDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<DetailPage imagesCarousel={carouselImages} long_description="" />
-							{/if}
-						{/each}
-					</TabItem>
-				</Tabs>
+								<div />
+							</div>
+						</TabItem>
+						<TabItem open title="Brochure">
+							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+								<div class="flex justify-start items-start">
+									{#each exhibitionsDataLang as langData}
+										{#if langData.language === selectedLanguageTab}
+											<ExpoCard
+												cardType={CardType.Flat}
+												title=""
+												short_description=""
+												thumbnail={langData.brochure ?? ''}
+												primaryColor="bg-primary"
+												startDate=""
+												endDate=""
+											/>
+										{/if}
+									{/each}
+								</div>
+
+								<div />
+							</div>
+						</TabItem>
+						<TabItem title="Detail">
+							{#each exhibitionsDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<DetailPage cardType={CardType.Flat} imagesCarousel={carouselImages} />
+								{/if}
+							{/each}
+						</TabItem>
+						<TabItem title="Sponsors">
+							{#each exhibitionsDataLang as langData}
+								{#if langData.language === selectedLanguageTab}
+									<DetailPage cardType={CardType.Flat} imagesCarousel={carouselImages_sponsor} />
+								{/if}
+							{/each}
+						</TabItem>
+					</Tabs>
+				</div>
 			</div>
 		</div>
 	</div>

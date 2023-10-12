@@ -14,7 +14,7 @@
 		type CarouselModelLang
 	} from '../../../../models/carouselModel';
 	//@ts-ignore
-	import { isLength, isEmpty } from 'validator';
+	import { isEmpty } from 'validator';
 
 	export let data;
 	let fileName: string;
@@ -141,7 +141,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				carouselData.image = response.data?.path;
+				carouselData.image = response.data?.path || '';
 			} else {
 				carouselData.image = prevThumbnail;
 			}

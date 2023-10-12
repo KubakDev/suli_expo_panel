@@ -14,6 +14,8 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -23,7 +25,16 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let publishingDataLang: PublishingModelLang[] = [];
@@ -48,22 +59,6 @@
 			long_description: '',
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			publishingObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `publishing/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	//**dropzone**//
@@ -128,7 +123,9 @@
 				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
 				.then((response) => {
 					if (response.data) {
-						publishingObject.pdf_files.push(response.data.path);
+						if (Array.isArray(publishingObject.pdf_files)) {
+							publishingObject.pdf_files.push(response.data.path);
+						}
 					}
 				});
 		}
@@ -140,15 +137,25 @@
 				.upload(`publishing/${randomText}_${image.name}`, image!)
 				.then((response) => {
 					if (response.data) {
-						publishingObject.images.push(response.data.path);
+						if (Array.isArray(publishingObject.images)) {
+							publishingObject.images.push(response.data.path);
+						}
 					}
 				});
 		}
 
 		// Convert publishingObject.images and publishingObject.pdf_files to valid array string format
-		const imagesArray = publishingObject.images.map((image) => `"${image}"`);
-		const pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
+
+		let imagesArray: string[] = [];
+		if (Array.isArray(publishingObject.images)) {
+			imagesArray = publishingObject.images.map((image) => `"${image}"`);
+		}
 		publishingObject.images = `{${imagesArray.join(',')}}`;
+
+		let pdfFilesArray: string[] = [];
+		if (Array.isArray(publishingObject.pdf_files)) {
+			pdfFilesArray = publishingObject.pdf_files.map((pdf) => `"${pdf}"`);
+		}
 		publishingObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
 
 		// Insert data into Supabase
@@ -196,20 +203,16 @@
 	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -227,7 +230,8 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Publishing Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
+						on:change={(event) =>
+							handleFileUpload(event, publishingObject, setImageFile, setFileName, 'publishing')}
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 					/>

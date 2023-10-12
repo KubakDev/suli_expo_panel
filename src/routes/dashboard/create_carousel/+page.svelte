@@ -8,7 +8,7 @@
 		type CarouselModelLang
 	} from '../../../models/carouselModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
-	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
+	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	//@ts-ignore
 	import { isEmpty } from 'validator';

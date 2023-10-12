@@ -17,6 +17,7 @@
 	async function fetchData() {
 		await getData(data.supabase);
 		items = $exhibitions;
+
 		flag = false;
 	}
 	onMount(fetchData);
@@ -26,7 +27,7 @@
 	}
 
 	// delete data
-	async function handleDelete(exhibitionId: any) {
+	async function handleDelete(exhibitionId: number) {
 		try {
 			await data.supabase
 				.from('exhibition')
@@ -34,9 +35,7 @@
 				.eq('id', exhibitionId);
 
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting exhibition:', error);
-		}
+		} catch (error) {}
 	}
 
 	const flipDurationMs = 300;
@@ -49,7 +48,7 @@
 	async function handleDndFinalize(e: any) {
 		items = e.detail.items;
 		flag = true;
-		items.forEach((item: any, index: any) => {
+		items.forEach((item: any, index: number) => {
 			item.position = index + 1;
 		});
 
@@ -69,7 +68,6 @@
 				.eq('id', item.id);
 
 			if (error) {
-				console.error('Error updating position:', error);
 			}
 		}
 	}

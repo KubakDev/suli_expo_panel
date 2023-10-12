@@ -27,7 +27,7 @@ export const insertData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -66,7 +66,7 @@ export const getData = async (
 		gallery.set(data ?? []);
 		return result;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -91,7 +91,7 @@ export const deleteData = async (galleryId: number, supabase: SupabaseClient) =>
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -133,7 +133,7 @@ export const updateData = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

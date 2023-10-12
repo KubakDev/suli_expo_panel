@@ -13,7 +13,8 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
-	import imageCompression from 'browser-image-compression';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -23,7 +24,14 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
 	let selectedLanguageTab = LanguageEnum.EN;
 
 	let magazineDataLang: MagazineModelLang[] = [];
@@ -49,46 +57,6 @@
 			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	async function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-
-		// Compute the aspect ratio and derive the desired width based on a fixed height of 650px
-		const originalImage = new Image();
-		originalImage.src = URL.createObjectURL(file);
-
-		await new Promise((resolve) => {
-			originalImage.onload = resolve;
-		});
-
-		const aspectRatio = originalImage.width / originalImage.height;
-		const desiredWidth = 650 * aspectRatio;
-
-		const options = {
-			// maxSizeMB: 1, // (maximum file size in MB)
-			maxWidthOrHeight: originalImage.width > originalImage.height ? desiredWidth : 650, // Check orientation
-			useWebWorker: true
-		};
-
-		try {
-			const compressedFile = await imageCompression(file, options);
-
-			// Now use compressedFile instead of file
-			imageFile = compressedFile;
-			console.log('Upload', imageFile);
-
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				magazineObject.thumbnail = reader.result as string;
-				const randomText = getRandomTextNumber(); // Generate random text
-				fileName = `magazine/${randomText}_${compressedFile.name}`; // Append random text to the file name
-			};
-			reader.readAsDataURL(compressedFile);
-		} catch (error) {
-			console.error('Error compressing the image:', error);
-		}
 	}
 
 	//**dropzone**//
@@ -145,35 +113,54 @@
 		magazineObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
-		for (let pdf of pdfFiles) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('PDF')
-				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
-				.then((response) => {
-					if (response.data) {
-						magazineObject.pdf_files.push(response.data.path);
-					}
-				});
+
+		if (pdfFiles.length > 0) {
+			for (let pdf of pdfFiles) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('PDF')
+					.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf!)
+					.then((response) => {
+						if (response.data) {
+							if (Array.isArray(magazineObject.images)) {
+								magazineObject.pdf_files.push(response.data.path);
+							}
+						}
+					});
+			}
 		}
 
-		for (let image of sliderImagesFile) {
-			const randomText = getRandomTextNumber();
-			await data.supabase.storage
-				.from('image')
-				.upload(`magazine/${randomText}_${image.name}`, image!)
-				.then((response) => {
-					if (response.data) {
-						magazineObject.images.push(response.data.path);
-					}
-				});
+		if (sliderImagesFile.length > 0) {
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
+				await data.supabase.storage
+					.from('image')
+					.upload(`magazine/${randomText}_${image.name}`, image!)
+					.then((response) => {
+						if (response.data) {
+							if (Array.isArray(magazineObject.images)) {
+								magazineObject.images.push(response.data.path);
+							}
+						}
+					});
+			}
 		}
 
 		// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
-		const imagesArray = magazineObject.images.map((image) => `"${image}"`);
-		const pdfFilesArray = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+
+		let imagesArray: string[] = [];
+
+		if (Array.isArray(magazineObject.images)) {
+			imagesArray = magazineObject.images.map((image) => `"${image}"`);
+		}
 		magazineObject.images = `{${imagesArray.join(',')}}`;
-		magazineObject.pdf_files = `{${pdfFilesArray.join(',')}}`;
+
+		let imagesArray_pdf: string[] = [];
+
+		if (Array.isArray(magazineObject.pdf_files)) {
+			imagesArray_pdf = magazineObject.pdf_files.map((pdf) => `"${pdf}"`);
+		}
+		magazineObject.pdf_files = `{${imagesArray_pdf.join(',')}}`;
 
 		// Insert data into Supabase
 		insertData(magazineObject, magazineDataLang, data.supabase);
@@ -220,20 +207,16 @@
 	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -251,8 +234,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, magazineObject, setImageFile, setFileName, 'magazine')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !magazineObject.thumbnail.trim()}

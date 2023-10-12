@@ -20,7 +20,7 @@ export const insertPageData = async (PageTypeObject: PageData, supabase: Supabas
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -47,7 +47,7 @@ export const updatePageData = async (updatedPageData: PageData, supabase: Supaba
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -69,7 +69,7 @@ export async function getPageData(pageName: PageEnum, supabase: any) {
 		.single();
 
 	pageTheme.set(result.data);
-	// console.log('first', result.data);
+	// 
 
 	if (result) {
 		// Update the pageData store with the fetched data

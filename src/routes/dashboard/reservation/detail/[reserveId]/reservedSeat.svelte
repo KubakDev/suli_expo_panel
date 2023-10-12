@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { fabric } from 'fabric';
 	import type { Canvas } from 'fabric/fabric-impl';
+	// @ts-ignore
+	import fabric = require('fabric');
 
 	export let data: any;
 	export let reservedData: any = [];
@@ -77,7 +78,6 @@
 
 	async function checkIfTheSeatReserved() {
 		for (let object of data[0].design?.objects) {
-			console.log(object);
 			if (object?.id == reservedData?.object_id) {
 				canvas.forEachObject((obj: any) => {
 					if (obj.id == object.id) {

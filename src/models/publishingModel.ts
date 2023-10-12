@@ -3,8 +3,8 @@ import type { LanguageEnum } from './languageEnum';
 export interface PublishingModel {
 	id?: number;
 	exhibition_id?: number;
-	images: string[];
-	pdf_files: string[];
+	images: string[] | string;
+	pdf_files: string[] | string;
 	thumbnail: string;
 	exhibition_type?: string;
 	created_at?: Date;

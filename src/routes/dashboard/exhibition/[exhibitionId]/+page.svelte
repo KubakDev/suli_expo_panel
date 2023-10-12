@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import { updateData, exhibitions } from '../../../../stores/exhibitionStore';
+	import { updateData } from '../../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../../models/exhibitionModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { decodeBase64 } from '$lib/utils/decodeBase64';
 	import { openPdfFile } from '$lib/utils/openPdfFile';
-	import { getImagesObject } from '$lib/utils/getImagesObject';
-	import { getImagesObject_sponsor } from '$lib/utils/getImagesObject_sponsor';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
@@ -19,32 +17,48 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
-	let sliderPDFFile: File[] = [];
 	let fileName: string;
 	let fileName_map: string;
 	let existingImages: string[] = [];
 	let existingImages_sponsor: string[] = [];
-	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;
+	let imageFile_pdf_contract: File | undefined;
 	let imageFile_brochure: File | undefined;
-	let fileName_pdf: any[] = [];
-	let fileName_brochure: any[] = [];
-	let carouselImages: any = undefined;
-	let carouselImages_sponsor: any = undefined;
+
+	type FileNameType = {
+		lang: string;
+		fileName: string;
+		file: File;
+	};
+	let fileName_pdf: FileNameType[] = [];
+	let fileName_pdf_contract: FileNameType[] = [];
+	let fileName_brochure: FileNameType[] = [];
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+	let carouselImages: CarouselImage[] | undefined = undefined;
+	let carouselImages_sponsor: CarouselImage[] | undefined = undefined;
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let prevImage_map: string = '';
 	let prevPDFFile: string = '';
+	let prevPDFFile_contract: string = '';
 	let prevBrochureFile: string = '';
 	let isFormSubmitted = false;
 	let pdfSource = ImgSourceEnum.PdfRemote;
+	let pdfSource_contract = ImgSourceEnum.PdfRemote;
+	let brochureSource_contract = ImgSourceEnum.remote;
 
 	let exhibitionDataLang: ExhibitionsModelLang[] = [];
 	let exhibitionsData: ExhibitionsModel = {
@@ -95,7 +109,7 @@
 
 				prevThumbnail = result.data?.thumbnail;
 				prevImage_map = result.data?.image_map;
-				console.log(';;;;;', result.data?.image_map);
+
 				images = getImage();
 				sponsor_images = getImage_sponsor();
 				// pdf_files = getPdfFile();
@@ -115,26 +129,25 @@
 						location_title: exhibitionLang?.location_title ?? '',
 						map_title: exhibitionLang?.map_title ?? '',
 						pdf_files: exhibitionLang?.pdf_files ?? '',
-						brochure: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
-							exhibitionLang.brochure
-						}`,
+						contract_file: exhibitionLang?.contract_file ?? '',
+						brochure: exhibitionLang?.brochure ?? '',
 						language:
 							exhibitionLang?.language ??
 							LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 					});
 					prevPDFFile = exhibitionLang?.pdf_files;
 					prevBrochureFile = exhibitionLang?.brochure;
+					prevPDFFile_contract = exhibitionLang?.contract_file;
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
-				getImagesObject(exhibitionsData.images);
-				getImagesObject_sponsor(exhibitionsData.sponsor_images);
+				carouselImages = getImagesObject(exhibitionsData);
+				getImagesObject_sponsor();
 			});
 	}
 
 	onMount(async () => {
 		await getExhibitionData();
-		console.log($exhibitions);
 	});
 
 	//** for swapping between languages**//
@@ -143,18 +156,31 @@
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
 
-	//handle image map
-	function handleFileUpload_ImageMap(e: Event) {
+	function handleFileUploadThumbnail(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
+		imageFile = file;
 
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			exhibitionsData.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `exhibition/${randomText}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
+	function handleFileUploadMap(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
 		imageFile_map = file;
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
 			exhibitionsData.image_map = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName_map = `exhibition/${randomText}_${file.name}`; // Append random text to the file name
+			const randomText = getRandomTextNumber();
+			fileName_map = `exhibition/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -167,7 +193,7 @@
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_pdf = file;
-		const lang = selectedLanguageTab; // Get the selected language
+		const lang = selectedLanguageTab;
 
 		const reader = new FileReader();
 
@@ -181,7 +207,37 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `${randomText}`,
+				file: file
+			});
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	// handle pdf contract
+	function handleFileUpload_pdf_contract(e: Event) {
+		pdfSource_contract = ImgSourceEnum.PdfLocal;
+
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile_pdf_contract = file;
+		const lang = selectedLanguageTab; // Get the selected language
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			for (let lang of exhibitionDataLang) {
+				if (lang.language === selectedLanguageTab) {
+					lang.contract_file = reader.result as '';
+				}
+			}
+
+			const randomText = getRandomTextNumber();
+			fileName_pdf_contract.push({
+				lang: selectedLanguageTab,
+				fileName: `${randomText}`,
+				file: file
 			});
 		};
 
@@ -190,26 +246,47 @@
 
 	// handle brochure
 
+	let brochureSourceMap: Record<string, ImgSourceEnum> = {};
+
+	$: {
+		languageEnumKeys.forEach((key) => {
+			brochureSourceMap[LanguageEnum[key as keyof typeof LanguageEnum]] = ImgSourceEnum.remote;
+		});
+	}
+
 	function handleFileUpload_brochure(e: Event) {
 		const fileInput = e.target as HTMLInputElement;
 		const file = fileInput.files![0];
 		imageFile_brochure = file;
-		const lang = selectedLanguageTab; // Get the selected language
+		const lang = selectedLanguageTab;
 
 		const reader = new FileReader();
 
 		reader.onloadend = () => {
-			for (let lang of exhibitionDataLang) {
-				if (lang.language === selectedLanguageTab) {
-					lang.brochure = reader.result as '';
-				}
+			const updatedBrochure = exhibitionDataLang.find(
+				(lang) => lang.language === selectedLanguageTab
+			);
+			if (updatedBrochure) {
+				updatedBrochure.brochure = reader.result as string;
+				brochureSourceMap[selectedLanguageTab] = ImgSourceEnum.local;
+
+				console.log(
+					'Specific Language Brochure Source Updated:',
+					selectedLanguageTab,
+					brochureSourceMap
+				);
 			}
 
 			const randomText = getRandomTextNumber();
 			fileName_brochure.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`
+				fileName: `brochure_${selectedLanguageTab}_${randomText}`,
+				file: file
 			});
+
+			exhibitionDataLang = [...exhibitionDataLang];
+
+			console.log('Exhibition Data Lang:', exhibitionDataLang);
 		};
 
 		reader.readAsDataURL(file);
@@ -244,8 +321,22 @@
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		// console.log('first', result);
+		//
 		return result;
+	}
+
+	function getImagesObject_sponsor() {
+		const carouselImages_sponsor = exhibitionsData.sponsor_images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
+				imgSource: ImgSourceEnum.remote,
+				name: image,
+				attribution: ''
+			};
+		});
+
+		return carouselImages_sponsor.length > 0 ? carouselImages_sponsor : undefined;
 	}
 
 	//**Handle submit**//
@@ -272,8 +363,8 @@
 			const isMapTitleEmpty = isEmpty(mapTitle);
 
 			if (
-				// !isEmpty(lang.pdf_files) ||
-				// !isEmpty(lang.brochure) ||
+				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
 				!isStoryIsEmpty ||
 				!isTitleEmpty ||
 				!isShortDescriptionEmpty ||
@@ -285,8 +376,8 @@
 				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (
-					// isEmpty(lang.pdf_files) ||
-					// isEmpty(lang.brochure) ||
+					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
 					isStoryIsEmpty ||
 					isTitleEmpty ||
 					isShortDescriptionEmpty ||
@@ -304,8 +395,8 @@
 
 		if (
 			!isEmpty(exhibitionsData.thumbnail) &&
-			exhibitionsData.images.length > 0 &&
-			exhibitionsData.sponsor_images.length > 0 &&
+			// exhibitionsData.images.length > 0 &&
+			// exhibitionsData.sponsor_images.length > 0 &&
 			exhibitionsData.country_number > 0 &&
 			exhibitionsData.company_number > 0 &&
 			!isEmpty(exhibitionsData.exhibition_type) &&
@@ -341,7 +432,6 @@
 					.from('image')
 					.upload(`${fileName_map}`, imageFile_map!);
 				exhibitionsData.image_map = response.data?.path || '';
-				console.log(response.data?.path);
 			} else {
 				exhibitionsData.image_map = prevImage_map;
 			}
@@ -355,13 +445,34 @@
 						}
 						const response = await data.supabase.storage
 							.from('PDF')
-							.upload(`pdfFiles/${pdfFileData.fileName}`, imageFile_pdf!);
+							.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
 						lang.pdf_files = response.data?.path || '';
 					}
 				}
 			} else {
 				for (let lang of exhibitionDataLang) {
 					lang.pdf_files = prevPDFFile;
+				}
+			}
+
+			if (imageFile_pdf_contract) {
+				for (let lang of exhibitionDataLang) {
+					const pdfFileData = fileName_pdf_contract.find(
+						(fileData) => fileData.lang === lang.language
+					);
+					if (pdfFileData) {
+						if (lang.contract_file) {
+							await data.supabase.storage.from('PDF').remove([lang.contract_file]);
+						}
+						const response = await data.supabase.storage
+							.from('PDF')
+							.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
+						lang.contract_file = response.data?.path || '';
+					}
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.contract_file = prevPDFFile_contract;
 				}
 			}
 
@@ -372,12 +483,11 @@
 					);
 					if (brochureFileData) {
 						if (lang.brochure) {
-							await data.supabase.storage.from('image').remove([lang.brochure]);
+							await data.supabase.storage.from('image').remove([lang.pdf_files]);
 						}
 						const response = await data.supabase.storage
 							.from('image')
-							.upload(`exhibition/${brochureFileData.fileName}`, imageFile_brochure!);
-
+							.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
 						lang.brochure = response.data?.path || '';
 					}
 				}
@@ -388,19 +498,19 @@
 			}
 
 			// ***insert  images *****//
-			if (sliderImagesFile.length > 0) {
-				for (let image of sliderImagesFile) {
-					const randomText = getRandomTextNumber();
-					const responseMultiple = await data.supabase.storage
-						.from('image')
-						.upload(`exhibition/${randomText}_${image.name}`, image!);
-					//
 
-					if (responseMultiple.data?.path) {
-						exhibitionsData.images.push(responseMultiple.data?.path);
-					}
+			for (let image of sliderImagesFile) {
+				const randomText = getRandomTextNumber();
+				const responseMultiple = await data.supabase.storage
+					.from('image')
+					.upload(`exhibition/${randomText}`, image!);
+				//
+
+				if (responseMultiple.data?.path) {
+					exhibitionsData.images.push(responseMultiple.data?.path);
 				}
 			}
+
 			for (let image of existingImages) {
 				exhibitionsData.images.push(image);
 			}
@@ -409,19 +519,19 @@
 			exhibitionsData.images = `{${imagesArray.join(',')}}`;
 
 			// ***insert sponsor images *****//
-			if (sliderImagesFile_sponsor.length > 0) {
-				for (let image of sliderImagesFile_sponsor) {
-					const randomText = getRandomTextNumber();
-					const responseMultiple = await data.supabase.storage
-						.from('image')
-						.upload(`exhibition/${randomText}_${image.name}`, image!);
-					// console.log('responseMultiple img:', responseMultiple);
 
-					if (responseMultiple.data?.path) {
-						exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
-					}
+			for (let image of sliderImagesFile_sponsor) {
+				const randomText = getRandomTextNumber();
+				const responseMultiple = await data.supabase.storage
+					.from('image')
+					.upload(`exhibition/${randomText}`, image!);
+				//
+
+				if (responseMultiple.data?.path) {
+					exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
 				}
 			}
+
 			for (let image of existingImages_sponsor) {
 				exhibitionsData.sponsor_images.push(image);
 			}
@@ -430,7 +540,7 @@
 			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
 			// ***insert pdf *****//
-			console.log(exhibitionsData);
+
 			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
 
 			setTimeout(() => {
@@ -445,11 +555,14 @@
 
 	//update images
 	function imageChanges(e: any) {
+		//
 		let result: any = [];
 		let customImages: any = [];
+
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
+
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -459,6 +572,7 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
+		//
 	}
 
 	//update images_sponsor
@@ -496,9 +610,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
 					<Fileupload
-						on:change={(e) => {
-							handleFileUpload(e, exhibitionsData, imageFile, fileName);
-						}}
+						on:change={handleFileUploadThumbnail}
 						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
@@ -511,7 +623,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
 					<Fileupload
-						on:change={handleFileUpload_ImageMap}
+						on:change={handleFileUploadMap}
 						accept=".jpg, .jpeg, .png .svg"
 						class=" dark:bg-white"
 						lang={selectedLanguageTab}
@@ -571,7 +683,7 @@
 				</Label>
 			</div>
 		</div>
-
+		<!-- comment  -->
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form>
@@ -640,6 +752,34 @@
 											{#if isFormSubmitted && !langData.brochure.trim()}
 												<p class="error-message">Please Upload brochure file</p>
 											{/if}
+										</Label>
+
+										<Label class="w-2/4 space-y-2 mb-2">
+											<span>Upload pdf contract </span>
+											<Fileupload
+												on:change={handleFileUpload_pdf_contract}
+												accept=".pdf"
+												class=" dark:bg-white"
+											/>
+
+											<div>
+												<button
+													on:click={() =>
+														pdfSource_contract == ImgSourceEnum.PdfLocal
+															? decodeBase64(langData?.contract_file ?? '')
+															: openPdfFile(langData?.contract_file ?? '')}
+													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
+													>Click here to view the PDF</button
+												>
+
+												<button
+													on:click={() =>
+														pdfSource_contract == ImgSourceEnum.PdfLocal
+															? decodeBase64(langData?.contract_file ?? '')
+															: openPdfFile(langData?.contract_file ?? '')}
+													class="cursor-pointer"
+												/>
+											</div>
 										</Label>
 									</div>
 
@@ -754,6 +894,7 @@
 					<!-- upload Exhibition image -->
 					<Label class="space-y-2 mb-2">
 						<Label for="image" class="mb-2 px-8">Upload Exhibition Images</Label>
+						<!-- upload news image -->
 						<FileUploadComponent
 							on:imageChanges={imageChanges}
 							on:imageFilesChanges={getAllImageFile}
@@ -807,34 +948,6 @@
 							<div />
 						</div>
 					</TabItem>
-					<TabItem open title="Brochure">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
-								{#each exhibitionDataLang as langData}
-									{#if langData.language === selectedLanguageTab}
-										<ExpoCard
-											cardType={CardType.Flat}
-											title=""
-											short_description=""
-											thumbnail={langData.brochure ?? ''}
-											primaryColor="bg-primary"
-											startDate=""
-											endDate=""
-										/>
-									{/if}
-								{/each}
-							</div>
-
-							<div />
-						</div>
-					</TabItem>
-					<TabItem title="Detail">
-						{#each exhibitionDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<DetailPage bind:imagesCarousel={carouselImages} long_description="" />
-							{/if}
-						{/each}
-					</TabItem>
 
 					<TabItem title="Map">
 						{#each exhibitionDataLang as langData}
@@ -852,10 +965,42 @@
 						{/each}
 					</TabItem>
 
+					<TabItem open title="Brochure">
+						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
+							<div class="flex justify-start items-start">
+								{#each exhibitionDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Flat}
+											title=""
+											short_description=""
+											thumbnail={brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local
+												? langData.brochure
+												: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
+														langData.brochure
+												  }`}
+											primaryColor="bg-primary"
+											startDate=""
+											endDate=""
+										/>
+									{/if}
+								{/each}
+							</div>
+							<div />
+						</div>
+					</TabItem>
+
+					<TabItem title="Detail">
+						{#each exhibitionDataLang as langData}
+							{#if langData.language === selectedLanguageTab}
+								<DetailPage imagesCarousel={carouselImages} long_description="" />
+							{/if}
+						{/each}
+					</TabItem>
 					<TabItem title="Sponsor">
 						{#each exhibitionDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
-								<DetailPage bind:imagesCarousel={carouselImages_sponsor} long_description="" />
+								<DetailPage imagesCarousel={carouselImages_sponsor} long_description="" />
 							{/if}
 						{/each}
 					</TabItem>

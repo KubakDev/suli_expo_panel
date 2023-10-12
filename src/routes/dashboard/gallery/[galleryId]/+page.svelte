@@ -16,13 +16,24 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -79,7 +90,7 @@
 				}
 				galleryDataLang = [...galleryDataLang];
 				galleryData = { ...galleryData };
-				getImagesObject();
+				carouselImages = getImagesObject(galleryData);
 			});
 	}
 
@@ -93,24 +104,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload thumbnail image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			galleryData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-			//
-		};
-		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
@@ -239,22 +232,11 @@
 		}
 	}
 
-	//get thumbnail
-	function getImagesObject() {
-		carouselImages = galleryData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -274,7 +256,8 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Gallery Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
+						on:change={(event) =>
+							handleFileUpload(event, galleryData, setImageFile, setFileName, 'gallery')}
 						accept=".jpg, .jpeg, .png .svg"
 						class="dark:bg-white"
 					/>

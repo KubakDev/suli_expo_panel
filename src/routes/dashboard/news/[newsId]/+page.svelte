@@ -11,20 +11,28 @@
 	import { ImgSourceEnum } from '../../../../models/imgSourceEnum';
 	import type { ImagesModel } from '../../../../models/imagesModel';
 	import { goto } from '$app/navigation';
-	import type { ExhibitionModel } from '../../../../models/exhibitionTypeModel';
-	import { getDataExhibition } from '../../../../stores/exhibitionTypeStore';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
 	let existingImages: string[] = [];
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -78,7 +86,7 @@
 				}
 				newsDataLang = [...newsDataLang];
 				newsData = { ...newsData };
-				getImagesObject();
+				carouselImages = getImagesObject(newsData);
 			});
 	}
 
@@ -91,24 +99,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload thumbnail image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			newsData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `news/${randomText}_${file.name}`; // Append random text to the file name
-			//
-		};
-		reader.readAsDataURL(file);
-	} //**for upload thumbnail image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
@@ -164,7 +154,7 @@
 				const response = await data.supabase.storage
 					.from('image')
 					.upload(`${fileName}`, imageFile!);
-				newsData.thumbnail = response.data?.path;
+				newsData.thumbnail = response.data?.path || '';
 			} else {
 				newsData.thumbnail = prevThumbnail;
 			}
@@ -231,22 +221,21 @@
 		}
 	}
 
-	//get thumbnail
-	function getImagesObject() {
-		carouselImages = newsData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
+	//  handle thumbnail image change
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
 
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			newsData.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `news/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
 	}
 </script>
 
@@ -266,8 +255,8 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={handleFileUploadThumbnail}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 				</Label>
@@ -397,7 +386,7 @@
 						{#each newsDataLang as langData}
 							{#if langData.language === selectedLanguageTab}
 								<DetailPage
-									bind:imagesCarousel={carouselImages}
+									imagesCarousel={carouselImages}
 									long_description={langData.long_description}
 								/>
 							{/if}

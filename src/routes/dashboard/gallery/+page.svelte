@@ -16,7 +16,6 @@
 	//
 
 	async function fetchData() {
-		console.log(data.supabase);
 		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
 
 		galleryData = result.data;
@@ -48,9 +47,7 @@
 				currentPage = totalPages;
 			}
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting gallery:', error);
-		}
+		} catch (error) {}
 	}
 
 	function calculateIndex(index: any) {

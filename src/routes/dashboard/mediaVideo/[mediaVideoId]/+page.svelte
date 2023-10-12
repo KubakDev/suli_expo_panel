@@ -4,7 +4,6 @@
 	import { updateData } from '../../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import type { VideoModel, VideoModelLang } from '../../../../models/media_VideoModel';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
@@ -13,11 +12,20 @@
 	import { isEmpty } from 'validator';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -39,7 +47,7 @@
 
 	function getYouTubeId(url: string): string | null {
 		const match = youtubeRegex.exec(url);
-		console.log('match', match);
+
 		return match ? match[1] : null;
 	}
 
@@ -94,23 +102,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload video image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			mediaVideoData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber();
-			fileName = `mediaVideoPictures/${randomText}_${file.name}`;
-		};
-		reader.readAsDataURL(file);
-	}
 
 	//**Handle submit**//
 
@@ -179,6 +170,13 @@
 			mediaVideoData.exhibition_id = selectedValue;
 		}
 	}
+
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
+	}
 </script>
 
 <div style="min-height: calc(100vh - 160px);">
@@ -197,8 +195,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, mediaVideoData, setImageFile, setFileName, 'videoObjectData')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 				</Label>

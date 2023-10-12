@@ -1,13 +1,5 @@
 <script lang="ts">
-	import {
-		Label,
-		Input,
-		Fileupload,
-		Textarea,
-		Img,
-		ButtonGroup,
-		InputAddon
-	} from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/serviceStore';
 	import { LanguageEnum } from '../../../models/languageEnum';

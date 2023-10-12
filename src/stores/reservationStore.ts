@@ -1,94 +1,80 @@
 import { writable } from 'svelte/store';
-import type { Reservation } from '../models/reservationModel';
+import type { Reservation, ReservationStatus } from '../models/reservationModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 export const seatReservation = writable<Reservation[]>([]);
+export const seatReservationTotalCount = writable<number>();
 
-//Get all data
 export const getReservationData = async (
 	supabase: SupabaseClient,
-	filters?: any[],
-	searchField?: string | null,
-	searchQuery?: string
+	page: number,
+	pageSize: number,
+	selectedExhibition?: number,
+	p_company_name?: string,
+	p_phone_number?: string,
+	p_email?: string
 ) => {
-	let query = supabase.from('seat_reservation').select(`
-        *,
-        company(*),
-        exhibition(*)
-    `);
+	let { data } = await supabase.rpc('get_seat_reservations', {
+		page_num: page,
+		page_size: pageSize,
+		p_exhibition_id: selectedExhibition,
+		p_company_name: p_company_name,
+		p_phone_number: p_phone_number,
+		p_type: null,
+		p_email: p_email
+	});
 
-	// filter data by company information
-	let companyIds: any = [];
+	seatReservationTotalCount.set(data[0]?.total_count);
+	seatReservation.set(data);
+};
 
-	if (searchField && searchQuery) {
-		const lowercaseSearchQuery = searchQuery.toLowerCase();
-		let dataFound = false; // Flag to track if matching data is found
+export const getReservationDataByDependStatus = async (
+	supabase: SupabaseClient,
+	selectedStatus: string,
+	page: number,
+	pageSize: number
+) => {
+	const startIndex = (page - 1) * pageSize;
+	const endIndex = startIndex + pageSize - 1;
 
-		if (searchField === 'companyNameField') {
-			const companyResponse = await supabase
-				.from('company')
-				.select('id')
-				.ilike('company_name', `%${lowercaseSearchQuery}%`);
+	let { data, error, count } = await supabase
+		.from('seat_reservation')
+		.select('*,company(*),exhibition(*,exhibition_languages(*))', { count: 'exact' })
+		.eq('status', selectedStatus)
+		.range(startIndex, endIndex);
 
-			companyIds = companyResponse?.data?.map((company) => company.id);
-			query = query.filter('company.company_name', 'ilike', `%${lowercaseSearchQuery}%`);
-
-			if (companyResponse.data) {
-				if (companyResponse.data.length > 0) {
-					dataFound = true;
-				}
-			}
-		} else if (searchField === 'phoneNumberField') {
-			const companyResponse = await supabase
-				.from('company')
-				.select('id')
-				.ilike('phone_number', `%${lowercaseSearchQuery}%`);
-
-			companyIds = companyResponse?.data?.map((company) => company.id);
-			query = query.filter('company.phone_number', 'ilike', `%${lowercaseSearchQuery}%`);
-
-			if (companyResponse.data) {
-				if (companyResponse.data.length > 0) {
-					dataFound = true;
-				}
-			}
-		} else if (searchField === 'emailField') {
-			const companyResponse = await supabase
-				.from('company')
-				.select('id')
-				.ilike('email', `%${lowercaseSearchQuery}%`);
-
-			companyIds = companyResponse?.data?.map((company) => company.id);
-			query = query.filter('company.email', 'ilike', `%${lowercaseSearchQuery}%`);
-
-			if (companyResponse.data) {
-				if (companyResponse.data.length > 0) {
-					dataFound = true;
-				}
-			}
-		}
-
-		// show the message if data is not found
-		if (!dataFound) {
-			console.log(`No data found for search query: ${searchQuery}`);
-			seatReservation.set([]); // Clear existing data if no matching data found
-			return [];
-		}
+	if (error) {
+		console.error('Error fetching data:', error);
+		return;
 	}
 
-	if (companyIds.length > 0) {
-		query = query.in('company_id', companyIds);
+	seatReservation.set(data ?? []);
+	seatReservationTotalCount.set(count ?? 0);
+	// console.log(data);
+};
+
+export const getReservationDataByDependEdited = async (
+	supabase: SupabaseClient,
+	selectedEdited: string,
+	page: number,
+	pageSize: number
+) => {
+	const startIndex = (page - 1) * pageSize;
+	const endIndex = startIndex + pageSize - 1;
+
+	let { data, error, count } = await supabase
+		.from('seat_reservation')
+		.select('*,company(*),exhibition(*,exhibition_languages(*))', { count: 'exact' })
+		.eq('new_edit', selectedEdited)
+		.range(startIndex, endIndex);
+	// console.log(selectedEdited);
+	if (error) {
+		console.error('Error fetching data:', error);
+		return;
 	}
-
-	// filter data by exhibition
-	if (filters && filters.length > 0) {
-		query = query.in('exhibition_id', filters);
-	}
-
-	const { data } = await query.order('id');
-
-	seatReservation.set(data as Reservation[]);
-	return data as Reservation[];
+	seatReservation.set(data ?? []);
+	seatReservationTotalCount.set(count ?? 0);
+	// console.log(data);
 };
 
 export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: any) => {
@@ -98,11 +84,9 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 		.eq('id', id);
 
 	if (error) {
-		console.error('Error updating data:', error);
 		throw error;
 	}
 
-	console.log('Updated data:', data);
 	return data;
 };
 
@@ -120,11 +104,31 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 		.single();
 
 	if (error) {
-		console.error('Error fetching data by ID:', error);
 		throw error;
 	}
 
-	// console.log('Fetched data by ID:', data);
+	//
 	seatReservation.set(data as Reservation[]);
 	return data as Reservation;
+};
+
+export const getReservationsForCompany = async (supabase: SupabaseClient, companyId: any) => {
+	const { data, error } = await supabase
+		.from('seat_reservation')
+		.select(
+			`
+        *,
+        company(*),
+        exhibition(*)
+    `
+		)
+		.eq('company_id', companyId);
+
+	if (error) {
+		throw error;
+	}
+
+	//
+
+	seatReservation.set(data);
 };

@@ -12,6 +12,7 @@
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
 	export let data;
 
@@ -19,7 +20,16 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 	let isFormSubmitted = false;
 
@@ -47,27 +57,29 @@
 		});
 	}
 
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			newsObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `news/${randomText}_${file.name}`;
-		};
-
-		reader.readAsDataURL(file);
-	}
-
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
 		sliderImagesFile = e.detail;
 		getImagesObject();
 	} //**dropzone**//
 
+	//handle thumbnail images
+
+	function handleFileUploadThumbnail(e: Event) {
+		const fileInput = e.target as HTMLInputElement;
+		const file = fileInput.files![0];
+		imageFile = file;
+
+		const reader = new FileReader();
+
+		reader.onloadend = () => {
+			newsObject.thumbnail = reader.result as '';
+			const randomText = getRandomTextNumber();
+			fileName = `news/${randomText}_${file.name}`;
+		};
+
+		reader.readAsDataURL(file);
+	}
 	async function formSubmit() {
 		let hasDataForLanguage = false;
 		let isValidNewsObject = false;
@@ -118,9 +130,11 @@
 				});
 		}
 
-		const imagesArray = newsObject.images.map((image) => `"${image}"`);
+		let imagesArray: string[] = [];
+		if (Array.isArray(newsObject.images)) {
+			imagesArray = newsObject.images.map((image) => `"${image}"`);
+		}
 		newsObject.images = `{${imagesArray.join(',')}}`;
-		//
 
 		//
 		newsObject.thumbnail = response.data?.path || '';
@@ -164,22 +178,18 @@
 		}
 	}
 
-	//get thumbnail
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			//
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
+		carouselImages = createCarouselImages(sliderImagesFile);
 
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -197,8 +207,8 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload News Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={handleFileUploadThumbnail}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
 

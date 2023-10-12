@@ -25,7 +25,7 @@ export const insertDataToSeatService = async (
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -50,7 +50,7 @@ export const getSeatServices = async (supabase: SupabaseClient, page: number, pa
 		seatServices.set(data ?? []);
 		return result;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -75,7 +75,7 @@ export const deleteSeatService = async (seatServicesId: number, supabase: Supaba
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -127,14 +127,14 @@ export const getSeatServicesByIds = async (supabase: SupabaseClient, ids: number
 			.in('id', ids);
 
 		if (error) {
-			console.error(error);
+
 			throw error;
 		}
-		// console.log(data);
+		// 
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

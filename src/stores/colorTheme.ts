@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const theme = writable<ColorTheme[]>([]);
 
 //Create a new instance of the color theme
+//test
 export const insertData = async (colorThemeObject: ColorTheme, supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase.from('color_palette').insert(colorThemeObject);
@@ -15,7 +16,7 @@ export const insertData = async (colorThemeObject: ColorTheme, supabase: Supabas
 
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -29,7 +30,7 @@ export const getData = async (supabase: SupabaseClient) => {
 
 // Update data by ID
 export const updateData = async (colorThemeObject: ColorTheme, supabase: SupabaseClient) => {
-	console.log(colorThemeObject);
+
 	try {
 		const responseData = await supabase
 			.from('color_palette')
@@ -46,7 +47,7 @@ export const updateData = async (colorThemeObject: ColorTheme, supabase: Supabas
 		getData(supabase);
 		return data;
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };
@@ -64,7 +65,7 @@ export const deleteData = async (id: number, supabase: SupabaseClient) => {
 			return currentData.filter((item) => item.id !== id);
 		});
 	} catch (error) {
-		console.error(error);
+
 		throw error;
 	}
 };

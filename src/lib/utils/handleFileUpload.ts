@@ -1,16 +1,32 @@
+import imageCompression from 'browser-image-compression';
 import { getRandomTextNumber } from './generateRandomNumber';
 
-//**for upload exhibition image**//
-export function handleFileUpload(e: Event, exhibitionsData: any, imageFile: any, fileName: any) {
+export async function handleFileUpload(
+	e: Event,
+	exhibitionsObject: any,
+	setImageFile: Function,
+	setFileName: Function,
+	path: string
+) {
 	const fileInput = e.target as HTMLInputElement;
 	const file = fileInput.files![0];
-	imageFile = file;
-	const reader = new FileReader();
 
-	reader.onloadend = () => {
-		exhibitionsData.thumbnail = reader.result as '';
-		const randomText = getRandomTextNumber(); // Generate random text
-		fileName = `exhibition/${randomText}_${file.name}`;
+	const options = {
+		maxSizeMB: 2,
+		maxWidthOrHeight: 700,
+		useWebWorker: true
 	};
-	reader.readAsDataURL(file);
-} //**for upload exhibition image**//
+	try {
+		const compressedFile = await imageCompression(file, options);
+
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			exhibitionsObject.thumbnail = reader.result as string;
+			const randomText = getRandomTextNumber();
+			const newFileName = `${path}/${randomText}_${compressedFile.name}`;
+			setImageFile(compressedFile);
+			setFileName(newFileName);
+		};
+		reader.readAsDataURL(compressedFile);
+	} catch (error) {}
+}

@@ -12,6 +12,8 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 
 	export let data;
 
@@ -20,7 +22,15 @@
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
 	let isFormSubmitted = false;
 
@@ -46,22 +56,6 @@
 			created_at: new Date(),
 			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
 		});
-	}
-
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			galleryObject.thumbnail = reader.result as '';
-			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `gallery/${randomText}_${file.name}`; // Append random text to the file name
-		};
-
-		reader.readAsDataURL(file);
 	}
 
 	//**dropzone**//
@@ -118,13 +112,19 @@
 					.upload(`gallery/${randomText}_${image.name}`, image!)
 					.then((response) => {
 						if (response.data) {
-							galleryObject.images.push(response.data.path);
+							if (Array.isArray(galleryObject.images)) {
+								galleryObject.images.push(response.data.path);
+							}
 						}
 					});
 			}
 		}
 
-		const imagesArray = galleryObject.images.map((image) => `"${image}"`);
+		let imagesArray: string[] = [];
+
+		if (Array.isArray(galleryObject.images)) {
+			imagesArray = galleryObject.images.map((image) => `"${image}"`);
+		}
 		galleryObject.images = `{${imagesArray.join(',')}}`;
 
 		insertData(galleryObject, galleryDataLang, data.supabase);
@@ -159,31 +159,29 @@
 		}
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectElement = event.target as HTMLSelectElement;
+		const selectedValue = selectElement.value;
 
 		if (selectedValue === 'Select Type') {
 			delete galleryObject.exhibition_id;
 		} else {
-			galleryObject.exhibition_id = selectedValue;
+			galleryObject.exhibition_id = parseInt(selectedValue, 0);
 		}
 	}
 
 	function getImagesObject() {
-		carouselImages = sliderImagesFile.map((image, i) => {
-			const imgUrl = URL.createObjectURL(image);
-			return {
-				id: i,
-				imgurl: imgUrl,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
+		carouselImages = createCarouselImages(sliderImagesFile);
 		if (carouselImages.length <= 0) {
 			carouselImages = undefined;
 		}
+	}
+
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -201,8 +199,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Gallery Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, galleryObject, setImageFile, setFileName, 'gallery')}
+						accept=".jpg, .jpeg, .png"
 						class=" dark:bg-white"
 					/>
 					{#if isFormSubmitted && !galleryObject.thumbnail.trim()}

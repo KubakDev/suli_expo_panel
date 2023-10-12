@@ -16,7 +16,16 @@
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
-	let carouselImages: any = undefined;
+
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -165,7 +174,7 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="image" class="mb-2">Upload About Image</Label>
 					<Fileupload on:change={handleFileUpload} accept=".jpg, .jpeg, .png .svg" />
-					{#if isFormSubmitted && !aboutData.image.trim()}
+					{#if isFormSubmitted && !aboutData?.image?.trim()}
 						<p class="error-message">Please Upload an Image</p>
 					{/if}
 				</Label>
@@ -244,7 +253,7 @@
 								{#each aboutDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
-											cardType={CardType.Main}
+											cardType={CardType?.Main}
 											title=""
 											short_description={langData.short_description}
 											thumbnail={aboutData.image}

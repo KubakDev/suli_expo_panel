@@ -7,14 +7,10 @@
 	import TableComponent from '$lib/components/TableComponent.svelte';
 
 	export let data;
-	let aboutData: any = [];
-	let staffData: any = [];
 
 	async function fetchData() {
-		let result = await getData(data.supabase);
-		let staffResult = await getDataStaff(data.supabase);
-		aboutData = result;
-		staffData = staffResult;
+		await getData(data.supabase);
+		await getDataStaff(data.supabase);
 	}
 
 	onMount(fetchData);
@@ -39,9 +35,7 @@
 			// alert('member deleted successfully!');
 
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting member:', error);
-		}
+		} catch (error) {}
 	}
 
 	const columnTitle = [
@@ -55,12 +49,6 @@
 			header: 'short description',
 			name: 'about_languages',
 			subField: 'short_description',
-			type: 'array'
-		},
-		{
-			header: 'long description',
-			name: 'about_languages',
-			subField: 'long_description',
 			type: 'array'
 		}
 	];

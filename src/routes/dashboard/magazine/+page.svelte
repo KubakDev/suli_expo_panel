@@ -39,20 +39,11 @@
 				currentPage = totalPages;
 			}
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting magazine:', error);
-		}
+		} catch (error) {}
 	}
 
 	function calculateIndex(index: any) {
 		return index + 1 + (currentPage - 1) * pageSize;
-	}
-
-	// convert html tag that return it from db to regular text
-	function extractText(html: any) {
-		const tempElement = document.createElement('div');
-		tempElement.innerHTML = html;
-		return tempElement.textContent || tempElement.innerText || '';
 	}
 
 	const columnTitle = [

@@ -22,13 +22,11 @@
 	}
 
 	// delete data
-	async function handleDelete(contactInfo_id: any) {
+	async function handleDelete(contactInfo_id: number) {
 		try {
 			await deleteData(contactInfo_id, data.supabase);
 			await fetchData();
-		} catch (error) {
-			console.error('Error deleting Information:', error);
-		}
+		} catch (error) {}
 	}
 </script>
 

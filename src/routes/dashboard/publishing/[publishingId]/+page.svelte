@@ -18,6 +18,9 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -27,7 +30,15 @@
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let pdfFiles: File[] = [];
-	let carouselImages: any = undefined;
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
+
+	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let submitted = false;
 	let showToast = false;
 	let prevThumbnail: string = '';
@@ -66,8 +77,8 @@
 					created_at: new Date(result.data?.created_at)
 				};
 
-				// console.log('publishing data get db pdf files : ////////', publishingData.pdf_files);
-				// console.log('publishing data get db images: ////////', publishingData.images);
+				//
+				//
 				prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				pdf_files = getPdfFile();
@@ -90,7 +101,7 @@
 				}
 				publishingDataLang = [...publishingDataLang];
 				publishingData = { ...publishingData };
-				getImagesObject();
+				carouselImages = getImagesObject(publishingData);
 			});
 	}
 
@@ -103,23 +114,6 @@
 	const languageEnumKeys = Object.keys(LanguageEnum);
 	const languageEnumLength = languageEnumKeys.length;
 	//** for swapping between languages**//
-
-	//**for upload publishing image**//
-	function handleFileUpload(e: Event) {
-		const fileInput = e.target as HTMLInputElement;
-		const file = fileInput.files![0];
-		imageFile = file;
-		//
-		const reader = new FileReader();
-
-		reader.onloadend = () => {
-			publishingData.thumbnail = reader.result as '';
-
-			const randomText = getRandomTextNumber();
-			fileName = `publishing/${randomText}_${file.name}`;
-		};
-		reader.readAsDataURL(file);
-	} //**for upload publishing image**//
 
 	//**dropzone**//
 	function getAllImageFile(e: { detail: File[] }) {
@@ -311,21 +305,11 @@
 		}
 	}
 
-	function getImagesObject() {
-		carouselImages = publishingData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-		//
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
+	function setImageFile(file: File) {
+		imageFile = file;
+	}
+	function setFileName(name: string) {
+		fileName = name;
 	}
 </script>
 
@@ -345,8 +329,9 @@
 				<Label class="space-y-2 mb-2">
 					<Label for="thumbnail" class="mb-2">Upload Publishing Image</Label>
 					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
+						on:change={(event) =>
+							handleFileUpload(event, publishingData, setImageFile, setFileName, 'publishing')}
+						accept=".jpg, .jpeg, .png"
 						class="dark:bg-white"
 					/>
 					{#if isFormSubmitted && !publishingData.thumbnail.trim()}
