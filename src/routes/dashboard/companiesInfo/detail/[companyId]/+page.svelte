@@ -12,6 +12,8 @@
 		companyDetail,
 		clearCompanyDetail
 	} from '../../../../../stores/companyInfo';
+	import { browser } from '$app/environment';
+
 	let src = '/notFound.gif';
 
 	const companyId = $page.params.companyId;
@@ -99,23 +101,28 @@
 				.filter((area) => area !== null);
 		}
 	});
+
+	function goBackToPreviewsPage() {
+		console.log(document.referrer);
+		if (browser) {
+			window.history.back();
+		}
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10 body-font">
 	<div class="container px-5 py-5 mx-auto">
 		<!-- Title (BreadCrumb) -->
-		<div class="max-w-xs pb-5">
-			<Breadcrumb
-				aria-label="Solid background breadcrumb example"
-				class="bg-gray-50 py-3 px-0 dark:bg-gray-900"
-			>
-				<BreadcrumbItem href="/dashboard/companiesInfo">
-					<svelte:fragment slot="icon"
-						><svg
+
+		<div class="flex justify-start items-start mb-5">
+			<Breadcrumb aria-label="Solid background breadcrumb example">
+				<BreadcrumbItem>
+					<svelte:fragment slot="icon">
+						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 24 24"
 							fill="currentColor"
-							class="w-4 h-4"
+							class="w-4 h-4 -mr-2"
 						>
 							<path
 								fill-rule="evenodd"
@@ -123,8 +130,9 @@
 								clip-rule="evenodd"
 							/>
 						</svg>
-					</svelte:fragment>Companies
+					</svelte:fragment>
 				</BreadcrumbItem>
+				<button on:click={goBackToPreviewsPage}>List of Companies</button>
 				<BreadcrumbItem>
 					<svelte:fragment slot="icon"
 						><svg
@@ -142,7 +150,7 @@
 					</svelte:fragment>
 
 					{#if $companyDetail}
-						<span class="text-gray-900 dark:text-gray-200">
+						<span class="text-gray-500 dark:text-gray-400">
 							{$companyDetail?.company_name}
 						</span>
 					{/if}

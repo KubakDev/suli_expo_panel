@@ -13,7 +13,7 @@
 		<button
 			on:click={() => goToPage(currentPage - 1)}
 			disabled={currentPage === 1}
-			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-gray-100 text-black py-2 px-4 rounded-l-md"
+			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-primary-dark dark:hover:bg-primary-dark cursor-pointer text-black py-2 px-4 rounded-l-md"
 		>
 			<div>
 				<svg
@@ -39,7 +39,7 @@
 
 		<button
 			on:click={() => goToPage(currentPage + 1)}
-			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-gray-100 text-black py-2 px-4 rounded-r-md"
+			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-primary-dark dark:hover:bg-primary-dark cursor-pointer text-black py-2 px-4 rounded-r-md"
 			disabled={currentPage == totalPages}
 		>
 			<div>

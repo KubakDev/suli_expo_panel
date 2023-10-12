@@ -45,7 +45,7 @@ export const load = async () => {
 		},
 		{
 			title: 'Company',
-			url: '/dashboard/companiesInfo'
+			url: '/dashboard/companiesInfo/currentPage=1'
 		},
 		{
 			title: 'Web Builder',
