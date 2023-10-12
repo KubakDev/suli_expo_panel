@@ -208,7 +208,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`exhibition/${randomText}_${image.name}`, image!)
+				.upload(`exhibition/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
 						if (Array.isArray(exhibitionsObject.images)) {
@@ -222,7 +222,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`exhibition/${randomText}_${image.name}`, image!)
+				.upload(`exhibition/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
 						exhibitionsObject.sponsor_images.push(response.data.path);
@@ -396,7 +396,7 @@
 			const randomText = getRandomTextNumber();
 			fileName_pdf_contract.push({
 				lang: selectedLanguageTab,
-				fileName: `${randomText}_${file.name}`,
+				fileName: `${randomText}`,
 				file: file
 			});
 		};
