@@ -17,6 +17,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -140,7 +141,7 @@
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
-				carouselImages = getImagesObject();
+				carouselImages = getImagesObject(exhibitionsData);
 				getImagesObject_sponsor();
 			});
 	}
@@ -244,6 +245,7 @@
 	}
 
 	// handle brochure
+
 	let brochureSourceMap: Record<string, ImgSourceEnum> = {};
 
 	$: {
@@ -299,7 +301,6 @@
 	function getAllImageFile_sponsor(e: { detail: File[] }) {
 		sliderImagesFile_sponsor = e.detail;
 	} //**dropzone-sponsor**//
-
 	//get image
 	function getImage() {
 		let result = exhibitionsData.images.map((image, i) => {
@@ -338,379 +339,230 @@
 		return carouselImages_sponsor.length > 0 ? carouselImages_sponsor : undefined;
 	}
 
-	function getImagesObject() {
-		let carouselImages = exhibitionsData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
-				imgSource: ImgSourceEnum.remote,
-				name: image,
-				attribution: ''
-			};
-		});
-
-		if (carouselImages.length <= 0) {
-			carouselImages = undefined;
-		}
-
-		return carouselImages;
-	}
-
 	//**Handle submit**//
 
-	// async function formSubmit() {
-	// 	let hasDataForLanguage = false;
-	// 	let isValidExhibitionObject = false;
-
-	// 	for (let lang of exhibitionDataLang) {
-	// 		const storyData = lang.story.trim();
-	// 		const title = lang.title.trim();
-	// 		const shortDescription = lang.description.trim();
-	// 		const link = lang.video_youtube_link.trim();
-	// 		const location = lang.location.trim();
-	// 		const location_title = lang.location_title.trim();
-	// 		const mapTitle = lang.map_title.trim();
-
-	// 		const isStoryIsEmpty = isEmpty(storyData);
-	// 		const isTitleEmpty = isEmpty(title);
-	// 		const isShortDescriptionEmpty = isEmpty(shortDescription);
-	// 		const isLinkEmpty = isEmpty(link);
-	// 		const isLocationEmpty = isEmpty(location);
-	// 		const isLocation_titleEmpty = isEmpty(location_title);
-	// 		const isMapTitleEmpty = isEmpty(mapTitle);
-
-	// 		if (
-	// 			!isEmpty(lang.pdf_files) ||
-	// 			!isEmpty(lang.brochure) ||
-	// 			!isStoryIsEmpty ||
-	// 			!isTitleEmpty ||
-	// 			!isShortDescriptionEmpty ||
-	// 			!isLinkEmpty ||
-	// 			!isLocationEmpty ||
-	// 			!isMapTitleEmpty ||
-	// 			!isLocation_titleEmpty
-	// 		) {
-	// 			// At least one field is not empty
-	// 			hasDataForLanguage = true;
-	// 			if (
-	// 				isEmpty(lang.pdf_files) ||
-	// 				isEmpty(lang.brochure) ||
-	// 				isStoryIsEmpty ||
-	// 				isTitleEmpty ||
-	// 				isShortDescriptionEmpty ||
-	// 				isLinkEmpty ||
-	// 				isLocationEmpty ||
-	// 				isMapTitleEmpty ||
-	// 				isLocation_titleEmpty
-	// 			) {
-	// 				// At least one field is empty for this language
-	// 				hasDataForLanguage = false;
-	// 				break;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	if (
-	// 		!isEmpty(exhibitionsData.thumbnail) &&
-	// 		// exhibitionsData.images.length > 0 &&
-	// 		// exhibitionsData.sponsor_images.length > 0 &&
-	// 		exhibitionsData.country_number > 0 &&
-	// 		exhibitionsData.company_number > 0 &&
-	// 		!isEmpty(exhibitionsData.exhibition_type) &&
-	// 		!isEmpty(exhibitionsData.sponsor_title)
-	// 	) {
-	// 		isValidExhibitionObject = true;
-	// 	}
-
-	// 	if (hasDataForLanguage && isValidExhibitionObject) {
-	// 		showToast = true;
-
-	// 		exhibitionsData.images = [];
-	// 		exhibitionsData.sponsor_images = [];
-
-	// 		if (imageFile) {
-	// 			if (exhibitionsData.thumbnail) {
-	// 				await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
-	// 			}
-
-	// 			const response = await data.supabase.storage
-	// 				.from('image')
-	// 				.upload(`${fileName}`, imageFile!);
-	// 			exhibitionsData.thumbnail = response.data?.path || '';
-	// 		} else {
-	// 			exhibitionsData.thumbnail = prevThumbnail;
-	// 		}
-
-	// 		if (imageFile_map) {
-	// 			if (exhibitionsData.image_map) {
-	// 				await data.supabase.storage.from('image').remove([exhibitionsData.image_map]);
-	// 			}
-	// 			const response = await data.supabase.storage
-	// 				.from('image')
-	// 				.upload(`${fileName_map}`, imageFile_map!);
-	// 			exhibitionsData.image_map = response.data?.path || '';
-	// 		} else {
-	// 			exhibitionsData.image_map = prevImage_map;
-	// 		}
-
-	// 		if (imageFile_pdf) {
-	// 			for (let lang of exhibitionDataLang) {
-	// 				const pdfFileData = fileName_pdf.find((fileData) => fileData.lang === lang.language);
-	// 				if (pdfFileData) {
-	// 					if (lang.pdf_files) {
-	// 						await data.supabase.storage.from('PDF').remove([lang.pdf_files]);
-	// 					}
-	// 					const response = await data.supabase.storage
-	// 						.from('PDF')
-	// 						.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
-	// 					lang.pdf_files = response.data?.path || '';
-	// 				}
-	// 			}
-	// 		} else {
-	// 			for (let lang of exhibitionDataLang) {
-	// 				lang.pdf_files = prevPDFFile;
-	// 			}
-	// 		}
-
-	// 		if (imageFile_pdf_contract) {
-	// 			for (let lang of exhibitionDataLang) {
-	// 				const pdfFileContract = fileName_pdf_contract.find(
-	// 					(fileData) => fileData.lang === lang.language
-	// 				);
-	// 				if (pdfFileContract) {
-	// 					if (lang.contract_file) {
-	// 						await data.supabase.storage.from('PDF').remove([lang.contract_file]);
-	// 					}
-	// 					const response = await data.supabase.storage
-	// 						.from('PDF')
-	// 						.upload(`pdfFiles/${pdfFileContract.fileName}`, pdfFileContract.file!);
-	// 					lang.contract_file = response.data?.path || '';
-	// 				}
-	// 			}
-	// 		} else {
-	// 			for (let lang of exhibitionDataLang) {
-	// 				lang.contract_file = prevPDFFile_contract;
-	// 			}
-	// 		}
-
-	// 		if (imageFile_brochure) {
-	// 			for (let lang of exhibitionDataLang) {
-	// 				const brochureFileData = fileName_brochure.find(
-	// 					(fileData) => fileData.lang === lang.language
-	// 				);
-	// 				if (brochureFileData) {
-	// 					if (lang.brochure) {
-	// 						await data.supabase.storage.from('image').remove([lang.pdf_files]);
-	// 					}
-	// 					const response = await data.supabase.storage
-	// 						.from('image')
-	// 						.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
-	// 					lang.brochure = response.data?.path || '';
-	// 				}
-	// 			}
-	// 		} else {
-	// 			for (let lang of exhibitionDataLang) {
-	// 				lang.brochure = prevBrochureFile;
-	// 			}
-	// 		}
-
-	// 		// ***insert  images *****//
-	// 		if (sliderImagesFile.length > 0) {
-	// 			for (let image of sliderImagesFile) {
-	// 				const randomText = getRandomTextNumber();
-	// 				const responseMultiple = await data.supabase.storage
-	// 					.from('image')
-	// 					.upload(`exhibition/${randomText}_${image.name}`, image!);
-	// 				//
-
-	// 				console.log('response:', responseMultiple.data);
-	// 				if (responseMultiple.data?.path) {
-	// 					console.log('path:', responseMultiple.data?.path);
-	// 					exhibitionsData.images.push(responseMultiple.data?.path);
-	// 				}
-	// 				console.log('Images Array After Push:', exhibitionsData.images);
-	// 			}
-	// 		}
-	// 		for (let image of existingImages) {
-	// 			exhibitionsData.images.push(image);
-	// 		}
-	// 		// Convert exhibition.images to a valid array string format
-	// 		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
-	// 		exhibitionsData.images = `{${imagesArray.join(',')}}`;
-
-	// 		// ***insert sponsor images *****//
-	// 		if (sliderImagesFile_sponsor.length > 0) {
-	// 			for (let image of sliderImagesFile_sponsor) {
-	// 				const randomText = getRandomTextNumber();
-	// 				const responseMultiple = await data.supabase.storage
-	// 					.from('image')
-	// 					.upload(`exhibition/${randomText}_${image.name}`, image!);
-	// 				//
-
-	// 				if (responseMultiple.data?.path) {
-	// 					exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
-	// 				}
-	// 			}
-	// 		}
-	// 		for (let image of existingImages_sponsor) {
-	// 			exhibitionsData.sponsor_images.push(image);
-	// 		}
-	// 		// Convert exhibition.images to a valid array string format
-	// 		const imagesArray_sponsor = exhibitionsData.sponsor_images.map((image) => `"${image}"`);
-	// 		exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
-
-	// 		// ***insert pdf *****//
-	// 		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
-
-	// 		setTimeout(() => {
-	// 			showToast = false;
-	// 			goto('/dashboard/exhibition');
-	// 		}, 1000);
-	// 	} else {
-	// 		isFormSubmitted = true;
-	// 		return;
-	// 	}
-	// }
 	async function formSubmit() {
-		exhibitionsData.images = [];
-		exhibitionsData.sponsor_images = [];
+		let hasDataForLanguage = false;
+		let isValidExhibitionObject = false;
 
-		if (imageFile) {
-			if (exhibitionsData.thumbnail) {
-				await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
-			}
+		for (let lang of exhibitionDataLang) {
+			const storyData = lang.story.trim();
+			const title = lang.title.trim();
+			const shortDescription = lang.description.trim();
+			const link = lang.video_youtube_link.trim();
+			const location = lang.location.trim();
+			const location_title = lang.location_title.trim();
+			const mapTitle = lang.map_title.trim();
 
-			const response = await data.supabase.storage.from('image').upload(`${fileName}`, imageFile!);
-			exhibitionsData.thumbnail = response.data?.path || '';
-		} else {
-			exhibitionsData.thumbnail = prevThumbnail;
-		}
+			const isStoryIsEmpty = isEmpty(storyData);
+			const isTitleEmpty = isEmpty(title);
+			const isShortDescriptionEmpty = isEmpty(shortDescription);
+			const isLinkEmpty = isEmpty(link);
+			const isLocationEmpty = isEmpty(location);
+			const isLocation_titleEmpty = isEmpty(location_title);
+			const isMapTitleEmpty = isEmpty(mapTitle);
 
-		if (imageFile_map) {
-			if (exhibitionsData.image_map) {
-				await data.supabase.storage.from('image').remove([exhibitionsData.image_map]);
-			}
-			const response = await data.supabase.storage
-				.from('image')
-				.upload(`${fileName_map}`, imageFile_map!);
-			exhibitionsData.image_map = response.data?.path || '';
-		} else {
-			exhibitionsData.image_map = prevImage_map;
-		}
-
-		if (imageFile_pdf) {
-			for (let lang of exhibitionDataLang) {
-				const pdfFileData = fileName_pdf.find((fileData) => fileData.lang === lang.language);
-				if (pdfFileData) {
-					if (lang.pdf_files) {
-						await data.supabase.storage.from('PDF').remove([lang.pdf_files]);
-					}
-					const response = await data.supabase.storage
-						.from('PDF')
-						.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
-					lang.pdf_files = response.data?.path || '';
+			if (
+				!isEmpty(lang.pdf_files) ||
+				!isEmpty(lang.brochure) ||
+				!isStoryIsEmpty ||
+				!isTitleEmpty ||
+				!isShortDescriptionEmpty ||
+				!isLinkEmpty ||
+				!isLocationEmpty ||
+				!isMapTitleEmpty ||
+				!isLocation_titleEmpty
+			) {
+				// At least one field is not empty
+				hasDataForLanguage = true;
+				if (
+					isEmpty(lang.pdf_files) ||
+					isEmpty(lang.brochure) ||
+					isStoryIsEmpty ||
+					isTitleEmpty ||
+					isShortDescriptionEmpty ||
+					isLinkEmpty ||
+					isLocationEmpty ||
+					isMapTitleEmpty ||
+					isLocation_titleEmpty
+				) {
+					// At least one field is empty for this language
+					hasDataForLanguage = false;
+					break;
 				}
 			}
-		} else {
-			for (let lang of exhibitionDataLang) {
-				lang.pdf_files = prevPDFFile;
-			}
 		}
 
-		if (imageFile_pdf_contract) {
-			for (let lang of exhibitionDataLang) {
-				const pdfFileContract = fileName_pdf_contract.find(
-					(fileData) => fileData.lang === lang.language
-				);
-				if (pdfFileContract) {
-					if (lang.contract_file) {
-						await data.supabase.storage.from('PDF').remove([lang.contract_file]);
+		if (
+			!isEmpty(exhibitionsData.thumbnail) &&
+			// exhibitionsData.images.length > 0 &&
+			// exhibitionsData.sponsor_images.length > 0 &&
+			exhibitionsData.country_number > 0 &&
+			exhibitionsData.company_number > 0 &&
+			!isEmpty(exhibitionsData.exhibition_type) &&
+			!isEmpty(exhibitionsData.sponsor_title)
+		) {
+			isValidExhibitionObject = true;
+		}
+
+		if (hasDataForLanguage && isValidExhibitionObject) {
+			showToast = true;
+
+			exhibitionsData.images = [];
+			exhibitionsData.sponsor_images = [];
+
+			if (imageFile) {
+				if (exhibitionsData.thumbnail) {
+					await data.supabase.storage.from('image').remove([exhibitionsData.thumbnail]);
+				}
+
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName}`, imageFile!);
+				exhibitionsData.thumbnail = response.data?.path || '';
+			} else {
+				exhibitionsData.thumbnail = prevThumbnail;
+			}
+
+			if (imageFile_map) {
+				if (exhibitionsData.image_map) {
+					await data.supabase.storage.from('image').remove([exhibitionsData.image_map]);
+				}
+				const response = await data.supabase.storage
+					.from('image')
+					.upload(`${fileName_map}`, imageFile_map!);
+				exhibitionsData.image_map = response.data?.path || '';
+			} else {
+				exhibitionsData.image_map = prevImage_map;
+			}
+
+			if (imageFile_pdf) {
+				for (let lang of exhibitionDataLang) {
+					const pdfFileData = fileName_pdf.find((fileData) => fileData.lang === lang.language);
+					if (pdfFileData) {
+						if (lang.pdf_files) {
+							await data.supabase.storage.from('PDF').remove([lang.pdf_files]);
+						}
+						const response = await data.supabase.storage
+							.from('PDF')
+							.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
+						lang.pdf_files = response.data?.path || '';
 					}
-					const response = await data.supabase.storage
-						.from('PDF')
-						.upload(`pdfFiles/${pdfFileContract.fileName}`, pdfFileContract.file!);
-					lang.contract_file = response.data?.path || '';
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.pdf_files = prevPDFFile;
 				}
 			}
-		} else {
-			for (let lang of exhibitionDataLang) {
-				lang.contract_file = prevPDFFile_contract;
-			}
-		}
 
-		if (imageFile_brochure) {
-			for (let lang of exhibitionDataLang) {
-				const brochureFileData = fileName_brochure.find(
-					(fileData) => fileData.lang === lang.language
-				);
-				if (brochureFileData) {
-					if (lang.brochure) {
-						await data.supabase.storage.from('image').remove([lang.pdf_files]);
+			if (imageFile_pdf_contract) {
+				for (let lang of exhibitionDataLang) {
+					const pdfFileData = fileName_pdf_contract.find(
+						(fileData) => fileData.lang === lang.language
+					);
+					if (pdfFileData) {
+						if (lang.contract_file) {
+							await data.supabase.storage.from('PDF').remove([lang.contract_file]);
+						}
+						const response = await data.supabase.storage
+							.from('PDF')
+							.upload(`pdfFiles/${pdfFileData.fileName}`, pdfFileData.file!);
+						lang.contract_file = response.data?.path || '';
 					}
-					const response = await data.supabase.storage
-						.from('image')
-						.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
-					lang.brochure = response.data?.path || '';
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.contract_file = prevPDFFile_contract;
 				}
 			}
-		} else {
-			for (let lang of exhibitionDataLang) {
-				lang.brochure = prevBrochureFile;
-			}
-		}
 
-		// ***insert images *****//
-		if (sliderImagesFile.length > 0) {
+			if (imageFile_brochure) {
+				for (let lang of exhibitionDataLang) {
+					const brochureFileData = fileName_brochure.find(
+						(fileData) => fileData.lang === lang.language
+					);
+					if (brochureFileData) {
+						if (lang.brochure) {
+							await data.supabase.storage.from('image').remove([lang.pdf_files]);
+						}
+						const response = await data.supabase.storage
+							.from('image')
+							.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
+						lang.brochure = response.data?.path || '';
+					}
+				}
+			} else {
+				for (let lang of exhibitionDataLang) {
+					lang.brochure = prevBrochureFile;
+				}
+			}
+
+			// ***insert  images *****//
+
 			for (let image of sliderImagesFile) {
 				const randomText = getRandomTextNumber();
 				const responseMultiple = await data.supabase.storage
 					.from('image')
-					.upload(`exhibition/${randomText}_${image.name}`, image!);
+					.upload(`exhibition/${randomText}`, image!);
+				//
 
 				if (responseMultiple.data?.path) {
 					exhibitionsData.images.push(responseMultiple.data?.path);
 				}
 			}
-		}
-		for (let image of existingImages) {
-			exhibitionsData.images.push(image);
-		}
-		const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
-		exhibitionsData.images = `{${imagesArray.join(',')}}`;
 
-		// ***insert sponsor images *****//
-		if (sliderImagesFile_sponsor.length > 0) {
+			for (let image of existingImages) {
+				exhibitionsData.images.push(image);
+			}
+			// Convert exhibition.images to a valid array string format
+			const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
+			exhibitionsData.images = `{${imagesArray.join(',')}}`;
+
+			// ***insert sponsor images *****//
+
 			for (let image of sliderImagesFile_sponsor) {
 				const randomText = getRandomTextNumber();
 				const responseMultiple = await data.supabase.storage
 					.from('image')
-					.upload(`exhibition/${randomText}_${image.name}`, image!);
+					.upload(`exhibition/${randomText}`, image!);
+				//
 
 				if (responseMultiple.data?.path) {
 					exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
 				}
 			}
-		}
-		for (let image of existingImages_sponsor) {
-			exhibitionsData.sponsor_images.push(image);
-		}
-		const imagesArray_sponsor = exhibitionsData.sponsor_images.map((image) => `"${image}"`);
-		exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
-		updateData(exhibitionsData, exhibitionDataLang, data.supabase);
+			for (let image of existingImages_sponsor) {
+				exhibitionsData.sponsor_images.push(image);
+			}
+			// Convert exhibition.images to a valid array string format
+			const imagesArray_sponsor = exhibitionsData.sponsor_images.map((image) => `"${image}"`);
+			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
-		setTimeout(() => {
-			goto('/dashboard/exhibition');
-		}, 1000);
+			// ***insert pdf *****//
+
+			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
+
+			setTimeout(() => {
+				showToast = false;
+				goto('/dashboard/exhibition');
+			}, 1000);
+		} else {
+			isFormSubmitted = true;
+			return;
+		}
 	}
 
 	//update images
 	function imageChanges(e: any) {
+		//
 		let result: any = [];
 		let customImages: any = [];
+
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
+
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -720,6 +572,7 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
+		//
 	}
 
 	//update images_sponsor
@@ -1041,6 +894,7 @@
 					<!-- upload Exhibition image -->
 					<Label class="space-y-2 mb-2">
 						<Label for="image" class="mb-2 px-8">Upload Exhibition Images</Label>
+						<!-- upload news image -->
 						<FileUploadComponent
 							on:imageChanges={imageChanges}
 							on:imageFilesChanges={getAllImageFile}
