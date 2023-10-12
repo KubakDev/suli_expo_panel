@@ -5,6 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const theme = writable<ColorTheme[]>([]);
 
 //Create a new instance of the color theme
+//test
 export const insertData = async (colorThemeObject: ColorTheme, supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase.from('color_palette').insert(colorThemeObject);
