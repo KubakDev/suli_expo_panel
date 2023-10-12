@@ -27,7 +27,7 @@
 	let isOptionSelected: boolean = false;
 	let currentPage: number = 1;
 	const pageSize: number = 15;
-	let totalItems: any;
+	let totalItems: number;
 	let totalPages = 1;
 	let selectedStatus: ReservationStatusEnum | undefined;
 	let selectedEdited: boolean | undefined = undefined;
@@ -52,11 +52,13 @@
 			selectedExhibition = null;
 		}
 
-		console.log('Selected Exhibition:', selectedExhibition);
+		// console.log('Selected Exhibition:', selectedExhibition);
 
 		if (isNaN(currentPage)) {
 			currentPage = 1;
 		}
+		// Update the URL according to the currentPage
+		goto(`/dashboard/reservation/currentPage=${currentPage}`);
 
 		if (selectedStatus) {
 			fetchReservationDataByStatus();
@@ -66,7 +68,7 @@
 			fetchReservationData();
 		}
 
-		fetchData(); // Uncomment if needed
+		fetchData();
 	});
 
 	async function filterByExhibition() {
@@ -119,6 +121,8 @@
 	async function goToPage(page: number) {
 		currentPage = page;
 		sessionStorage.setItem('currentPage', currentPage.toString());
+
+		// Fetch data
 		if (selectedStatus !== undefined) {
 			await fetchReservationDataByStatus();
 		} else if (selectedEdited !== undefined) {
@@ -126,7 +130,10 @@
 		} else {
 			await fetchReservationData();
 		}
-		goto(`/dashboard/reservation/currentPage=${currentPage}`);
+
+		// Update the URL
+		const newUrl = `/dashboard/reservation/currentPage=${currentPage}`;
+		goto(newUrl);
 	}
 
 	async function fetchReservationData() {
@@ -231,15 +238,14 @@
 	}
 
 	function checkIfEdited(objectId: number) {
-		console.log(objectId);
 		let reservation = $seatReservation.find((item) => item.object_id == objectId);
-		let editedField = reservation?.companies?.find((item) => item.new_edit == true);
-		console.log($seatReservation);
+		let editedField = reservation?.companies?.find((item) => item.edit === true);
+		// console.log(editedField);
 		return editedField ? true : false;
 	}
 
 	// create Series  number
-	let startingSerialNumber: any = null;
+	let startingSerialNumber: number = 0;
 	$: if (totalItems != null && currentPage != null && pageSize != null) {
 		startingSerialNumber = totalItems - (currentPage - 1) * pageSize;
 	}
@@ -259,6 +265,9 @@
 			checked[opt] = false;
 		}
 		currentPage = 1;
+		sessionStorage.setItem('currentPage', '1');
+		goto('/dashboard/reservation/currentPage=1'); // Update the URL
+
 		// Remove the status and edited filters from session storage
 		sessionStorage.removeItem('selectedStatus');
 		sessionStorage.removeItem('selectedEdited');

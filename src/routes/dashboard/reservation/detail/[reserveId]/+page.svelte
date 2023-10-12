@@ -12,7 +12,6 @@
 	import { LanguageEnum } from '../../../../../models/languageEnum';
 	import { convertNumberToWord } from '$lib/utils/numberToWordLang';
 	import { browser } from '$app/environment';
-	import { text } from '@sveltejs/kit';
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -299,7 +298,7 @@
 							xmlns="http://www.w3.org/2000/svg"
 							viewBox="0 0 24 24"
 							fill="currentColor"
-							class="w-4 h-4"
+							class="w-4 h-4 -mr-2"
 						>
 							<path
 								fill-rule="evenodd"
@@ -309,7 +308,7 @@
 						</svg>
 					</svelte:fragment>
 				</BreadcrumbItem>
-				<button on:click={goBackToPreviewsPage}>Reservation List</button>
+				<button on:click={goBackToPreviewsPage}>List of Reservations </button>
 				<BreadcrumbItem>
 					<svelte:fragment slot="icon"
 						><svg
