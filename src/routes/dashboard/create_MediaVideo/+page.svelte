@@ -4,8 +4,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel'; 
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import EditorComponent from '$lib/components/EditorComponent.svelte';

@@ -5,6 +5,7 @@
 	import { Icon } from 'flowbite-svelte-icons';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
+	import { page } from '$app/stores';
 
 	export let data;
 	let searchQuery: string = '';
@@ -16,26 +17,14 @@
 	let totalItems: any;
 
 	onMount(() => {
-		const storedCurrentPage = sessionStorage.getItem('currentPage');
-		currentPage = storedCurrentPage ? parseInt(storedCurrentPage, 10) : 1;
-
-		if (isNaN(currentPage)) {
-			currentPage = 1;
-		}
-		// Update the URL according to the currentPage
-		goto(`/dashboard/companiesInfo/currentPage=${currentPage}`);
-
+		currentPage = +$page.params.page;
 		fetchCompanyData();
 	});
 
 	async function goToPage(page: number) {
 		currentPage = page;
-		sessionStorage.setItem('currentPage', currentPage.toString());
 		await fetchCompanyData();
-
-		// Update the URL
-		const newUrl = `/dashboard/companiesInfo/currentPage=${currentPage}`;
-		goto(newUrl);
+		goto(`/dashboard/companiesInfo/${currentPage}`); // Update the URL
 	}
 
 	async function fetchCompanyData() {

@@ -6,8 +6,7 @@
 	import { onMount } from 'svelte';
 	import {
 		seatReservation,
-		getReservationData,
-		updateData,
+		getReservationData, 
 		seatReservationTotalCount
 	} from '../../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../../models/reservationEnum';
@@ -17,6 +16,7 @@
 	import { Icon } from 'flowbite-svelte-icons';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
+	import { page } from '$app/stores';
 
 	export let data;
 	let p_company_name: string | undefined;
@@ -33,41 +33,46 @@
 	let selectedEdited: boolean | undefined = undefined;
 	let selectedExhibition: number | null = null;
 
+	// onMount(() => {
+	// 	const storedCurrentPage = sessionStorage.getItem('currentPage');
+	// 	currentPage = storedCurrentPage ? parseInt(storedCurrentPage, 10) : 1;
+
+	// 	selectedExhibition = parseInt(sessionStorage.getItem('selectedExhibition') || '');
+	// 	selectedStatus =
+	// 		(sessionStorage.getItem('selectedStatus') as ReservationStatusEnum) || undefined;
+
+	// 	const storedSelectedEdited = sessionStorage.getItem('selectedEdited');
+	// 	selectedEdited =
+	// 		storedSelectedEdited === 'true' || storedSelectedEdited === 'false'
+	// 			? storedSelectedEdited === 'true'
+	// 			: undefined;
+
+	// 	selectedExhibition = parseInt(sessionStorage.getItem('selectedExhibition') || '', 10);
+	// 	if (isNaN(selectedExhibition)) {
+	// 		selectedExhibition = null;
+	// 	}
+
+	// 	// console.log('Selected Exhibition:', selectedExhibition);
+
+	// 	if (isNaN(currentPage)) {
+	// 		currentPage = 1;
+	// 	}
+	// 	// Update the URL according to the currentPage
+	// 	goto(`/dashboard/reservation/currentPage=${currentPage}`);
+
+	// 	if (selectedStatus) {
+	// 		fetchReservationDataByStatus();
+	// 	} else if (selectedEdited !== undefined) {
+	// 		fetchReservationDataByEdited();
+	// 	} else {
+	// 		fetchReservationData();
+	// 	}
+
+	// 	fetchData();
+	// });
+	//pagination number with url
 	onMount(() => {
-		const storedCurrentPage = sessionStorage.getItem('currentPage');
-		currentPage = storedCurrentPage ? parseInt(storedCurrentPage, 10) : 1;
-
-		selectedExhibition = parseInt(sessionStorage.getItem('selectedExhibition') || '');
-		selectedStatus =
-			(sessionStorage.getItem('selectedStatus') as ReservationStatusEnum) || undefined;
-
-		const storedSelectedEdited = sessionStorage.getItem('selectedEdited');
-		selectedEdited =
-			storedSelectedEdited === 'true' || storedSelectedEdited === 'false'
-				? storedSelectedEdited === 'true'
-				: undefined;
-
-		selectedExhibition = parseInt(sessionStorage.getItem('selectedExhibition') || '', 10);
-		if (isNaN(selectedExhibition)) {
-			selectedExhibition = null;
-		}
-
-		// console.log('Selected Exhibition:', selectedExhibition);
-
-		if (isNaN(currentPage)) {
-			currentPage = 1;
-		}
-		// Update the URL according to the currentPage
-		goto(`/dashboard/reservation/currentPage=${currentPage}`);
-
-		if (selectedStatus) {
-			fetchReservationDataByStatus();
-		} else if (selectedEdited !== undefined) {
-			fetchReservationDataByEdited();
-		} else {
-			fetchReservationData();
-		}
-
+		currentPage = +$page.params.page;
 		fetchData();
 	});
 
@@ -120,8 +125,6 @@
 
 	async function goToPage(page: number) {
 		currentPage = page;
-		sessionStorage.setItem('currentPage', currentPage.toString());
-
 		// Fetch data
 		if (selectedStatus !== undefined) {
 			await fetchReservationDataByStatus();
@@ -131,9 +134,7 @@
 			await fetchReservationData();
 		}
 
-		// Update the URL
-		const newUrl = `/dashboard/reservation/currentPage=${currentPage}`;
-		goto(newUrl);
+		goto(`/dashboard/reservation/${currentPage}`); // Update the URL
 	}
 
 	async function fetchReservationData() {

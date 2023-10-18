@@ -47,7 +47,7 @@
 		reader.onloadend = () => {
 			staffObject.image = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `staff/${randomText}_${file.name}`;
+			fileName = `staff/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);

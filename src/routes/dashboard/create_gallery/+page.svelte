@@ -109,7 +109,7 @@
 				const randomText = getRandomTextNumber();
 				await data.supabase.storage
 					.from('image')
-					.upload(`gallery/${randomText}_${image.name}`, image!)
+					.upload(`gallery/${randomText}`, image!)
 					.then((response) => {
 						if (response.data) {
 							if (Array.isArray(galleryObject.images)) {

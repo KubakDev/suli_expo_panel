@@ -201,7 +201,7 @@
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('image')
-						.upload(`magazine/${randomText}_${image.name}`, image!);
+						.upload(`magazine/${randomText}`, image!);
 					//
 
 					if (responseMultiple.data?.path) {
@@ -222,7 +222,7 @@
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
-						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
+						.upload(`pdfFiles/${randomText}`, PDFfile!);
 					//
 
 					if (responseMultiple.data?.path) {

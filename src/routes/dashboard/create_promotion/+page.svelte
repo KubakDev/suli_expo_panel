@@ -59,7 +59,7 @@
 		reader.onloadend = () => {
 			promoObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `promotions/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `promotions/${randomText}`; // Append random text to the file name
 		};
 
 		reader.readAsDataURL(file);

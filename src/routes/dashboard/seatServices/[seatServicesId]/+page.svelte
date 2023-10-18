@@ -98,7 +98,7 @@
 			seatServicesData.icon = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `seat_services/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `seat_services/${randomText}`; // Append random text to the file name
 			//
 		};
 		reader.readAsDataURL(file);

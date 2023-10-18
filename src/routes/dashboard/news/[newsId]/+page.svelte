@@ -16,7 +16,6 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
@@ -164,7 +163,7 @@
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('image')
-						.upload(`news/${randomText}_${image.name}`, image!);
+						.upload(`news/${randomText}`, image!);
 					//
 
 					if (responseMultiple.data?.path) {
@@ -232,7 +231,7 @@
 		reader.onloadend = () => {
 			newsData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName = `news/${randomText}_${file.name}`;
+			fileName = `news/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);
