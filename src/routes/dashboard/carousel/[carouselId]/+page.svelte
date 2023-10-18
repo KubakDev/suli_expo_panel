@@ -96,7 +96,7 @@
 			carouselData.image = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `carousel/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `carousel/${randomText}`; // Append random text to the file name
 			//
 		};
 		reader.readAsDataURL(file);

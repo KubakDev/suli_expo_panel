@@ -174,7 +174,7 @@
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('image')
-						.upload(`gallery/${randomText}_${image.name}`, image!);
+						.upload(`gallery/${randomText}`, image!);
 
 					if (responseMultiple.data?.path) {
 						galleryData.images.push(responseMultiple.data?.path);

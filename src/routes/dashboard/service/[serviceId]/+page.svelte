@@ -88,7 +88,7 @@
 			serviceData.thumbnail = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `service/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `service/${randomText}`; // Append random text to the file name
 			//
 		};
 		reader.readAsDataURL(file);

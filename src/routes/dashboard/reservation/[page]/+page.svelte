@@ -6,8 +6,7 @@
 	import { onMount } from 'svelte';
 	import {
 		seatReservation,
-		getReservationData,
-		updateData,
+		getReservationData, 
 		seatReservationTotalCount
 	} from '../../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../../models/reservationEnum';

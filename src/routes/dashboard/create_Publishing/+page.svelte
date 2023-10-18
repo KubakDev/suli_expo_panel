@@ -120,7 +120,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('PDF')
-				.upload(`pdfFiles/${randomText}_${pdf.name}`, pdf)
+				.upload(`pdfFiles/${randomText}`, pdf!)
 				.then((response) => {
 					if (response.data) {
 						if (Array.isArray(publishingObject.pdf_files)) {
@@ -134,7 +134,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`publishing/${randomText}_${image.name}`, image!)
+				.upload(`publishing/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
 						if (Array.isArray(publishingObject.images)) {

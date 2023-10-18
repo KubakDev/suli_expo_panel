@@ -85,7 +85,7 @@
 		reader.onloadend = () => {
 			promoData.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName = `promotions/${randomText}_${file.name}`;
+			fileName = `promotions/${randomText}`;
 		};
 		reader.readAsDataURL(file);
 	} //**for upload promo image**//

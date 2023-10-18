@@ -18,7 +18,6 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
-	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
@@ -208,7 +207,7 @@
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('image')
-						.upload(`publishing/${randomText}_${image.name}`, image!);
+						.upload(`publishing/${randomText}`, image!);
 					//
 
 					if (responseMultiple.data?.path) {
@@ -229,7 +228,7 @@
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
-						.upload(`pdfFiles/${randomText}_${PDFfile.name}`, PDFfile!);
+						.upload(`pdfFiles/${randomText}`, PDFfile!);
 					//
 
 					if (responseMultiple.data?.path) {

@@ -28,7 +28,7 @@
 		company?: CompanyType;
 		exhibition?: ExhibitionModel;
 		status?: ReservationStatusEnum;
-		created_at?: Date;
+		created_at: Date;
 		reserved_areas?: string;
 		type: SeatsLayoutTypeEnum;
 		extra_discount_checked?: boolean;
@@ -136,6 +136,7 @@
 				reserveData.status
 		};
 	}
+
 	async function updateStatus(itemID?: number, selectedStatus?: string, reservationData?: any) {
 		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
@@ -179,6 +180,11 @@
 					});
 				});
 		}
+	}
+	// allow to update status
+	let isEditing = false;
+	function toggleEdit() {
+		isEditing = !isEditing;
 	}
 
 	let totalPrice = 0;
@@ -516,12 +522,11 @@
 						</td>
 
 						<td>
-							<div class="flex justify-end py-3">
+							<div class="flex justify-center py-3">
 								<select
 									class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 									bind:value={reservation.status}
 									on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
-									disabled={reservation.status === ReservationStatusEnum.REJECT || loading}
 								>
 									<option value={ReservationStatusEnum.PENDING}
 										>{ReservationStatusEnum.PENDING}</option
@@ -535,6 +540,60 @@
 								</select>
 							</div>
 						</td>
+						<!-- <td>
+							<div class="flex justify-center px-4">
+								{#if isEditing}
+								 	<select
+										class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
+										bind:value={reservation.status}
+										on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
+									>
+										<option value={ReservationStatusEnum.PENDING}
+											>{ReservationStatusEnum.PENDING}</option
+										>
+										<option value={ReservationStatusEnum.ACCEPT}
+											>{ReservationStatusEnum.ACCEPT}</option
+										>
+										<option value={ReservationStatusEnum.REJECT}
+											>{ReservationStatusEnum.REJECT}</option
+										>
+									</select>
+								{:else}
+									 <select
+										class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
+										bind:value={reservation.status}
+										on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
+										disabled={reservation.status === ReservationStatusEnum.REJECT ||
+											reservation.status === ReservationStatusEnum.ACCEPT ||
+											loading}
+									>
+										<option value={ReservationStatusEnum.PENDING}
+											>{ReservationStatusEnum.PENDING}</option
+										>
+										<option value={ReservationStatusEnum.ACCEPT}
+											>{ReservationStatusEnum.ACCEPT}</option
+										>
+										<option value={ReservationStatusEnum.REJECT}
+											>{ReservationStatusEnum.REJECT}</option
+										>
+									</select>
+								{/if}
+
+								{#if reservation.status === ReservationStatusEnum.ACCEPT || reservation.status === ReservationStatusEnum.REJECT}
+								 <button
+										class="ml-2 px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600"
+										on:click={toggleEdit}
+									>
+										{#if isEditing}
+											Save
+										{:else}
+											Edit
+										{/if}
+									</button>
+								{/if}
+							</div>
+						</td> -->
+
 						<td>
 							<div class="w-full flex justify-center">
 								<div
@@ -607,12 +666,12 @@
 		border: 2px solid #edeff2;
 		text-align: center;
 	}
-	td div {
+	/* td div {
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
 		width: 100%;
 		padding: 0 30px;
-	}
+	} */
 </style>

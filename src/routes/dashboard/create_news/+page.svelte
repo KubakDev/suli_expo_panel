@@ -75,7 +75,7 @@
 		reader.onloadend = () => {
 			newsObject.thumbnail = reader.result as '';
 			const randomText = getRandomTextNumber();
-			fileName = `news/${randomText}_${file.name}`;
+			fileName = `news/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);
@@ -122,7 +122,7 @@
 			const randomText = getRandomTextNumber();
 			await data.supabase.storage
 				.from('image')
-				.upload(`news/${randomText}_${image.name}`, image!)
+				.upload(`news/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
 						newsObject.images.push(response.data.path);

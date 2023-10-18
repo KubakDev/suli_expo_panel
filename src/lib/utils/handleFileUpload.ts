@@ -23,7 +23,7 @@ export async function handleFileUpload(
 		reader.onloadend = () => {
 			exhibitionsObject.thumbnail = reader.result as string;
 			const randomText = getRandomTextNumber();
-			const newFileName = `${path}/${randomText}_${compressedFile.name}`;
+			const newFileName = `${path}/${randomText}`;
 			setImageFile(compressedFile);
 			setFileName(newFileName);
 		};

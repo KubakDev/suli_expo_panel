@@ -56,7 +56,7 @@
 		reader.onloadend = () => {
 			seatServicesObject.icon = reader.result as '';
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `seat_services/${randomText}_${file.name}`;
+			fileName = `seat_services/${randomText}`;
 		};
 
 		reader.readAsDataURL(file);

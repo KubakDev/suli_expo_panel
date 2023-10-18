@@ -82,7 +82,7 @@
 			staffData.image = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `staff/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `staff/${randomText}`; // Append random text to the file name
 			//
 		};
 		reader.readAsDataURL(file);

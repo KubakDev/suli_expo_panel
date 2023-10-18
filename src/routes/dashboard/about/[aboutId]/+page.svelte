@@ -95,7 +95,7 @@
 			aboutData.image = reader.result as '';
 
 			const randomText = getRandomTextNumber(); // Generate random text
-			fileName = `about/${randomText}_${file.name}`; // Append random text to the file name
+			fileName = `about/${randomText}`; // Append random text to the file name
 			//
 		};
 		reader.readAsDataURL(file);
