@@ -121,7 +121,7 @@
 		}
 		currentPage = 1;
 		sessionStorage.setItem('currentPage', '1'); // Update the session storage
-		goto('/dashboard/companiesInfo/currentPage=1'); // Update the URL
+		goto('/dashboard/companiesInfo/1'); // Update the URL
 
 		fetchCompanyData();
 	}
