@@ -397,7 +397,7 @@
 					</th>
 				</tr>
 			</thead>
-
+			<!-- comment -->
 			<tbody class="dark:text-gray-300">
 				{#each reservations as reservation}
 					<tr class="border-2 border-[#edeff2]">
