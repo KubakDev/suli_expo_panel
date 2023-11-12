@@ -14,7 +14,7 @@
 		Tabs,
 		Textarea
 	} from 'flowbite-svelte';
-	import { Minus, Plus, XMark } from 'svelte-heros-v2';
+	import { Minus, Plus } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import { page } from '$app/stores';
@@ -30,7 +30,7 @@
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 
-	let fabric:any = null;
+	let fabric: any = null;
 	let addSeatModal = false;
 
 	let currentSeatLayoutData: any = {};
@@ -79,9 +79,9 @@
 	// Function to update layers
 	onMount(async () => {
 		const fabricModule = await import('fabric');
-    	fabric = fabricModule.fabric;
+		fabric = fabricModule.fabric;
 
-		let iconCanvas = new  fabric.StaticCanvas('');
+		let iconCanvas = new fabric.StaticCanvas('');
 		iconCanvas.setWidth(50);
 		iconCanvas.setHeight(50);
 		await getFavColors();
@@ -97,7 +97,7 @@
 		seatImageItemStore.getAllSeatItems();
 		await getSeatServices(data.supabase, 1, 15);
 
-		canvas = new  fabric.Canvas('canvas', { isDrawingMode: false });
+		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
@@ -185,7 +185,7 @@
 			updateLayers();
 		});
 		updateLayers();
-		canvas.on('object:moving', function (options:  fabric.IEvent) {
+		canvas.on('object:moving', function (options: fabric.IEvent) {
 			// if (options.target) {
 			// 	options.target.set({
 			// 		left: Math.round(options.target.left! / gridSize) * gridSize,
@@ -217,7 +217,7 @@
 			let pointer = canvas.getPointer(options.e);
 
 			if (isAddingText) {
-				const text = new  fabric.IText('Click to edit text', {
+				const text = new fabric.IText('Click to edit text', {
 					left: pointer.x,
 					top: pointer.y,
 					fontSize: 20,
@@ -230,7 +230,7 @@
 			if (isDrawing) {
 				points.push({ x: pointer.x, y: pointer.y });
 
-				liveLine = new  fabric.Line(
+				liveLine = new fabric.Line(
 					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
 					{
 						stroke: 'red',
@@ -250,7 +250,7 @@
 					points[points.length - 1] = points[0];
 
 					// Close the shape
-					let polygon: any = new  fabric.Polygon(points, {
+					let polygon: any = new fabric.Polygon(points, {
 						stroke: 'red',
 						fill: 'transparent',
 						strokeWidth: 1,
@@ -297,7 +297,7 @@
 			}
 
 			if (panning && spacePressed) {
-				var delta = new  fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+				var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
 				canvas.relativePan(delta);
 				lastPosX = opt.e.clientX;
 				lastPosY = opt.e.clientY;
@@ -317,12 +317,12 @@
 		document.getElementById('group-button')?.addEventListener('click', () => {
 			let activeObjects = canvas.getActiveObjects();
 			if (activeObjects.length > 0) {
-				let group = new  fabric.Group(activeObjects, {
+				let group = new fabric.Group(activeObjects, {
 					objectCaching: false
 				});
 
 				// Modify the position of each object to be relative to the group
-				group._objects.forEach((object:any) => {
+				group._objects.forEach((object: any) => {
 					object.set({
 						left: object.left! - group.left!,
 						top: object.top! - group.top!
@@ -396,10 +396,11 @@
 			clearAllInput();
 			radius = null;
 		});
-
+		recordCanvasState();
 		canvas.on('object:modified', function (event: any) {
-			var modifiedObject = event.target;
-			onObjectModified(modifiedObject);
+			// var modifiedObject = event.target;
+			// onObjectModified(modifiedObject);
+			recordCanvasState();
 		});
 
 		window.addEventListener('keydown', function (e) {
@@ -409,7 +410,87 @@
 			}
 			handleKeydown(e, selectedObject);
 		});
+
+		//function for undo & redo
+		window.addEventListener('keydown', (e) => {
+			// console.log(e);
+			if (e.ctrlKey && e.code === 'KeyZ') {
+				undoSelectedObject();
+			} else if (e.ctrlKey && e.code === 'KeyY') {
+				redoSelectedObject();
+			}
+		});
+
+		//function for copy
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyC') {
+				const activeObject = canvas.getActiveObject();
+				if (activeObject) {
+					// copy the object and store it
+					activeObject.clone((cloned) => {
+						copiedObject = cloned;
+					});
+				}
+			}
+		});
+		//function for paste
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyV') {
+				if (copiedObject) {
+					copiedObject.clone((clonedObj) => {
+						canvas.discardActiveObject(); // Deselect current object
+						clonedObj.set({
+							left: clonedObj.left + 10,
+							top: clonedObj.top + 10,
+							evented: true
+						});
+						if (clonedObj.type === 'activeSelection') {
+							// Active selection
+							clonedObj.canvas = canvas;
+							clonedObj.forEachObject((obj) => {
+								canvas.add(obj);
+							});
+							clonedObj.setCoords();
+						} else {
+							canvas.add(clonedObj);
+						}
+						canvas.setActiveObject(clonedObj);
+						canvas.requestRenderAll();
+					});
+				}
+			}
+		});
+
+		console.log(canvas);
 	});
+
+	let copiedObject: any = null;
+	let history: any = [];
+	let currentHistoryIndex = 0;
+
+	function recordCanvasState() {
+		// remove future states if we are in the middle of the history
+		history = history.slice(0, currentHistoryIndex + 1);
+		history.push(canvas.toJSON());
+		currentHistoryIndex++;
+	}
+
+	function undoSelectedObject() {
+		if (currentHistoryIndex === 0) return; // no previous state
+		currentHistoryIndex--;
+		canvas.loadFromJSON(history[currentHistoryIndex], () => {
+			canvas.renderAll();
+		});
+	}
+
+	function redoSelectedObject() {
+		if (currentHistoryIndex >= history.length - 1) return; // No future state
+		currentHistoryIndex++;
+		canvas.loadFromJSON(history[currentHistoryIndex], () => {
+			canvas.renderAll();
+		});
+	}
+
 	const updateLayers = () => {
 		objects = canvas
 			.getObjects()
@@ -481,7 +562,6 @@
 
 		canvas.requestRenderAll();
 	}
-
 
 	function handleKeydown(event: any, selectedObject: any) {
 		let movingPixel = 1;
@@ -742,7 +822,7 @@
 		const selectedObject = canvas.getActiveObject();
 
 		if (selectedObject) {
-			const copiedObject =  fabric?.util.object.clone(selectedObject);
+			const copiedObject = fabric?.util.object.clone(selectedObject);
 			copiedObject.set({
 				left: selectedObject.left + 10,
 				top: selectedObject.top + 10
@@ -754,7 +834,7 @@
 
 	function pasteCopiedObject() {
 		if (canvas.copiedObject) {
-			const pastedObject =  fabric?.util.object.clone(canvas.copiedObject);
+			const pastedObject = fabric?.util.object.clone(canvas.copiedObject);
 			pastedObject.set({
 				id: new Date().getTime()
 			});
@@ -813,7 +893,7 @@
 	}
 </script>
 
-{#if  fabric}
+{#if fabric}
 	<TopBarComponent
 		data={{
 			fillColor: fillColor,
@@ -828,7 +908,6 @@
 		on:openAddSeatModal={() => openAddSeatModal()}
 	/>
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
 		<AddSeatModalComponent
 			{data}
@@ -848,7 +927,7 @@
 					files: files,
 					objects: objects,
 					selectedObjectId: selectedObjectId,
-					fabric:  fabric
+					fabric: fabric
 				}}
 				on:updateLayers={() => updateLayers()}
 			/>
