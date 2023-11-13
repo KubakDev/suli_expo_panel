@@ -85,18 +85,10 @@
 		iconCanvas.setWidth(50);
 		iconCanvas.setHeight(50);
 		await getFavColors();
-		// document.addEventListener('keydown', (event) => {
-		// 	if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
-		// 		// Ctrl+C: Copy the selected object
-		// 		copySelectedObject();
-		// 	} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-		// 		// Ctrl+V: Paste the copied object
-		// 		pasteCopiedObject();
-		// 	}
-		// });
-		seatImageItemStore.getAllSeatItems();
-		await getSeatServices(data.supabase, 1, 15);
 
+		seatImageItemStore.getAllSeatItems();
+		const x = await getSeatServices(data.supabase, 1, 15);
+		// console.log('exist data x', x);
 		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
@@ -110,12 +102,13 @@
 
 		const pageId = $page.params.seatId;
 		if (pageId !== 'create') {
-			supabase
+			let result = await supabase
 				.from('seat_layout')
 				.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
 				.eq('id', pageId)
 				.single()
 				.then(async (result) => {
+					// console.log('>>>', result);
 					const data: any = result.data;
 					currentSeatLayoutData = data;
 					exhibitionName = data.name;
@@ -145,6 +138,9 @@
 							canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
 						}
 						await tick(); // wait for the next update cycle
+
+						// get data
+						getData();
 
 						canvas.forEachObject((obj: any) => {
 							const scaleX = obj.scaleX;
@@ -195,20 +191,36 @@
 		});
 		var panning = false;
 		var lastPosX: any, lastPosY: any;
-		let spacePressed = false; // state for tracking space key
+		// let spacePressed = false; // state for tracking space key
 
 		// Listen for space key down and up events on the window
+		// give space between the text that added
 		window.addEventListener('keydown', function (e) {
-			if (e.code === 'Space') {
+			// console.log('activeObject');
+			if (e.ctrlKey && e.code === 'Space') {
 				e.preventDefault();
-				spacePressed = true;
+
+				let activeObject = canvas.getActiveObject();
+				// (i-text) it means it is an text object(, which means the user can edit its text content.)
+				if (activeObject && activeObject.type === 'i-text') {
+					// insert a space at the current cursor position
+					let cursorPosition = activeObject.selectionStart;
+					let newText = [
+						activeObject.text.slice(0, cursorPosition),
+						' ',
+						activeObject.text.slice(cursorPosition)
+					].join('');
+					activeObject.text = newText;
+					activeObject.setSelectionStart(cursorPosition + 1);
+					activeObject.setSelectionEnd(cursorPosition + 1);
+					canvas.renderAll();
+				}
 			}
 		});
-
 		window.addEventListener('keyup', function (e) {
-			if (e.code === 'Space') {
+			if (e.code === 'Space' && !isAddingText) {
 				e.preventDefault();
-				spacePressed = false;
+				// spacePressed = false;
 				panning = false;
 			}
 		});
@@ -221,7 +233,8 @@
 					left: pointer.x,
 					top: pointer.y,
 					fontSize: 20,
-					fill: 'black'
+					fill: 'black',
+					editable: true
 				});
 
 				canvas.add(text);
@@ -273,11 +286,11 @@
 				}
 			}
 
-			if (spacePressed) {
-				panning = true;
-				lastPosX = options.e.clientX;
-				lastPosY = options.e.clientY;
-			}
+			// if (spacePressed) {
+			// 	panning = true;
+			// 	lastPosX = options.e.clientX;
+			// 	lastPosY = options.e.clientY;
+			// }
 			canvas.renderAll();
 			canvas.requestRenderAll();
 		});
@@ -296,12 +309,12 @@
 				}
 			}
 
-			if (panning && spacePressed) {
-				var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
-				canvas.relativePan(delta);
-				lastPosX = opt.e.clientX;
-				lastPosY = opt.e.clientY;
-			}
+			// if (panning && spacePressed) {
+			// 	var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+			// 	canvas.relativePan(delta);
+			// 	lastPosX = opt.e.clientX;
+			// 	lastPosY = opt.e.clientY;
+			// }
 		});
 
 		canvas.on('mouse:up', function (options: any) {
@@ -310,7 +323,7 @@
 			}
 
 			panning = false;
-			spacePressed = false;
+			// spacePressed = false;
 		});
 
 		// Add an event listener to your group button
@@ -407,8 +420,8 @@
 			const selectedObject = canvas.getActiveObject();
 			if (e.key === 'Delete') {
 				removeSelectedObject();
+			} else if (e.key === 'Delete') {
 			}
-			handleKeydown(e, selectedObject);
 		});
 
 		//function for undo & redo
@@ -427,7 +440,7 @@
 				const activeObject = canvas.getActiveObject();
 				if (activeObject) {
 					// copy the object and store it
-					activeObject.clone((cloned) => {
+					activeObject.clone((cloned: any) => {
 						copiedObject = cloned;
 					});
 				}
@@ -437,7 +450,7 @@
 		window.addEventListener('keydown', (e) => {
 			if (e.ctrlKey && e.code === 'KeyV') {
 				if (copiedObject) {
-					copiedObject.clone((clonedObj) => {
+					copiedObject.clone((clonedObj: any) => {
 						canvas.discardActiveObject(); // Deselect current object
 						clonedObj.set({
 							left: clonedObj.left + 10,
@@ -447,7 +460,7 @@
 						if (clonedObj.type === 'activeSelection') {
 							// Active selection
 							clonedObj.canvas = canvas;
-							clonedObj.forEachObject((obj) => {
+							clonedObj.forEachObject((obj: any) => {
 								canvas.add(obj);
 							});
 							clonedObj.setCoords();
@@ -461,8 +474,24 @@
 			}
 		});
 
-		console.log(canvas);
+		// console.log(canvas);
 	});
+
+	function getData() {
+		if (canvas) {
+			// objects = canvas.getObjects().map((object: any, index: any) => {
+			// 	return {
+			// 		id: object.id || index,
+			// 		icon: object.icon,
+			// 		type: object.type,
+			// 		isGroup: object.type === 'group'
+			// 	};
+			// });
+
+			objects = canvas.getObjects();
+			console.log('Updated Objects:', objects);
+		}
+	}
 
 	let copiedObject: any = null;
 	let history: any = [];
@@ -704,7 +733,9 @@
 			try {
 				canvas.remove(activeObject);
 				canvas.requestRenderAll();
-			} catch (e) {}
+			} catch (e) {
+				console.error('Error removing object:', e);
+			}
 		}
 	}
 
@@ -891,6 +922,25 @@
 		newFavColor = '';
 		addFavColorLoading = false;
 	}
+
+	// get canvas data by default
+	// const getData = () => {
+	// 	if (canvas) {
+	// 		objects = canvas.getObjects().map((object: any, index: any) => {
+	// 			return {
+	// 				id: object.id || index,
+	// 				icon: object.icon,
+	// 				type: object.type,
+	// 				isGroup: object.type === 'group'
+	// 			};
+	// 		});
+	// 	}
+	// };
+	// onMount(async () => {
+	// 	getData();
+	// 	console.log('canvas exist///', canvas);
+	// 	console.log('object exist///', objects);
+	// });
 </script>
 
 {#if fabric}
@@ -955,7 +1005,7 @@
 					{/each}
 
 					<ButtonGroup class="w-full my-3" size="sm">
-						<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
+						<Input size="sm" placeholder="#FF0000" bind:value={newFavColor} />
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<InputAddon class="cursor-pointer p-0">
 							<!-- svelte-ignore a11y-click-events-have-key-events -->

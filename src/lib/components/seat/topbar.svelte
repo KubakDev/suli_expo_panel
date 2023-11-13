@@ -31,6 +31,7 @@
 		EditingMode?: EditingMode;
 		container?: HTMLElement;
 	};
+	// $: console.log('topbar ///', data);
 	let customShapes = (Object.keys(SeatCustomShapes) as Array<keyof typeof SeatCustomShapes>).map(
 		(key) => SeatCustomShapes[key]
 	);
@@ -152,18 +153,26 @@
 				obj.groupId = group.groupId; // Add groupId to each object
 			});
 			data.canvas?.add(group);
+			activeObjects.forEach((obj) => data.canvas?.remove(obj)); // Remove individual objects that are now part of the group
 			data.canvas?.requestRenderAll();
 		}
 	}
 
 	function unGroupObjects() {
 		let group: any = data.canvas?.getActiveObject()!;
-		console.log(group);
+		// console.log(group);
 		if (group.type === 'group') {
 			group.destroy();
 			data.canvas?.remove(group);
 			group.forEachObject(function (obj: any) {
 				obj.groupId = undefined;
+			});
+
+			// Add the individual items back to the canvas
+			const items = group._objects;
+			items.forEach((obj: any) => {
+				data.canvas?.add(obj);
+				obj.setCoords();
 			});
 			group.groupId = undefined;
 			data.canvas?.add.apply(data.canvas, group);
@@ -176,7 +185,9 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 
-<div class="flex justify-between bg-backgroundComponent border-b border-gray-500 h-16">
+<div
+	class="flex justify-between bg-backgroundComponent dark:text-gray-900 border-b border-gray-500 h-16"
+>
 	<div class="flex justify-between">
 		<div class="mx-2 flex justify-center items-center customShape">
 			{#each customShapes as shape}
@@ -214,6 +225,7 @@
 			<Pencil size="20" class="  dark:text-green-700 outline-none " />
 			<Tooltip placement="bottom">draw auto organize shape</Tooltip>
 		</Button>
+		<!-- add text  -->
 		<Button
 			id="group-button"
 			class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-gray-300 cursor-pointer"
