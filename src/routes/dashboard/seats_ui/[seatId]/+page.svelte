@@ -439,6 +439,7 @@
 			if (e.ctrlKey && e.code === 'KeyC') {
 				const activeObject = canvas.getActiveObject();
 				if (activeObject) {
+					// console.log(activeObject);
 					// copy the object and store it
 					activeObject.clone((cloned: any) => {
 						copiedObject = cloned;
@@ -455,12 +456,13 @@
 						clonedObj.set({
 							left: clonedObj.left + 10,
 							top: clonedObj.top + 10,
-							evented: true
+							evented: true,
+							id: new Date().getTime() // add a new unique ID
 						});
 						if (clonedObj.type === 'activeSelection') {
-							// Active selection
 							clonedObj.canvas = canvas;
 							clonedObj.forEachObject((obj: any) => {
+								obj.set('id', new Date().getTime()); // add new IDs for objects within the group
 								canvas.add(obj);
 							});
 							clonedObj.setCoords();
@@ -849,32 +851,6 @@
 		objectDetail = { ...selectedObject.objectDetail };
 	}
 
-	function copySelectedObject() {
-		const selectedObject = canvas.getActiveObject();
-
-		if (selectedObject) {
-			const copiedObject = fabric?.util.object.clone(selectedObject);
-			copiedObject.set({
-				left: selectedObject.left + 10,
-				top: selectedObject.top + 10
-			});
-
-			canvas.copiedObject = copiedObject;
-		}
-	}
-
-	function pasteCopiedObject() {
-		if (canvas.copiedObject) {
-			const pastedObject = fabric?.util.object.clone(canvas.copiedObject);
-			pastedObject.set({
-				id: new Date().getTime()
-			});
-			canvas.add(pastedObject);
-			canvas.setActiveObject(pastedObject);
-			canvas.renderAll();
-			updateLayers();
-		}
-	}
 	$: {
 		if (objectDetail && canvas) {
 			let selectedObject = canvas?.getActiveObject();
@@ -922,25 +898,6 @@
 		newFavColor = '';
 		addFavColorLoading = false;
 	}
-
-	// get canvas data by default
-	// const getData = () => {
-	// 	if (canvas) {
-	// 		objects = canvas.getObjects().map((object: any, index: any) => {
-	// 			return {
-	// 				id: object.id || index,
-	// 				icon: object.icon,
-	// 				type: object.type,
-	// 				isGroup: object.type === 'group'
-	// 			};
-	// 		});
-	// 	}
-	// };
-	// onMount(async () => {
-	// 	getData();
-	// 	console.log('canvas exist///', canvas);
-	// 	console.log('object exist///', objects);
-	// });
 </script>
 
 {#if fabric}

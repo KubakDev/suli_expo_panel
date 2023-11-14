@@ -148,9 +148,11 @@
 		let activeObjects = data.canvas?.getActiveObjects();
 		if (activeObjects) {
 			data.canvas?.discardActiveObject();
-			const group = new MyGroup(activeObjects, { groupId: Date.now() });
+			const group = new MyGroup(activeObjects, { id: Date.now() });
 			group._objects.forEach((obj: any) => {
-				obj.groupId = group.groupId; // Add groupId to each object
+				console.log(obj);
+				obj.id = group.groupId; // Add groupId to each object
+				// obj.id = new Date().getTime(); // add a new unique ID to each object
 			});
 			data.canvas?.add(group);
 			activeObjects.forEach((obj) => data.canvas?.remove(obj)); // Remove individual objects that are now part of the group
@@ -159,23 +161,23 @@
 	}
 
 	function unGroupObjects() {
-		let group: any = data.canvas?.getActiveObject()!;
-		// console.log(group);
-		if (group.type === 'group') {
-			group.destroy();
+		let group: any = data.canvas?.getActiveObject();
+		console.log('first', group);
+		if (group && group.type === 'group') {
+			let items = group._objects;
+			let currentTime = new Date().getTime();
+			group.destroy(); // Destroy the group and remove it from the canvas
 			data.canvas?.remove(group);
-			group.forEachObject(function (obj: any) {
-				obj.groupId = undefined;
-			});
 
-			// Add the individual items back to the canvas
-			const items = group._objects;
+			// Add the individual items back to the canvas with new unique IDs
 			items.forEach((obj: any) => {
+				obj.id = currentTime;
+				obj.groupId = undefined;
 				data.canvas?.add(obj);
 				obj.setCoords();
+				currentTime += 1000; //increment current time by 1 second for the next object
 			});
-			group.groupId = undefined;
-			data.canvas?.add.apply(data.canvas, group);
+
 			data.canvas?.renderAll();
 			dispatch('updateLayers');
 		}
