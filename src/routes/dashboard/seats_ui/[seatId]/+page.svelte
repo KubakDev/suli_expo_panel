@@ -88,7 +88,6 @@
 
 		seatImageItemStore.getAllSeatItems();
 		const x = await getSeatServices(data.supabase, 1, 15);
-		// console.log('exist data x', x);
 		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
@@ -108,7 +107,6 @@
 				.eq('id', pageId)
 				.single()
 				.then(async (result) => {
-					// console.log('>>>', result);
 					const data: any = result.data;
 					currentSeatLayoutData = data;
 					exhibitionName = data.name;
@@ -196,7 +194,6 @@
 		// Listen for space key down and up events on the window
 		// give space between the text that added
 		window.addEventListener('keydown', function (e) {
-			// console.log('activeObject');
 			if (e.ctrlKey && e.code === 'Space') {
 				e.preventDefault();
 
@@ -426,7 +423,6 @@
 
 		//function for undo & redo
 		window.addEventListener('keydown', (e) => {
-			// console.log(e);
 			if (e.ctrlKey && e.code === 'KeyZ') {
 				undoSelectedObject();
 			} else if (e.ctrlKey && e.code === 'KeyY') {
@@ -439,8 +435,6 @@
 			if (e.ctrlKey && e.code === 'KeyC') {
 				const activeObject = canvas.getActiveObject();
 				if (activeObject) {
-					// console.log(activeObject);
-					// copy the object and store it
 					activeObject.clone((cloned: any) => {
 						copiedObject = cloned;
 					});
@@ -475,8 +469,6 @@
 				}
 			}
 		});
-
-		// console.log(canvas);
 	});
 
 	function getData() {
@@ -491,7 +483,6 @@
 			// });
 
 			objects = canvas.getObjects();
-			console.log('Updated Objects:', objects);
 		}
 	}
 
@@ -735,9 +726,7 @@
 			try {
 				canvas.remove(activeObject);
 				canvas.requestRenderAll();
-			} catch (e) {
-				console.error('Error removing object:', e);
-			}
+			} catch (e) {}
 		}
 	}
 

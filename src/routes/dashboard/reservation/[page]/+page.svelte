@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 	import {
 		seatReservation,
-		getReservationData, 
+		getReservationData,
 		seatReservationTotalCount
 	} from '../../../../stores/reservationStore';
 	import { ReservationStatusEnum } from '../../../../models/reservationEnum';
@@ -51,8 +51,6 @@
 	// 	if (isNaN(selectedExhibition)) {
 	// 		selectedExhibition = null;
 	// 	}
-
-	// 	// console.log('Selected Exhibition:', selectedExhibition);
 
 	// 	if (isNaN(currentPage)) {
 	// 		currentPage = 1;
@@ -241,7 +239,6 @@
 	function checkIfEdited(objectId: number) {
 		let reservation = $seatReservation.find((item) => item.object_id == objectId);
 		let editedField = reservation?.companies?.find((item) => item.edit === true);
-		// console.log(editedField);
 		return editedField ? true : false;
 	}
 

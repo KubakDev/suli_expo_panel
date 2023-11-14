@@ -44,13 +44,11 @@ export const getReservationDataByDependStatus = async (
 		.range(startIndex, endIndex);
 
 	if (error) {
-		console.error('Error fetching data:', error);
 		return;
 	}
 
 	seatReservation.set(data ?? []);
 	seatReservationTotalCount.set(count ?? 0);
-	// console.log(data);
 };
 
 export const getReservationDataByDependEdited = async (
@@ -67,14 +65,11 @@ export const getReservationDataByDependEdited = async (
 		.select('*,company(*),exhibition(*,exhibition_languages(*))', { count: 'exact' })
 		.eq('new_edit', selectedEdited)
 		.range(startIndex, endIndex);
-	// console.log(selectedEdited);
 	if (error) {
-		console.error('Error fetching data:', error);
 		return;
 	}
 	seatReservation.set(data ?? []);
 	seatReservationTotalCount.set(count ?? 0);
-	// console.log(data);
 };
 
 export const updateData = async (supabase: SupabaseClient, id: number, updatedFields: any) => {

@@ -17,8 +17,6 @@
 		fabric: any;
 	};
 
-	// $: console.log('drawing bar', data);
-
 	let images: SeatImageItemModel[] = [];
 	let uploadImageModal = false;
 	let itemName: string = '';

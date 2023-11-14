@@ -31,7 +31,6 @@
 		EditingMode?: EditingMode;
 		container?: HTMLElement;
 	};
-	// $: console.log('topbar ///', data);
 	let customShapes = (Object.keys(SeatCustomShapes) as Array<keyof typeof SeatCustomShapes>).map(
 		(key) => SeatCustomShapes[key]
 	);
@@ -150,7 +149,6 @@
 			data.canvas?.discardActiveObject();
 			const group = new MyGroup(activeObjects, { id: Date.now() });
 			group._objects.forEach((obj: any) => {
-				console.log(obj);
 				obj.id = group.groupId; // Add groupId to each object
 				// obj.id = new Date().getTime(); // add a new unique ID to each object
 			});
@@ -162,7 +160,6 @@
 
 	function unGroupObjects() {
 		let group: any = data.canvas?.getActiveObject();
-		console.log('first', group);
 		if (group && group.type === 'group') {
 			let items = group._objects;
 			let currentTime = new Date().getTime();

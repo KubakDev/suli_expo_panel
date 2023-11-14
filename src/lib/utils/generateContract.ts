@@ -2,7 +2,6 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 
 export const generateDocx = (decodedFile: string, data: any) => {
-	console.log(decodedFile, data);
 	const templateBase64 = decodedFile;
 	const templateContent = atob(templateBase64);
 	const zip = new PizZip(templateContent);
@@ -12,7 +11,7 @@ export const generateDocx = (decodedFile: string, data: any) => {
 
 	try {
 		doc.render();
-	} catch (error) {}
+	} catch (error) { }
 	const generatedDocx = doc.getZip().generate({
 		type: 'blob',
 		mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
