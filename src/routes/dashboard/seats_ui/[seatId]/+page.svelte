@@ -368,7 +368,7 @@
 			canvas.requestRenderAll();
 		});
 
-		canvas.on('selection:created', function (event) {
+		canvas.on('selection:created', function (event:any) {
 			objectDetail = {
 				selectable: false,
 				services: [],
@@ -717,7 +717,7 @@
 
 		// Update stroke Property for each object in the group
 		if (selectedObject.type === 'group') {
-			selectedObject.forEachObject((obj) => {
+			selectedObject.forEachObject((obj :any) => {
 				obj.set({
 					stroke: strokeColor,
 					strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
@@ -742,9 +742,7 @@
 			try {
 				canvas.remove(activeObject);
 				canvas.requestRenderAll();
-			} catch (e) {
-				console.error('Error removing object:', e);
-			}
+			} catch (e) {}
 		}
 	}
 

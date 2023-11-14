@@ -269,12 +269,6 @@
 			if (updatedBrochure) {
 				updatedBrochure.brochure = reader.result as string;
 				brochureSourceMap[selectedLanguageTab] = ImgSourceEnum.local;
-
-				console.log(
-					'Specific Language Brochure Source Updated:',
-					selectedLanguageTab,
-					brochureSourceMap
-				);
 			}
 
 			const randomText = getRandomTextNumber();
@@ -285,8 +279,6 @@
 			});
 
 			exhibitionDataLang = [...exhibitionDataLang];
-
-			console.log('Exhibition Data Lang:', exhibitionDataLang);
 		};
 
 		reader.readAsDataURL(file);
