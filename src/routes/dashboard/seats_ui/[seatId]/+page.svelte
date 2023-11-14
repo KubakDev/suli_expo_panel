@@ -14,7 +14,7 @@
 		Tabs,
 		Textarea
 	} from 'flowbite-svelte';
-	import { Minus, Plus, XMark } from 'svelte-heros-v2';
+	import { Minus, Plus } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import { page } from '$app/stores';
@@ -27,10 +27,11 @@
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
+	import { Property } from 'canvg';
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 
-	let fabric:any = null;
+	let fabric: any = null;
 	let addSeatModal = false;
 
 	let currentSeatLayoutData: any = {};
@@ -79,25 +80,16 @@
 	// Function to update layers
 	onMount(async () => {
 		const fabricModule = await import('fabric');
-    	fabric = fabricModule.fabric;
+		fabric = fabricModule.fabric;
 
-		let iconCanvas = new  fabric.StaticCanvas('');
+		let iconCanvas = new fabric.StaticCanvas('');
 		iconCanvas.setWidth(50);
 		iconCanvas.setHeight(50);
 		await getFavColors();
-		// document.addEventListener('keydown', (event) => {
-		// 	if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
-		// 		// Ctrl+C: Copy the selected object
-		// 		copySelectedObject();
-		// 	} else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-		// 		// Ctrl+V: Paste the copied object
-		// 		pasteCopiedObject();
-		// 	}
-		// });
-		seatImageItemStore.getAllSeatItems();
-		await getSeatServices(data.supabase, 1, 15);
 
-		canvas = new  fabric.Canvas('canvas', { isDrawingMode: false });
+		seatImageItemStore.getAllSeatItems();
+		const x = await getSeatServices(data.supabase, 1, 15);
+		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
 			path.set({ stroke: 'red' });
@@ -110,7 +102,7 @@
 
 		const pageId = $page.params.seatId;
 		if (pageId !== 'create') {
-			supabase
+			let result = await supabase
 				.from('seat_layout')
 				.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
 				.eq('id', pageId)
@@ -145,6 +137,9 @@
 							canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
 						}
 						await tick(); // wait for the next update cycle
+
+						// get data
+						getData();
 
 						canvas.forEachObject((obj: any) => {
 							const scaleX = obj.scaleX;
@@ -185,7 +180,7 @@
 			updateLayers();
 		});
 		updateLayers();
-		canvas.on('object:moving', function (options:  fabric.IEvent) {
+		canvas.on('object:moving', function (options: fabric.IEvent) {
 			// if (options.target) {
 			// 	options.target.set({
 			// 		left: Math.round(options.target.left! / gridSize) * gridSize,
@@ -195,20 +190,35 @@
 		});
 		var panning = false;
 		var lastPosX: any, lastPosY: any;
-		let spacePressed = false; // state for tracking space key
+		// let spacePressed = false; // state for tracking space key
 
 		// Listen for space key down and up events on the window
+		// give space between the text that added
 		window.addEventListener('keydown', function (e) {
-			if (e.code === 'Space') {
+			if (e.ctrlKey && e.code === 'Space') {
 				e.preventDefault();
-				spacePressed = true;
+
+				let activeObject = canvas.getActiveObject();
+				// (i-text) it means it is an text object(, which means the user can edit its text content.)
+				if (activeObject && activeObject.type === 'i-text') {
+					// insert a space at the current cursor position
+					let cursorPosition = activeObject.selectionStart;
+					let newText = [
+						activeObject.text.slice(0, cursorPosition),
+						' ',
+						activeObject.text.slice(cursorPosition)
+					].join('');
+					activeObject.text = newText;
+					activeObject.setSelectionStart(cursorPosition + 1);
+					activeObject.setSelectionEnd(cursorPosition + 1);
+					canvas.renderAll();
+				}
 			}
 		});
-
 		window.addEventListener('keyup', function (e) {
-			if (e.code === 'Space') {
+			if (e.code === 'Space' && !isAddingText) {
 				e.preventDefault();
-				spacePressed = false;
+				// spacePressed = false;
 				panning = false;
 			}
 		});
@@ -217,11 +227,12 @@
 			let pointer = canvas.getPointer(options.e);
 
 			if (isAddingText) {
-				const text = new  fabric.IText('Click to edit text', {
+				const text = new fabric.IText('Click to edit text', {
 					left: pointer.x,
 					top: pointer.y,
 					fontSize: 20,
-					fill: 'black'
+					fill: 'black',
+					editable: true
 				});
 
 				canvas.add(text);
@@ -230,7 +241,7 @@
 			if (isDrawing) {
 				points.push({ x: pointer.x, y: pointer.y });
 
-				liveLine = new  fabric.Line(
+				liveLine = new fabric.Line(
 					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
 					{
 						stroke: 'red',
@@ -250,7 +261,7 @@
 					points[points.length - 1] = points[0];
 
 					// Close the shape
-					let polygon: any = new  fabric.Polygon(points, {
+					let polygon: any = new fabric.Polygon(points, {
 						stroke: 'red',
 						fill: 'transparent',
 						strokeWidth: 1,
@@ -273,11 +284,11 @@
 				}
 			}
 
-			if (spacePressed) {
-				panning = true;
-				lastPosX = options.e.clientX;
-				lastPosY = options.e.clientY;
-			}
+			// if (spacePressed) {
+			// 	panning = true;
+			// 	lastPosX = options.e.clientX;
+			// 	lastPosY = options.e.clientY;
+			// }
 			canvas.renderAll();
 			canvas.requestRenderAll();
 		});
@@ -296,12 +307,12 @@
 				}
 			}
 
-			if (panning && spacePressed) {
-				var delta = new  fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
-				canvas.relativePan(delta);
-				lastPosX = opt.e.clientX;
-				lastPosY = opt.e.clientY;
-			}
+			// if (panning && spacePressed) {
+			// 	var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+			// 	canvas.relativePan(delta);
+			// 	lastPosX = opt.e.clientX;
+			// 	lastPosY = opt.e.clientY;
+			// }
 		});
 
 		canvas.on('mouse:up', function (options: any) {
@@ -310,19 +321,19 @@
 			}
 
 			panning = false;
-			spacePressed = false;
+			// spacePressed = false;
 		});
 
 		// Add an event listener to your group button
 		document.getElementById('group-button')?.addEventListener('click', () => {
 			let activeObjects = canvas.getActiveObjects();
 			if (activeObjects.length > 0) {
-				let group = new  fabric.Group(activeObjects, {
+				let group = new fabric.Group(activeObjects, {
 					objectCaching: false
 				});
 
 				// Modify the position of each object to be relative to the group
-				group._objects.forEach((object:any) => {
+				group._objects.forEach((object: any) => {
 					object.set({
 						left: object.left! - group.left!,
 						top: object.top! - group.top!
@@ -357,13 +368,14 @@
 			canvas.requestRenderAll();
 		});
 
-		canvas.on('selection:created', function (event: any) {
+		canvas.on('selection:created', function (event:any) {
 			objectDetail = {
 				selectable: false,
 				services: [],
 				price: 0
 			};
 			radius = 0;
+
 			canvas.forEachObject((obj: any) => {
 				if (obj.id === event.selected[0].id) {
 					if (obj.objectDetail) {
@@ -374,6 +386,7 @@
 				}
 			});
 		});
+
 		canvas.on('selection:updated', function (event: any) {
 			objectDetail = {
 				selectable: false,
@@ -396,20 +409,105 @@
 			clearAllInput();
 			radius = null;
 		});
-
+		recordCanvasState();
 		canvas.on('object:modified', function (event: any) {
-			var modifiedObject = event.target;
-			onObjectModified(modifiedObject);
+			// var modifiedObject = event.target;
+			// onObjectModified(modifiedObject);
+			recordCanvasState();
 		});
 
 		window.addEventListener('keydown', function (e) {
 			const selectedObject = canvas.getActiveObject();
 			if (e.key === 'Delete') {
 				removeSelectedObject();
+			} else if (e.key === 'Delete') {
 			}
-			handleKeydown(e, selectedObject);
+		});
+
+		//function for undo & redo
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyZ') {
+				undoSelectedObject();
+			} else if (e.ctrlKey && e.code === 'KeyY') {
+				redoSelectedObject();
+			}
+		});
+
+		//function for copy
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyC') {
+				const activeObject = canvas.getActiveObject();
+				if (activeObject) {
+					// copy the object and store it
+					activeObject.clone((cloned: any) => {
+						copiedObject = cloned;
+					});
+				}
+			}
+		});
+		//function for paste
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyV') {
+				if (copiedObject) {
+					copiedObject.clone((clonedObj: any) => {
+						canvas.discardActiveObject(); // Deselect current object
+						clonedObj.set({
+							left: clonedObj.left + 10,
+							top: clonedObj.top + 10,
+							evented: true,
+							id: new Date().getTime() // add a new unique ID
+						});
+						if (clonedObj.type === 'activeSelection') {
+							clonedObj.canvas = canvas;
+							clonedObj.forEachObject((obj: any) => {
+								obj.set('id', new Date().getTime()); // add new IDs for objects within the group
+								canvas.add(obj);
+							});
+							clonedObj.setCoords();
+						} else {
+							canvas.add(clonedObj);
+						}
+						canvas.setActiveObject(clonedObj);
+						canvas.requestRenderAll();
+					});
+				}
+			}
 		});
 	});
+
+	function getData() {
+		if (canvas) {
+			objects = canvas.getObjects();
+		}
+	}
+
+	let copiedObject: any = null;
+	let history: any = [];
+	let currentHistoryIndex = 0;
+
+	function recordCanvasState() {
+		// remove future states if we are in the middle of the history
+		history = history.slice(0, currentHistoryIndex + 1);
+		history.push(canvas.toJSON());
+		currentHistoryIndex++;
+	}
+
+	function undoSelectedObject() {
+		if (currentHistoryIndex === 0) return; // no previous state
+		currentHistoryIndex--;
+		canvas.loadFromJSON(history[currentHistoryIndex], () => {
+			canvas.renderAll();
+		});
+	}
+
+	function redoSelectedObject() {
+		if (currentHistoryIndex >= history.length - 1) return; // No future state
+		currentHistoryIndex++;
+		canvas.loadFromJSON(history[currentHistoryIndex], () => {
+			canvas.renderAll();
+		});
+	}
+
 	const updateLayers = () => {
 		objects = canvas
 			.getObjects()
@@ -474,6 +572,14 @@
 
 	async function updateCustomRectangle() {
 		var activeObject = canvas.getActiveObject();
+
+		//update radius after grouping
+		if (activeObject.type === 'group') {
+			activeObject.forEachObject((obj: any) => {
+				obj.set({ rx: radius, ry: radius });
+			});
+		}
+
 		activeObject.set({
 			rx: radius,
 			ry: radius
@@ -481,7 +587,6 @@
 
 		canvas.requestRenderAll();
 	}
-
 
 	function handleKeydown(event: any, selectedObject: any) {
 		let movingPixel = 1;
@@ -558,6 +663,7 @@
 
 	function updateFillColor(event: any) {
 		fillColor = event.target.value;
+
 		updateFillProperties();
 	}
 
@@ -592,7 +698,12 @@
 		// Get the selected object (e.g., assuming it's the last added object)
 		let selectedObject = canvas.getActiveObject();
 
-		// Update the fill properties of the selected object
+		// Update the fill properties after grouping the objects
+		if (selectedObject.type === 'group') {
+			selectedObject.forEachObject((obj: any) => {
+				obj.set({ fill: fillColor });
+			});
+		}
 		selectedObject.set({
 			fill: fillColor
 		});
@@ -602,19 +713,26 @@
 	}
 
 	function updateStrokeProperties() {
-		// Get the selected object (e.g., assuming it's the last added object)
 		let selectedObject = canvas.getActiveObject();
 
-		// Update the stroke properties of the selected object
-		selectedObject.set(
-			{
-				stroke: strokeColor,
-				strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
-			},
-			{ silent: true }
-		);
+		// Update stroke Property for each object in the group
+		if (selectedObject.type === 'group') {
+			selectedObject.forEachObject((obj :any) => {
+				obj.set({
+					stroke: strokeColor,
+					strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
+				});
+			});
+		} else {
+			selectedObject.set(
+				{
+					stroke: strokeColor,
+					strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
+				},
+				{ silent: true }
+			);
+		}
 
-		// Trigger canvas rendering
 		canvas.requestRenderAll();
 	}
 
@@ -738,32 +856,6 @@
 		objectDetail = { ...selectedObject.objectDetail };
 	}
 
-	function copySelectedObject() {
-		const selectedObject = canvas.getActiveObject();
-
-		if (selectedObject) {
-			const copiedObject =  fabric?.util.object.clone(selectedObject);
-			copiedObject.set({
-				left: selectedObject.left + 10,
-				top: selectedObject.top + 10
-			});
-
-			canvas.copiedObject = copiedObject;
-		}
-	}
-
-	function pasteCopiedObject() {
-		if (canvas.copiedObject) {
-			const pastedObject =  fabric?.util.object.clone(canvas.copiedObject);
-			pastedObject.set({
-				id: new Date().getTime()
-			});
-			canvas.add(pastedObject);
-			canvas.setActiveObject(pastedObject);
-			canvas.renderAll();
-			updateLayers();
-		}
-	}
 	$: {
 		if (objectDetail && canvas) {
 			let selectedObject = canvas?.getActiveObject();
@@ -813,7 +905,7 @@
 	}
 </script>
 
-{#if  fabric}
+{#if fabric}
 	<TopBarComponent
 		data={{
 			fillColor: fillColor,
@@ -828,7 +920,6 @@
 		on:openAddSeatModal={() => openAddSeatModal()}
 	/>
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
 		<AddSeatModalComponent
 			{data}
@@ -848,7 +939,7 @@
 					files: files,
 					objects: objects,
 					selectedObjectId: selectedObjectId,
-					fabric:  fabric
+					fabric: fabric
 				}}
 				on:updateLayers={() => updateLayers()}
 			/>
@@ -876,7 +967,7 @@
 					{/each}
 
 					<ButtonGroup class="w-full my-3" size="sm">
-						<Input size="sm" placeholder="add new favourite color" bind:value={newFavColor} />
+						<Input size="sm" placeholder="#FF0000" bind:value={newFavColor} />
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<InputAddon class="cursor-pointer p-0">
 							<!-- svelte-ignore a11y-click-events-have-key-events -->

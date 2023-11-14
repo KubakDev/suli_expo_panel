@@ -10,7 +10,7 @@
 	import { Trash, XMark } from 'svelte-heros-v2';
 
 	export let data: {
-		canvas?: any;
+		canvas?: fabric.Canvas;
 		files?: any;
 		objects: any[];
 		selectedObjectId: number;
@@ -139,7 +139,7 @@
 		<Button on:click={() => addImages()} class="w-16 h-16 seat-design rounded cursor-pointer ">
 			<Plus class="w-full h-full " />
 		</Button>
-		{#each images as image, index}
+		{#each images as image}
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<div
@@ -200,62 +200,64 @@
 	<div class="mt-4">
 		<div class=" text-xl my-4">Layers</div>
 		<ul id="layers" style="height: 30vh " class="overflow-y-auto">
-			{#each data.objects as object (object.id)}
-				<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<li
-					data-id={object.id}
-					class=" layer mb-2 p-1 rounded-md shadow-sm cursor-pointer flex justify-start items-center {object.isGroup
-						? 'bg-blue-50'
-						: 'bg-gray-50'}
+			{#if data && data.objects.length > 0}
+				{#each data.objects as object}
+					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<li
+						data-id={object.id}
+						class=" layer mb-2 p-1 rounded-md shadow-sm cursor-pointer flex justify-start items-center {object.isGroup
+							? 'bg-blue-50'
+							: 'bg-gray-50'}
             {data.selectedObjectId == object.id ? 'bg-primary-700  ' : 'hover:bg-gray-100'}
             
             "
-					on:click={() => {
-						if (data && data.canvas) {
-							data.canvas.forEachObject(function (eachObject) {
-								if (object.id == eachObject.id) {
-									data.canvas.setActiveObject(eachObject);
-									data.canvas.requestRenderAll();
-								}
-								//
-							});
-						}
-					}}
-				>
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
-					<div class="flex justify-between w-full items-center">
-						<div class="flex justify-center items-center">
-							{#if object.icon}
-								<img src={object.icon} alt="Object icon" class="object-icon w-8 h-8" />
-							{:else}
-								<div class={`${object.type} w-8 h-8 bg-black`} style="" />
-							{/if}
-							<div class="w-2 h-full" />
-							<span>{object.type}</span>
-							{#if object.isGroup}
-								<ul class="ml-4">
-									{#each object.children as child (child.id)}
-										<li
-											data-id={child.id}
-											class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 bg-gray-50"
-										>
-											<span>{child.type} {child.id + 1}</span>
-										</li>
-									{/each}
-								</ul>
-							{/if}
-						</div>
+						on:click={() => {
+							if (data && data.canvas) {
+								data.canvas.forEachObject(function (eachObject) {
+									if (object.id == eachObject.id) {
+										data.canvas.setActiveObject(eachObject);
+										data.canvas.requestRenderAll();
+									}
+									//
+								});
+							}
+						}}
+					>
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
-						<div
-							class="text-end px-3 hover:bg-gray-200 w-10 h-8 rounded flex justify-center items-center"
-							on:click={removeSelectedObject}
-						>
-							<XMark size="20" />
+						<div class="flex justify-between w-full items-center">
+							<div class="flex justify-center items-center">
+								{#if object.icon}
+									<img src={object.icon} alt="Object icon" class="object-icon w-8 h-8" />
+								{:else}
+									<div class={`${object.type} w-8 h-8 bg-black`} style="" />
+								{/if}
+								<div class="w-2 h-full" />
+								<span>{object.type}</span>
+								{#if object.isGroup}
+									<ul class="ml-4">
+										{#each object.children as child}
+											<li
+												data-id={child.id}
+												class="layer mb-2 p-2 rounded-md shadow-sm cursor-pointer hover:bg-gray-100 bg-gray-50"
+											>
+												<span>{child.type} {child.id + 1}</span>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							</div>
+							<!-- svelte-ignore a11y-no-static-element-interactions -->
+							<div
+								class="text-end px-3 hover:bg-gray-200 w-10 h-8 rounded flex justify-center items-center"
+								on:click={removeSelectedObject}
+							>
+								<XMark size="20" />
+							</div>
 						</div>
-					</div>
-				</li>
-			{/each}
+					</li>
+				{/each}
+			{/if}
 		</ul>
 	</div>
 </div>

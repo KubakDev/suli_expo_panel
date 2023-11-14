@@ -103,7 +103,6 @@
 	});
 
 	function goBackToPreviewsPage() {
-		console.log(document.referrer);
 		if (browser) {
 			window.history.back();
 		}

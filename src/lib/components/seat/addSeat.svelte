@@ -7,7 +7,6 @@
 		DropdownItem,
 		Input,
 		InputAddon,
-		Label,
 		Spinner,
 		TabItem,
 		Tabs,
@@ -181,7 +180,7 @@
 	"
 		><Chevron
 			>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
-				? seatInfoData.exhibition.exhibition_languages[0].title
+				? seatInfoData.exhibition.exhibition_languages[0]?.title
 				: !seatInfoData.exhibition && formSubmitted
 				? 'exhibition is required'
 				: 'choose an exhibition'}</Chevron
