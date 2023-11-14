@@ -27,6 +27,7 @@
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
+	import { Property } from 'canvg';
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 
@@ -88,7 +89,6 @@
 
 		seatImageItemStore.getAllSeatItems();
 		const x = await getSeatServices(data.supabase, 1, 15);
-		// console.log('exist data x', x);
 		canvas = new fabric.Canvas('canvas', { isDrawingMode: false });
 		canvas.on('path:created', (e: any) => {
 			let path = e.path;
@@ -108,7 +108,6 @@
 				.eq('id', pageId)
 				.single()
 				.then(async (result) => {
-					// console.log('>>>', result);
 					const data: any = result.data;
 					currentSeatLayoutData = data;
 					exhibitionName = data.name;
@@ -196,7 +195,6 @@
 		// Listen for space key down and up events on the window
 		// give space between the text that added
 		window.addEventListener('keydown', function (e) {
-			// console.log('activeObject');
 			if (e.ctrlKey && e.code === 'Space') {
 				e.preventDefault();
 
@@ -370,13 +368,14 @@
 			canvas.requestRenderAll();
 		});
 
-		canvas.on('selection:created', function (event: any) {
+		canvas.on('selection:created', function (event) {
 			objectDetail = {
 				selectable: false,
 				services: [],
 				price: 0
 			};
 			radius = 0;
+
 			canvas.forEachObject((obj: any) => {
 				if (obj.id === event.selected[0].id) {
 					if (obj.objectDetail) {
@@ -387,6 +386,7 @@
 				}
 			});
 		});
+
 		canvas.on('selection:updated', function (event: any) {
 			objectDetail = {
 				selectable: false,
@@ -426,7 +426,6 @@
 
 		//function for undo & redo
 		window.addEventListener('keydown', (e) => {
-			// console.log(e);
 			if (e.ctrlKey && e.code === 'KeyZ') {
 				undoSelectedObject();
 			} else if (e.ctrlKey && e.code === 'KeyY') {
@@ -439,7 +438,6 @@
 			if (e.ctrlKey && e.code === 'KeyC') {
 				const activeObject = canvas.getActiveObject();
 				if (activeObject) {
-					// console.log(activeObject);
 					// copy the object and store it
 					activeObject.clone((cloned: any) => {
 						copiedObject = cloned;
@@ -475,23 +473,11 @@
 				}
 			}
 		});
-
-		// console.log(canvas);
 	});
 
 	function getData() {
 		if (canvas) {
-			// objects = canvas.getObjects().map((object: any, index: any) => {
-			// 	return {
-			// 		id: object.id || index,
-			// 		icon: object.icon,
-			// 		type: object.type,
-			// 		isGroup: object.type === 'group'
-			// 	};
-			// });
-
 			objects = canvas.getObjects();
-			console.log('Updated Objects:', objects);
 		}
 	}
 
@@ -586,6 +572,14 @@
 
 	async function updateCustomRectangle() {
 		var activeObject = canvas.getActiveObject();
+
+		//update radius after grouping
+		if (activeObject.type === 'group') {
+			activeObject.forEachObject((obj: any) => {
+				obj.set({ rx: radius, ry: radius });
+			});
+		}
+
 		activeObject.set({
 			rx: radius,
 			ry: radius
@@ -669,6 +663,7 @@
 
 	function updateFillColor(event: any) {
 		fillColor = event.target.value;
+
 		updateFillProperties();
 	}
 
@@ -703,7 +698,12 @@
 		// Get the selected object (e.g., assuming it's the last added object)
 		let selectedObject = canvas.getActiveObject();
 
-		// Update the fill properties of the selected object
+		// Update the fill properties after grouping the objects
+		if (selectedObject.type === 'group') {
+			selectedObject.forEachObject((obj: any) => {
+				obj.set({ fill: fillColor });
+			});
+		}
 		selectedObject.set({
 			fill: fillColor
 		});
@@ -713,19 +713,26 @@
 	}
 
 	function updateStrokeProperties() {
-		// Get the selected object (e.g., assuming it's the last added object)
 		let selectedObject = canvas.getActiveObject();
 
-		// Update the stroke properties of the selected object
-		selectedObject.set(
-			{
-				stroke: strokeColor,
-				strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
-			},
-			{ silent: true }
-		);
+		// Update stroke Property for each object in the group
+		if (selectedObject.type === 'group') {
+			selectedObject.forEachObject((obj) => {
+				obj.set({
+					stroke: strokeColor,
+					strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
+				});
+			});
+		} else {
+			selectedObject.set(
+				{
+					stroke: strokeColor,
+					strokeWidth: strokeWidth != null ? parseInt(strokeWidth) : 0
+				},
+				{ silent: true }
+			);
+		}
 
-		// Trigger canvas rendering
 		canvas.requestRenderAll();
 	}
 

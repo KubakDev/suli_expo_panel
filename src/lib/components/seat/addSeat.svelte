@@ -7,7 +7,6 @@
 		DropdownItem,
 		Input,
 		InputAddon,
-		Label,
 		Spinner,
 		TabItem,
 		Tabs,
