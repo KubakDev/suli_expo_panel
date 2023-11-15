@@ -83,6 +83,7 @@
 
 		fabricModule.then(async (fabricResponse) => {
 			let iconCanvas = new fabricResponse.fabric.StaticCanvas('');
+			fabric = fabricResponse.fabric;
 			console.log(fabricResponse);
 			iconCanvas.setWidth(50);
 			iconCanvas.setHeight(50);
