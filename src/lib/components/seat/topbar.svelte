@@ -148,7 +148,7 @@
 		if (activeObjects) {
 			data.canvas?.discardActiveObject();
 			const group = new MyGroup(activeObjects, { id: Date.now() });
-			group._objects.forEach((obj: any) => { 
+			group._objects.forEach((obj: any) => {
 				obj.id = group.groupId; // Add groupId to each object
 			});
 			data.canvas?.add(group);

@@ -909,7 +909,7 @@
 </script>
 
 <!-- {#if fabric} -->
-<TopBarComponent
+<!-- <TopBarComponent
 	data={{
 		fillColor: fillColor,
 		strokeColor: strokeColor,
@@ -921,7 +921,7 @@
 	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
 	on:updateLayers={() => updateLayers()}
 	on:openAddSeatModal={() => openAddSeatModal()}
-/>
+/> -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
 	<AddSeatModalComponent
