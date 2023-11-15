@@ -30,7 +30,7 @@
 	import { Property } from 'canvg';
 
 	let languageEnumKeys = Object.values(LanguageEnum);
-
+	let spacePressed = false;
 	let fabric: any = null;
 	let addSeatModal = false;
 
@@ -84,7 +84,6 @@
 		fabricModule.then(async (fabricResponse) => {
 			let iconCanvas = new fabricResponse.fabric.StaticCanvas('');
 			fabric = fabricResponse.fabric;
-			console.log(fabricResponse);
 			iconCanvas.setWidth(50);
 			iconCanvas.setHeight(50);
 			await getFavColors();
@@ -217,10 +216,17 @@
 					}
 				}
 			});
-			window.addEventListener('keyup', function (e) {
-				if (e.code === 'Space' && !isAddingText) {
+			window.addEventListener('keydown', function (e) {
+				if (e.key === 'm') {
 					e.preventDefault();
-					// spacePressed = false;
+					spacePressed = true;
+				}
+			});
+
+			window.addEventListener('keyup', function (e) {
+				if (e.key === 'm') {
+					e.preventDefault();
+					spacePressed = false;
 					panning = false;
 				}
 			});
@@ -286,11 +292,11 @@
 					}
 				}
 
-				// if (spacePressed) {
-				// 	panning = true;
-				// 	lastPosX = options.e.clientX;
-				// 	lastPosY = options.e.clientY;
-				// }
+				if (spacePressed) {
+					panning = true;
+					lastPosX = options.e.clientX;
+					lastPosY = options.e.clientY;
+				}
 				canvas.renderAll();
 				canvas.requestRenderAll();
 			});
@@ -309,12 +315,12 @@
 					}
 				}
 
-				// if (panning && spacePressed) {
-				// 	var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
-				// 	canvas.relativePan(delta);
-				// 	lastPosX = opt.e.clientX;
-				// 	lastPosY = opt.e.clientY;
-				// }
+				if (panning && spacePressed) {
+					var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+					canvas.relativePan(delta);
+					lastPosX = opt.e.clientX;
+					lastPosY = opt.e.clientY;
+				}
 			});
 
 			canvas.on('mouse:up', function (options: any) {
