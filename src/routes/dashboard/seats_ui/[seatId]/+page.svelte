@@ -24,7 +24,7 @@
 	import { EditingMode } from '../../../../models/editingModeModel';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
-	// import TopBarComponent from '$lib/components/seat/topbar.svelte';
+	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import { Property } from 'canvg';
@@ -915,19 +915,20 @@
 </script>
 
 <!-- {#if fabric} -->
-<!-- <TopBarComponent
+<TopBarComponent
 	data={{
 		fillColor: fillColor,
 		strokeColor: strokeColor,
 		canvas: canvas,
 		isDrawing: isDrawing,
 		isAddingText: isAddingText,
-		container: container
+		container: container,
+		fabric: fabric
 	}}
 	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
 	on:updateLayers={() => updateLayers()}
 	on:openAddSeatModal={() => openAddSeatModal()}
-/> -->
+/>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <Modal bind:open={addSeatModal} size="lg" autoclose={false} class="w-full min-h-[300px]">
 	<AddSeatModalComponent
