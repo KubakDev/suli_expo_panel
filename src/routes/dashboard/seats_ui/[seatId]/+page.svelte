@@ -24,7 +24,7 @@
 	import { EditingMode } from '../../../../models/editingModeModel';
 	import type { seatServicesModel } from '../../../../models/seatServicesModel';
 	import AddSeatModalComponent from '../../../../lib/components/seat/addSeat.svelte';
-	import TopBarComponent from '$lib/components/seat/topbar.svelte';
+	// import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import { Property } from 'canvg';
