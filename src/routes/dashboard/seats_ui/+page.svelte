@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Button, Textarea } from 'flowbite-svelte';
+	import { Button, Tooltip } from 'flowbite-svelte';
 	import type { PageData } from './$types';
 	import type { SeatLayoutModel } from '../seats/seatLayoutStore';
 	import { goto } from '$app/navigation';
@@ -45,6 +45,10 @@
 		}
 		return result;
 	}
+
+	function openSeatInfo(seatId: any) {
+		goto(`seats_ui/seatInfo/${seatId.id}`);
+	}
 </script>
 
 <div class="flex flex-col justify-start items-center bg-secondary w-full pt-10 min-h-screen">
@@ -57,24 +61,52 @@
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div
-					on:click={() => openSeatDesignEditor(design)}
-					class="w-52 hover:shadow-sm duration-300 cursor-pointer h-40 flex flex-col p-0 border rounded-2xl border-gray-600"
+					class="w-52 hover:shadow-sm duration-300 h-52 flex flex-col p-0 border rounded-2xl border-gray-600"
 				>
-					<div class="h-28 w-full bg-black rounded-tl-2xl rounded-tr-2xl">
+					<div
+						class="h-32 w-full bg-black rounded-tl-2xl rounded-tr-2xl cursor-pointer"
+						on:click={() => openSeatDesignEditor(design)}
+					>
 						<!-- svelte-ignore a11y-missing-attribute -->
 						<img
 							class="object-cover w-full h-full rounded-tl-2xl rounded-tr-2xl"
 							src={import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + design.image_url}
 						/>
 					</div>
-					<div class="flex justify-between px-2 items-center">
+
+					<div class="flex justify-between px-2 items-center h-5">
 						<h5
 							class=" font-bold tracking-tight text-white bg-secondary flex-1 flex justify-start items-start p-2 rounded-bl-2xl rounded-br-2xl"
 						>
 							{design.name}
 						</h5>
+					</div>
+					<div class="flex justify-end px-2 items-center my-2 h-10">
+						<!-- Add require field -->
+						<button
+							on:click={() => openSeatInfo(design)}
+							class="p-2 tetx-white rounded-full bg-primary-200 text-white flex justify-center items-center font-bold"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="w-4 h-4"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+								/>
+							</svg>
+						</button>
+						<Tooltip placement="bottom">Update seat data</Tooltip>
 						<div
-							class={`h-3 w-3 ${design.is_active ? 'bg-[#31c48d]' : 'bg-[#cc2827]'} rounded-full`}
+							class={`h-3 w-3 mx-2 ${
+								design.is_active ? 'bg-[#31c48d]' : 'bg-[#cc2827]'
+							} rounded-full`}
 						/>
 					</div>
 				</div>

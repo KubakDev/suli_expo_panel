@@ -9,6 +9,7 @@
 	export let supabase: SupabaseClient;
 	export let detail: boolean | null | undefined = null;
 
+	// $: console.log(exhibitionId);
 	let allCompanyInfoFields: {
 		name: string;
 		status: boolean;
@@ -106,7 +107,7 @@
 			<div
 				class="bg-[#cf240d8c] rounded-lg flex items-center w-full p-4 text-gray-500 bg-white shadow dark:text-gray-400 dark:bg-gray-800"
 			>
-				<div class="pl-4 text-sm font-normal text-white">
+				<div class="pl-4 text-sm font-normal dark:text-white">
 					you have to select an exhibition from previous tab!
 				</div>
 			</div>
