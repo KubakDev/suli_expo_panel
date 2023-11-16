@@ -385,7 +385,6 @@
 
 				canvas.forEachObject((obj: any) => {
 					if (obj.id === event.selected[0].id) {
-						console.log(obj.objectDetail);
 						if (obj.objectDetail) {
 							objectDetail = obj.objectDetail;
 							objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
@@ -816,7 +815,6 @@
 		canvas.requestRenderAll();
 	}
 	function addServiceToActiveObject(service: seatServicesModel) {
-		console.log(service);
 		let selectedObject = canvas.getActiveObject();
 		let index = objectDetail.services.findIndex((item) => item.id === service.id);
 		if (index === -1) {
@@ -912,6 +910,9 @@
 		await getFavColors();
 		newFavColor = '';
 		addFavColorLoading = false;
+	}
+	function getSelectedObjectServiceDetail(service: any) {
+		return objectDetail.services.find((serviceDetail) => serviceDetail.id == service.id);
 	}
 </script>
 
@@ -1093,6 +1094,7 @@
 								<div class="flex items-center my-6 w-full justify-between">
 									<div class="flex items-center">
 										<Checkbox
+											checked={getSelectedObjectServiceDetail(service) ? true : false}
 											class="cursor-pointer"
 											on:click={() => {
 												addServiceToActiveObject(service);
@@ -1109,6 +1111,7 @@
 										type="number"
 										size="sm"
 										placeholder="max quantity for a user"
+										value={getSelectedObjectServiceDetail(service)?.maxQuantityPerUser}
 										on:change={(e) => addMaxServiceCount(e, service)}
 										disabled={!objectDetail.services[0] ||
 											objectDetail.services.find((x) => x.id == service.id) == undefined}
@@ -1119,6 +1122,7 @@
 											<InputAddon
 												><div class="flex items-center">
 													<Checkbox
+														checked={getSelectedObjectServiceDetail(service)?.unlimitedFree}
 														class="cursor-pointer"
 														on:click={(event) => addFreeService(event, service)}
 														disabled={!objectDetail.services[0] ||
@@ -1130,6 +1134,7 @@
 											<Input
 												id="input-addon-sm"
 												placeholder="max free quantity for a user"
+												value={getSelectedObjectServiceDetail(service)?.maxFreeCount}
 												on:change={(e) => addMaxFreeServiceCount(e, service)}
 												disabled={!objectDetail.services[0] ||
 													objectDetail.services.find((x) => x.id == service.id) == undefined}

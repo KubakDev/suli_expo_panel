@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button, Tabs, TabItem, Textarea, Fileupload } from 'flowbite-svelte'; 
-	import { getData } from '../../../../../stores/exhibitionStore'; 
+	import { Button, Tabs, TabItem, Textarea, Fileupload } from 'flowbite-svelte';
+	import { getData } from '../../../../../stores/exhibitionStore';
 	import { addNewToast } from '../../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
 	import { onMount } from 'svelte';
