@@ -327,7 +327,6 @@
 				if (isDrawing) {
 					isDown = false;
 				}
-
 				panning = false;
 				// spacePressed = false;
 			});
@@ -386,6 +385,7 @@
 
 				canvas.forEachObject((obj: any) => {
 					if (obj.id === event.selected[0].id) {
+						console.log(obj.objectDetail);
 						if (obj.objectDetail) {
 							objectDetail = obj.objectDetail;
 							objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
@@ -546,25 +546,25 @@
 				}
 			});
 		const el = document.getElementById('layers');
-		// const sortable = Sortable.create(el, {
-		// 	onEnd: (evt: any) => {
-		// 		const id = evt.item.dataset.id;
-		// 		const object = canvas.getObjects().find((obj: any) => obj.id == id);
-		// 		if (object) {
-		// 			// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
-		// 			let newIndex = canvas.getObjects().length - evt.newIndex - 1;
-		// 			// Ensure index is within array bounds.
-		// 			newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
-		// 			// Move the object to the new position.
+		const sortable = Sortable.create(el, {
+			onEnd: (evt: any) => {
+				const id = evt.item.dataset.id;
+				const object = canvas.getObjects().find((obj: any) => obj.id == id);
+				if (object) {
+					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
+					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
+					// Ensure index is within array bounds.
+					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
+					// Move the object to the new position.
 
-		// 			object.moveTo(newIndex);
-		// 			// Rerender canvas.
-		// 			canvas.renderAll();
-		// 			// Update the layers in the UI.
-		// 			// updateLayers();
-		// 		}
-		// 	}
-		// });
+					object.moveTo(newIndex);
+					// Rerender canvas.
+					canvas.renderAll();
+					// Update the layers in the UI.
+					// updateLayers();
+				}
+			}
+		});
 	};
 
 	$: {
@@ -816,6 +816,7 @@
 		canvas.requestRenderAll();
 	}
 	function addServiceToActiveObject(service: seatServicesModel) {
+		console.log(service);
 		let selectedObject = canvas.getActiveObject();
 		let index = objectDetail.services.findIndex((item) => item.id === service.id);
 		if (index === -1) {
@@ -922,8 +923,7 @@
 		canvas: canvas,
 		isDrawing: isDrawing,
 		isAddingText: isAddingText,
-		container: container,
-		fabric: fabric
+		container: container
 	}}
 	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
 	on:updateLayers={() => updateLayers()}
