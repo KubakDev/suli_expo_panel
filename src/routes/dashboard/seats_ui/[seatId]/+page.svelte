@@ -328,7 +328,6 @@
 				if (isDrawing) {
 					isDown = false;
 				}
-
 				panning = false;
 				// spacePressed = false;
 			});
@@ -547,25 +546,25 @@
 				}
 			});
 		const el = document.getElementById('layers');
-		// const sortable = Sortable.create(el, {
-		// 	onEnd: (evt: any) => {
-		// 		const id = evt.item.dataset.id;
-		// 		const object = canvas.getObjects().find((obj: any) => obj.id == id);
-		// 		if (object) {
-		// 			// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
-		// 			let newIndex = canvas.getObjects().length - evt.newIndex - 1;
-		// 			// Ensure index is within array bounds.
-		// 			newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
-		// 			// Move the object to the new position.
+		const sortable = Sortable.create(el, {
+			onEnd: (evt: any) => {
+				const id = evt.item.dataset.id;
+				const object = canvas.getObjects().find((obj: any) => obj.id == id);
+				if (object) {
+					// Subtract the number of higher-indexed objects from the new index to get the correct index in the canvas._objects array
+					let newIndex = canvas.getObjects().length - evt.newIndex - 1;
+					// Ensure index is within array bounds.
+					newIndex = Math.max(0, Math.min(newIndex, canvas.getObjects().length - 1));
+					// Move the object to the new position.
 
-		// 			object.moveTo(newIndex);
-		// 			// Rerender canvas.
-		// 			canvas.renderAll();
-		// 			// Update the layers in the UI.
-		// 			// updateLayers();
-		// 		}
-		// 	}
-		// });
+					object.moveTo(newIndex);
+					// Rerender canvas.
+					canvas.renderAll();
+					// Update the layers in the UI.
+					// updateLayers();
+				}
+			}
+		});
 	};
 
 	$: {
@@ -913,6 +912,9 @@
 		newFavColor = '';
 		addFavColorLoading = false;
 	}
+	function getSelectedObjectServiceDetail(service: any) {
+		return objectDetail.services.find((serviceDetail) => serviceDetail.id == service.id);
+	}
 </script>
 
 <!-- {#if fabric} -->
@@ -923,8 +925,7 @@
 		canvas: canvas,
 		isDrawing: isDrawing,
 		isAddingText: isAddingText,
-		container: container,
-		fabric: fabric
+		container: container
 	}}
 	on:toggleDrawingMode={(e) => selectEditingMode(e.detail.type)}
 	on:updateLayers={() => updateLayers()}
@@ -1094,6 +1095,7 @@
 								<div class="flex items-center my-6 w-full justify-between">
 									<div class="flex items-center">
 										<Checkbox
+											checked={getSelectedObjectServiceDetail(service) ? true : false}
 											class="cursor-pointer"
 											on:click={() => {
 												addServiceToActiveObject(service);
@@ -1110,6 +1112,7 @@
 										type="number"
 										size="sm"
 										placeholder="max quantity for a user"
+										value={getSelectedObjectServiceDetail(service)?.maxQuantityPerUser}
 										on:change={(e) => addMaxServiceCount(e, service)}
 										disabled={!objectDetail.services[0] ||
 											objectDetail.services.find((x) => x.id == service.id) == undefined}
@@ -1120,6 +1123,7 @@
 											<InputAddon
 												><div class="flex items-center">
 													<Checkbox
+														checked={getSelectedObjectServiceDetail(service)?.unlimitedFree}
 														class="cursor-pointer"
 														on:click={(event) => addFreeService(event, service)}
 														disabled={!objectDetail.services[0] ||
@@ -1131,6 +1135,7 @@
 											<Input
 												id="input-addon-sm"
 												placeholder="max free quantity for a user"
+												value={getSelectedObjectServiceDetail(service)?.maxFreeCount}
 												on:change={(e) => addMaxFreeServiceCount(e, service)}
 												disabled={!objectDetail.services[0] ||
 													objectDetail.services.find((x) => x.id == service.id) == undefined}
