@@ -1,5 +1,4 @@
 <script lang="ts">
-
 	import {
 		getReservationDataByDependEdited,
 		getReservationDataByDependStatus
@@ -323,7 +322,7 @@
 					bind:value={selectedExhibition}
 					on:change={filterByExhibition}
 				>
-					<option value={null} class="bg-[#e9ecefd2] dark:bg-gray-100">All Exhibitions</option>
+					<option value={undefined} class="bg-[#e9ecefd2] dark:bg-gray-100">All Exhibitions</option>
 					{#each exhibitionData as item (item.id)}
 						<option value={item.id} class="bg-[#e9ecefd2] dark:bg-gray-100"
 							>{item.exhibition_type}</option
