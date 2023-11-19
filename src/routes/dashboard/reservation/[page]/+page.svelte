@@ -1,4 +1,5 @@
 <script lang="ts">
+
 	import {
 		getReservationDataByDependEdited,
 		getReservationDataByDependStatus
@@ -240,7 +241,7 @@
 	}
 
 	$: {
-		console.log('///here  : ', $seatReservation);
+		// console.log('///here  : ', $seatReservation);
 	}
 </script>
 

@@ -5,6 +5,25 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export const seatReservation = writable<Reservation[]>([]);
 export const seatReservationTotalCount = writable<number>();
 
+// export const getReservationData = async (
+// 	supabase: SupabaseClient,
+// 	page: number,
+// 	pageSize: number,
+// 	selectedExhibition?: number | undefined[],
+// 	p_company_name?: string[],
+// 	p_phone_number?: string[],
+// 	p_email?: string[]
+// ) => {
+// 	let { data } = await supabase.rpc('get_seat_reservations', {
+// 		page_num: page,
+// 		page_size: pageSize
+// 	});
+// 	console.log('store  ', data);
+
+// 	seatReservationTotalCount.set(data[0]?.total_count);
+// 	seatReservation.set(data);
+// };
+
 export const getReservationData = async (
 	supabase: SupabaseClient,
 	page: number,
