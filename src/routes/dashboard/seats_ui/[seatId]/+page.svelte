@@ -913,7 +913,7 @@
 		addFavColorLoading = false;
 	}
 	function getSelectedObjectServiceDetail(service: any) {
-		return objectDetail.services.find((serviceDetail) => serviceDetail.id == service.id);
+		return objectDetail.services.find((serviceDetail) => serviceDetail.id == service.id) as any;
 	}
 </script>
 

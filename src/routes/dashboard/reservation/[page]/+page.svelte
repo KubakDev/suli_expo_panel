@@ -238,10 +238,6 @@
 
 		fetchReservationData();
 	}
-
-	$: {
-		// console.log('///here  : ', $seatReservation);
-	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
