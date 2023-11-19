@@ -9,10 +9,10 @@ export const getReservationData = async (
 	supabase: SupabaseClient,
 	page: number,
 	pageSize: number,
-	selectedExhibition?: number | undefined[],
-	p_company_name?: string[],
-	p_phone_number?: string[],
-	p_email?: string[]
+	selectedExhibition?: number | undefined,
+	p_company_name?: string,
+	p_phone_number?: string,
+	p_email?: string
 ) => {
 	let { data } = await supabase.rpc('get_seat_reservations', {
 		page_num: page,
