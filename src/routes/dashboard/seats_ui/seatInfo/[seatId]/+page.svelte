@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Button, Tabs, TabItem, Textarea, Fileupload } from 'flowbite-svelte'; 
-	import { getData } from '../../../../../stores/exhibitionStore'; 
+	import { Button, Tabs, TabItem, Textarea, Fileupload } from 'flowbite-svelte';
+	import { getData } from '../../../../../stores/exhibitionStore';
 	import { addNewToast } from '../../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
 	import { onMount } from 'svelte';
@@ -114,7 +114,7 @@
 				</div>
 			</TabItem>
 			<TabItem title="add Company Info Required Data">
-				<RequiredFieldsComponent {exhibitionId} supabase={data.supabase} />
+				<RequiredFieldsComponent {exhibitionId} supabase={data.supabase} detail={true} />
 			</TabItem>
 			<TabItem title="upload contract file">
 				<UploadContractFile {exhibitionId} supabase={data.supabase} />

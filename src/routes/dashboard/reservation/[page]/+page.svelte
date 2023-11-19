@@ -31,43 +31,8 @@
 	let totalPages = 1;
 	let selectedStatus: ReservationStatusEnum | undefined;
 	let selectedEdited: boolean | undefined = undefined;
-	let selectedExhibition: number | null = null;
+	let selectedExhibition: number | undefined = undefined;
 
-	// onMount(() => {
-	// 	const storedCurrentPage = sessionStorage.getItem('currentPage');
-	// 	currentPage = storedCurrentPage ? parseInt(storedCurrentPage, 10) : 1;
-
-	// 	selectedExhibition = parseInt(sessionStorage.getItem('selectedExhibition') || '');
-	// 	selectedStatus =
-	// 		(sessionStorage.getItem('selectedStatus') as ReservationStatusEnum) || undefined;
-
-	// 	const storedSelectedEdited = sessionStorage.getItem('selectedEdited');
-	// 	selectedEdited =
-	// 		storedSelectedEdited === 'true' || storedSelectedEdited === 'false'
-	// 			? storedSelectedEdited === 'true'
-	// 			: undefined;
-
-	// 	selectedExhibition = parseInt(sessionStorage.getItem('selectedExhibition') || '', 10);
-	// 	if (isNaN(selectedExhibition)) {
-	// 		selectedExhibition = null;
-	// 	}
-
-	// 	if (isNaN(currentPage)) {
-	// 		currentPage = 1;
-	// 	}
-	// 	// Update the URL according to the currentPage
-	// 	goto(`/dashboard/reservation/currentPage=${currentPage}`);
-
-	// 	if (selectedStatus) {
-	// 		fetchReservationDataByStatus();
-	// 	} else if (selectedEdited !== undefined) {
-	// 		fetchReservationDataByEdited();
-	// 	} else {
-	// 		fetchReservationData();
-	// 	}
-
-	// 	fetchData();
-	// });
 	//pagination number with url
 	onMount(() => {
 		currentPage = +$page.params.page;
@@ -81,7 +46,7 @@
 				selectedExhibition = selected.id;
 			}
 		} else {
-			selectedExhibition = null;
+			selectedExhibition = undefined;
 			currentPage = 1;
 		}
 
@@ -257,7 +222,7 @@
 		isOptionSelected = false;
 		selectedStatus = undefined;
 		selectedEdited = undefined;
-		selectedExhibition = null;
+		selectedExhibition = undefined;
 
 		for (const opt of options) {
 			checked[opt] = false;
@@ -272,6 +237,10 @@
 		sessionStorage.removeItem('selectedExhibition');
 
 		fetchReservationData();
+	}
+
+	$: {
+		console.log('///here  : ', $seatReservation);
 	}
 </script>
 

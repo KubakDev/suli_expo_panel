@@ -58,23 +58,26 @@
 		}
 	});
 	async function getRequiredFiledData() {
-		await supabase
+		const { data, error } = await supabase
 			.from('required_company_fields_exhibition')
 			.select('*')
 			.eq('exhibition_id', exhibitionId)
-			.single()
-			.then((response) => {
-				if (response.data) {
-					let requiredFields = response.data.fields;
-					allCompanyInfoFields.forEach((field) => {
-						if (requiredFields.includes(field.name)) {
-							field.status = true;
-						}
-					});
-					allCompanyInfoFields = [...allCompanyInfoFields];
-				}
+			.single();
+
+		if (error) {
+			console.error('Error fetching data:', error);
+			return;
+		}
+
+		if (data) {
+			const requiredFields = data.fields;
+			allCompanyInfoFields.forEach((field) => {
+				field.status = requiredFields.includes(field.name);
 			});
+			allCompanyInfoFields = [...allCompanyInfoFields];
+		}
 	}
+
 	async function addRequiredFields() {
 		let requiredFields: string[] = [];
 		allCompanyInfoFields.forEach((field) => {

@@ -240,7 +240,8 @@
 						top: pointer.y,
 						fontSize: 20,
 						fill: 'black',
-						editable: true
+						editable: true,
+						id: new Date().getTime() // Adding a unique ID based on the current time
 					});
 
 					canvas.add(text);

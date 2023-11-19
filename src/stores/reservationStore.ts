@@ -9,10 +9,10 @@ export const getReservationData = async (
 	supabase: SupabaseClient,
 	page: number,
 	pageSize: number,
-	selectedExhibition?: number,
-	p_company_name?: string,
-	p_phone_number?: string,
-	p_email?: string
+	selectedExhibition?: number | undefined[],
+	p_company_name?: string[],
+	p_phone_number?: string[],
+	p_email?: string[]
 ) => {
 	let { data } = await supabase.rpc('get_seat_reservations', {
 		page_num: page,
@@ -20,9 +20,9 @@ export const getReservationData = async (
 		p_exhibition_id: selectedExhibition,
 		p_company_name: p_company_name,
 		p_phone_number: p_phone_number,
-		p_type: null,
 		p_email: p_email
 	});
+	console.log('store  ', data);
 
 	seatReservationTotalCount.set(data[0]?.total_count);
 	seatReservation.set(data);
@@ -53,7 +53,7 @@ export const getReservationDataByDependStatus = async (
 
 export const getReservationDataByDependEdited = async (
 	supabase: SupabaseClient,
-	selectedEdited: string,
+	selectedEdited: boolean,
 	page: number,
 	pageSize: number
 ) => {
