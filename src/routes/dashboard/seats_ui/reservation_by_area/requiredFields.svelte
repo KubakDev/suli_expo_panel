@@ -9,7 +9,6 @@
 	export let supabase: SupabaseClient;
 	export let detail: boolean | null | undefined = null;
 
-	// $: console.log(exhibitionId);
 	let allCompanyInfoFields: {
 		name: string;
 		status: boolean;

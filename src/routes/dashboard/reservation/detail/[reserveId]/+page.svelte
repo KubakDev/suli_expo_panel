@@ -4,7 +4,7 @@
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 	import type { CompanyType } from '../../../../../models/companyModel';
 	import type { ExhibitionModel } from '../../../../../models/exhibitionTypeModel';
-	import type { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
+	import { SeatsLayoutTypeEnum } from '../../../../../models/seatsLayoutTypeEnum';
 	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Modal } from 'flowbite-svelte';
 	import { generateDocx } from '$lib/utils/generateContract';
 	import ReservedSeat from './reservedSeat.svelte';
@@ -62,9 +62,9 @@
 			.then(async (Response) => {
 				reservations = Response.data as reservationType[];
 				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
-				// if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
-				await getSeatLayout();
-				// }
+				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
+					await getSeatLayout();
+				}
 				exhibitionId = reservations[0]?.exhibition?.id ?? 0;
 				calculateTotalPrice();
 			});
@@ -192,7 +192,6 @@
 	let totalRawPrice = 0;
 	let pricePerMeter = 0;
 	let reservedAreas: any = [];
-	let decodedFile = '';
 
 	async function exportContract(reservationData: reservationType, lang: LanguageEnum) {
 		let docxData = {
@@ -225,45 +224,35 @@
 	}
 	async function calculateTotalPrice() {
 		await data.supabase
-			.from('contract_decode_files')
+			.from('seat_layout')
 			.select('*')
-			.eq('exhibition_id', exhibitionId)
-			.then(async (Response: any) => {
-				if (Response.data.length === 0) {
-					return;
+			.eq('exhibition', exhibitionId)
+			.eq('is_active', true)
+			.single()
+			.then((response) => {
+				pricePerMeter = response.data.price_per_meter;
+				if (extraDiscountChecked) {
+					discountedPrice = response.data.extra_discount;
+				} else {
+					discountedPrice = response.data.discounted_price;
 				}
-				decodedFile = Response?.data[0]?.decoded_file;
-				await data.supabase
-					.from('seat_layout')
-					.select('*')
-					.eq('exhibition', exhibitionId)
-					.eq('is_active', true)
-					.single()
-					.then((response) => {
-						pricePerMeter = response.data.price_per_meter;
-						if (extraDiscountChecked) {
-							discountedPrice = response.data.extra_discount;
-						} else {
-							discountedPrice = response.data.discounted_price;
-						}
-					});
-				reservedAreas = reservedSeatData?.map((data: any) => {
-					let result = {
-						id: data.id++,
-						area: data.area,
-						quantity: data.quantity,
-						pricePerMeter: pricePerMeter,
-						totalPrice: data.quantity * pricePerMeter * +data.area,
-						discountedPrice: +data.area * (discountedPrice ?? pricePerMeter)
-					};
-					return result;
-				});
-				reservedAreas.map((seatArea: any) => {
-					totalArea += +seatArea.area * +seatArea.quantity;
-					totalPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
-					totalRawPrice += +seatArea.quantity * pricePerMeter * +seatArea.area;
-				});
 			});
+		reservedAreas = reservedSeatData?.map((data: any) => {
+			let result = {
+				id: data.id++,
+				area: data.area,
+				quantity: data.quantity,
+				pricePerMeter: pricePerMeter,
+				totalPrice: data.quantity * pricePerMeter * +data.area,
+				discountedPrice: +data.area * (discountedPrice ?? pricePerMeter)
+			};
+			return result;
+		});
+		reservedAreas.map((seatArea: any) => {
+			totalArea += +seatArea.area * +seatArea.quantity;
+			totalPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
+			totalRawPrice += +seatArea.quantity * pricePerMeter * +seatArea.area;
+		});
 		loadedTotalPrice = true;
 	}
 	function getServices(service: string) {
