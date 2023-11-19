@@ -277,6 +277,7 @@
 								: 'Seat Status'}</Chevron
 						></Button
 					>
+
 					<Dropdown bind:open={isActiveDropdownOpen} ulClass="dropdownUi py-1 w-full">
 						{#each serviceStatus as status}
 							<DropdownItem on:click={() => (isActiveDropdownOpen = false)}>
