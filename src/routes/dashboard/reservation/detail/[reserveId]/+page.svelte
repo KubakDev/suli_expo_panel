@@ -153,12 +153,16 @@
 		if (selectedStatus == ReservationStatusEnum.REJECT) {
 			let activeSeat = seatLayout?.find((seat) => seat.is_active == true);
 			let seatAreasData = JSON.parse(activeSeat?.areas);
-			let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
-			userReservedAreas.map((userReservedArea: any) => {
-				let areaIndex = seatAreasData.findIndex((area: any) => area.area == userReservedArea.area);
-				seatAreasData[areaIndex].quantity =
-					seatAreasData[areaIndex].quantity + userReservedArea.quantity;
-			});
+			if (reservationData?.reserved_areas) {
+				let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
+				userReservedAreas.map((userReservedArea: any) => {
+					let areaIndex = seatAreasData.findIndex(
+						(area: any) => area.area == userReservedArea.area
+					);
+					seatAreasData[areaIndex].quantity =
+						seatAreasData[areaIndex].quantity + userReservedArea.quantity;
+				});
+			}
 			await data.supabase
 				.from('seat_layout')
 				.update({
@@ -167,19 +171,21 @@
 				.eq('id', activeSeat.id)
 				.then(() => {
 					getReservationData();
-					reservations.map(async (reserveData) => {
-						if (reserveData.status == ReservationStatusEnum.PENDING) return;
-						await data.supabase
-							.from('notification')
-							.insert([
-								addNotificationData(reserveData, LanguageEnum.EN),
-								addNotificationData(reserveData, LanguageEnum.CKB),
-								addNotificationData(reserveData, LanguageEnum.AR)
-							])
-							.then((response) => {});
-					});
 				});
 		}
+		reservations.map(async (reserveData) => {
+			if (reserveData.status == ReservationStatusEnum.PENDING) return;
+			reserveData.status = selectedStatus as any;
+
+			await data.supabase
+				.from('notification')
+				.insert([
+					addNotificationData(reserveData, LanguageEnum.EN),
+					addNotificationData(reserveData, LanguageEnum.CKB),
+					addNotificationData(reserveData, LanguageEnum.AR)
+				])
+				.then((response) => {});
+		});
 	}
 	// allow to update status
 	let isEditing = false;
