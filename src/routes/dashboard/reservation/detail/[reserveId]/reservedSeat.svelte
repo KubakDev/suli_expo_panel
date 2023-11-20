@@ -3,10 +3,10 @@
 	import type { Canvas } from 'fabric/fabric-impl';
 	// @ts-ignore
 	import { fabric } from 'fabric';
+	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
 
 	export let data: any;
-	export let reservedData: any = [];
-
+	export let reservations: any = [];
 	// let fabric: any = null;
 	let activeSeat: any = null;
 	let canvas: Canvas;
@@ -91,7 +91,7 @@
 
 	async function checkIfTheSeatReserved() {
 		for (let object of activeSeat.design?.objects) {
-			if (object?.id == reservedData?.object_id) {
+			if (object?.id == reservations[0]?.object_id) {
 				canvas.forEachObject((obj: any) => {
 					if (obj.id == object.id) {
 						obj.set({
@@ -100,24 +100,33 @@
 								reserve: true
 							}
 						});
-						if (reservedData.status == 'pending') {
-							obj.set('fill', '#A0B0C2');
-							obj.set('stroke', '#A0B0C2');
-							obj.set('strokeWidth', 3);
-						} else if (reservedData.status == 'accept') {
+
+						if (
+							reservations.find(
+								(reservation: any) => reservation.status == ReservationStatusEnum.ACCEPT
+							)
+						) {
 							obj.set('fill', '#ff176b');
 							obj.set('stroke', '#ff176b');
+							obj.set('strokeWidth', 3);
+						} else {
+							obj.set('fill', '#A0B0C2');
+							obj.set('stroke', '#A0B0C2');
 							obj.set('strokeWidth', 3);
 						}
 						if (obj.type == 'group') {
 							obj.forEachObject((child: any) => {
-								if (reservedData.status == 'pending') {
-									child.set('fill', '#A0B0C2');
-									child.set('stroke', '#A0B0C2');
-									child.set('strokeWidth', 3);
-								} else if (reservedData.status == 'accept') {
+								if (
+									reservations.find(
+										(reservation: any) => reservation.status == ReservationStatusEnum.ACCEPT
+									)
+								) {
 									child.set('fill', '#ff176b');
 									child.set('stroke', '#ff176b');
+									child.set('strokeWidth', 3);
+								} else {
+									child.set('fill', '#A0B0C2');
+									child.set('stroke', '#A0B0C2');
 									child.set('strokeWidth', 3);
 								}
 							});

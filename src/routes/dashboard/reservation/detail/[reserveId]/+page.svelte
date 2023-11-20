@@ -230,11 +230,13 @@
 			.eq('is_active', true)
 			.single()
 			.then((response) => {
-				pricePerMeter = response.data.price_per_meter;
-				if (extraDiscountChecked) {
-					discountedPrice = response.data.extra_discount;
-				} else {
-					discountedPrice = response.data.discounted_price;
+				if (response.data) {
+					pricePerMeter = response.data.price_per_meter;
+					if (extraDiscountChecked) {
+						discountedPrice = response.data.extra_discount;
+					} else {
+						discountedPrice = response.data.discounted_price;
+					}
 				}
 			});
 		reservedAreas = reservedSeatData?.map((data: any) => {
@@ -317,11 +319,9 @@
 							/>
 						</svg>
 					</svelte:fragment>
-					{#each reservations as reservation}
-						<span class="text-gray-500 dark:text-gray-400">
-							{reservation?.exhibition?.exhibition_type}
-						</span>
-					{/each}
+					<span class="text-gray-500 dark:text-gray-400">
+						{reservations[0]?.exhibition?.exhibition_type}
+					</span>
 				</BreadcrumbItem>
 			</Breadcrumb>
 		</div>
@@ -631,7 +631,7 @@
 			</table>
 		</div>
 		{#if seatLayout}
-			<ReservedSeat data={seatLayout} reservedData={reservations[0]} />
+			<ReservedSeat data={seatLayout} {reservations} />
 		{/if}
 	</div>
 </div>
