@@ -32,6 +32,7 @@
 		reserved_areas?: string;
 		type: SeatsLayoutTypeEnum;
 		extra_discount_checked?: boolean;
+		rejected_by_user?: boolean;
 	}
 	let openPreviewImage = false;
 	let selectedImageUrlForPreview = '';
@@ -515,6 +516,7 @@
 							</td>
 
 							<td>
+								<p>{reservation.rejected_by_user ? 'rejected by user' : ''}</p>
 								<div class="flex justify-center py-3">
 									<select
 										class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
