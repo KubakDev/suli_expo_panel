@@ -217,14 +217,14 @@
 				}
 			});
 			window.addEventListener('keydown', function (e) {
-				if (e.key === 'm') {
+				if (e.key === 'Alt') {
 					e.preventDefault();
 					spacePressed = true;
 				}
 			});
 
 			window.addEventListener('keyup', function (e) {
-				if (e.key === 'm') {
+				if (e.key === 'Alt') {
 					e.preventDefault();
 					spacePressed = false;
 					panning = false;
