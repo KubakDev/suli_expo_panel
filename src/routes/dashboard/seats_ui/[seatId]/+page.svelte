@@ -432,14 +432,14 @@
 				}
 			});
 
-			//function for undo & redo
-			window.addEventListener('keydown', (e) => {
-				if (e.ctrlKey && e.code === 'KeyZ') {
-					undoSelectedObject();
-				} else if (e.ctrlKey && e.code === 'KeyY') {
-					redoSelectedObject();
-				}
-			});
+			// function for undo & redo
+			// window.addEventListener('keydown', (e) => {
+			// 	if (e.ctrlKey && e.code === 'KeyZ') {
+			// 		undoSelectedObject();
+			// 	} else if (e.ctrlKey && e.code === 'KeyY') {
+			// 		redoSelectedObject();
+			// 	}
+			// });
 
 			//function for copy
 			window.addEventListener('keydown', (e) => {
