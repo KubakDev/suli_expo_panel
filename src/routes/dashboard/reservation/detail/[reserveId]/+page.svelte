@@ -141,12 +141,15 @@
 	async function updateStatus(itemID?: number, selectedStatus?: string, reservationData?: any) {
 		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
+
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
-			await data.supabase
+			let x = await data.supabase
 				.from('seat_reservation')
 				.update({ status: ReservationStatusEnum.REJECT })
-				.eq('object_id', objectId);
+				.eq('object_id', objectId)
+				.not('id', 'eq', itemID);
 		}
+
 		await data.supabase
 			.from('seat_reservation')
 			.update({ status: selectedStatus })
@@ -400,7 +403,11 @@
 									class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-lg text-gray-900 text-sm border"
 								>
 									{#if reservation.created_at}
-										{moment(reservation.created_at).format('DD-MM-YYYY hh:mm A').toString()}
+										{moment
+											.utc(reservation.created_at)
+											.local()
+											.format('DD-MM-YYYY hh:mm A')
+											.toString()}
 									{:else}
 										does not exist
 									{/if}

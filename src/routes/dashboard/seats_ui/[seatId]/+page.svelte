@@ -298,6 +298,7 @@
 					lastPosX = options.e.clientX;
 					lastPosY = options.e.clientY;
 				}
+				updateLayers();
 				canvas.renderAll();
 				canvas.requestRenderAll();
 			});
