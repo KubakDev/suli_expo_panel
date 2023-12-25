@@ -16,6 +16,9 @@
 		selectedObjectId: number;
 		fabric: any;
 	};
+	// $: {
+	// 	console.log(data.canvas);
+	// }
 
 	$: {
 		console.log(data);
@@ -130,10 +133,10 @@
 		}
 	}
 	function removeSelectedObject() {
-		let activeObject = data.canvas.getActiveObject();
+		let activeObject = data?.canvas?.getActiveObject();
 		if (activeObject) {
-			data.canvas.remove(activeObject);
-			data.canvas.requestRenderAll();
+			data?.canvas?.remove(activeObject);
+			data?.canvas?.requestRenderAll();
 		}
 	}
 </script>
@@ -213,17 +216,16 @@
 						class=" layer mb-2 p-1 rounded-md shadow-sm cursor-pointer flex justify-start items-center {object.isGroup
 							? 'bg-blue-50'
 							: 'bg-gray-50'}
-            {data.selectedObjectId == object.id ? 'bg-primary-700  ' : 'hover:bg-gray-100'}
-            
-            "
+                           {data.selectedObjectId == object.id
+							? 'bg-primary-700  '
+							: 'hover:bg-gray-100'}  "
 						on:click={() => {
 							if (data && data.canvas) {
 								data.canvas.forEachObject(function (eachObject) {
 									if (object.id == eachObject.id) {
-										data.canvas.setActiveObject(eachObject);
-										data.canvas.requestRenderAll();
+										data?.canvas?.setActiveObject(eachObject);
+										data?.canvas?.requestRenderAll();
 									}
-									//
 								});
 							}
 						}}

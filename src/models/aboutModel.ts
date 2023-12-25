@@ -5,6 +5,7 @@ export interface AboutModel {
 	image?: string;
 	created_at?: Date;
 	about_languages?: AboutModelLang[];
+	
 }
 
 export interface AboutModelLang {
