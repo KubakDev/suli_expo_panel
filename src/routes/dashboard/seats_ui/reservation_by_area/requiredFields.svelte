@@ -50,9 +50,13 @@
 			status: false
 		}
 	];
-
+	$: {
+		if (exhibitionId) {
+			getRequiredFiledData();
+		}
+	}
 	onMount(() => {
-		if (detail) {
+		if (exhibitionId) {
 			getRequiredFiledData();
 		}
 	});

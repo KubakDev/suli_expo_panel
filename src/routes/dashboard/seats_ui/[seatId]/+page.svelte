@@ -220,14 +220,14 @@
 				}
 			});
 			window.addEventListener('keydown', function (e) {
-				if (e.key === 'm') {
+				if (e.key === 'Alt') {
 					e.preventDefault();
 					spacePressed = true;
 				}
 			});
 
 			window.addEventListener('keyup', function (e) {
-				if (e.key === 'm') {
+				if (e.key === 'Alt') {
 					e.preventDefault();
 					spacePressed = false;
 					panning = false;
@@ -301,6 +301,7 @@
 					lastPosX = options.e.clientX;
 					lastPosY = options.e.clientY;
 				}
+				updateLayers();
 				canvas.renderAll();
 				canvas.requestRenderAll();
 			});
@@ -435,7 +436,7 @@
 				}
 			});
 
-			//function for undo & redo
+
 			// window.addEventListener('keydown', (e) => {
 			// 	if (e.ctrlKey && e.code === 'KeyZ') {
 			// 		undoSelectedObject();
@@ -460,24 +461,30 @@
 			window.addEventListener('keydown', (e) => {
 				if (e.ctrlKey && e.code === 'KeyV') {
 					if (copiedObject) {
-						copiedObject.clone((clonedObj: any) => {
+						copiedObject.clone((clonedObj) => {
 							canvas.discardActiveObject(); // Deselect current object
 							clonedObj.set({
 								left: clonedObj.left + 10,
 								top: clonedObj.top + 10,
-								evented: true,
-								id: new Date().getTime() // add a new unique ID
+								evented: true
 							});
+
 							if (clonedObj.type === 'activeSelection') {
 								clonedObj.canvas = canvas;
-								clonedObj.forEachObject((obj: any) => {
-									obj.set('id', new Date().getTime()); // add new IDs for objects within the group
+								clonedObj.forEachObject((obj) => {
+									const uniqueId =
+										new Date().getTime().toString() + Math.floor(Math.random() * 10000).toString();
+									obj.set('id', uniqueId); // unique numeric ID for each object
 									canvas.add(obj);
 								});
 								clonedObj.setCoords();
 							} else {
+								const uniqueId =
+									new Date().getTime().toString() + Math.floor(Math.random() * 10000).toString();
+								clonedObj.set('id', uniqueId); // unique numeric ID for single object
 								canvas.add(clonedObj);
 							}
+
 
 							canvas.setActiveObject(clonedObj);
 							console.log(clonedObj);
@@ -568,7 +575,6 @@
 					// Rerender canvas.
 					canvas.renderAll();
 					// Update the layers in the UI.
-					// updateLayers();
 				}
 			}
 		});
@@ -756,7 +762,13 @@
 		let activeObject = canvas.getActiveObject();
 		if (activeObject) {
 			try {
-				canvas.remove(activeObject);
+				if (activeObject && activeObject.type === 'activeSelection') {
+					activeObject.forEachObject(function (obj) {
+						canvas.remove(obj);
+					});
+				} else if (activeObject) {
+					canvas.remove(activeObject);
+				}
 				canvas.requestRenderAll();
 			} catch (e) {}
 		}

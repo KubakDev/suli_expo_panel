@@ -32,6 +32,7 @@
 		reserved_areas?: string;
 		type: SeatsLayoutTypeEnum;
 		extra_discount_checked?: boolean;
+		rejected_by_user?: boolean;
 	}
 	let openPreviewImage = false;
 	let selectedImageUrlForPreview = '';
@@ -140,12 +141,15 @@
 	async function updateStatus(itemID?: number, selectedStatus?: string, reservationData?: any) {
 		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
+
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
-			await data.supabase
+			let x = await data.supabase
 				.from('seat_reservation')
 				.update({ status: ReservationStatusEnum.REJECT })
-				.eq('object_id', objectId);
+				.eq('object_id', objectId)
+				.not('id', 'eq', itemID);
 		}
+
 		await data.supabase
 			.from('seat_reservation')
 			.update({ status: selectedStatus })
@@ -153,12 +157,16 @@
 		if (selectedStatus == ReservationStatusEnum.REJECT) {
 			let activeSeat = seatLayout?.find((seat) => seat.is_active == true);
 			let seatAreasData = JSON.parse(activeSeat?.areas);
-			let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
-			userReservedAreas.map((userReservedArea: any) => {
-				let areaIndex = seatAreasData.findIndex((area: any) => area.area == userReservedArea.area);
-				seatAreasData[areaIndex].quantity =
-					seatAreasData[areaIndex].quantity + userReservedArea.quantity;
-			});
+			if (reservationData?.reserved_areas) {
+				let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
+				userReservedAreas.map((userReservedArea: any) => {
+					let areaIndex = seatAreasData.findIndex(
+						(area: any) => area.area == userReservedArea.area
+					);
+					seatAreasData[areaIndex].quantity =
+						seatAreasData[areaIndex].quantity + userReservedArea.quantity;
+				});
+			}
 			await data.supabase
 				.from('seat_layout')
 				.update({
@@ -167,19 +175,21 @@
 				.eq('id', activeSeat.id)
 				.then(() => {
 					getReservationData();
-					reservations.map(async (reserveData) => {
-						if (reserveData.status == ReservationStatusEnum.PENDING) return;
-						await data.supabase
-							.from('notification')
-							.insert([
-								addNotificationData(reserveData, LanguageEnum.EN),
-								addNotificationData(reserveData, LanguageEnum.CKB),
-								addNotificationData(reserveData, LanguageEnum.AR)
-							])
-							.then((response) => {});
-					});
 				});
 		}
+		reservations.map(async (reserveData) => {
+			if (reserveData.status == ReservationStatusEnum.PENDING) return;
+			reserveData.status = selectedStatus as any;
+
+			await data.supabase
+				.from('notification')
+				.insert([
+					addNotificationData(reserveData, LanguageEnum.EN),
+					addNotificationData(reserveData, LanguageEnum.CKB),
+					addNotificationData(reserveData, LanguageEnum.AR)
+				])
+				.then((response) => {});
+		});
 	}
 	// allow to update status
 	let isEditing = false;
@@ -230,11 +240,13 @@
 			.eq('is_active', true)
 			.single()
 			.then((response) => {
-				pricePerMeter = response.data.price_per_meter;
-				if (extraDiscountChecked) {
-					discountedPrice = response.data.extra_discount;
-				} else {
-					discountedPrice = response.data.discounted_price;
+				if (response.data) {
+					pricePerMeter = response.data.price_per_meter;
+					if (extraDiscountChecked) {
+						discountedPrice = response.data.extra_discount;
+					} else {
+						discountedPrice = response.data.discounted_price;
+					}
 				}
 			});
 		reservedAreas = reservedSeatData?.map((data: any) => {
@@ -317,11 +329,9 @@
 							/>
 						</svg>
 					</svelte:fragment>
-					{#each reservations as reservation}
-						<span class="text-gray-500 dark:text-gray-400">
-							{reservation?.exhibition?.exhibition_type}
-						</span>
-					{/each}
+					<span class="text-gray-500 dark:text-gray-400">
+						{reservations[0]?.exhibition?.exhibition_type}
+					</span>
 				</BreadcrumbItem>
 			</Breadcrumb>
 		</div>
@@ -393,7 +403,11 @@
 									class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-lg text-gray-900 text-sm border"
 								>
 									{#if reservation.created_at}
-										{moment(reservation.created_at).format('DD-MM-YYYY hh:mm A').toString()}
+										{moment
+											.utc(reservation.created_at)
+											.local()
+											.format('DD-MM-YYYY hh:mm A')
+											.toString()}
 									{:else}
 										does not exist
 									{/if}
@@ -509,6 +523,7 @@
 							</td>
 
 							<td>
+								<p>{reservation.rejected_by_user ? 'rejected by user' : ''}</p>
 								<div class="flex justify-center py-3">
 									<select
 										class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
@@ -631,7 +646,7 @@
 			</table>
 		</div>
 		{#if seatLayout}
-			<ReservedSeat data={seatLayout} reservedData={reservations[0]} />
+			<ReservedSeat data={seatLayout} {reservations} />
 		{/if}
 	</div>
 </div>
