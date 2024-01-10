@@ -64,6 +64,9 @@
 	let objects: any[] = [];
 
 	let objectDetailDescription: { language?: LanguageEnum; description?: string }[] = [];
+	$: {
+		console.log(data);
+	}
 
 	let objectDetail: {
 		selectable: boolean;
@@ -433,7 +436,7 @@
 				}
 			});
 
-			// function for undo & redo
+
 			// window.addEventListener('keydown', (e) => {
 			// 	if (e.ctrlKey && e.code === 'KeyZ') {
 			// 		undoSelectedObject();
@@ -482,8 +485,11 @@
 								canvas.add(clonedObj);
 							}
 
-							updateLayers();
+
 							canvas.setActiveObject(clonedObj);
+							console.log(clonedObj);
+							// update layer
+							updateLayers();
 							canvas.requestRenderAll();
 						});
 					}
