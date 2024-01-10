@@ -39,15 +39,6 @@
 	interface areaType {
 		area: string;
 		quantity: number;
-		services: serviceType[];
-	}
-
-	interface serviceDetailType {
-		discount: number;
-		price: number;
-		quantity: number;
-		title: string;
-		description: string;
 	}
 
 	interface serviceType {
@@ -56,7 +47,13 @@
 		price: number;
 		description: string;
 		totalPrice: number;
-		serviceDetail: serviceDetailType;
+		serviceDetail: {
+			discount: number;
+			price: number;
+			quantity: number;
+			title: string;
+			description: string;
+		};
 	}
 
 	let seatInfoData: {
@@ -90,42 +87,19 @@
 
 	let newArea: areaType = {
 		area: '',
-		quantity: 0,
-		services: []
+		quantity: 0
 	};
-
 	onMount(async () => {
 		await getData(data.supabase);
 	});
 	function addNewArea() {
-		const selectedServices = seatServices
-			.filter((service) => service.selected)
-			.map((service) => ({
-				serviceId: service.id,
-				quantity: service.quantity,
-				description: service.inputValue,
-
-				price: 0,
-				totalPrice: 0,
-				serviceDetail: {
-					discount: 0,
-					price: 0,
-					quantity: service.quantity,
-					title: service.title,
-					description: service.inputValue
-				}
-			}));
-
-		newArea.services = selectedServices;
 		areas.push(newArea);
 		areas = [...areas];
 		newArea = {
 			area: '',
-			quantity: 0,
-			services: []
+			quantity: 0
 		};
 	}
-
 	function deleteArea(index: number) {
 		areas.splice(index, 1);
 		areas = [...areas];
@@ -148,6 +122,7 @@
 	};
 
 	async function addNewSeat() {
+		console.log('/////////');
 		formSubmitted = true;
 		const supabase = data.supabase;
 
@@ -162,6 +137,15 @@
 				.eq('exhibition', seatInfoData.exhibition?.id);
 		}
 		const areasArray = JSON.stringify(areas);
+
+		const selectedServices = seatServices
+			.filter((service) => service.selected)
+			.map((service) => ({
+				serviceId: service.id,
+				quantity: service.quantity,
+				description: service.inputValue
+			}));
+		const servicesArray = JSON.stringify(selectedServices);
 
 		let excel_preview_url = '';
 		if (excelFilePreviewSelected) {
@@ -184,6 +168,7 @@
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
+					services: `${servicesArray}`,
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
 					discounted_price: seatInfoData.discounted_price,
