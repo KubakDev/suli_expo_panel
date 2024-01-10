@@ -42,21 +42,11 @@
 		services: serviceType[];
 	}
 
-	interface serviceDetailType {
-		discount: number;
-		price: number;
-		quantity: number;
-		title: string;
-		description: string;
-	}
-
 	interface serviceType {
 		serviceId: number;
-		quantity: number;
-		price: number;
-		description: string;
-		totalPrice: number;
-		serviceDetail: serviceDetailType;
+		maxFreeCount: number;
+		maxQuantityPerUser: number;
+		unlimitedFree: boolean;
 	}
 
 	let seatInfoData: {
@@ -102,18 +92,9 @@
 			.filter((service) => service.selected)
 			.map((service) => ({
 				serviceId: service.id,
-				quantity: service.quantity,
-				description: service.inputValue,
-
-				price: 0,
-				totalPrice: 0,
-				serviceDetail: {
-					discount: 0,
-					price: 0,
-					quantity: service.quantity,
-					title: service.title,
-					description: service.inputValue
-				}
+				maxFreeCount: service.maxFreeCount,
+				unlimitedFree: service.unlimitedFree,
+				quantity: service.quantity
 			}));
 
 		newArea.services = selectedServices;
@@ -124,14 +105,29 @@
 			quantity: 0,
 			services: []
 		};
-	}
 
+		// reset the values in the modal
+		seatServices = seatServices.map((service) => ({
+			...service,
+			selected: false,
+			quantity: 0,
+			maxFreeCount: 0,
+			unlimitedFree: false
+		}));
+	}
 	function deleteArea(index: number) {
 		areas.splice(index, 1);
 		areas = [...areas];
 	}
 
 	// for getting modal data
+
+	const handleInputChange = (serviceId, field, value) => {
+		const index = seatServices.findIndex((service) => service.id === serviceId);
+		if (index !== -1 && seatServices[index].selected) {
+			seatServices[index][field] = value;
+		}
+	};
 
 	const handleCheckboxChange = (serviceId, checked) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
@@ -140,10 +136,11 @@
 		}
 	};
 
-	const handleInputChange = (serviceId, field, value) => {
+	// Add a new function to handle changes to the 'unlimitedFree' checkbox
+	const handleUnlimitedFreeChange = (serviceId, checked) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
-			seatServices[index][field] = value;
+			seatServices[index].unlimitedFree = checked; // Set as boolean
 		}
 	};
 
@@ -266,23 +263,22 @@
 
 	// return services
 
-	let seatServices: any = [];
 	let showModal = false;
+	let seatServices: serviceType[] = [];
 
 	onMount(async () => {
 		const response = await data.supabase
 			.from('seat_services')
 			.select('*, seat_services_languages(*)');
-		seatServices = response.data.map((service) => {
-			const englishTitle = service.seat_services_languages.find(
-				(lang) => lang.language === 'en'
-			)?.title;
-			return {
-				id: service.id,
-				title: englishTitle || 'No title',
-				inputValue: ''
-			};
-		});
+		seatServices = response.data.map((service) => ({
+			id: service.id,
+			title:
+				service.seat_services_languages.find((lang) => lang.language === 'en')?.title || 'No title',
+			selected: false,
+			quantity: 0,
+			maxFreeCount: 0,
+			unlimitedFree: false
+		}));
 	});
 </script>
 
@@ -466,19 +462,36 @@
 										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
 											{service.title}
 										</Checkbox>
+
 										<Input
-											type="text"
-											placeholder="Enter Quantity"
-											class="input input-bordered"
+											type="number"
+											size="sm"
+											placeholder="max quantity for a user"
 											bind:value={service.quantity}
 											on:input={(e) => handleInputChange(service.id, 'quantity', e.target.value)}
+											disabled={!service.selected}
 										/>
-										<Textarea
-											placeholder="Enter Description"
-											class="input input-bordered"
-											bind:value={service.inputValue}
-											on:input={(e) => handleInputChange(service.id, 'inputValue', e.target.value)}
-										/>
+
+										<ButtonGroup class="w-full" size="sm">
+											<InputAddon>
+												<div class="flex items-center">
+													<Checkbox
+														bind:value={service.unlimitedFree}
+														class="cursor-pointer"
+														on:change={(e) =>
+															handleUnlimitedFreeChange(service.id, e.target.checked)}
+														disabled={!service.selected}
+													/>
+													<p>Unlimited</p>
+												</div>
+											</InputAddon>
+											<Input
+												id="input-addon-sm"
+												placeholder="max free quantity for a user"
+												bind:value={service.maxFreeCount}
+												disabled={!service.selected}
+											/>
+										</ButtonGroup>
 									</li>
 								{/each}
 							</ul>
