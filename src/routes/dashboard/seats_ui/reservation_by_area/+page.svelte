@@ -39,10 +39,10 @@
 	interface areaType {
 		area: string;
 		quantity: number;
-		services: serviceType[];
 	}
 
 	interface serviceType {
+		id: number;
 		serviceId: number;
 		maxFreeCount: number;
 		maxQuantityPerUser: number;
@@ -80,40 +80,19 @@
 
 	let newArea: areaType = {
 		area: '',
-		quantity: 0,
-		services: []
+		quantity: 0
 	};
 
 	onMount(async () => {
 		await getData(data.supabase);
 	});
 	function addNewArea() {
-		const selectedServices = seatServices
-			.filter((service) => service.selected)
-			.map((service) => ({
-				serviceId: service.id,
-				maxFreeCount: service.maxFreeCount,
-				unlimitedFree: service.unlimitedFree,
-				quantity: service.quantity
-			}));
-
-		newArea.services = selectedServices;
 		areas.push(newArea);
 		areas = [...areas];
 		newArea = {
 			area: '',
-			quantity: 0,
-			services: []
+			quantity: 0
 		};
-
-		// reset the values in the modal
-		seatServices = seatServices.map((service) => ({
-			...service,
-			selected: false,
-			quantity: 0,
-			maxFreeCount: 0,
-			unlimitedFree: false
-		}));
 	}
 	function deleteArea(index: number) {
 		areas.splice(index, 1);
@@ -121,11 +100,15 @@
 	}
 
 	// for getting modal data
-
 	const handleInputChange = (serviceId, field, value) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
-		if (index !== -1 && seatServices[index].selected) {
-			seatServices[index][field] = value;
+		if (index !== -1) {
+			// Convert value to a number if it's one of the numeric fields
+			if (field === 'maxFreeCount' || field === 'maxQuantityPerUser') {
+				seatServices[index][field] = Number(value);
+			} else {
+				seatServices[index][field] = value;
+			}
 		}
 	};
 
@@ -140,7 +123,10 @@
 	const handleUnlimitedFreeChange = (serviceId, checked) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
-			seatServices[index].unlimitedFree = checked; // Set as boolean
+			seatServices[index].unlimitedFree = checked;
+			if (checked) {
+				seatServices[index].maxFreeCount = 0;
+			}
 		}
 	};
 
@@ -174,9 +160,20 @@
 				});
 		}
 
+		const selectedServices = seatServices
+			.filter((service) => service.selected)
+			.map((service) => ({
+				serviceId: service.serviceId,
+				maxFreeCount: Number(service.maxFreeCount),
+				maxQuantityPerUser: Number(service.maxQuantityPerUser),
+				unlimitedFree: service.unlimitedFree
+			}));
+
+		console.log(selectedServices);
 		await supabase
 			.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {
+					services: selectedServices,
 					name: seatInfoData.name,
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
@@ -271,6 +268,7 @@
 			.from('seat_services')
 			.select('*, seat_services_languages(*)');
 		seatServices = response.data.map((service) => ({
+			serviceId: service.id,
 			id: service.id,
 			title:
 				service.seat_services_languages.find((lang) => lang.language === 'en')?.title || 'No title',
@@ -389,6 +387,54 @@
 							bind:value={seatInfoData.extra_discount}
 						/></ButtonGroup
 					>
+
+					<br />
+					<!-- show modal  -->
+					<div class="col-span-3">
+						<Button on:click={() => (showModal = true)}>Add service</Button>
+						<Modal title="List of Services" bind:open={showModal} autoclose>
+							<ul class="list-disc pl-5 space-y-2">
+								{#each seatServices as service}
+									<li class="flex items-center space-x-2">
+										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
+											{service.title}
+										</Checkbox>
+
+										<Input
+											type="number"
+											placeholder="Max Quantity Per User"
+											bind:value={service.maxQuantityPerUser}
+											on:input={(e) =>
+												handleInputChange(service.id, 'maxQuantityPerUser', e.target.value)}
+											disabled={!service.selected}
+										/>
+
+										<ButtonGroup class="w-full" size="sm">
+											<InputAddon>
+												<div class="flex items-center">
+													<Checkbox
+														bind:value={service.unlimitedFree}
+														class="cursor-pointer"
+														on:change={(e) =>
+															handleUnlimitedFreeChange(service.id, e.target.checked)}
+														disabled={!service.selected}
+													/>
+													<p>Unlimited</p>
+												</div>
+											</InputAddon>
+											<Input
+												id="input-addon-sm"
+												placeholder="max free quantity for a user"
+												bind:value={service.maxFreeCount}
+												disabled={!service.selected || service.unlimitedFree}
+											/>
+										</ButtonGroup>
+									</li>
+								{/each}
+							</ul>
+						</Modal>
+					</div>
+
 					<br />
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
@@ -398,6 +444,8 @@
 								class=" dark:bg-white"
 								on:change={(event) => handleFileUpload(event)}
 							/>
+
+							 
 						</div>
 					</div>
 
@@ -450,52 +498,6 @@
 							placeholder="add quantity"
 							bind:value={newArea.quantity}
 						/>
-					</div>
-
-					<!-- show modal  -->
-					<div class="mt-7">
-						<Button on:click={() => (showModal = true)}>Add service</Button>
-						<Modal title="List of Services" bind:open={showModal} autoclose>
-							<ul class="list-disc pl-5 space-y-2">
-								{#each seatServices as service}
-									<li class="flex items-center space-x-2">
-										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
-											{service.title}
-										</Checkbox>
-
-										<Input
-											type="number"
-											size="sm"
-											placeholder="max quantity for a user"
-											bind:value={service.quantity}
-											on:input={(e) => handleInputChange(service.id, 'quantity', e.target.value)}
-											disabled={!service.selected}
-										/>
-
-										<ButtonGroup class="w-full" size="sm">
-											<InputAddon>
-												<div class="flex items-center">
-													<Checkbox
-														bind:value={service.unlimitedFree}
-														class="cursor-pointer"
-														on:change={(e) =>
-															handleUnlimitedFreeChange(service.id, e.target.checked)}
-														disabled={!service.selected}
-													/>
-													<p>Unlimited</p>
-												</div>
-											</InputAddon>
-											<Input
-												id="input-addon-sm"
-												placeholder="max free quantity for a user"
-												bind:value={service.maxFreeCount}
-												disabled={!service.selected}
-											/>
-										</ButtonGroup>
-									</li>
-								{/each}
-							</ul>
-						</Modal>
 					</div>
 
 					<div class="flex items-end">
