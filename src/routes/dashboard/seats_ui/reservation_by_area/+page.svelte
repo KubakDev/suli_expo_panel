@@ -73,7 +73,6 @@
 	let dropdownOpen = false;
 	let isActiveDropdownOpen = false;
 	let areas: areaType[] = [];
-	let services: serviceType[] = [];
 
 	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
 	let excelFilePreviewSelected: File;
@@ -169,7 +168,6 @@
 				unlimitedFree: service.unlimitedFree
 			}));
 
-		console.log(selectedServices);
 		await supabase
 			.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {
@@ -444,8 +442,6 @@
 								class=" dark:bg-white"
 								on:change={(event) => handleFileUpload(event)}
 							/>
-
-							 
 						</div>
 					</div>
 
