@@ -89,6 +89,9 @@
 		area: '',
 		quantity: 0
 	};
+
+	let newServices: serviceType[] = [];
+
 	onMount(async () => {
 		await getData(data.supabase);
 		await getSeatDetail();
@@ -108,6 +111,30 @@
 			maxFreeCount: 0,
 			unlimitedFree: false
 		}));
+	});
+
+	// Function to load all services
+	// async function loadAllServices() {
+	// 	const response = await data.supabase.from('services').select('*');
+
+	// 	seatServices = response.data.map((service) => ({
+	// 		selected: false,
+	// 		quantity: 0,
+	// 		maxFreeCount: 0,
+	// 		unlimitedFree: false
+	// 	}));
+	// }
+
+	// Function to load services for the current exhibition
+	async function loadExhibitionServices() {
+		// ... existing logic to load services for the exhibition ...
+		// Call 'updateServicesWithResponse' here if needed
+	}
+
+	// Call these functions on mount to initialize data
+	onMount(async () => {
+		// await loadAllServices();
+		await loadExhibitionServices();
 	});
 	async function getSeatDetail() {
 		await data.supabase
@@ -134,7 +161,7 @@
 					updateServicesWithResponse(responseData);
 				}
 			});
-		console.log(responseServices);
+		// console.log(responseServices);
 	}
 
 	// get the current services that exist in db
@@ -210,15 +237,31 @@
 				});
 		}
 
-		const selectedServices = seatServices
-			.filter((service) => service.selected)
-			.map((service) => ({
-				serviceId: service.serviceId,
-				maxFreeCount: Number(service.maxFreeCount),
-				maxQuantityPerUser: Number(service.maxQuantityPerUser),
-				unlimitedFree: service.unlimitedFree
-			}));
+		//////////////////////////
 
+		// Deserialize existing services to an array of objects
+		const existingServices = JSON.parse(responseServices);
+
+		// Filter out newly selected services that are not in existing services
+		const newSelectedServices = seatServices.filter(
+			(service) =>
+				service.selected && !existingServices.some((es) => es.serviceId === service.serviceId)
+		);
+
+		// Combine old and new services
+		const combinedServices = [...existingServices, ...newSelectedServices];
+
+		// Serialize the combined services into a JSON string
+		const lastServicesData = JSON.stringify(
+			combinedServices.map((service) => {
+				return {
+					serviceId: service.serviceId
+				};
+			})
+		);
+		//////////////////////////
+
+		console.log(lastServicesData);
 		await supabase
 			.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
@@ -226,7 +269,7 @@
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
-					services: JSON.stringify(seatServices),
+					services: lastServicesData,
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
 					id: $page.params.reservationId,
