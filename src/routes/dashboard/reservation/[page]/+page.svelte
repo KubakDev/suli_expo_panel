@@ -240,6 +240,7 @@
 	}
 </script>
 
+ 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
 		<!-- total count -->

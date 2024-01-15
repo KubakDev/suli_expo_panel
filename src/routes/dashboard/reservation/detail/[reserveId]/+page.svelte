@@ -63,7 +63,6 @@
 			.select('*,company(*),exhibition(*,exhibition_languages(*))')
 			.eq('object_id', objectId)
 			.then(async (Response) => {
-				console.log(Response.data[0]);
 				total_price = Response?.data[0]?.total_price;
 				reservations = Response.data as reservationType[];
 				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');

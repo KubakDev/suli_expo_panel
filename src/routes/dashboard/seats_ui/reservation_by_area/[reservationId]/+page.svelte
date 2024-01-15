@@ -20,7 +20,8 @@
 		Textarea,
 		Spinner,
 		Fileupload,
-		Modal
+		Modal,
+		Checkbox
 	} from 'flowbite-svelte';
 	import type { ExhibitionsModel } from '../../../../../models/exhibitionModel';
 	import { exhibitions, getData } from '../../../../../stores/exhibitionStore';
@@ -41,7 +42,15 @@
 		area: string;
 		quantity: number;
 	}
+	interface serviceType {
+		serviceId: number;
+		maxFreeCount: number;
+		maxQuantityPerUser: number;
+		unlimitedFree: boolean;
+	}
+
 	let excelFilePreviewSelected: File;
+
 	let seatInfoData: {
 		exhibition?: ExhibitionsModel;
 		name: string;
@@ -55,6 +64,7 @@
 		name: '',
 		isActive: undefined
 	};
+
 	let excel_preview_url = '';
 	let isOpenEditModal = false;
 	let loading = false;
@@ -68,7 +78,12 @@
 	let dropdownOpen = false;
 	let isActiveDropdownOpen = false;
 	let areas: areaType[] = [];
+	let seatServices: serviceType[] = [];
+	let showModal = false;
 	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
+
+	let responseServices: serviceType[];
+
 	let newArea: areaType = {
 		area: '',
 		quantity: 0
@@ -77,6 +92,22 @@
 		await getData(data.supabase);
 		await getSeatDetail();
 	});
+
+	onMount(async () => {
+		const response = await data.supabase
+			.from('seat_services')
+			.select('*, seat_services_languages(*)');
+		seatServices = response.data.map((service) => ({
+			serviceId: service.id,
+			id: service.id,
+			title:
+				service.seat_services_languages.find((lang) => lang.language === 'en')?.title || 'No title',
+			selected: false,
+			quantity: 0,
+			maxFreeCount: 0,
+			unlimitedFree: false
+		}));
+	});
 	async function getSeatDetail() {
 		await data.supabase
 			.from('seat_layout')
@@ -84,6 +115,7 @@
 			.eq('id', $page.params.reservationId)
 			.single()
 			.then((response: any) => {
+				responseServices = response.data.services;
 				seatInfoData.exhibition = response.data.exhibition;
 				seatInfoData.name = response.data.name;
 				seatInfoData.isActive = response.data.is_active;
@@ -96,20 +128,58 @@
 				if (response.data.areas) {
 					areas = JSON.parse(response.data.areas);
 				}
+				if (response.data.services) {
+					const responseData = JSON.parse(response.data.services);
+					updateServicesWithResponse(responseData);
+				}
 			});
+		console.log(responseServices);
 	}
-	function addNewArea() {
-		areas.push(newArea);
-		areas = [...areas];
-		newArea = {
-			area: '',
-			quantity: 0
-		};
+
+	// get the current services that exist in db
+	function updateServicesWithResponse(responseData) {
+		responseData.forEach((responseService) => {
+			const serviceIndex = seatServices.findIndex(
+				(service) => service.serviceId === responseService.serviceId
+			);
+			if (serviceIndex !== -1) {
+				seatServices[serviceIndex] = {
+					...seatServices[serviceIndex],
+					...responseService
+				};
+			}
+		});
 	}
-	function deleteArea(index: number) {
-		areas.splice(index, 1);
-		areas = [...areas];
-	}
+
+	const handleCheckboxChange = (serviceId, checked) => {
+		const index = seatServices.findIndex((service) => service.id === serviceId);
+		if (index !== -1) {
+			seatServices[index].selected = checked;
+		}
+	};
+	// for getting modal data
+	const handleInputChange = (serviceId, field, value) => {
+		const index = seatServices.findIndex((service) => service.id === serviceId);
+		if (index !== -1) {
+			// Convert value to a number if it's one of the numeric fields
+			if (field === 'maxFreeCount' || field === 'maxQuantityPerUser') {
+				seatServices[index][field] = Number(value);
+			} else {
+				seatServices[index][field] = value;
+			}
+		}
+	};
+
+	// Add a new function to handle changes to the 'unlimitedFree' checkbox
+	const handleUnlimitedFreeChange = (serviceId, checked) => {
+		const index = seatServices.findIndex((service) => service.id === serviceId);
+		if (index !== -1) {
+			seatServices[index].unlimitedFree = checked;
+			if (checked) {
+				seatServices[index].maxFreeCount = 0;
+			}
+		}
+	};
 
 	async function updatedSeat() {
 		formSubmitted = true;
@@ -138,6 +208,16 @@
 					excel_preview_url = response.data.path;
 				});
 		}
+
+		const selectedServices = seatServices
+			.filter((service) => service.selected)
+			.map((service) => ({
+				serviceId: service.serviceId,
+				maxFreeCount: Number(service.maxFreeCount),
+				maxQuantityPerUser: Number(service.maxQuantityPerUser),
+				unlimitedFree: service.unlimitedFree
+			}));
+
 		await supabase
 			.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
@@ -145,6 +225,7 @@
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
+					services: JSON.stringify(seatServices),
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
 					id: $page.params.reservationId,
@@ -182,6 +263,19 @@
 					duration: 1000
 				});
 			});
+	}
+
+	function addNewArea() {
+		areas.push(newArea);
+		areas = [...areas];
+		newArea = {
+			area: '',
+			quantity: 0
+		};
+	}
+	function deleteArea(index: number) {
+		areas.splice(index, 1);
+		areas = [...areas];
 	}
 	function addPrivacyPolicyLang(description: any, lang: string) {
 		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
@@ -231,7 +325,6 @@
 		quantity: 0,
 		index: 0
 	};
-
 	function openEditModal(index: number) {
 		isOpenEditModal = true;
 		Object.assign(selectedEditArea, areas[index]);
@@ -378,6 +471,57 @@
 						/></ButtonGroup
 					>
 					<br />
+					<!-- show modal  -->
+					<div class="col-span-3">
+						<Button on:click={() => (showModal = true)}>Add service</Button>
+						<Modal title="Update Services" bind:open={showModal} autoclose>
+							<ul class="list-disc pl-5 space-y-2">
+								{#each seatServices as service}
+									<li class="flex items-center space-x-2">
+										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
+											{service.title}
+										</Checkbox>
+
+										<Input
+											type="number"
+											placeholder="Max Quantity Per User"
+											bind:value={service.maxQuantityPerUser}
+											on:input={(e) =>
+												handleInputChange(service.id, 'maxQuantityPerUser', e.target.value)}
+											disabled={!service.selected}
+										/>
+
+										<ButtonGroup class="w-full" size="sm">
+											<InputAddon>
+												<div class="flex items-center">
+													<!-- {responseServices?.find((x) => x.serviceId === service.serviceId)
+														?.unlimitedFree} -->
+
+													<Checkbox
+														bind:value={service.unlimitedFree}
+														class="cursor-pointer"
+														on:change={(e) =>
+															handleUnlimitedFreeChange(service.id, e.target.checked)}
+														disabled={!service.selected}
+													/>
+
+													<p>Unlimited</p>
+												</div>
+											</InputAddon>
+
+											<Input
+												id="input-addon-sm"
+												placeholder="max free quantity for a user"
+												bind:value={service.maxFreeCount}
+												disabled={!service.selected || service.unlimitedFree}
+											/>
+										</ButtonGroup>
+									</li>
+								{/each}
+							</ul>
+						</Modal>
+					</div>
+
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
 							<p>upload image for sheet preview</p>

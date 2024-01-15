@@ -99,6 +99,7 @@
 	}
 
 	// for getting modal data
+
 	const handleInputChange = (serviceId, field, value) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
