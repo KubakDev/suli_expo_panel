@@ -18,6 +18,8 @@
 	let loading = false;
 	let languages = Object.values(LanguageEnum);
 	let discountedPrice = 0;
+	let total_price = 0;
+
 	interface reservationType {
 		id?: number;
 		exhibition_id?: number;
@@ -61,6 +63,8 @@
 			.select('*,company(*),exhibition(*,exhibition_languages(*))')
 			.eq('object_id', objectId)
 			.then(async (Response) => {
+				console.log(Response.data[0]);
+				total_price = Response?.data[0]?.total_price;
 				reservations = Response.data as reservationType[];
 				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
 				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
@@ -117,6 +121,7 @@
 		return result;
 	}
 	function addNotificationData(reserveData: any, lang: LanguageEnum) {
+		// console.log(reservedSeatData);
 		return {
 			message: statusMessage(reserveData.status!, lang),
 			language: lang,
@@ -197,10 +202,11 @@
 		isEditing = !isEditing;
 	}
 
-	let totalPrice = 0;
+	let totalAreaPrice = 0;
 	let totalArea = 0;
 	let totalRawPrice = 0;
 	let pricePerMeter = 0;
+
 	let reservedAreas: any = [];
 
 	async function exportContract(reservationData: reservationType, lang: LanguageEnum) {
@@ -218,8 +224,8 @@
 			pricePerMeter,
 			totalArea,
 			totalRawPrice,
-			totalPrice,
-			totalPriceText: convertNumberToWord(totalPrice, lang),
+			totalAreaPrice,
+			totalPriceText: convertNumberToWord(totalAreaPrice, lang),
 			totalRawPriceText: convertNumberToWord(totalRawPrice, lang),
 			totalAreaText: convertNumberToWord(totalArea, lang)
 		};
@@ -255,14 +261,14 @@
 				area: data.area,
 				quantity: data.quantity,
 				pricePerMeter: pricePerMeter,
-				totalPrice: data.quantity * pricePerMeter * +data.area,
+				totalAreaPrice: data.quantity * pricePerMeter * +data.area,
 				discountedPrice: +data.area * (discountedPrice ?? pricePerMeter)
 			};
 			return result;
 		});
 		reservedAreas.map((seatArea: any) => {
 			totalArea += +seatArea.area * +seatArea.quantity;
-			totalPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
+			totalAreaPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
 			totalRawPrice += +seatArea.quantity * pricePerMeter * +seatArea.area;
 		});
 		loadedTotalPrice = true;
@@ -503,6 +509,12 @@
 										</div>
 									{/each}
 								{/if}
+
+								<div
+									class="flex flex-col border-t-2 border-[#696868] border-dashed justify-center items-center"
+								>
+									{totalAreaPrice}
+								</div>
 							</td>
 							<td>
 								<div>
@@ -511,7 +523,9 @@
 											<div
 												class="flex flex-col border-b-2 border-[#696868] border-dashed justify-center items-center"
 											>
-												<h3>service name : {getServices(service)?.serviceDetail?.title}</h3>
+												<h3>
+													service name : {getServices(service)?.serviceDetail?.languages[0]?.title}
+												</h3>
 												<h3>quantity : {getServices(service)?.quantity}</h3>
 												<h3>price : {getServices(service)?.serviceDetail?.price}</h3>
 												<h3>discount: {getServices(service)?.serviceDetail?.discount}</h3>
@@ -636,7 +650,7 @@
 									<p
 										class=" text-start text-md text-[#e1b168] md:text-xl font-medium justify-center flex my-2"
 									>
-										{totalPrice}$
+										{total_price}$
 									</p>
 								</div>
 							</td>
