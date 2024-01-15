@@ -43,6 +43,7 @@
 		quantity: number;
 	}
 	interface serviceType {
+		id: number;
 		serviceId: number;
 		maxFreeCount: number;
 		maxQuantityPerUser: number;
