@@ -150,7 +150,9 @@
 			if (serviceIndex !== -1) {
 				seatServices[serviceIndex] = {
 					...seatServices[serviceIndex],
-					...responseService
+					...responseService,
+					selected: true,
+					unlimitedFree: responseService.unlimitedFree ?? seatServices[serviceIndex].unlimitedFree // Set unlimitedFree based on the database value, defaulting to the existing value in seatServices
 				};
 			}
 		});
@@ -188,18 +190,24 @@
 
 	// Add new  service to  service list
 	function addSelectedServices() {
-		// Filter out newly selected services
-		const newSelectedServices = seatServices.filter((service) => service.selected);
-
-		// Combine with existing services
-		const combinedServices = [...existingServices, ...newSelectedServices];
-
-		// Reset the selected state of services
-		seatServices.forEach((service) => (service.selected = false));
-
-		// Update the existingServices array
-		existingServices = combinedServices;
+		seatServices.forEach((service) => {
+			if (service.selected) {
+				const existingServiceIndex = existingServices.findIndex(
+					(es) => es.serviceId === service.serviceId
+				);
+				if (existingServiceIndex !== -1) {
+					// Update the existing service instead of adding it as a new service
+					existingServices[existingServiceIndex] = { ...service };
+				} else {
+					// It's a new service, add it to existingServices
+					existingServices.push(service);
+				}
+			}
+			// Reset the selected state of services
+			service.selected = false;
+		});
 	}
+
 	function prepareDataForUpdate() {
 		// Serialize the existingServices into a JSON string
 		const servicesData = JSON.stringify(
@@ -244,6 +252,8 @@
 		//send new service
 		addSelectedServices();
 		const servicesData = prepareDataForUpdate();
+
+		console.log(servicesData);
 		await supabase
 			.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
@@ -504,7 +514,10 @@
 							<ul class="list-disc pl-5 space-y-2">
 								{#each seatServices as service}
 									<li class="flex items-center space-x-2">
-										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
+										<Checkbox
+											checked={service.selected}
+											on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}
+										>
 											{service.title}
 										</Checkbox>
 
@@ -521,6 +534,7 @@
 											<InputAddon>
 												<div class="flex items-center">
 													<Checkbox
+														checked={service.unlimitedFree}
 														bind:value={service.unlimitedFree}
 														class="cursor-pointer"
 														on:change={(e) =>
