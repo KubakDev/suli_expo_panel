@@ -162,8 +162,16 @@
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			seatServices[index].selected = checked;
+
+			// If the service is deselected, reset its fields
+			if (!checked) {
+				seatServices[index].maxFreeCount = 0;
+				seatServices[index].maxQuantityPerUser = 0;
+				seatServices[index].unlimitedFree = false;
+			}
 		}
 	};
+
 	// for getting modal data
 	const handleInputChange = (serviceId: number, field: string, value: number) => {
 		const index = seatServices?.findIndex((service) => service.id === serviceId);
@@ -189,22 +197,35 @@
 	};
 
 	// Add new  service to  service list
+	// function addSelectedServices() {
+	// 	seatServices.forEach((service) => {
+	// 		if (service.selected) {
+	// 			const existingServiceIndex = existingServices.findIndex(
+	// 				(es) => es.serviceId === service.serviceId
+	// 			);
+	// 			if (existingServiceIndex !== -1) {
+	// 				// Update the existing service instead of adding it as a new service
+	// 				existingServices[existingServiceIndex] = { ...service };
+	// 			} else {
+	// 				// It's a new service, add it to existingServices
+	// 				existingServices.push(service);
+	// 			}
+	// 		}
+	// 		// Reset the selected state of services
+	// 		service.selected = false;
+	// 	});
+	// }
+
 	function addSelectedServices() {
-		seatServices.forEach((service) => {
-			if (service.selected) {
-				const existingServiceIndex = existingServices.findIndex(
-					(es) => es.serviceId === service.serviceId
-				);
-				if (existingServiceIndex !== -1) {
-					// Update the existing service instead of adding it as a new service
-					existingServices[existingServiceIndex] = { ...service };
-				} else {
-					// It's a new service, add it to existingServices
-					existingServices.push(service);
-				}
-			}
-			// Reset the selected state of services
-			service.selected = false;
+		const selectedServices = seatServices.filter((service) => service.selected);
+
+		existingServices = selectedServices.map((service) => {
+			return {
+				serviceId: service.serviceId,
+				maxFreeCount: service.maxFreeCount,
+				maxQuantityPerUser: service.maxQuantityPerUser,
+				unlimitedFree: service.unlimitedFree
+			};
 		});
 	}
 
