@@ -196,26 +196,6 @@
 		}
 	};
 
-	// Add new  service to  service list
-	// function addSelectedServices() {
-	// 	seatServices.forEach((service) => {
-	// 		if (service.selected) {
-	// 			const existingServiceIndex = existingServices.findIndex(
-	// 				(es) => es.serviceId === service.serviceId
-	// 			);
-	// 			if (existingServiceIndex !== -1) {
-	// 				// Update the existing service instead of adding it as a new service
-	// 				existingServices[existingServiceIndex] = { ...service };
-	// 			} else {
-	// 				// It's a new service, add it to existingServices
-	// 				existingServices.push(service);
-	// 			}
-	// 		}
-	// 		// Reset the selected state of services
-	// 		service.selected = false;
-	// 	});
-	// }
-
 	function addSelectedServices() {
 		const selectedServices = seatServices.filter((service) => service.selected);
 
@@ -274,7 +254,7 @@
 		addSelectedServices();
 		const servicesData = prepareDataForUpdate();
 
-		console.log(servicesData);
+		// console.log(servicesData);
 		await supabase
 			.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
