@@ -83,20 +83,19 @@
 	let showModal = false;
 	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
 
-	let responseServices: serviceType[];
+	let existingServices: serviceType[] = [];
 
 	let newArea: areaType = {
 		area: '',
 		quantity: 0
 	};
 
-	let newServices: serviceType[] = [];
-
 	onMount(async () => {
 		await getData(data.supabase);
 		await getSeatDetail();
 	});
 
+	// return all services as Array of objects
 	onMount(async () => {
 		const response = await data.supabase
 			.from('seat_services')
@@ -111,31 +110,10 @@
 			maxFreeCount: 0,
 			unlimitedFree: false
 		}));
+
+		// console.log(seatServices);
 	});
 
-	// Function to load all services
-	// async function loadAllServices() {
-	// 	const response = await data.supabase.from('services').select('*');
-
-	// 	seatServices = response.data.map((service) => ({
-	// 		selected: false,
-	// 		quantity: 0,
-	// 		maxFreeCount: 0,
-	// 		unlimitedFree: false
-	// 	}));
-	// }
-
-	// Function to load services for the current exhibition
-	async function loadExhibitionServices() {
-		// ... existing logic to load services for the exhibition ...
-		// Call 'updateServicesWithResponse' here if needed
-	}
-
-	// Call these functions on mount to initialize data
-	onMount(async () => {
-		// await loadAllServices();
-		await loadExhibitionServices();
-	});
 	async function getSeatDetail() {
 		await data.supabase
 			.from('seat_layout')
@@ -143,7 +121,6 @@
 			.eq('id', $page.params.reservationId)
 			.single()
 			.then((response: any) => {
-				responseServices = response.data.services;
 				seatInfoData.exhibition = response.data.exhibition;
 				seatInfoData.name = response.data.name;
 				seatInfoData.isActive = response.data.is_active;
@@ -159,13 +136,13 @@
 				if (response.data.services) {
 					const responseData = JSON.parse(response.data.services);
 					updateServicesWithResponse(responseData);
+					existingServices = JSON.parse(response.data.services);
 				}
 			});
-		// console.log(responseServices);
 	}
 
 	// get the current services that exist in db
-	function updateServicesWithResponse(responseData) {
+	function updateServicesWithResponse(responseData: any) {
 		responseData.forEach((responseService) => {
 			const serviceIndex = seatServices.findIndex(
 				(service) => service.serviceId === responseService.serviceId
@@ -179,15 +156,15 @@
 		});
 	}
 
-	const handleCheckboxChange = (serviceId, checked) => {
+	const handleCheckboxChange = (serviceId: number, checked: boolean) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			seatServices[index].selected = checked;
 		}
 	};
 	// for getting modal data
-	const handleInputChange = (serviceId, field, value) => {
-		const index = seatServices.findIndex((service) => service.id === serviceId);
+	const handleInputChange = (serviceId: number, field: string, value: number) => {
+		const index = seatServices?.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			// Convert value to a number if it's one of the numeric fields
 			if (field === 'maxFreeCount' || field === 'maxQuantityPerUser') {
@@ -199,7 +176,7 @@
 	};
 
 	// Add a new function to handle changes to the 'unlimitedFree' checkbox
-	const handleUnlimitedFreeChange = (serviceId, checked) => {
+	const handleUnlimitedFreeChange = (serviceId: number, checked: boolean) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			seatServices[index].unlimitedFree = checked;
@@ -208,6 +185,33 @@
 			}
 		}
 	};
+
+	// Add new  service to  service list
+	function addSelectedServices() {
+		// Filter out newly selected services
+		const newSelectedServices = seatServices.filter((service) => service.selected);
+
+		// Combine with existing services
+		const combinedServices = [...existingServices, ...newSelectedServices];
+
+		// Reset the selected state of services
+		seatServices.forEach((service) => (service.selected = false));
+
+		// Update the existingServices array
+		existingServices = combinedServices;
+	}
+	function prepareDataForUpdate() {
+		// Serialize the existingServices into a JSON string
+		const servicesData = JSON.stringify(
+			existingServices.map((service) => ({
+				serviceId: service.serviceId,
+				maxFreeCount: service.maxFreeCount,
+				maxQuantityPerUser: service.maxQuantityPerUser,
+				unlimitedFree: service.unlimitedFree
+			}))
+		);
+		return servicesData;
+	}
 
 	async function updatedSeat() {
 		formSubmitted = true;
@@ -237,31 +241,9 @@
 				});
 		}
 
-		//////////////////////////
-
-		// Deserialize existing services to an array of objects
-		const existingServices = JSON.parse(responseServices);
-
-		// Filter out newly selected services that are not in existing services
-		const newSelectedServices = seatServices.filter(
-			(service) =>
-				service.selected && !existingServices.some((es) => es.serviceId === service.serviceId)
-		);
-
-		// Combine old and new services
-		const combinedServices = [...existingServices, ...newSelectedServices];
-
-		// Serialize the combined services into a JSON string
-		const lastServicesData = JSON.stringify(
-			combinedServices.map((service) => {
-				return {
-					serviceId: service.serviceId
-				};
-			})
-		);
-		//////////////////////////
-
-		console.log(lastServicesData);
+		//send new service
+		addSelectedServices();
+		const servicesData = prepareDataForUpdate();
 		await supabase
 			.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
@@ -269,7 +251,7 @@
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
-					services: lastServicesData,
+					services: servicesData,
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
 					id: $page.params.reservationId,
@@ -538,9 +520,6 @@
 										<ButtonGroup class="w-full" size="sm">
 											<InputAddon>
 												<div class="flex items-center">
-													<!-- {responseServices?.find((x) => x.serviceId === service.serviceId)
-														?.unlimitedFree} -->
-
 													<Checkbox
 														bind:value={service.unlimitedFree}
 														class="cursor-pointer"
