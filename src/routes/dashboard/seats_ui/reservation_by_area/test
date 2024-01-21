@@ -42,11 +42,18 @@
 	}
 
 	interface serviceType {
-		id: number;
 		serviceId: number;
-		maxFreeCount: number;
-		maxQuantityPerUser: number;
-		unlimitedFree: boolean;
+		quantity: number;
+		price: number;
+		description: string;
+		totalPrice: number;
+		serviceDetail: {
+			discount: number;
+			price: number;
+			quantity: number;
+			title: string;
+			description: string;
+		};
 	}
 
 	let seatInfoData: {
@@ -73,6 +80,7 @@
 	let dropdownOpen = false;
 	let isActiveDropdownOpen = false;
 	let areas: areaType[] = [];
+	let services: serviceType[] = [];
 
 	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
 	let excelFilePreviewSelected: File;
@@ -81,7 +89,6 @@
 		area: '',
 		quantity: 0
 	};
-
 	onMount(async () => {
 		await getData(data.supabase);
 	});
@@ -100,18 +107,6 @@
 
 	// for getting modal data
 
-	const handleInputChange = (serviceId, field, value) => {
-		const index = seatServices.findIndex((service) => service.id === serviceId);
-		if (index !== -1) {
-			// Convert value to a number if it's one of the numeric fields
-			if (field === 'maxFreeCount' || field === 'maxQuantityPerUser') {
-				seatServices[index][field] = Number(value);
-			} else {
-				seatServices[index][field] = value;
-			}
-		}
-	};
-
 	const handleCheckboxChange = (serviceId, checked) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
@@ -119,18 +114,15 @@
 		}
 	};
 
-	// Add a new function to handle changes to the 'unlimitedFree' checkbox
-	const handleUnlimitedFreeChange = (serviceId, checked) => {
+	const handleInputChange = (serviceId, field, value) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
-			seatServices[index].unlimitedFree = checked;
-			if (checked) {
-				seatServices[index].maxFreeCount = 0;
-			}
+			seatServices[index][field] = value;
 		}
 	};
 
 	async function addNewSeat() {
+		console.log('/////////');
 		formSubmitted = true;
 		const supabase = data.supabase;
 
@@ -146,6 +138,15 @@
 		}
 		const areasArray = JSON.stringify(areas);
 
+		const selectedServices = seatServices
+			.filter((service) => service.selected)
+			.map((service) => ({
+				serviceId: service.id,
+				quantity: service.quantity,
+				description: service.inputValue
+			}));
+		const servicesArray = JSON.stringify(selectedServices);
+
 		let excel_preview_url = '';
 		if (excelFilePreviewSelected) {
 			const randomText = getRandomTextNumber();
@@ -160,23 +161,14 @@
 				});
 		}
 
-		const selectedServices = seatServices
-			.filter((service) => service.selected)
-			.map((service) => ({
-				serviceId: service.serviceId,
-				maxFreeCount: Number(service.maxFreeCount),
-				maxQuantityPerUser: Number(service.maxQuantityPerUser),
-				unlimitedFree: service.unlimitedFree
-			}));
-
 		await supabase
 			.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {
-					services: selectedServices,
 					name: seatInfoData.name,
 					is_active: seatInfoData.isActive,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
+					services: `${servicesArray}`,
 					type: SeatsLayoutTypeEnum.AREAFIELDS,
 					price_per_meter: seatInfoData.price_per_meter,
 					discounted_price: seatInfoData.discounted_price,
@@ -259,23 +251,23 @@
 
 	// return services
 
+	let seatServices: any = [];
 	let showModal = false;
-	let seatServices: serviceType[] = [];
 
 	onMount(async () => {
 		const response = await data.supabase
 			.from('seat_services')
 			.select('*, seat_services_languages(*)');
-		seatServices = response.data.map((service) => ({
-			serviceId: service.id,
-			id: service.id,
-			title:
-				service.seat_services_languages.find((lang) => lang.language === 'en')?.title || 'No title',
-			selected: false,
-			quantity: 0,
-			maxFreeCount: 0,
-			unlimitedFree: false
-		}));
+		seatServices = response.data.map((service) => {
+			const englishTitle = service.seat_services_languages.find(
+				(lang) => lang.language === 'en'
+			)?.title;
+			return {
+				id: service.id,
+				title: englishTitle || 'No title',
+				inputValue: ''
+			};
+		});
 	});
 </script>
 
@@ -386,54 +378,6 @@
 							bind:value={seatInfoData.extra_discount}
 						/></ButtonGroup
 					>
-
-					<br />
-					<!-- show modal  -->
-					<div class="col-span-3">
-						<Button on:click={() => (showModal = true)}>Add service</Button>
-						<Modal title="List of Services" bind:open={showModal} autoclose>
-							<ul class="list-disc pl-5 space-y-2">
-								{#each seatServices as service}
-									<li class="flex items-center space-x-2">
-										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
-											{service.title}
-										</Checkbox>
-
-										<Input
-											type="number"
-											placeholder="Max Quantity Per User"
-											bind:value={service.maxQuantityPerUser}
-											on:input={(e) =>
-												handleInputChange(service.id, 'maxQuantityPerUser', e.target.value)}
-											disabled={!service.selected}
-										/>
-
-										<ButtonGroup class="w-full" size="sm">
-											<InputAddon>
-												<div class="flex items-center">
-													<Checkbox
-														bind:value={service.unlimitedFree}
-														class="cursor-pointer"
-														on:change={(e) =>
-															handleUnlimitedFreeChange(service.id, e.target.checked)}
-														disabled={!service.selected}
-													/>
-													<p>Unlimited</p>
-												</div>
-											</InputAddon>
-											<Input
-												id="input-addon-sm"
-												placeholder="max free quantity for a user"
-												bind:value={service.maxFreeCount}
-												disabled={!service.selected || service.unlimitedFree}
-											/>
-										</ButtonGroup>
-									</li>
-								{/each}
-							</ul>
-						</Modal>
-					</div>
-
 					<br />
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
@@ -495,6 +439,35 @@
 							placeholder="add quantity"
 							bind:value={newArea.quantity}
 						/>
+					</div>
+
+					<!-- show modal  -->
+					<div class="mt-7">
+						<Button on:click={() => (showModal = true)}>Add service</Button>
+						<Modal title="List of Services" bind:open={showModal} autoclose>
+							<ul class="list-disc pl-5 space-y-2">
+								{#each seatServices as service}
+									<li class="flex items-center space-x-2">
+										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
+											{service.title}
+										</Checkbox>
+										<Input
+											type="text"
+											placeholder="Enter Quantity"
+											class="input input-bordered"
+											bind:value={service.quantity}
+											on:input={(e) => handleInputChange(service.id, 'quantity', e.target.value)}
+										/>
+										<Textarea
+											placeholder="Enter Description"
+											class="input input-bordered"
+											bind:value={service.inputValue}
+											on:input={(e) => handleInputChange(service.id, 'inputValue', e.target.value)}
+										/>
+									</li>
+								{/each}
+							</ul>
+						</Modal>
 					</div>
 
 					<div class="flex items-end">

@@ -18,6 +18,8 @@
 	let loading = false;
 	let languages = Object.values(LanguageEnum);
 	let discountedPrice = 0;
+	let total_price = 0;
+
 	interface reservationType {
 		id?: number;
 		exhibition_id?: number;
@@ -61,6 +63,7 @@
 			.select('*,company(*),exhibition(*,exhibition_languages(*))')
 			.eq('object_id', objectId)
 			.then(async (Response) => {
+				total_price = Response?.data[0]?.total_price;
 				reservations = Response.data as reservationType[];
 				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
 				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
@@ -78,10 +81,10 @@
 			.select('*,seat_layout(*)', { count: 'exact' })
 			.eq('id', reservations[0]?.exhibition_id)
 			.single();
-		if (response?.data?.seat_layout) {
-			seatLayout = response?.data?.seat_layout;
-		}
+
+		seatLayout = response?.data?.seat_layout;
 	}
+
 	function statusMessage(status: ReservationStatusEnum, lang: LanguageEnum) {
 		let result = '';
 		if (lang == LanguageEnum.EN) {
@@ -142,7 +145,18 @@
 		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
 
+		// Fetch the active seat data
+		let seatLayoutDataResponse = await data.supabase
+			.from('seat_layout')
+			.select('*')
+			.eq('is_active', true);
+
+		let seatLayoutData = seatLayoutDataResponse.data;
+
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
+			// call to update quantity
+			await updateServiceQuantity(seatLayoutData);
+
 			let x = await data.supabase
 				.from('seat_reservation')
 				.update({ status: ReservationStatusEnum.REJECT })
@@ -191,16 +205,64 @@
 				.then((response) => {});
 		});
 	}
+	////////////////////////////////////////////////////////////////////////////
+	// update quantity
+
+	async function updateServiceQuantity(seatLayoutData: any) {
+		console.log('All services for this seat:', seatLayoutData);
+		console.log('Reserved services:', reservations);
+
+		let firstElement = seatLayoutData[0];
+		let services =
+			typeof firstElement.services === 'string'
+				? JSON.parse(firstElement.services)
+				: firstElement.services;
+
+		reservations.forEach((reserved) => {
+			// Assuming each reserved object contains a services array
+			reserved.services.forEach((reservedService) => {
+				// Ensure reservedService is an object and has serviceId property
+				if (typeof reservedService === 'string') {
+					reservedService = JSON.parse(reservedService);
+				}
+
+				let reservedServiceId = reservedService.serviceId;
+				let reservedQuantity = parseInt(reservedService.quantity, 10);
+				if (reservedServiceId !== undefined) {
+					services.forEach((service) => {
+						console.log('Comparing:', service.serviceId, 'with', reservedServiceId);
+						if (service.serviceId === reservedServiceId) {
+							// console.log('Before update:', service.maxQuantityPerUser);
+
+							service.maxQuantityPerUser = Math.max(
+								0,
+								service.maxQuantityPerUser - reservedQuantity
+							);
+							// console.log('After update:', service.maxQuantityPerUser);
+						}
+					});
+				}
+			});
+		});
+
+		let updateData = { services: JSON.stringify(services) };
+
+		await data.supabase.from('seat_layout').update(updateData).eq('id', firstElement.id);
+	}
+
+	////////////////////////////////////////////////////
+
 	// allow to update status
 	let isEditing = false;
 	function toggleEdit() {
 		isEditing = !isEditing;
 	}
 
-	let totalPrice = 0;
+	let totalAreaPrice = 0;
 	let totalArea = 0;
 	let totalRawPrice = 0;
 	let pricePerMeter = 0;
+
 	let reservedAreas: any = [];
 
 	async function exportContract(reservationData: reservationType, lang: LanguageEnum) {
@@ -218,8 +280,8 @@
 			pricePerMeter,
 			totalArea,
 			totalRawPrice,
-			totalPrice,
-			totalPriceText: convertNumberToWord(totalPrice, lang),
+			totalAreaPrice,
+			totalPriceText: convertNumberToWord(totalAreaPrice, lang),
 			totalRawPriceText: convertNumberToWord(totalRawPrice, lang),
 			totalAreaText: convertNumberToWord(totalArea, lang)
 		};
@@ -255,14 +317,14 @@
 				area: data.area,
 				quantity: data.quantity,
 				pricePerMeter: pricePerMeter,
-				totalPrice: data.quantity * pricePerMeter * +data.area,
+				totalAreaPrice: data.quantity * pricePerMeter * +data.area,
 				discountedPrice: +data.area * (discountedPrice ?? pricePerMeter)
 			};
 			return result;
 		});
 		reservedAreas.map((seatArea: any) => {
 			totalArea += +seatArea.area * +seatArea.quantity;
-			totalPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
+			totalAreaPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
 			totalRawPrice += +seatArea.quantity * pricePerMeter * +seatArea.area;
 		});
 		loadedTotalPrice = true;
@@ -503,6 +565,12 @@
 										</div>
 									{/each}
 								{/if}
+
+								<div
+									class="flex flex-col border-t-2 border-[#696868] border-dashed justify-center items-center"
+								>
+									{totalAreaPrice}
+								</div>
 							</td>
 							<td>
 								<div>
@@ -511,7 +579,9 @@
 											<div
 												class="flex flex-col border-b-2 border-[#696868] border-dashed justify-center items-center"
 											>
-												<h3>service name : {getServices(service)?.serviceDetail?.title}</h3>
+												<h3>
+													service name : {getServices(service)?.serviceDetail?.languages[0]?.title}
+												</h3>
 												<h3>quantity : {getServices(service)?.quantity}</h3>
 												<h3>price : {getServices(service)?.serviceDetail?.price}</h3>
 												<h3>discount: {getServices(service)?.serviceDetail?.discount}</h3>
@@ -636,7 +706,7 @@
 									<p
 										class=" text-start text-md text-[#e1b168] md:text-xl font-medium justify-center flex my-2"
 									>
-										{totalPrice}$
+										{total_price}$
 									</p>
 								</div>
 							</td>
