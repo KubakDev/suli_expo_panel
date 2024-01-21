@@ -81,10 +81,10 @@
 			.select('*,seat_layout(*)', { count: 'exact' })
 			.eq('id', reservations[0]?.exhibition_id)
 			.single();
-		if (response?.data?.seat_layout) {
-			seatLayout = response?.data?.seat_layout;
-		}
+
+		seatLayout = response?.data?.seat_layout;
 	}
+
 	function statusMessage(status: ReservationStatusEnum, lang: LanguageEnum) {
 		let result = '';
 		if (lang == LanguageEnum.EN) {
@@ -120,7 +120,6 @@
 		return result;
 	}
 	function addNotificationData(reserveData: any, lang: LanguageEnum) {
-		// console.log(reservedSeatData);
 		return {
 			message: statusMessage(reserveData.status!, lang),
 			language: lang,
@@ -146,7 +145,18 @@
 		loading = true;
 		if (itemID == undefined || selectedStatus == undefined) return;
 
+		// Fetch the active seat data
+		let seatLayoutDataResponse = await data.supabase
+			.from('seat_layout')
+			.select('*')
+			.eq('is_active', true);
+
+		let seatLayoutData = seatLayoutDataResponse.data;
+
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
+			// call to update quantity
+			await updateServiceQuantity(seatLayoutData);
+
 			let x = await data.supabase
 				.from('seat_reservation')
 				.update({ status: ReservationStatusEnum.REJECT })
@@ -195,6 +205,53 @@
 				.then((response) => {});
 		});
 	}
+	////////////////////////////////////////////////////////////////////////////
+	// update quantity
+
+	async function updateServiceQuantity(seatLayoutData: any) {
+		console.log('All services for this seat:', seatLayoutData);
+		console.log('Reserved services:', reservations);
+
+		let firstElement = seatLayoutData[0];
+		let services =
+			typeof firstElement.services === 'string'
+				? JSON.parse(firstElement.services)
+				: firstElement.services;
+
+		reservations.forEach((reserved) => {
+			// Assuming each reserved object contains a services array
+			reserved.services.forEach((reservedService) => {
+				// Ensure reservedService is an object and has serviceId property
+				if (typeof reservedService === 'string') {
+					reservedService = JSON.parse(reservedService);
+				}
+
+				let reservedServiceId = reservedService.serviceId;
+				let reservedQuantity = parseInt(reservedService.quantity, 10);
+				if (reservedServiceId !== undefined) {
+					services.forEach((service) => {
+						console.log('Comparing:', service.serviceId, 'with', reservedServiceId);
+						if (service.serviceId === reservedServiceId) {
+							// console.log('Before update:', service.maxQuantityPerUser);
+
+							service.maxQuantityPerUser = Math.max(
+								0,
+								service.maxQuantityPerUser - reservedQuantity
+							);
+							// console.log('After update:', service.maxQuantityPerUser);
+						}
+					});
+				}
+			});
+		});
+
+		let updateData = { services: JSON.stringify(services) };
+
+		await data.supabase.from('seat_layout').update(updateData).eq('id', firstElement.id);
+	}
+
+	////////////////////////////////////////////////////
+
 	// allow to update status
 	let isEditing = false;
 	function toggleEdit() {
