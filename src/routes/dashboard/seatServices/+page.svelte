@@ -43,18 +43,15 @@
 	}
 
 	// delete data
-	// async function handleDelete(seatServicesId: any) {
-	// 	try {
-	// 		await deleteSeatService(seatServicesId, data.supabase);
-	// 		// alert('seatServices deleted successfully!');
-	// 		if (currentPage > totalPages) {
-	// 			currentPage = totalPages;
-	// 		}
-	// 		await fetchData();
-	// 	} catch (error) {
-	//
-	// 	}
-	// }
+	async function handleDelete(seatServicesId: any) {
+		try {
+			await deleteSeatService(seatServicesId, data.supabase);
+			if (currentPage > totalPages) {
+				currentPage = totalPages;
+			}
+			await fetchData();
+		} catch (error) {}
+	}
 
 	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
@@ -87,7 +84,7 @@
 	<!-- table data -->
 	<TableComponent
 		{calculateIndex}
-		handleDelete=""
+		{handleDelete}
 		pageName="seatServices"
 		data={$seatServices}
 		{columnTitle}
