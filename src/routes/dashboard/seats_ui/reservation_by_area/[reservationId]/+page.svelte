@@ -99,7 +99,9 @@
 	onMount(async () => {
 		const response = await data.supabase
 			.from('seat_services')
-			.select('*, seat_services_languages(*)');
+			.select('*, seat_services_languages(*)')
+			.order('position', { ascending: true });
+
 		seatServices = response.data.map((service) => ({
 			serviceId: service.id,
 			id: service.id,

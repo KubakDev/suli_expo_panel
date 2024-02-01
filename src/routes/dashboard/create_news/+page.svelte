@@ -87,16 +87,16 @@
 		for (let lang of newsDataLang) {
 			const title = lang.title.trim();
 			const shortDescription = lang.short_description.trim();
-			// const longDescription = lang.long_description.trim();
+			const longDescription = lang.long_description.trim();
 
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
-			// const isLongDescriptionEmpty = isEmpty(longDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
 
-			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
 				// All fields are non-empty for this language
 				hasDataForLanguage = true;
-				if (isTitleEmpty || isShortDescriptionEmpty) {
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;

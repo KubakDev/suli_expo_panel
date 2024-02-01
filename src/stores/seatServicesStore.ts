@@ -25,32 +25,20 @@ export const insertDataToSeatService = async (
 
 		return data;
 	} catch (error) {
-
 		throw error;
 	}
 };
 
 //Get all seat-services data
-export const getSeatServices = async (supabase: SupabaseClient, page: number, pageSize: number) => {
+export const getSeatServices = async (supabase: SupabaseClient) => {
 	try {
 		const { data, error } = await supabase
 			.from('seat_services')
 			.select('*,seat_services_languages(*)')
-			.range((page - 1) * pageSize, page * pageSize - 1)
-			.limit(pageSize)
-			.order('created_at', { ascending: false });
-
-		const { count } = await supabase.from('seat_services').select('count', { count: 'exact' });
-
-		const result = {
-			data: data,
-			count: count
-		};
+			.order('position', { ascending: true });
 
 		seatServices.set(data ?? []);
-		return result;
 	} catch (error) {
-
 		throw error;
 	}
 };
@@ -75,7 +63,6 @@ export const deleteSeatService = async (seatServicesId: number, supabase: Supaba
 
 		return data;
 	} catch (error) {
-
 		throw error;
 	}
 };
@@ -127,14 +114,12 @@ export const getSeatServicesByIds = async (supabase: SupabaseClient, ids: number
 			.in('id', ids);
 
 		if (error) {
-
 			throw error;
 		}
-		// 
+		//
 
 		return data;
 	} catch (error) {
-
 		throw error;
 	}
 };
