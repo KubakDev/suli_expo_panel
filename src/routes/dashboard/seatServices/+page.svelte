@@ -352,7 +352,7 @@
 									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {
-												goto(`/dashboard/service/${item.id}`);
+												goto(`/dashboard/seatServices/${item.id}`);
 											}}
 											class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 										>
