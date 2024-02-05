@@ -172,6 +172,7 @@
 					{#if isFormSubmitted && !seatServicesObject.quantity}
 						<p class="error-message">Please Enter quantity number</p>
 					{/if}
+					<span>If the quantity is 0 the service does not show up</span>
 				</Label>
 			</div>
 			<div class="col-span-1">

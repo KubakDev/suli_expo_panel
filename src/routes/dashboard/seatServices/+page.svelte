@@ -21,7 +21,7 @@
 
 	async function fetchData() {
 		await getSeatServices(data.supabase);
-		console.log($seatServices);
+		// console.log($seatServices);
 		items = $seatServices;
 		flag = false;
 	}
@@ -368,7 +368,7 @@
 											>
 										</button>
 
-										<DeleteModal itemIdToDelete={item.id} {handleDelete} />
+										<!-- <DeleteModal itemIdToDelete={item.id} {handleDelete} /> -->
 									</div>
 								</td>
 							</tr>

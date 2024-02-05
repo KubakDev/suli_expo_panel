@@ -26,8 +26,8 @@
 	});
 
 	const adjustCanvasSize = () => {
-		const width = activeSeat?.design.width;
-		const height = activeSeat?.design.height;
+		const width = activeSeat?.design?.width;
+		const height = activeSeat?.design?.height;
 		const aspectRatio = width / height;
 		const containerWidth = container?.offsetWidth;
 
@@ -51,8 +51,8 @@
 				selection: false
 			});
 			adjustCanvasSize();
-			const width = activeSeat?.design.width;
-			const height = activeSeat?.design.height;
+			const width = activeSeat?.design?.width;
+			const height = activeSeat?.design?.height;
 			const containerWidth = container?.offsetWidth;
 			const containerHeight = container?.offsetHeight;
 			const widthRatio = containerWidth / width;

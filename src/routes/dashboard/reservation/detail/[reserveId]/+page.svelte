@@ -155,7 +155,7 @@
 
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
 			// call to update quantity
-			await updateServiceQuantity(seatLayoutData);
+			await updateServiceQuantity();
 
 			let x = await data.supabase
 				.from('seat_reservation')
@@ -208,46 +208,51 @@
 	////////////////////////////////////////////////////////////////////////////
 	// update quantity
 
-	async function updateServiceQuantity(seatLayoutData: any) {
-		console.log('All services for this seat:', seatLayoutData);
-		console.log('Reserved services:', reservations);
+	async function updateServiceQuantity() {
+		// console.log('Reserved services:', reservations);
 
-		let firstElement = seatLayoutData[0];
-		let services =
-			typeof firstElement.services === 'string'
-				? JSON.parse(firstElement.services)
-				: firstElement.services;
+		for (const reservation of reservations) {
+			// Ensure that reservation.services is an array
+			if (Array.isArray(reservation.services)) {
+				for (const serviceString of reservation.services) {
+					try {
+						// console.log('Service JSON String:', serviceString);
+						const service = JSON.parse(serviceString);
 
-		reservations.forEach((reserved) => {
-			// Assuming each reserved object contains a services array
-			reserved.services.forEach((reservedService) => {
-				// Ensure reservedService is an object and has serviceId property
-				if (typeof reservedService === 'string') {
-					reservedService = JSON.parse(reservedService);
-				}
+						// Get the current quantity from the seat_services table
+						const { data: serviceDetails, error } = await data.supabase
+							.from('seat_services')
+							.select('quantity')
+							.eq('id', service.serviceId)
+							.single();
 
-				let reservedServiceId = reservedService.serviceId;
-				let reservedQuantity = parseInt(reservedService.quantity, 10);
-				if (reservedServiceId !== undefined) {
-					services.forEach((service) => {
-						console.log('Comparing:', service.serviceId, 'with', reservedServiceId);
-						if (service.serviceId === reservedServiceId) {
-							// console.log('Before update:', service.maxQuantityPerUser);
-
-							service.maxQuantityPerUser = Math.max(
-								0,
-								service.maxQuantityPerUser - reservedQuantity
-							);
-							// console.log('After update:', service.maxQuantityPerUser);
+						if (error) {
+							console.error('Error fetching service details:', error);
+							continue;
 						}
-					});
+
+						if (serviceDetails) {
+							// Calculate the new quantity
+							const newQuantity = serviceDetails.quantity - service.quantity;
+
+							// Update the seat_services table
+							const { error: updateError } = await data.supabase
+								.from('seat_services')
+								.update({ quantity: newQuantity })
+								.eq('id', service.serviceId);
+
+							if (updateError) {
+								console.error('Error updating service quantity:', updateError);
+							}
+						}
+					} catch (e) {
+						console.error('Error parsing JSON:', e);
+					}
 				}
-			});
-		});
-
-		let updateData = { services: JSON.stringify(services) };
-
-		await data.supabase.from('seat_layout').update(updateData).eq('id', firstElement.id);
+			} else {
+				console.error('Invalid format for reservation.services, expected an array.');
+			}
+		}
 	}
 
 	////////////////////////////////////////////////////
@@ -596,9 +601,10 @@
 								<p>{reservation.rejected_by_user ? 'rejected by user' : ''}</p>
 								<div class="flex justify-center py-3">
 									<select
-										class=" cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
+										class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 										bind:value={reservation.status}
 										on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
+										disabled={reservation.status === ReservationStatusEnum.ACCEPT}
 									>
 										<option value={ReservationStatusEnum.PENDING}
 											>{ReservationStatusEnum.PENDING}</option
@@ -612,6 +618,7 @@
 									</select>
 								</div>
 							</td>
+
 							<!-- <td>
 						<div class="flex justify-center px-4">
 							{#if isEditing}

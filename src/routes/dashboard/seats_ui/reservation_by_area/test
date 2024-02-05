@@ -122,7 +122,7 @@
 	};
 
 	async function addNewSeat() {
-		console.log('/////////');
+		// console.log('/////////');
 		formSubmitted = true;
 		const supabase = data.supabase;
 

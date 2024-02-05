@@ -21,7 +21,7 @@
 	// }
 
 	$: {
-		console.log(data);
+		// console.log(data);
 	}
 
 	let images: SeatImageItemModel[] = [];
