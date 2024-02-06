@@ -7,7 +7,8 @@
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
-	import Editor from '@tinymce/tinymce-svelte';
+	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
+
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
@@ -223,19 +224,10 @@
 										{/if}
 									</div>
 
-									<div class="pb-0">
-										<Label for="textarea-id" class="mb-2">About Paragraph</Label>
-										<div class="pt-4 w-full" style="height: 400px;">
-											<Editor
-												apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
-												channel="5-dev"
-												text="readonly-text-output"
-												bind:value={langData.long_description}
-												{conf}
-											/>
-											{#if isFormSubmitted && !langData.long_description.trim()}
-												<p class="error-message">Please enter a long description</p>
-											{/if}
+									<div class="mb-8">
+										<Label for="textarea-id" class="mb-2">News detail</Label>
+										<div class="w-full" style="height: 400px;">
+											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>

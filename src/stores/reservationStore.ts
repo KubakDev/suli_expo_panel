@@ -23,7 +23,7 @@ export const getReservationData = async (
 		p_phone_number: p_phone_number,
 		p_email: p_email
 	});
-	console.log(data);
+	// console.log(data);
 	seatReservationTotalCount.set(data[0]?.total_count);
 	seatReservation.set(data);
 };

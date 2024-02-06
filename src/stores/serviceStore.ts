@@ -30,6 +30,7 @@ export const insertData = async (
 	}
 };
 
+
 //Get all service data &&
 export const getData = async (supabase: SupabaseClient) => {
 	try {

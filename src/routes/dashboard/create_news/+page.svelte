@@ -7,7 +7,8 @@
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
+
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
@@ -87,16 +88,16 @@
 		for (let lang of newsDataLang) {
 			const title = lang.title.trim();
 			const shortDescription = lang.short_description.trim();
-			// const longDescription = lang.long_description.trim();
+			const longDescription = lang.long_description.trim();
 
 			const isTitleEmpty = isEmpty(title);
 			const isShortDescriptionEmpty = isEmpty(shortDescription);
-			// const isLongDescriptionEmpty = isEmpty(longDescription);
+			const isLongDescriptionEmpty = isEmpty(longDescription);
 
-			if (!isTitleEmpty || !isShortDescriptionEmpty) {
+			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
 				// All fields are non-empty for this language
 				hasDataForLanguage = true;
-				if (isTitleEmpty || isShortDescriptionEmpty) {
+				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
 					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
@@ -282,10 +283,10 @@
 										{/if}
 									</div>
 
-									<div class="">
+									<div class="mb-8">
 										<Label for="textarea-id" class="mb-2">News detail</Label>
 										<div class="w-full" style="height: 400px;">
-											<EditorComponent {langData} {isFormSubmitted} />
+											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>

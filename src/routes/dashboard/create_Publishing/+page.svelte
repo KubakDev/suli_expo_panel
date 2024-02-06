@@ -9,7 +9,7 @@
 	import { goto } from '$app/navigation';
 	import FileUploadComponent from '$lib/components/fileUpload.svelte';
 	import PDFUploadComponent from '$lib/components/pdfUpload.svelte';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
 
 	//@ts-ignore
 	import { isEmpty } from 'validator';
@@ -297,10 +297,10 @@
 										{/if}
 									</div>
 
-									<div class="">
+									<div class="mb-8">
 										<Label for="textarea-id" class="mb-2">Publishing detail</Label>
 										<div class="w-full" style="height: 400px;">
-											<EditorComponent {langData} {isFormSubmitted} />
+											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>

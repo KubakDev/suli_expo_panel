@@ -22,7 +22,7 @@ export const load = async () => {
 			url: '/dashboard/seats_ui'
 		},
 		{
-			title: 'seatServices',
+			title: 'Seat Services',
 			url: '/dashboard/seatServices'
 		},
 		{

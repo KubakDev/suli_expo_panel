@@ -65,7 +65,7 @@
 
 	let objectDetailDescription: { language?: LanguageEnum; description?: string }[] = [];
 	$: {
-		console.log(data);
+		// console.log(data);
 	}
 
 	let objectDetail: {
@@ -487,7 +487,7 @@
 
 
 							canvas.setActiveObject(clonedObj);
-							console.log(clonedObj);
+							// console.log(clonedObj);
 							// update layer
 							updateLayers();
 							canvas.requestRenderAll();
