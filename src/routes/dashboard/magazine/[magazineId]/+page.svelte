@@ -14,7 +14,7 @@
 	import type { PDFModel } from '../../../../models/pdfModel';
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
@@ -391,7 +391,7 @@
 									<div class="pb-10">
 										<Label for="textarea-id" class="mb-2">long description</Label>
 										<div class="pt-4 w-full" style="height: 400px;">
-											<EditorComponent {langData} {isFormSubmitted} />
+											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>

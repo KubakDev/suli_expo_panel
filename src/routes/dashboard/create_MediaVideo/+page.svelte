@@ -7,7 +7,8 @@
 	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel'; 
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
-	import EditorComponent from '$lib/components/EditorComponent.svelte';
+	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
+
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
@@ -266,10 +267,10 @@
 										{/if}
 									</div>
 
-									<div class="">
+									<div class="mb-8">
 										<Label for="textarea-id" class="mb-2">Video detail</Label>
 										<div class="w-full" style="height: 400px;">
-											<EditorComponent {langData} {isFormSubmitted} />
+											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
 										</div>
 									</div>
 								</div>
