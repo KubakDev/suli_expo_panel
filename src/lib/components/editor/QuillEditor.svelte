@@ -47,8 +47,6 @@
 	});
 </script>
 
-<input type="color" id="colorPicker" style="display:none" />
-
 <div bind:this={container} class="quill-container" />
 
 {#if isFormSubmitted && !langData.long_description.trim()}
