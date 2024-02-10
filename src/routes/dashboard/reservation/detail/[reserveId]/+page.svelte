@@ -12,6 +12,8 @@
 	import { LanguageEnum } from '../../../../../models/languageEnum';
 	import { convertNumberToWord } from '$lib/utils/numberToWordLang';
 	import { browser } from '$app/environment';
+	import { addNewToast } from '../../../../../stores/toastStore';
+	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -154,105 +156,140 @@
 		let seatLayoutData = seatLayoutDataResponse.data;
 
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
-			// call to update quantity
-			await updateServiceQuantity();
-
-			let x = await data.supabase
-				.from('seat_reservation')
-				.update({ status: ReservationStatusEnum.REJECT })
-				.eq('object_id', objectId)
-				.not('id', 'eq', itemID);
+			// Check if updating service quantity is allowed
+			const quantityCheck = await updateServiceQuantity();
+			if (!quantityCheck.updateAllowed) {
+				addNewToast({
+					type: ToastTypeEnum.ERROR,
+					message: quantityCheck.message,
+					title: 'Error',
+					duration: 3000
+				});
+				return;
+			}
 		}
 
-		await data.supabase
+		// Proceed to update the status if quantity check passes
+		let response = await data.supabase
 			.from('seat_reservation')
 			.update({ status: selectedStatus })
 			.eq('id', itemID);
-		if (selectedStatus == ReservationStatusEnum.REJECT) {
-			let activeSeat = seatLayout?.find((seat) => seat.is_active == true);
-			let seatAreasData = JSON.parse(activeSeat?.areas);
-			if (reservationData?.reserved_areas) {
-				let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
-				userReservedAreas.map((userReservedArea: any) => {
-					let areaIndex = seatAreasData.findIndex(
-						(area: any) => area.area == userReservedArea.area
-					);
-					seatAreasData[areaIndex].quantity =
-						seatAreasData[areaIndex].quantity + userReservedArea.quantity;
-				});
-			}
-			await data.supabase
-				.from('seat_layout')
-				.update({
-					areas: JSON.stringify(seatAreasData)
-				})
-				.eq('id', activeSeat.id)
-				.then(() => {
-					getReservationData();
-				});
-		}
-		reservations.map(async (reserveData) => {
-			if (reserveData.status == ReservationStatusEnum.PENDING) return;
-			reserveData.status = selectedStatus as any;
 
-			await data.supabase
-				.from('notification')
-				.insert([
-					addNotificationData(reserveData, LanguageEnum.EN),
-					addNotificationData(reserveData, LanguageEnum.CKB),
-					addNotificationData(reserveData, LanguageEnum.AR)
-				])
-				.then((response) => {});
-		});
+		if (response.error) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Failed to update reservation status.',
+				title: 'Update Error',
+				duration: 3000
+			});
+		} else {
+			if (selectedStatus == ReservationStatusEnum.REJECT) {
+				let activeSeat = seatLayout?.find((seat) => seat.is_active == true);
+				let seatAreasData = JSON.parse(activeSeat?.areas);
+				if (reservationData?.reserved_areas) {
+					let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
+					userReservedAreas.map((userReservedArea: any) => {
+						let areaIndex = seatAreasData.findIndex(
+							(area: any) => area.area == userReservedArea.area
+						);
+						seatAreasData[areaIndex].quantity =
+							seatAreasData[areaIndex].quantity + userReservedArea.quantity;
+					});
+				}
+				await data.supabase
+					.from('seat_layout')
+					.update({
+						areas: JSON.stringify(seatAreasData)
+					})
+					.eq('id', activeSeat.id)
+					.then(() => {
+						getReservationData();
+					});
+			}
+			reservations.map(async (reserveData) => {
+				if (reserveData.status == ReservationStatusEnum.PENDING) return;
+				reserveData.status = selectedStatus as any;
+
+				await data.supabase
+					.from('notification')
+					.insert([
+						addNotificationData(reserveData, LanguageEnum.EN),
+						addNotificationData(reserveData, LanguageEnum.CKB),
+						addNotificationData(reserveData, LanguageEnum.AR)
+					])
+					.then((response) => {});
+			});
+		}
 	}
 	////////////////////////////////////////////////////////////////////////////
 	// update quantity
 
 	async function updateServiceQuantity() {
-		// console.log('Reserved services:', reservations);
+		let result = { updateAllowed: true, message: '' };
 
 		for (const reservation of reservations) {
-			// Ensure that reservation.services is an array
 			if (Array.isArray(reservation.services)) {
 				for (const serviceString of reservation.services) {
 					try {
-						// console.log('Service JSON String:', serviceString);
 						const service = JSON.parse(serviceString);
+						const serviceName = service.serviceDetail.languages[0].title;
 
-						// Get the current quantity from the seat_services table
 						const { data: serviceDetails, error } = await data.supabase
 							.from('seat_services')
 							.select('quantity')
 							.eq('id', service.serviceId)
 							.single();
 
-						if (error) {
-							console.error('Error fetching service details:', error);
-							continue;
+						if (error || !serviceDetails) {
+							result = {
+								updateAllowed: false,
+								message: `Error fetching details for "${serviceName}" or service not found`
+							};
+							break;
 						}
 
-						if (serviceDetails) {
-							// Calculate the new quantity
-							const newQuantity = serviceDetails.quantity - service.quantity;
-
-							// Update the seat_services table
+						const newQuantity = serviceDetails.quantity - service.quantity;
+						if (newQuantity < 0) {
+							// Include the service name in the error message
+							result = {
+								updateAllowed: false,
+								message: `Cannot decrement quantity for "${serviceName}" New quantity would be less than 0`
+							};
+							break;
+						} else {
+							// Proceed to update the seat_services table since the new quantity is >= 0
 							const { error: updateError } = await data.supabase
 								.from('seat_services')
 								.update({ quantity: newQuantity })
 								.eq('id', service.serviceId);
 
 							if (updateError) {
-								console.error('Error updating service quantity:', updateError);
+								result = {
+									updateAllowed: false,
+									message: `Error updating quantity for "${serviceName}": ${updateError.message}`
+								};
+								break;
 							}
 						}
 					} catch (e) {
-						console.error('Error parsing JSON:', e);
+						result = {
+							updateAllowed: false,
+							message: `Error processing service "${serviceName}": ${e.message}`
+						};
+						break;
 					}
 				}
 			} else {
-				console.error('Invalid format for reservation.services, expected an array.');
+				result = {
+					updateAllowed: false,
+					message: 'Invalid format for reservation.services, expected an array.'
+				};
+				break;
 			}
+			if (!result.updateAllowed) break;
 		}
+
+		return result;
 	}
 
 	////////////////////////////////////////////////////
@@ -604,7 +641,6 @@
 										class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 										bind:value={reservation.status}
 										on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
-										disabled={reservation.status === ReservationStatusEnum.ACCEPT}
 									>
 										<option value={ReservationStatusEnum.PENDING}
 											>{ReservationStatusEnum.PENDING}</option
@@ -618,60 +654,6 @@
 									</select>
 								</div>
 							</td>
-
-							<!-- <td>
-						<div class="flex justify-center px-4">
-							{#if isEditing}
-								 <select
-									class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
-									bind:value={reservation.status}
-									on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
-								>
-									<option value={ReservationStatusEnum.PENDING}
-										>{ReservationStatusEnum.PENDING}</option
-									>
-									<option value={ReservationStatusEnum.ACCEPT}
-										>{ReservationStatusEnum.ACCEPT}</option
-									>
-									<option value={ReservationStatusEnum.REJECT}
-										>{ReservationStatusEnum.REJECT}</option
-									>
-								</select>
-							{:else}
-								 <select
-									class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
-									bind:value={reservation.status}
-									on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
-									disabled={reservation.status === ReservationStatusEnum.REJECT ||
-										reservation.status === ReservationStatusEnum.ACCEPT ||
-										loading}
-								>
-									<option value={ReservationStatusEnum.PENDING}
-										>{ReservationStatusEnum.PENDING}</option
-									>
-									<option value={ReservationStatusEnum.ACCEPT}
-										>{ReservationStatusEnum.ACCEPT}</option
-									>
-									<option value={ReservationStatusEnum.REJECT}
-										>{ReservationStatusEnum.REJECT}</option
-									>
-								</select>
-							{/if}
-
-							{#if reservation.status === ReservationStatusEnum.ACCEPT || reservation.status === ReservationStatusEnum.REJECT}
-							 <button
-									class="ml-2 px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600"
-									on:click={toggleEdit}
-								>
-									{#if isEditing}
-										Save
-									{:else}
-										Edit
-									{/if}
-								</button>
-							{/if}
-						</div>
-					</td> -->
 
 							<td>
 								<div class="w-full flex justify-center">
