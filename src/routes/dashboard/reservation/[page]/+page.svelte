@@ -240,7 +240,6 @@
 	}
 </script>
 
- 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
 		<!-- total count -->
@@ -536,7 +535,7 @@
 										<div>
 											{#if reservation.comments}
 												{#each reservation.comments as comment}
-													<div><li>{comment}</li></div>
+													<div><li>{comment.slice(0, 70)}</li></div>
 												{/each}
 											{/if}
 										</div>

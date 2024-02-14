@@ -43,7 +43,7 @@
 	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | any[] = undefined;
 	let extraDiscountChecked = false;
-	let reservations: reservationType[] = [];
+	let reservations: any[] = [];
 	let reservedSeatData: any = [];
 	let exhibitionId = 0;
 
@@ -143,17 +143,26 @@
 		};
 	}
 
+	// Function to determine if a checkbox should be disabled based on the current reservation status
+	let key = 0;
+	function isCheckboxDisabled(
+		currentStatus: ReservationStatusEnum,
+		checkboxStatus: ReservationStatusEnum
+	) {
+		if (
+			(currentStatus === ReservationStatusEnum.ACCEPT ||
+				currentStatus === ReservationStatusEnum.REJECT) &&
+			currentStatus !== checkboxStatus
+		) {
+			return true;
+		}
+		return false;
+	}
+
 	async function updateStatus(itemID?: number, selectedStatus?: string, reservationData?: any) {
 		loading = true;
+
 		if (itemID == undefined || selectedStatus == undefined) return;
-
-		// Fetch the active seat data
-		let seatLayoutDataResponse = await data.supabase
-			.from('seat_layout')
-			.select('*')
-			.eq('is_active', true);
-
-		let seatLayoutData = seatLayoutDataResponse.data;
 
 		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
 			// Check if updating service quantity is allowed
@@ -168,6 +177,16 @@
 				return;
 			}
 		}
+
+		// Fetch the active seat data
+		let seatLayoutDataResponse = await data.supabase
+			.from('seat_layout')
+			.select('*')
+			.eq('is_active', true);
+
+		// checkbox
+		reservations[0].status = selectedStatus;
+		key++;
 
 		// Proceed to update the status if quantity check passes
 		let response = await data.supabase
@@ -188,12 +207,15 @@
 				let seatAreasData = JSON.parse(activeSeat?.areas);
 				if (reservationData?.reserved_areas) {
 					let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
+					console.log(userReservedAreas);
 					userReservedAreas.map((userReservedArea: any) => {
-						let areaIndex = seatAreasData.findIndex(
-							(area: any) => area.area == userReservedArea.area
-						);
-						seatAreasData[areaIndex].quantity =
-							seatAreasData[areaIndex].quantity + userReservedArea.quantity;
+						if (seatAreasData) {
+							let areaIndex = seatAreasData.findIndex(
+								(area: any) => area.area == userReservedArea.area
+							);
+							seatAreasData[areaIndex].quantity =
+								seatAreasData[areaIndex]?.quantity + userReservedArea.quantity;
+						}
 					});
 				}
 				await data.supabase
@@ -253,7 +275,9 @@
 							// Include the service name in the error message
 							result = {
 								updateAllowed: false,
-								message: `Cannot decrement quantity for "${serviceName}" New quantity would be less than 0`
+								message: `Unable to reduce the quantity for '${serviceName}'. To proceed, you can either:- Increase the quantity available for this service, or
+- Advise the user to reduce their requested quantity.
+After adjusting the quantities accordingly, you may attempt to accept the reservation again.`
 							};
 							break;
 						} else {
@@ -274,7 +298,7 @@
 					} catch (e) {
 						result = {
 							updateAllowed: false,
-							message: `Error processing service "${serviceName}": ${e.message}`
+							message: `Error processing for this service `
 						};
 						break;
 					}
@@ -444,43 +468,43 @@
 				<thead>
 					<tr>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">reservation date</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">reservation date</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">company name</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">company name</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">avatar</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">avatar</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">country</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">country</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">passport images</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">passport images</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">user images</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">user images</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">comment</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">comment</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">company address</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">company address</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">company phone number</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">company phone number</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">exhibition type</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">exhibition type</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">reserved areas</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">reserved areas</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">services</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">services</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px]">change status</div>
+							<div class="flex items-center gap-2 mx-[50px] uppercase">change status</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
 							<div class="flex flex-col items-center gap-2 justify-between">
@@ -523,7 +547,7 @@
 							</td>
 
 							<td>
-								<div class="min-w-[100px]">
+								<div class="min-w-[100px] flex justify-center">
 									{#if reservation.company?.logo_url}
 										<img
 											src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
@@ -540,7 +564,7 @@
 								</div>
 							</td>
 							<td>
-								<div class="w-[100px]">
+								<div class="min-w-[100px] flex justify-center mx-2">
 									{#if reservation.company?.passport_image}
 										{#each reservation.company?.passport_image as image}
 											<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -561,7 +585,7 @@
 								</div>
 							</td>
 							<td>
-								<div class="w-[100px]">
+								<div class="min-w-[100px] flex justify-center mx-2">
 									{#if reservation.company?.user_image}
 										<!-- {#each reservation.company?.user_image as image} -->
 										<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -635,23 +659,63 @@
 							</td>
 
 							<td>
-								<p>{reservation.rejected_by_user ? 'rejected by user' : ''}</p>
-								<div class="flex justify-center py-3">
-									<select
-										class="cursor-pointer font-medium text-center text-base hover:dark:bg-gray-200 hover:bg-gray-100 bg-[#e9ecefd2] dark:bg-gray-100 text-gray-900 dark:text-gray-900 border border-gray-300 rounded-lg focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
-										bind:value={reservation.status}
-										on:change={() => updateStatus(reservation?.id, reservation.status, reservation)}
-									>
-										<option value={ReservationStatusEnum.PENDING}
-											>{ReservationStatusEnum.PENDING}</option
-										>
-										<option value={ReservationStatusEnum.ACCEPT}
-											>{ReservationStatusEnum.ACCEPT}</option
-										>
-										<option value={ReservationStatusEnum.REJECT}
-											>{ReservationStatusEnum.REJECT}</option
-										>
-									</select>
+								<div
+									class="flex flex-col justify-start items-start space-y-2 mx-2 cursor-pointer
+								"
+								>
+									<label for="" class="text-sm text-gray-400">
+										Please, Once you change the status, it cannot be altered.
+									</label>
+									<p class="mx-2">{reservation.rejected_by_user ? 'Rejected by user' : ''}</p>
+
+									<label class="flex items-center space-x-2">
+										<input
+											disabled={isCheckboxDisabled(
+												reservation.status,
+												ReservationStatusEnum.PENDING
+											)}
+											type="checkbox"
+											checked={reservation.status === ReservationStatusEnum.PENDING}
+											on:change={() =>
+												updateStatus(reservation?.id, ReservationStatusEnum.PENDING, reservation)}
+											class="w-5 h-5 form-checkbox rounded border-yellow-400 text-yellow-400"
+										/>
+										<span class="text-yellow-400 uppercase">{ReservationStatusEnum.PENDING}</span>
+									</label>
+
+									<label class="flex items-center space-x-2">
+										<input
+											disabled={isCheckboxDisabled(
+												reservation.status,
+												ReservationStatusEnum.ACCEPT
+											) ||
+												reservation.status == ReservationStatusEnum.ACCEPT ||
+												reservation.status == ReservationStatusEnum.REJECT}
+											type="checkbox"
+											checked={reservation.status === ReservationStatusEnum.ACCEPT}
+											on:change={() =>
+												updateStatus(reservation?.id, ReservationStatusEnum.ACCEPT, reservation)}
+											class="w-5 h-5 form-checkbox rounded border-green-400 text-green-400"
+										/>
+										<span class="text-green-400 uppercase">{ReservationStatusEnum.ACCEPT}</span>
+									</label>
+
+									<label class="flex items-center space-x-2">
+										<input
+											disabled={isCheckboxDisabled(
+												reservation.status,
+												ReservationStatusEnum.REJECT
+											) ||
+												reservation.status == ReservationStatusEnum.ACCEPT ||
+												reservation.status == ReservationStatusEnum.REJECT}
+											type="checkbox"
+											checked={reservation.status === ReservationStatusEnum.REJECT}
+											on:change={() =>
+												updateStatus(reservation?.id, ReservationStatusEnum.REJECT, reservation)}
+											class="w-5 h-5 form-checkbox rounded border-red-400 text-red-400"
+										/>
+										<span class="text-red-400 uppercase">{ReservationStatusEnum.REJECT}</span>
+									</label>
 								</div>
 							</td>
 
