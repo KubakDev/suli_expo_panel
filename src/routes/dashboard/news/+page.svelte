@@ -13,18 +13,11 @@
 	let totalPages = 1;
 
 	onMount(() => {});
-
 	async function fetchData() {
 		let result = await getData(data.supabase, currentPage, pageSize);
-
 		newsData = result.data || [];
-
-		//
-
-		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
-		//
 	}
 
 	onMount(fetchData);
@@ -39,7 +32,7 @@
 	}
 
 	// delete data
-	async function handleDelete(newsId: any) {
+	async function handleDelete(newsId: number) {
 		try {
 			await deleteData(newsId, data.supabase);
 			// alert('News deleted successfully!');
@@ -86,7 +79,6 @@
 	<InsertButton insertData={createNews} />
 
 	<!-- table data -->
-
 	<TableComponent {calculateIndex} {handleDelete} pageName="news" data={$news} {columnTitle} />
 
 	<!-- Add pagination -->

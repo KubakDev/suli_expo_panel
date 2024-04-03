@@ -27,12 +27,12 @@
 		thumbnail: ''
 	};
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
 		if (selectedValue === 'Select Type') {
 			delete promoObject.exhibition_id;
 		} else {
-			promoObject.exhibition_id = selectedValue;
+			promoObject.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 

@@ -29,8 +29,8 @@
 		getData();
 	});
 
-	function openSeatDesignEditor(design: any) {
-		goto(`seats_ui/${design.id}`);
+	function openSeatDesignEditor(designId: number) {
+		goto(`seats_ui/${designId}`);
 	}
 
 	function createNewDesign() {
@@ -46,12 +46,12 @@
 		return result;
 	}
 
-	function openSeatInfo(seatId: any) {
-		goto(`seats_ui/seatInfo/${seatId.id}`);
+	function openSeatInfo(seatId: number) {
+		goto(`seats_ui/seatInfo/${seatId}`);
 	}
 </script>
 
-<div class="flex flex-col justify-start items-center bg-secondary w-full pt-10 min-h-screen">
+<div class="flex flex-col justify-start items-center w-full pt-10 min-h-screen">
 	<div>
 		<Button on:click={createNewDesign}>Create New Seat Design</Button>
 	</div>
@@ -65,7 +65,7 @@
 				>
 					<div
 						class="h-32 w-full bg-black rounded-tl-2xl rounded-tr-2xl cursor-pointer"
-						on:click={() => openSeatDesignEditor(design)}
+						on:click={() => openSeatDesignEditor(design.id)}
 					>
 						<!-- svelte-ignore a11y-missing-attribute -->
 						<img
@@ -76,7 +76,7 @@
 
 					<div class="flex justify-between px-2 items-center h-5">
 						<h5
-							class=" font-bold tracking-tight text-white bg-secondary flex-1 flex justify-start items-start p-2 rounded-bl-2xl rounded-br-2xl"
+							class=" font-bold tracking-tight flex-1 flex justify-start items-start p-2 rounded-bl-2xl rounded-br-2xl"
 						>
 							{design.name}
 						</h5>
@@ -84,8 +84,8 @@
 					<div class="flex justify-end px-2 items-center my-2 h-10">
 						<!-- Add require field -->
 						<button
-							on:click={() => openSeatInfo(design)}
-							class="p-2 tetx-white rounded-full bg-primary-200 text-white flex justify-center items-center font-bold"
+							on:click={() => openSeatInfo(design.id)}
+							class="p-2 tetx-white rounded-full bg-primary-200 flex justify-center items-center font-bold"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +115,7 @@
 	</div>
 	<div class="px-4 mt-10 w-full lg:w-10/12">
 		<div class="my-6 flex w-full justify-between">
-			<div><h1 class="text-white text-lg font-bold">reservation by area</h1></div>
+			<div><h1 class="  text-lg font-bold">reservation by area</h1></div>
 			<div>
 				<Button on:click={() => goto('seats_ui/reservation_by_area')}>add new area</Button>
 			</div>
@@ -140,7 +140,7 @@
 
 			<tbody class="dark:text-gray-300">
 				{#each seatsAreaFieldsType as seat}
-					<tr class="border-2 border-[#edeff2] text-white">
+					<tr class="border-2 border-[#edeff2]">
 						<td>
 							<div>{seat.name}</div>
 						</td>

@@ -5,45 +5,51 @@
 
 	export let placeholder: string;
 	export let isFormSubmitted: boolean;
-	export let langData: any;
+
+	interface LangData {
+		long_description: string;
+	}
+
+	export let langData: LangData;
 
 	let quill: any;
-	let container: any;
+	let container: HTMLDivElement | null = null;
 
 	onMount(async () => {
-		const Quill = (await import('quill')).default;
+		if (container !== null) {
+			const Quill = (await import('quill')).default;
+			quill = new Quill(container, {
+				theme: 'snow',
+				modules: {
+					toolbar: [
+						['bold', 'italic', 'underline', 'strike', 'link'],
+						['blockquote', 'code-block'],
+						['video', 'formula', 'image'],
+						[{ header: 1 }, { header: 2 }],
+						[{ list: 'ordered' }, { list: 'bullet' }],
+						[{ script: 'sub' }, { script: 'super' }],
+						[{ indent: '-1' }, { indent: '+1' }],
+						[{ direction: 'ltr' }],
+						[{ size: ['small', false, 'large', 'huge'] }],
+						[{ header: [1, 2, 3, 4, 5, 6, false] }],
+						[{ color: [] }, { background: [] }],
+						[{ font: [] }],
+						[{ align: [] }],
+						['clean']
+					],
+					formula: true
+				},
+				placeholder: placeholder
+			});
 
-		quill = new Quill(container, {
-			theme: 'snow',
-			modules: {
-				toolbar: [
-					['bold', 'italic', 'underline', 'strike', 'link'],
-					['blockquote', 'code-block'],
-					['video', 'formula', 'image'],
-					[{ header: 1 }, { header: 2 }],
-					[{ list: 'ordered' }, { list: 'bullet' }],
-					[{ script: 'sub' }, { script: 'super' }],
-					[{ indent: '-1' }, { indent: '+1' }],
-					[{ direction: 'rtl' }],
-					[{ size: ['small', false, 'large', 'huge'] }],
-					[{ header: [1, 2, 3, 4, 5, 6, false] }],
-					[{ color: [] }, { background: [] }],
-					[{ font: [] }],
-					[{ align: [] }],
-					['clean']
-				],
-				formula: true
-			},
-			placeholder: placeholder
-		});
+			// Set the initial content of the Quill editor to langData.long_description
+			quill.root.innerHTML = langData.long_description;
 
-		// Set the initial content of the Quill editor to langData.long_description
-		quill.root.innerHTML = langData.long_description;
-
-		// Event listener for text change in Quill editor
-		quill.on('text-change', () => {
-			langData.long_description = quill.root.innerHTML;
-		});
+			// Event listener for text change in Quill editor
+			quill.on('text-change', () => {
+				langData.long_description = quill.root.innerHTML;
+			});
+		}
 	});
 </script>
 

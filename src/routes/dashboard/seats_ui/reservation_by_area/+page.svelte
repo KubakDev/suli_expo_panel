@@ -34,8 +34,9 @@
 	import UploadContractFile from './uploadContractFile.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { Checkbox } from 'flowbite-svelte';
+	import type { PageData } from '../$types';
 
-	export let data: any;
+	export let data: PageData;
 	interface areaType {
 		area: string;
 		quantity: number;
@@ -47,6 +48,8 @@
 		maxFreeCount: number;
 		maxQuantityPerUser: number;
 		unlimitedFree: boolean;
+		title: string;
+		selected: boolean;
 	}
 
 	let seatInfoData: {
@@ -85,6 +88,7 @@
 	onMount(async () => {
 		await getData(data.supabase);
 	});
+
 	function addNewArea() {
 		areas.push(newArea);
 		areas = [...areas];
@@ -93,6 +97,7 @@
 			quantity: 0
 		};
 	}
+
 	function deleteArea(index: number) {
 		areas.splice(index, 1);
 		areas = [...areas];
@@ -100,7 +105,7 @@
 
 	// for getting modal data
 
-	const handleInputChange = (serviceId, field, value) => {
+	const handleInputChange = (serviceId: number, field: string, value: any) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			// Convert value to a number if it's one of the numeric fields
@@ -112,7 +117,7 @@
 		}
 	};
 
-	const handleCheckboxChange = (serviceId, checked) => {
+	const handleCheckboxChange = (serviceId: number, checked: boolean) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			seatServices[index].selected = checked;
@@ -120,7 +125,7 @@
 	};
 
 	// Add a new function to handle changes to the 'unlimitedFree' checkbox
-	const handleUnlimitedFreeChange = (serviceId, checked) => {
+	const handleUnlimitedFreeChange = (serviceId: number, checked: boolean) => {
 		const index = seatServices.findIndex((service) => service.id === serviceId);
 		if (index !== -1) {
 			seatServices[index].unlimitedFree = checked;
@@ -137,40 +142,42 @@
 		if (!seatInfoData.name || !seatInfoData.exhibition || seatInfoData.isActive == undefined) {
 			return;
 		}
+
 		loading = true;
-		if (seatInfoData.isActive) {
-			await supabase
-				.from('seat_layout')
-				.update({ is_active: false })
-				.eq('exhibition', seatInfoData.exhibition?.id);
-		}
-		const areasArray = JSON.stringify(areas);
 
-		let excel_preview_url = '';
-		if (excelFilePreviewSelected) {
-			const randomText = getRandomTextNumber();
-			await supabase.storage
-				.from('image')
-				.upload(
-					`seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
-					excelFilePreviewSelected
-				)
-				.then((response: any) => {
+		try {
+			if (seatInfoData.isActive) {
+				await supabase
+					.from('seat_layout')
+					.update({ is_active: false })
+					.eq('exhibition', seatInfoData.exhibition?.id);
+			}
+
+			let excel_preview_url = '';
+			if (excelFilePreviewSelected) {
+				const randomText = getRandomTextNumber();
+				const response = await supabase.storage
+					.from('image')
+					.upload(
+						`seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
+						excelFilePreviewSelected
+					);
+				if (response.data) {
 					excel_preview_url = response.data.path;
-				});
-		}
+				}
+			}
 
-		const selectedServices = seatServices
-			.filter((service) => service.selected)
-			.map((service) => ({
-				serviceId: service.serviceId,
-				maxFreeCount: Number(service.maxFreeCount),
-				maxQuantityPerUser: Number(service.maxQuantityPerUser),
-				unlimitedFree: service.unlimitedFree
-			}));
+			const areasArray = JSON.stringify(areas);
+			const selectedServices = seatServices
+				.filter((service) => service.selected)
+				.map((service) => ({
+					serviceId: service.serviceId,
+					maxFreeCount: Number(service.maxFreeCount),
+					maxQuantityPerUser: Number(service.maxQuantityPerUser),
+					unlimitedFree: service.unlimitedFree
+				}));
 
-		await supabase
-			.rpc('insert_seat_and_seat_privacy', {
+			const response = await supabase.rpc('insert_seat_and_seat_privacy', {
 				seat_layout_data: {
 					services: selectedServices,
 					name: seatInfoData.name,
@@ -184,35 +191,35 @@
 					extra_discount: seatInfoData.extra_discount
 				},
 				privacy_lang_data: privacyPolicyLang
-			})
-			.then((response: any) => {
-				loading = false;
-				if (response.error) {
-					addNewToast({
-						type: ToastTypeEnum.ERROR,
-						message: 'Failed To Update this seat',
-						title: 'Failed',
-						duration: 1000
-					});
-				} else {
-					addNewToast({
-						type: ToastTypeEnum.SUCCESS,
-						message: 'The Seat Added Successfully',
-						title: 'Success',
-						duration: 1000
-					});
-				}
-			})
-			.catch(() => {
+			});
+
+			if (response.error) {
 				addNewToast({
 					type: ToastTypeEnum.ERROR,
 					message: 'Failed To Update this seat',
 					title: 'Failed',
 					duration: 1000
 				});
-				loading = false;
+			} else {
+				addNewToast({
+					type: ToastTypeEnum.SUCCESS,
+					message: 'The Seat Added Successfully',
+					title: 'Success',
+					duration: 1000
+				});
+			}
+		} catch (error) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Failed To Update this seat',
+				title: 'Failed',
+				duration: 1000
 			});
+		} finally {
+			loading = false;
+		}
 	}
+
 	function addPrivacyPolicyLang(description: any, lang: string) {
 		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
 		if (dataLang) {
@@ -226,19 +233,23 @@
 			});
 		}
 	}
+
 	function addPrivacyPolicyExtraDiscountDescription(description: any, lang: string) {
+		let descriptionValue = (description as HTMLInputElement).value;
+
 		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
 		if (dataLang) {
-			dataLang.extra_discount_description = description.value;
+			dataLang.extra_discount_description = descriptionValue;
 		} else {
 			privacyPolicyLang.push({
 				description: '',
 				language: lang as LanguageEnum,
 				discount_description: '',
-				extra_discount_description: description
+				extra_discount_description: descriptionValue
 			});
 		}
 	}
+
 	function addDiscountDetail(discount_description: any, lang: string) {
 		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
 		if (dataLang) {
@@ -252,6 +263,7 @@
 			});
 		}
 	}
+
 	function handleFileUpload(e: any) {
 		const fileInput = e.target as HTMLInputElement;
 		excelFilePreviewSelected = fileInput.files![0];
@@ -270,11 +282,12 @@
 
 		// console.log('response', response);
 
-		seatServices = response.data.map((service) => ({
+		seatServices = response?.data?.map((service) => ({
 			serviceId: service.id,
 			id: service.id,
 			title:
-				service.seat_services_languages.find((lang) => lang.language === 'en')?.title || 'No title',
+				service.seat_services_languages.find((lang: any) => lang.language === 'en')?.title ||
+				'No title',
 			selected: false,
 			quantity: 0,
 			maxFreeCount: 0,
@@ -284,7 +297,7 @@
 </script>
 
 <div class="w-full h-full flex flex-col justify-center items-center">
-	<div class="bg-[#f9fafb] w-7/12 p-14 rounded-lg">
+	<div class="w-7/12 p-14 rounded-lg border-2 dark:border-gray-800 light:border-gray-500 my-5">
 		<Tabs>
 			<TabItem title="add Seat Area fields" open>
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
@@ -399,16 +412,27 @@
 							<ul class="list-disc pl-5 space-y-2">
 								{#each seatServices as service}
 									<li class="flex items-center space-x-2">
-										<Checkbox on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}>
+										<Checkbox
+											on:change={(e) => {
+												if (e.target instanceof HTMLInputElement) {
+													handleCheckboxChange(service.id, e.target.checked);
+												}
+											}}
+										/>
+										<div class="w-full">
 											{service.title}
-										</Checkbox>
+										</div>
 
 										<Input
 											type="number"
 											placeholder="Max Quantity Per User"
 											bind:value={service.maxQuantityPerUser}
-											on:input={(e) =>
-												handleInputChange(service.id, 'maxQuantityPerUser', e.target.value)}
+											on:input={(e) => {
+												const target = e.target;
+												if (target instanceof HTMLInputElement) {
+													handleInputChange(service.id, 'maxQuantityPerUser', target.value);
+												}
+											}}
 											disabled={!service.selected}
 										/>
 
@@ -418,10 +442,15 @@
 													<Checkbox
 														bind:value={service.unlimitedFree}
 														class="cursor-pointer"
-														on:change={(e) =>
-															handleUnlimitedFreeChange(service.id, e.target.checked)}
+														on:change={(e) => {
+															const target = e.target;
+															if (target instanceof HTMLInputElement) {
+																handleUnlimitedFreeChange(service.id, target.checked);
+															}
+														}}
 														disabled={!service.selected}
 													/>
+
 													<p>Unlimited</p>
 												</div>
 											</InputAddon>
@@ -444,7 +473,7 @@
 							<p>upload image for sheet preview</p>
 							<Fileupload
 								accept=".jpg, .jpeg, .png"
-								class=" dark:bg-white"
+								class=" "
 								on:change={(event) => handleFileUpload(event)}
 							/>
 						</div>
@@ -461,7 +490,7 @@
 										rows="8"
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
-										on:input={(e) => addPrivacyPolicyLang(e.target ?? '', lang)}
+										on:input={(e) => addPrivacyPolicyLang(e.target, lang)}
 									/>
 									<Textarea
 										id="textarea-id"
@@ -479,7 +508,7 @@
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)
 											?.extra_discount_description}
-										on:input={(e) => addPrivacyPolicyExtraDiscountDescription(e.target ?? '', lang)}
+										on:input={(e) => addPrivacyPolicyExtraDiscountDescription(e.target, lang)}
 									/>
 								</TabItem>
 							{/each}

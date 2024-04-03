@@ -36,8 +36,9 @@
 	import { page } from '$app/stores';
 	import UploadContractFile from '../uploadContractFile.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import type { PageData } from '../$types';
 
-	export let data: any;
+	export let data: PageData;
 	interface areaType {
 		area: string;
 		quantity: number;
@@ -102,7 +103,7 @@
 			.select('*, seat_services_languages(*)')
 			.order('position', { ascending: true });
 
-		seatServices = response.data.map((service) => ({
+		seatServices = response?.data?.map((service) => ({
 			serviceId: service.id,
 			id: service.id,
 			title:
@@ -402,7 +403,7 @@
 	</div></Modal
 >
 <div class="w-full h-full flex flex-col justify-center items-center">
-	<div class="bg-[#f9fafb] w-7/12 p-14 rounded-lg">
+	<div class="w-7/12 p-14 rounded-lg border-2 dark:border-gray-800 light:border-gray-500 my-5">
 		<Tabs>
 			<TabItem title="add Seat Area fields" open>
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">

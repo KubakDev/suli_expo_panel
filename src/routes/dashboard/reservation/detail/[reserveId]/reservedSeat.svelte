@@ -4,8 +4,9 @@
 	// @ts-ignore
 	import { fabric } from 'fabric';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
+	import type { PageData } from './$types';
 
-	export let data: any;
+	export let data: PageData;
 	export let reservations: any = [];
 	// let fabric: any = null;
 	let activeSeat: any = null;

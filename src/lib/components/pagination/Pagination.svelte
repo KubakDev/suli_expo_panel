@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let currentPage: number;
 	export let totalPages: number;
-	export let goToPage: any;
+	export let goToPage: (page: number) => void;
 </script>
 
 <div class="flex justify-end items-center px-4 lg:px-0">

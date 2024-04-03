@@ -14,7 +14,7 @@
 	let currentPage: number = 1;
 	const pageSize: number = 12;
 	let totalPages: number = 1;
-	let totalItems: any;
+	let totalItems: number;
 
 	onMount(() => {
 		currentPage = +$page.params.page;

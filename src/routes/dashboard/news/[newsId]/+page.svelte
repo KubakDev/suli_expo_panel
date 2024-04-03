@@ -211,12 +211,12 @@
 		//
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
 		if (selectedValue === 'Select Type') {
 			delete newsData.exhibition_id;
 		} else {
-			newsData.exhibition_id = selectedValue;
+			newsData.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 

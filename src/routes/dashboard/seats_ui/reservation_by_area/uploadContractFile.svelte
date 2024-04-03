@@ -21,62 +21,66 @@
 		selectedLanguage = LanguageEnum.EN;
 	});
 
-	async function handleFileChange(event: any) {
-		const file = event.target.files[0];
-		if (file) {
-			uploadedFileName[selectedLanguage] = file.name;
+	async function handleFileChange(event: Event) {
+		const input = event.target as HTMLInputElement;
+		if (input && input.files) {
+			const file = input.files[0];
+			if (file) {
+				uploadedFileName[selectedLanguage] = file.name;
 
-			const reader = new FileReader();
-			reader.onload = async function (e: any) {
-				//
-				fileContent[selectedLanguage] = e.target.result.split(',')[1];
+				const reader = new FileReader();
+				reader.onload = async function (e: ProgressEvent<FileReader>) {
+					if (e.target) {
+						fileContent[selectedLanguage] = e.target.result?.toString().split(',')[1];
 
-				loading = true;
-				await supabase
-					.from('contract_decode_files')
-					.delete()
-					.eq('exhibition_id', exhibitionId)
-					.eq('language', selectedLanguage);
+						loading = true;
+						await supabase
+							.from('contract_decode_files')
+							.delete()
+							.eq('exhibition_id', exhibitionId)
+							.eq('language', selectedLanguage);
 
-				supabase
-					.from('contract_decode_files')
-					.insert([
-						{
-							exhibition_id: exhibitionId,
-							decoded_file: fileContent[selectedLanguage],
-							language: selectedLanguage
-						}
-					])
-					.then((response) => {
-						if (response.error) {
-							addNewToast({
-								type: ToastTypeEnum.ERROR,
-								message: response.error.message
+						supabase
+							.from('contract_decode_files')
+							.insert([
+								{
+									exhibition_id: exhibitionId,
+									decoded_file: fileContent[selectedLanguage],
+									language: selectedLanguage
+								}
+							])
+							.then((response) => {
+								if (response.error) {
+									addNewToast({
+										type: ToastTypeEnum.ERROR,
+										message: response.error.message
+									});
+								} else {
+									addNewToast({
+										title: 'Success',
+										duration: 1000,
+										type: ToastTypeEnum.SUCCESS,
+										message: 'File uploaded successfully for ' + file.name
+									});
+								}
 							});
-						} else {
-							addNewToast({
-								title: 'Success',
-								duration: 1000,
-								type: ToastTypeEnum.SUCCESS,
-								message: 'File uploaded successfully for ' + file.name
-							});
-						}
-					});
-				loading = false;
-			};
-			reader.readAsDataURL(file);
+						loading = false;
+					}
+				};
+				reader.readAsDataURL(file);
+			}
 		}
 	}
 </script>
 
-<div class="flex flex-col justify-center items-center p-10 bg-gray-100 w-full">
-	<Tabs contentClass="dark:bg-gray-900 p-6 bg-white rounded-lg shadow-md">
+<div class="flex flex-col justify-center items-center p-10 w-full">
+	<Tabs contentClass="dark:bg-gray-900 p-6  rounded-lg shadow-md">
 		{#each languages as lang}
 			<TabItem
 				title={lang}
 				open={selectedLanguage ? selectedLanguage === lang : lang === LanguageEnum.EN}
 				on:click={() => (selectedLanguage = lang)}
-				class="transition duration-300 hover:bg-gray-200 p-2 rounded"
+				class="transition duration-300 dark:hover:bg-gray-700 p-2 rounded"
 			>
 				<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold mb-3">
 					{#if lang === 'ar'}

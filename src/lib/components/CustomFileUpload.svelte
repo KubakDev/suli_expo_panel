@@ -2,16 +2,18 @@
 	import { createEventDispatcher } from 'svelte';
 	import { Photo } from 'svelte-heros-v2';
 
-	let fileInput: any;
+	let fileInput: HTMLInputElement;
 	const dispatch = createEventDispatcher();
 
 	function handleClick() {
 		fileInput.click();
 	}
 
-	function handleChange(event: any) {
-		const files = Array.from(event.target.files);
-		dispatch('filesselected', files);
+	function handleChange(event: Event) {
+		if (event.target instanceof HTMLInputElement) {
+			const files = Array.from(event.target.files || []);
+			dispatch('filesselected', files);
+		}
 	}
 </script>
 
@@ -21,7 +23,4 @@
 </label>
 
 <style>
-	.upload-btn {
-		/* your custom styles for the upload button */
-	}
 </style>

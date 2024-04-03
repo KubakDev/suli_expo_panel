@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let insertData: any;
+	export let insertData: () => void;
 </script>
 
 <div class="py-5 px-4 lg:px-0 flex justify-end">

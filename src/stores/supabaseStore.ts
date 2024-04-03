@@ -1,7 +1,7 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { writable, type Writable } from "svelte/store";
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { writable, type Writable } from 'svelte/store';
 
 export let supabaseStore: Writable<SupabaseClient | null> = writable(null);
-export function setSupabaseStore(supabase: any) {
-    supabaseStore.set(supabase);
+export function setSupabaseStore(supabase: SupabaseClient) {
+	supabaseStore.set(supabase);
 }

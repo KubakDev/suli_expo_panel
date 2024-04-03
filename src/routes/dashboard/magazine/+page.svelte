@@ -21,7 +21,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
+	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -31,7 +31,7 @@
 	}
 
 	// delete data
-	async function handleDelete(magazineId: any) {
+	async function handleDelete(magazineId: number) {
 		try {
 			await deleteData(magazineId, data.supabase);
 			// alert('Magazine deleted successfully!');
@@ -42,7 +42,7 @@
 		} catch (error) {}
 	}
 
-	function calculateIndex(index: any) {
+	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 

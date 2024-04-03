@@ -156,7 +156,7 @@
 		}
 	}
 
-	function isValidEmail(email: any) {
+	function isValidEmail(email: string) {
 		// Use a regular expression to validate the email format
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(email);

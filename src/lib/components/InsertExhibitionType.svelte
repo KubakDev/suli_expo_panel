@@ -3,9 +3,10 @@
 	import type { ExhibitionModel } from '../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../stores/exhibitionTypeStore';
 	import { ButtonGroup, InputAddon, Label } from 'flowbite-svelte';
+	import type { PageData } from '../../routes/$types';
 
-	export let handleSelectChange: any;
-	export let data: any;
+	export let handleSelectChange: (event: Event) => void;
+	export let data: PageData;
 
 	let exhibitionData: ExhibitionModel[] = [];
 	const fetchData = async () => {

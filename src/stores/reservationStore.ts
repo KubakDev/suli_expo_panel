@@ -87,7 +87,7 @@ export const updateData = async (supabase: SupabaseClient, id: number, updatedFi
 	return data;
 };
 
-export const getReservationById = async (supabase: SupabaseClient, id: any) => {
+export const getReservationById = async (supabase: SupabaseClient, id: number) => {
 	const { data, error } = await supabase
 		.from('seat_reservation')
 		.select(
@@ -110,7 +110,7 @@ export const getReservationById = async (supabase: SupabaseClient, id: any) => {
 	return data as Reservation;
 };
 
-export const getReservationsForCompany = async (supabase: SupabaseClient, companyId: any) => {
+export const getReservationsForCompany = async (supabase: SupabaseClient, companyId: number) => {
 	const { data, error } = await supabase
 		.from('seat_reservation')
 		.select(

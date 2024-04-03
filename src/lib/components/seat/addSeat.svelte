@@ -22,8 +22,9 @@
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { SeatPrivacyPolicyModel } from '../../../models/addSeatDataModel';
 	import { canvasToFile } from '$lib/utils/canva_to_image';
+	import type { PageData } from '../../../routes/$types';
 
-	export let data: any;
+	export let data: PageData;
 	export let seatInfo: any;
 	export let currentSeatLayoutData: any = undefined;
 	const dispatch = createEventDispatcher();
@@ -158,7 +159,7 @@
 	}
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6 ">
 	<ButtonGroup class="" size="sm">
 		<InputAddon>Name</InputAddon><Input
 			type="text"

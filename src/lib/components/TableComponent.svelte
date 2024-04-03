@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import type { string } from 'yup';
+	import type { PageData } from '../../routes/$types';
 	import DeleteModal from './DeleteModal.svelte';
 	//@ts-ignore
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 
-	export let calculateIndex: any;
-	export let handleDelete: any;
+	export let calculateIndex: (index: number) => number;
+	export let handleDelete: (id: number) => Promise<void>;
 	export let pageName: string;
 	export let data: any;
-	export let columnTitle: any;
+	export let columnTitle: { header: string; name: string; type: string; subField?: string }[];
 
 	// convert html tag that return it from db to regular text
-	function extractText(html: any) {
+	function extractText(html: string): string {
 		const tempElement = document.createElement('div');
 		tempElement.innerHTML = html;
 		return tempElement.textContent || tempElement.innerText || '';

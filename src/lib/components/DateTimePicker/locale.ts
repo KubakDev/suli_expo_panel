@@ -55,7 +55,7 @@ export function localeFromDateFnsLocale(dateFnsLocale: DateFnsLocale): InnerLoca
   }
   if (dateFnsLocale.localize) {
     for (let i = 0; i < 7; i++) {
-      // widths: narrow, short, abbreviated, wide, any
+      // widths: narrow, short, abbreviated, wide, 
       locale.weekdays[i] = dateFnsLocale.localize.day(i, { width: 'short' })
     }
 

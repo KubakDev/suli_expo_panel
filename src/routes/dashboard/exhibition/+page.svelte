@@ -9,9 +9,10 @@
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import InsertButton from '$lib/components/InsertButton.svelte';
+	import type { ExhibitionsModel } from '../../../models/exhibitionModel';
 
 	export let data;
-	let items: any = [];
+	let items: ExhibitionsModel[] = [];
 	let flag = false;
 
 	async function fetchData() {
@@ -40,12 +41,12 @@
 
 	const flipDurationMs = 300;
 
-	function handleDndConsider(e: any) {
+	function handleDndConsider(e: CustomEvent) {
 		items = e.detail.items;
 		//
 	}
 
-	async function handleDndFinalize(e: any) {
+	async function handleDndFinalize(e: CustomEvent) {
 		items = e.detail.items;
 		flag = true;
 		items.forEach((item: any, index: number) => {
@@ -72,12 +73,12 @@
 		}
 	}
 
-	async function swapItems(indexA: any, indexB: any) {
+	async function swapItems(indexA: number, indexB: number) {
 		const tempItem = items[indexA];
 		items[indexA] = items[indexB];
 		items[indexB] = tempItem;
 		flag = true;
-		items.forEach((item: any, index: any) => {
+		items.forEach((item: any, index: number) => {
 			item.position = index + 1;
 		});
 
