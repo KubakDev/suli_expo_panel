@@ -1002,7 +1002,7 @@
 				{/each}
 
 				<ButtonGroup class="w-full my-3 " size="sm">
-					<Input
+				 	<Input
 						class={localStorage.getItem('theme') === 'dark'
 							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
 							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
