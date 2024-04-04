@@ -77,6 +77,8 @@
 				iconCanvas.add(newImg);
 				iconCanvas.renderAll();
 
+
+				
 				let iconDataURL = canvasToDataUrl(iconCanvas);
 				img.icon = iconDataURL;
 
