@@ -535,7 +535,7 @@
 										<div>
 											{#if reservation.comments}
 												{#each reservation.comments as comment}
-													<div><li>{comment.slice(0, 70)}</li></div>
+													<div><li>{comment}</li></div>
 												{/each}
 											{/if}
 										</div>

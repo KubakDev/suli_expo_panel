@@ -436,7 +436,6 @@
 				}
 			});
 
-
 			// window.addEventListener('keydown', (e) => {
 			// 	if (e.ctrlKey && e.code === 'KeyZ') {
 			// 		undoSelectedObject();
@@ -484,7 +483,6 @@
 								clonedObj.set('id', uniqueId); // unique numeric ID for single object
 								canvas.add(clonedObj);
 							}
-
 
 							canvas.setActiveObject(clonedObj);
 							// console.log(clonedObj);
@@ -962,7 +960,7 @@
 		{currentSeatLayoutData}
 	/>
 </Modal>
-<div class="flex flex-col w-full h-full flex-1">
+<div class="flex flex-col w-full h-full flex-1 bg-gray-100 text-gray-700">
 	<div class="w-full grid grid-cols-6 h-full">
 		<DrawingBar
 			data={{
@@ -977,30 +975,48 @@
 
 		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
 			<canvas id="canvas" />
-			<div class="absolute bottom-10 right-10 w-40 flex justify-between">
+			<div class="absolute bottom-20 right-10 w-40 flex justify-between">
 				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
 				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
 			</div>
 		</div>
-		<div class="p-4 bg-[#f2f3f7] overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
+		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
 					<Button on:click={addPropertiesToShape} class="w-full" outline>
-						<Checkbox checked={objectDetail.selectable} />
-						selectable
+						<label class="flex items-center space-x-3">
+							<input
+								type="checkbox"
+								class="w-4 h-4 bg-gray-100 border-gray-300 focus:ring-2 mr-2 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
+								bind:checked={objectDetail.selectable}
+							/>
+							<span>Selectable</span>
+						</label>
 					</Button>
 				</div>
 			{/if}
-			<h1 class="mx-2">favourite Colors</h1>
+			<h1 class="mb-2 font-bold">Favourite Colors</h1>
 			<div class="flex flex-wrap">
 				{#each favColors as color}
-					<div class="h-8 w-12 rounded-sm m-1" style={`background-color:${color}`} />
+					<div class="h-10 w-10 border-2 border-gray-200" style={`background-color:${color}`} />
 				{/each}
 
-				<ButtonGroup class="w-full my-3" size="sm">
-					<Input size="sm" placeholder="#FF0000" bind:value={newFavColor} />
+				<ButtonGroup class="w-full my-3 " size="sm">
+					<Input
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
+						size="sm"
+						placeholder="#FF0000"
+						bind:value={newFavColor}
+					/>
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<InputAddon class="cursor-pointer p-0">
+
+					<InputAddon
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-[#e1b168]  cursor-pointer p-0'
+							: 'bg-[#e1b168]  cursor-pointer p-0'}
+					>
 						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div class="w-full h-full p-2" on:click={addNewFavColor}>
@@ -1013,10 +1029,53 @@
 					</InputAddon>
 				</ButtonGroup>
 			</div>
-			<input type="color" id="color-picker" bind:value={fillColor} on:input={updateFillColor} />
-			<div class="grid grid-cols-2 gap-4 my-4">
+			<div class="border-t-2 border-gray-200 my-5" />
+			<div class="flex justify-start items-center">
+				<span class="font-bold w-14">Fill</span>
+				<input
+					class="h-12 rounded-full flex-1"
+					type="color"
+					id="color-picker"
+					bind:value={fillColor}
+					on:input={updateFillColor}
+				/>
+			</div>
+			<div class="flex items-center mt-2">
+				<span class="font-bold mr-2 w-12">Stroke </span>
+				<div class="flex items-center flex-1">
+					<input
+						class="h-12 rounded-full mr-2 flex-1"
+						type="color"
+						bind:value={strokeColor}
+						on:input={updateStrokeColor}
+						id="stroke-color-picker"
+					/>
+					<input
+						class={`h-12 rounded-md flex-none w-24 ${
+							localStorage.getItem('theme') === 'dark'
+								? 'dark:bg-white dark:border-gray-400 dark:text-gray-700'
+								: 'bg-white border-1 border-gray-400 text-gray-700'
+						}`}
+						type="number"
+						disabled={strokeWidth === null || strokeWidth === undefined}
+						bind:value={strokeWidth}
+						on:input={updateStrokeWidth}
+						placeholder="Width"
+					/>
+				</div>
+			</div>
+			<div class="border-t-2 border-gray-200 my-5" />
+			<div class="grid grid-cols-3 gap-1 my-4">
 				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>W</InputAddon><Input
+					<InputAddon
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-2 dark:border-gray-300'
+							: 'bg-white border-2 dark:border-gray-300'}>W</InputAddon
+					>
+					<Input
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 						type="number"
 						size="sm"
 						disabled={itemWidth === null || itemWidth === undefined}
@@ -1027,7 +1086,15 @@
 					/></ButtonGroup
 				>
 				<ButtonGroup class="w-full" size="sm">
-					<InputAddon>H</InputAddon><Input
+					<InputAddon
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-2 dark:border-gray-300'
+							: 'bg-white border-2 dark:border-gray-300'}>H</InputAddon
+					>
+					<Input
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 						type="number"
 						size="sm"
 						disabled={itemWidth === null || itemWidth === undefined}
@@ -1037,8 +1104,16 @@
 						let:props
 					/></ButtonGroup
 				>
-				<ButtonGroup class="w-full col-span-2" size="sm">
-					<InputAddon>(</InputAddon><Input
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-2 dark:border-gray-300'
+							: 'bg-white border-2 dark:border-gray-300'}>(</InputAddon
+					>
+					<Input
+						class={localStorage.getItem('theme') === 'dark'
+							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 						type="number"
 						disabled={radius === null || radius === undefined}
 						size="sm"
@@ -1047,45 +1122,35 @@
 						placeholder="Radius"
 					/></ButtonGroup
 				>
-
-				<div class="flex col-span-2">
-					<ButtonGroup class="w-full" size="sm">
-						<InputAddon
-							><input
-								bind:value={strokeColor}
-								on:input={updateStrokeColor}
-								type="color"
-								id="stroke-color-picker"
-							/></InputAddon
-						><Input
-							disabled={strokeWidth === null || strokeWidth === undefined}
-							type="number"
-							size="sm"
-							bind:value={strokeWidth}
-							on:input={updateStrokeWidth}
-							placeholder="Stroke"
-							let:props
-						/></ButtonGroup
-					>
-				</div>
 			</div>
-
+			<div class="border-t-2 border-gray-200 my-5" />
 			{#if objectDetail.selectable}
 				<div class="w-full">
 					<ButtonGroup class="w-full mb-2" size="sm">
-						<InputAddon>Price</InputAddon><Input
+						<InputAddon
+							class={localStorage.getItem('theme') === 'dark'
+								? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+								: 'bg-white border-1 dark:border-gray-400 text-gray-700'}>Price</InputAddon
+						>
+						<Input
+							class={localStorage.getItem('theme') === 'dark'
+								? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+								: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 							type="number"
 							size="sm"
 							placeholder="select price"
 							bind:value={objectDetail.price}
 						/></ButtonGroup
 					>
-
+					<div class="border-t-2 border-gray-200 my-5" />
 					<div class="mt-2 mb-6">
-						<Tabs>
+						<Tabs style="pill">
 							{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
 									<Textarea
+										class={localStorage.getItem('theme') === 'dark'
+											? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+											: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 										id="textarea-id"
 										placeholder={`add description for ${lang}`}
 										rows="8"
@@ -1096,14 +1161,15 @@
 							{/each}
 						</Tabs>
 					</div>
+					<div class="border-t-2 border-gray-200 my-5" />
 					{#if $seatServices}
 						{#each $seatServices as service}
 							<div
-								class="bg-white w-full rounded-md my-2 flex flex-col justify-between items-center px-6 flex-wrap"
+								class="w-full rounded-md my-2 flex flex-col justify-between items-center px-6 flex-wrap"
 							>
 								{#if service.seat_services_languages}
 									<div class="flex items-center">
-										<div class="m-1 text-lg font-bold text-[#e1b168]">
+										<div class="m-1 text-lg font-bold text-gray-700">
 											{service?.seat_services_languages[0]?.title}
 										</div>
 										<div class="mx-3">
@@ -1113,9 +1179,10 @@
 								{/if}
 								<div class="flex items-center my-6 w-full justify-between">
 									<div class="flex items-center">
-										<Checkbox
+										<input
+											type="checkbox"
+											class="w-4 h-4 bg-gray-100 border-gray-300 focus:ring-2 mr-2 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
 											checked={getSelectedObjectServiceDetail(service) ? true : false}
-											class="cursor-pointer"
 											on:click={() => {
 												addServiceToActiveObject(service);
 											}}
@@ -1128,6 +1195,9 @@
 								</div>
 								<div class="d grid-cols-1 mb-6 w-full">
 									<Input
+										class={localStorage.getItem('theme') === 'dark'
+											? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+											: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 										type="number"
 										size="sm"
 										placeholder="max quantity for a user"
@@ -1140,18 +1210,25 @@
 									<div class="my-2">
 										<ButtonGroup class="w-full" size="sm">
 											<InputAddon
+												class={localStorage.getItem('theme') === 'dark'
+													? 'dark:bg-white border-2 dark:border-gray-300'
+													: 'bg-white border-2 dark:border-gray-300'}
 												><div class="flex items-center">
-													<Checkbox
+													<input
+														type="checkbox"
+														class="w-4 h-4 bg-gray-100 border-gray-300 focus:ring-2 mr-2 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
 														checked={getSelectedObjectServiceDetail(service)?.unlimitedFree}
-														class="cursor-pointer"
 														on:click={(event) => addFreeService(event, service)}
 														disabled={!objectDetail.services[0] ||
 															objectDetail.services.find((x) => x.id == service.id) == undefined}
 													/>
-													<p>unlimited</p>
+													<p>unlimited free</p>
 												</div></InputAddon
 											>
 											<Input
+												class={localStorage.getItem('theme') === 'dark'
+													? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
+													: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 												id="input-addon-sm"
 												placeholder="max free quantity for a user"
 												value={getSelectedObjectServiceDetail(service)?.maxFreeCount}
@@ -1163,6 +1240,7 @@
 									</div>
 								</div>
 							</div>
+							<div class="border-t-2 border-gray-200 my-5" />
 						{/each}
 					{/if}
 				</div>
@@ -1175,7 +1253,10 @@
 
 <style lang="scss">
 	canvas {
-		border: 1px solid black;
+		border: 1px solid #89909c;
+		// padding: 10px;
+		border-radius: 5px;
+		margin-top: 10px;
 	}
 	.custom-cursor {
 		cursor: crosshair;
@@ -1197,15 +1278,7 @@
 		fill: none;
 		stroke: currentColor;
 	}
-	.seat-a {
-		color: #1f2937;
-	}
-	.seat-b {
-		color: #3b82f6;
-	}
-	.seat-c {
-		color: #9333ea;
-	}
+
 	.rotate-handle {
 		left: -24px;
 		top: -24px;

@@ -18,10 +18,11 @@
 	import type { ExhibitionsModel } from '../../../models/exhibitionModel';
 	import { ToastTypeEnum } from '../../../models/toastTypeEnum';
 	import { addNewToast } from '../../../stores/toastStore';
-	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { LanguageEnum } from '../../../models/languageEnum';
 	import type { SeatPrivacyPolicyModel } from '../../../models/addSeatDataModel';
-	import { canvasToFile } from '$lib/utils/canva_to_image';
+	import { getRandomTextNumber } from '../../utils/generateRandomNumber';
+	import { canvasToFile } from '../../utils/canva_to_image';
+	import { PageData } from '../../../models/pageType';
 
 	export let data: any;
 	export let seatInfo: any;
@@ -182,8 +183,8 @@
 			>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
 				? seatInfoData.exhibition.exhibition_languages[0]?.title
 				: !seatInfoData.exhibition && formSubmitted
-				? 'exhibition is required'
-				: 'choose an exhibition'}</Chevron
+					? 'exhibition is required'
+					: 'choose an exhibition'}</Chevron
 		></Button
 	>
 	<Dropdown bind:open={dropdownOpen} ulClass="dropdownUi py-1 w-full">
@@ -216,8 +217,8 @@
 					? 'Active'
 					: 'Inactive'
 				: seatInfoData.isActive == undefined && formSubmitted
-				? 'status is required'
-				: 'Seat Status'}</Chevron
+					? 'status is required'
+					: 'Seat Status'}</Chevron
 		></Button
 	>
 	<Dropdown bind:open={isActiveDropdownOpen} ulClass="dropdownUi py-1 w-full">

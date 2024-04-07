@@ -77,6 +77,8 @@
 				iconCanvas.add(newImg);
 				iconCanvas.renderAll();
 
+
+				
 				let iconDataURL = canvasToDataUrl(iconCanvas);
 				img.icon = iconDataURL;
 
@@ -141,7 +143,7 @@
 	}
 </script>
 
-<div class="flex flex-col p-4 bg-backgroundComponent">
+<div class="flex flex-col p-5 bg-gray-100 text-gray-700">
 	<div class="grid grid-cols-4 gap-2 rounded-md my-6">
 		<Button on:click={() => addImages()} class="w-16 h-16 seat-design rounded cursor-pointer ">
 			<Plus class="w-full h-full " />

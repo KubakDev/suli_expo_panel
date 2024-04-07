@@ -4,6 +4,7 @@
 	// @ts-ignore
 	import { fabric } from 'fabric';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
+	import type { PageData } from './$types';
 
 	export let data: any;
 	export let reservations: any = [];
@@ -150,6 +151,5 @@
 <style>
 	canvas {
 		border: 1px solid rgb(158, 157, 157);
-		margin: 20px 0;
 	}
 </style>
