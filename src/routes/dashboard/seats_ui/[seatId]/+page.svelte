@@ -1002,7 +1002,7 @@
 				{/each}
 
 				<ButtonGroup class="w-full my-3 " size="sm">
-				 	<Input
+					<Input
 						class={localStorage.getItem('theme') === 'dark'
 							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
 							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
@@ -1040,7 +1040,6 @@
 					on:input={updateFillColor}
 				/>
 			</div>
-
 			<div class="flex items-center mt-2">
 				<span class="font-bold mr-2 w-12">Stroke </span>
 				<div class="flex items-center flex-1">
@@ -1223,7 +1222,7 @@
 														disabled={!objectDetail.services[0] ||
 															objectDetail.services.find((x) => x.id == service.id) == undefined}
 													/>
-													<p>unlimited</p>
+													<p>unlimited free</p>
 												</div></InputAddon
 											>
 											<Input
@@ -1254,10 +1253,10 @@
 
 <style lang="scss">
 	canvas {
-		// border: 1px solid #89909c;
+		border: 1px solid #89909c;
 		// padding: 10px;
-		// border-radius: 25px;
-		// margin: 10px;
+		border-radius: 5px;
+		margin-top: 10px;
 	}
 	.custom-cursor {
 		cursor: crosshair;

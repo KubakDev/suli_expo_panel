@@ -20,7 +20,6 @@
 	let loading = false;
 	let languages = Object.values(LanguageEnum);
 	let discountedPrice = 0;
-	let total_price = 0;
 
 	interface reservationType {
 		id?: number;
@@ -37,6 +36,7 @@
 		type: SeatsLayoutTypeEnum;
 		extra_discount_checked?: boolean;
 		rejected_by_user?: boolean;
+		total_price: number;
 	}
 	let openPreviewImage = false;
 	let selectedImageUrlForPreview = '';
@@ -58,22 +58,33 @@
 			.eq('object_id', objectId);
 	});
 
+	let disableCheckbox: boolean = false;
+
 	async function getReservationData() {
 		loading = true;
-		await data.supabase
+		const response = await data.supabase
 			.from('seat_reservation')
 			.select('*,company(*),exhibition(*,exhibition_languages(*))')
-			.eq('object_id', objectId)
-			.then(async (Response) => {
-				total_price = Response?.data[0]?.total_price;
-				reservations = Response.data as reservationType[];
-				reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
-				if (reservations[0]?.type != SeatsLayoutTypeEnum.AREAFIELDS) {
-					await getSeatLayout();
-				}
-				exhibitionId = reservations[0]?.exhibition?.id ?? 0;
-				calculateTotalPrice();
-			});
+			.eq('object_id', objectId);
+
+		if (response.error) {
+			console.error('Failed to fetch reservations:', response.error);
+			loading = false;
+			return;
+		}
+
+		reservations = response.data;
+		reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
+
+		// Set disableCheckbox to true if any reservation has status 'accept'
+		disableCheckbox = reservations.some((reservation) => reservation.status === 'accept');
+		console.log('disableCheckbox : ', disableCheckbox);
+
+		if (reservations[0]?.type !== SeatsLayoutTypeEnum.AREAFIELDS) {
+			await getSeatLayout();
+		}
+		exhibitionId = reservations[0]?.exhibition?.id ?? 0;
+		calculateTotalPrice();
 		loading = false;
 	}
 
@@ -145,7 +156,9 @@
 
 	// Function to determine if a checkbox should be disabled based on the current reservation status
 	let key = 0;
+
 	function isCheckboxDisabled(
+		reservation: any,
 		currentStatus: ReservationStatusEnum,
 		checkboxStatus: ReservationStatusEnum
 	) {
@@ -207,7 +220,7 @@
 				let seatAreasData = JSON.parse(activeSeat?.areas);
 				if (reservationData?.reserved_areas) {
 					let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
-					console.log(userReservedAreas);
+
 					userReservedAreas.map((userReservedArea: any) => {
 						if (seatAreasData) {
 							let areaIndex = seatAreasData.findIndex(
@@ -242,20 +255,20 @@
 					.then((response) => {});
 			});
 		}
+		getReservationData();
 	}
 	////////////////////////////////////////////////////////////////////////////
-	// update quantity
-
+	// update quantity data
 	async function updateServiceQuantity() {
 		let result = { updateAllowed: true, message: '' };
+		let updates = [];
 
+		// Aggregate necessary updates
 		for (const reservation of reservations) {
 			if (Array.isArray(reservation.services)) {
 				for (const serviceString of reservation.services) {
 					try {
 						const service = JSON.parse(serviceString);
-						const serviceName = service.serviceDetail.languages[0].title;
-
 						const { data: serviceDetails, error } = await data.supabase
 							.from('seat_services')
 							.select('quantity')
@@ -263,54 +276,50 @@
 							.single();
 
 						if (error || !serviceDetails) {
-							result = {
+							return {
 								updateAllowed: false,
-								message: `Error fetching details for "${serviceName}" or service not found`
+								message: `Error fetching service details or service not found.`
 							};
-							break;
 						}
 
 						const newQuantity = serviceDetails.quantity - service.quantity;
 						if (newQuantity < 0) {
-							// Include the service name in the error message
-							result = {
+							return {
 								updateAllowed: false,
-								message: `Unable to reduce the quantity for '${serviceName}'. To proceed, you can either:- Increase the quantity available for this service, or
-- Advise the user to reduce their requested quantity.
-After adjusting the quantities accordingly, you may attempt to accept the reservation again.`
+								message: `Insufficient quantity for service.`
 							};
-							break;
-						} else {
-							// Proceed to update the seat_services table since the new quantity is >= 0
-							const { error: updateError } = await data.supabase
-								.from('seat_services')
-								.update({ quantity: newQuantity })
-								.eq('id', service.serviceId);
-
-							if (updateError) {
-								result = {
-									updateAllowed: false,
-									message: `Error updating quantity for "${serviceName}": ${updateError.message}`
-								};
-								break;
-							}
 						}
+
+						// Instead of updating here, add to updates array
+						updates.push({ serviceId: service.serviceId, newQuantity });
 					} catch (e) {
-						result = {
+						return {
 							updateAllowed: false,
-							message: `Error processing for this service `
+							message: `Error processing service update.`
 						};
-						break;
 					}
 				}
 			} else {
-				result = {
+				return {
 					updateAllowed: false,
-					message: 'Invalid format for reservation.services, expected an array.'
+					message: 'Invalid service data format.'
 				};
-				break;
 			}
-			if (!result.updateAllowed) break;
+		}
+
+		// Execute all updates sequentially
+		for (let update of updates) {
+			const { error } = await data.supabase
+				.from('seat_services')
+				.update({ quantity: update.newQuantity })
+				.eq('id', update.serviceId);
+
+			if (error) {
+				return {
+					updateAllowed: false,
+					message: `Failed to update service quantity.`
+				};
+			}
 		}
 
 		return result;
@@ -403,7 +412,6 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 			import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL + '/' + reservation?.file_url
 		);
 	}
-
 	function goBackToPreviewsPage() {
 		if (browser) {
 			window.history.back();
@@ -413,7 +421,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 
 <Modal bind:open={openPreviewImage} autoclose outsideclose>
 	<!-- svelte-ignore a11y-missing-attribute -->
-	<img src={selectedImageUrlForPreview} class="rounded-lg w-full h-full min-w-[150px] pt-8" />
+	<img src={selectedImageUrlForPreview} class="rounded w-full h-full min-w-[150px] pt-8" />
 </Modal>
 
 <!-- content  -->
@@ -497,9 +505,12 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 						<th class="table_header dark:border-gray-800">
 							<div class="flex items-center gap-2 mx-[50px] uppercase">exhibition type</div>
 						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">reserved areas</div>
-						</th>
+						{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+							<th class="table_header dark:border-gray-800">
+								<div class="flex items-center gap-2 mx-[50px] uppercase">reserved areas</div>
+							</th>
+						{/if}
+
 						<th class="table_header dark:border-gray-800">
 							<div class="flex items-center gap-2 mx-[50px] uppercase">services</div>
 						</th>
@@ -528,7 +539,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 						<tr class="border-2 border-[#edeff2]">
 							<td class="max-w-sm px-4">
 								<span
-									class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded-lg text-gray-900 text-sm border"
+									class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded text-gray-900 text-sm border"
 								>
 									{#if reservation.created_at}
 										{moment
@@ -553,7 +564,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 											src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
 												?.logo_url}"
 											alt=""
-											class="rounded-full w-16 h-16 m-3"
+											class="rounded w-16 h-16 m-3"
 										/>
 									{/if}
 								</div>
@@ -572,7 +583,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 											<img
 												src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
 												alt=""
-												class="rounded-lg w-full h-32 min-w-[150px] object-cover cursor-pointer"
+												class="rounded w-full h-32 min-w-[150px] object-cover cursor-pointer"
 												on:click={() => {
 													openPreviewImage = true;
 													selectedImageUrlForPreview =
@@ -594,7 +605,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 											<img
 												src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
 												alt=""
-												class="rounded-lg w-full h-32 min-w-[150px] object-cover cursor-pointer"
+												class="rounded w-full h-32 min-w-[150px] object-cover cursor-pointer"
 												on:click={() => {
 													openPreviewImage = true;
 													selectedImageUrlForPreview =
@@ -622,22 +633,25 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 							<td>
 								<div>{reservation?.exhibition?.exhibition_type}</div>
 							</td>
-							<td>
-								{#if reservation?.reserved_areas}
-									{#each JSON.parse(reservation?.reserved_areas) as reservedAreaData}
-										<div class="flex justify-between px-7">
-											<div>{reservedAreaData.area} M</div>
-											<div>{reservedAreaData.quantity}</div>
-										</div>
-									{/each}
-								{/if}
+							{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+								<td>
+									{#if reservation?.reserved_areas}
+										{#each JSON.parse(reservation?.reserved_areas) as reservedAreaData}
+											<div class="flex justify-between px-7">
+												<div>{reservedAreaData.area} M</div>
+												<div>{reservedAreaData.quantity}</div>
+											</div>
+										{/each}
+									{/if}
 
-								<div
-									class="flex flex-col border-t-2 border-[#696868] border-dashed justify-center items-center"
-								>
-									{totalAreaPrice}
-								</div>
-							</td>
+									<div
+										class="flex flex-col border-t-2 border-[#696868] border-dashed justify-center items-center"
+									>
+										{totalAreaPrice}
+									</div>
+								</td>
+							{/if}
+
 							<td>
 								<div>
 									{#if reservation?.services}
@@ -646,7 +660,12 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 												class="flex flex-col border-b-2 border-[#696868] border-dashed justify-center items-center"
 											>
 												<h3>
-													service name : {getServices(service)?.serviceDetail?.languages[0]?.title}
+													service name :
+													{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+														{getServices(service)?.serviceDetail?.languages[0]?.title}
+													{:else}
+														{getServices(service)?.serviceDetail?.title}
+													{/if}
 												</h3>
 												<h3>quantity : {getServices(service)?.quantity}</h3>
 												<h3>price : {getServices(service)?.serviceDetail?.price}</h3>
@@ -659,18 +678,15 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 							</td>
 
 							<td>
-								<div
-									class="flex flex-col justify-start items-start space-y-2 mx-2 cursor-pointer
-								"
-								>
+								<div class="flex flex-col justify-start items-start space-y-2 mx-2">
 									<label for="" class="text-sm text-gray-400">
 										Please, Once you change the status, it cannot be altered.
 									</label>
-									<p class="mx-2">{reservation.rejected_by_user ? 'Rejected by user' : ''}</p>
 
 									<label class="flex items-center space-x-2">
 										<input
 											disabled={isCheckboxDisabled(
+												reservation,
 												reservation.status,
 												ReservationStatusEnum.PENDING
 											)}
@@ -683,9 +699,14 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 										<span class="text-yellow-400 uppercase">{ReservationStatusEnum.PENDING}</span>
 									</label>
 
-									<label class="flex items-center space-x-2">
+									<label
+										class="flex items-center space-x-2 {disableCheckbox
+											? 'opacity-50 cursor-not-allowed'
+											: ''}"
+									>
 										<input
 											disabled={isCheckboxDisabled(
+												reservation,
 												reservation.status,
 												ReservationStatusEnum.ACCEPT
 											) ||
@@ -703,6 +724,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 									<label class="flex items-center space-x-2">
 										<input
 											disabled={isCheckboxDisabled(
+												reservation,
 												reservation.status,
 												ReservationStatusEnum.REJECT
 											) ||
@@ -717,12 +739,17 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 										<span class="text-red-400 uppercase">{ReservationStatusEnum.REJECT}</span>
 									</label>
 								</div>
+								{#if reservation.rejected_by_user}
+									<p class="mx-2 text-gray-100 border border-red-400 mt-2 p-2 rounded">
+										{reservation.rejected_by_user ? 'Rejected by user' : ''}
+									</p>
+								{/if}
 							</td>
 
 							<td>
 								<div class="w-full flex justify-center">
 									<div
-										class="min-w-[80px] h-[50px] flex justify-center items-center rounded-xl p-3"
+										class="min-w-[80px] h-[50px] flex justify-center items-center rounded p-3"
 										style=" {reservation.extra_discount_checked
 											? 'background-color: #00bf2d;color:white'
 											: 'background-color:#edeff2'};"
@@ -759,7 +786,7 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 									<p
 										class=" text-start text-md text-[#e1b168] md:text-xl font-medium justify-center flex my-2"
 									>
-										{total_price}$
+										{reservation.total_price}$
 									</p>
 								</div>
 							</td>
@@ -768,9 +795,11 @@ After adjusting the quantities accordingly, you may attempt to accept the reserv
 				</tbody>
 			</table>
 		</div>
-		{#if seatLayout}
-			<ReservedSeat data={seatLayout} {reservations} />
-		{/if}
+		<div class="mt-2">
+			{#if seatLayout}
+				<ReservedSeat data={seatLayout} {reservations} />
+			{/if}
+		</div>
 	</div>
 </div>
 
