@@ -4,7 +4,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/media_VideoStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel'; 
+	import type { VideoModel, VideoModelLang } from '../../../models/media_VideoModel';
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
@@ -149,13 +149,13 @@
 		}
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
 
 		if (selectedValue === 'Select Type') {
 			delete videoObjectData.exhibition_id;
 		} else {
-			videoObjectData.exhibition_id = selectedValue;
+			videoObjectData.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 

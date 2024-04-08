@@ -15,13 +15,19 @@
 
 	export let data;
 
+	interface FileWithLang {
+		fileName: string;
+		file: File;
+		lang: LanguageEnum;
+	}
+
 	let isFormSubmitted = false;
 	let showToast = false;
 	let fileName: string;
 	let fileName_map: string;
-	let fileName_pdf: any[] = [];
-	let fileName_pdf_contract: any[] = [];
-	let fileName_brochure: any[] = [];
+	let fileName_pdf: FileWithLang[] = [];
+	let fileName_pdf_contract: FileWithLang[] = [];
+	let fileName_brochure: FileWithLang[] = [];
 	let imageFile: File | undefined;
 	let imageFile_map: File | undefined;
 	let imageFile_pdf: File | undefined;

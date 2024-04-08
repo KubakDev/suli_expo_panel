@@ -30,7 +30,7 @@
 
 	onMount(fetchData);
 
-	async function goToPage(page: any) {
+	async function goToPage(page: number) {
 		currentPage = page;
 		await fetchData();
 	}
@@ -40,7 +40,7 @@
 	}
 
 	// delete data
-	async function handleDelete(galleryId: any) {
+	async function handleDelete(galleryId: number) {
 		try {
 			await deleteData(galleryId, data.supabase);
 			if (currentPage > totalPages) {
@@ -50,7 +50,7 @@
 		} catch (error) {}
 	}
 
-	function calculateIndex(index: any) {
+	function calculateIndex(index: number) {
 		return index + 1 + (currentPage - 1) * pageSize;
 	}
 

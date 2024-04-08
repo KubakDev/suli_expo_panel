@@ -28,7 +28,7 @@
 
 	onMount(async () => {
 		try {
-			await getReservationsForCompany(data.supabase, companyId);
+			await getReservationsForCompany(data.supabase, +companyId);
 
 			await loadServiceTitles();
 			serviceTitlesLoaded = true;

@@ -16,10 +16,11 @@
 		selectedTheme
 	} from '../../../stores/pageStore';
 	import { getComponentData } from '../../../stores/componentStor';
-	import { ModeTypeEnum } from '../../../models/colorTheme';
+	import { ModeTypeEnum, type ColorTheme } from '../../../models/colorTheme';
+	import type { PageData } from '../../../routes/$types';
 
 	let loading = false;
-	export let data: any;
+	export let data: PageData;
 	export let openLightCard: boolean;
 
 	let showToast = false;
@@ -124,7 +125,7 @@
 	}
 	onMount(fetchData);
 
-	async function changeCardType(itemName: any) {
+	async function changeCardType(itemName: string) {
 		const selectedComponent = componentData.find((item: any) => item.type === itemName) || null;
 		let newPageTheme = $pageTheme;
 		newPageTheme.componentTypeId = selectedComponent.id;
@@ -138,7 +139,6 @@
 		newTheme.color_palette_light = currentTheme;
 		changeTheme(newTheme);
 		changeCurrentTheme(newTheme?.color_palette_light);
-		//
 	}
 
 	async function changePageTheme_dark(currentTheme: any) {

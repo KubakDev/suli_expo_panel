@@ -1,9 +1,13 @@
 import imageCompression from 'browser-image-compression';
 import { getRandomTextNumber } from './generateRandomNumber';
 
+interface ExhibitionsObject {
+	thumbnail: string;
+}
+
 export async function handleFileUpload(
 	e: Event,
-	exhibitionsObject: any,
+	exhibitionsObject: ExhibitionsObject,
 	setImageFile: Function,
 	setFileName: Function,
 	path: string

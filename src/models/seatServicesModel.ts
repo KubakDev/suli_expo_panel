@@ -6,6 +6,7 @@ export interface seatServicesModel {
 	price?: number;
 	quantity?: number;
 	discount?: number;
+	position?: number;
 	type?: SeatServiceTypeEnum;
 	created_at?: Date;
 	seat_services_languages?: seatServicesModelLang[];

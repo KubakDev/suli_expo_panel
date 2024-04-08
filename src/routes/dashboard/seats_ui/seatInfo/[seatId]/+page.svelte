@@ -8,13 +8,14 @@
 	import { page } from '$app/stores';
 	import UploadContractFile from '../../reservation_by_area/uploadContractFile.svelte';
 	import RequiredFieldsComponent from '../../reservation_by_area/requiredFields.svelte';
+	import type { PageData } from './$types';
 
-	export let data: any;
+	export let data: PageData;
 	let imageFile: File | undefined;
 	let fileName: string;
 	let loading = false;
 	let formSubmitted = false;
-	let seatData: any = { excel_preview_url: '' };
+	let seatData = { excel_preview_url: '' };
 	let exhibitionId: number;
 
 	const pageId = $page.params.seatId;

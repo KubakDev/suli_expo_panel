@@ -14,14 +14,14 @@
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import InsertButton from '$lib/components/InsertButton.svelte';
+	import type { seatServicesModel } from '../../../models/seatServicesModel';
 
 	export let data;
-	let items: any = [];
+	let items: seatServicesModel[] = [];
 	let flag = false;
 
 	async function fetchData() {
 		await getSeatServices(data.supabase);
-		// console.log($seatServices);
 		items = $seatServices;
 		flag = false;
 	}
@@ -33,26 +33,26 @@
 	}
 
 	// delete data
-	async function handleDelete(seatServicesId: any) {
-		try {
-			await deleteSeatService(seatServicesId, data.supabase);
+	// async function handleDelete(seatServicesId: number) {
+	// 	try {
+	// 		await deleteSeatService(seatServicesId, data.supabase);
 
-			await fetchData();
-		} catch (error) {}
-	}
+	// 		await fetchData();
+	// 	} catch (error) {}
+	// }
 
 	// swap column index
 	const flipDurationMs = 300;
 
-	function handleDndConsider(e: any) {
+	function handleDndConsider(e: CustomEvent) {
 		items = e.detail.items;
 		//
 	}
 
-	async function handleDndFinalize(e: any) {
+	async function handleDndFinalize(e: CustomEvent) {
 		items = e.detail.items;
 		flag = true;
-		items.forEach((item: any, index: number) => {
+		items.forEach((item, index: number) => {
 			item.position = index + 1;
 		});
 
@@ -80,7 +80,7 @@
 		items[indexA] = items[indexB];
 		items[indexB] = tempItem;
 		flag = true;
-		items.forEach((item: any, index: number) => {
+		items.forEach((item, index: number) => {
 			item.position = index + 1;
 		});
 
@@ -385,13 +385,6 @@
 	}
 
 	/* Apply styles for dragging state */
-	tr[data-dnd-dragging] {
-		background-color: #ce1111;
-	}
-
-	tr.dnd-placeholder {
-		background-color: #f0f0f0;
-	}
 
 	tbody {
 		width: 50%;

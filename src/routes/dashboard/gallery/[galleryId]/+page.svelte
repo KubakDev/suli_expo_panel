@@ -224,12 +224,12 @@
 		//
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
 		if (selectedValue === 'Select Type') {
 			delete galleryData.exhibition_id;
 		} else {
-			galleryData.exhibition_id = selectedValue;
+			galleryData.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 

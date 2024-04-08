@@ -169,13 +169,13 @@
 		}
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
 
 		if (selectedValue === 'Select Type') {
 			delete newsObject.exhibition_id;
 		} else {
-			newsObject.exhibition_id = selectedValue;
+			newsObject.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 

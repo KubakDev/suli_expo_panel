@@ -2,8 +2,20 @@
 
 import { ImgSourceEnum } from '../../models/imgSourceEnum';
 
-export function getImagesObject(exhibitionsData: any) {
-	let carouselImages = exhibitionsData.images.map((image, i) => {
+interface ExhibitionData {
+	images: string[];
+}
+
+export function getImagesObject(exhibitionsData: ExhibitionData) {
+	let carouselImages:
+		| {
+				id: number;
+				imgurl: string;
+				imgSource: ImgSourceEnum;
+				name: string;
+				attribution: string;
+		  }[]
+		| undefined = exhibitionsData.images.map((image, i) => {
 		return {
 			id: i,
 			imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,

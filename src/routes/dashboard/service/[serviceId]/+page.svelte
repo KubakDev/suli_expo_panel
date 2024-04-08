@@ -150,12 +150,13 @@
 		}
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
+		
 		if (selectedValue === 'Select Type') {
 			delete serviceData.exhibition_id;
 		} else {
-			serviceData.exhibition_id = selectedValue;
+			serviceData.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 </script>

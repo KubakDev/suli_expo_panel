@@ -3,10 +3,11 @@
 	import type { ExhibitionModel } from '../../models/exhibitionTypeModel';
 	import { getDataExhibition } from '../../stores/exhibitionTypeStore';
 	import { onMount } from 'svelte';
+	import type { PageData } from '../../routes/$types';
 
-	export let handleSelectChange: any;
+	export let handleSelectChange: (event: Event) => void;
 	export let pageData: any;
-	export let data: any;
+	export let data: PageData;
 
 	let exhibitionData: ExhibitionModel[] = [];
 

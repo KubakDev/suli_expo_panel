@@ -10,10 +10,11 @@
 		Tooltip,
 		Legend
 	} from 'chart.js';
+	import type { PageData } from '../../routes/$types.js';
 
 	Chart.register(BarController, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-	export let data: any;
+	export let data: PageData;
 	let canvas: HTMLCanvasElement;
 	let chart: Chart;
 

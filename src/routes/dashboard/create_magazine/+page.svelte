@@ -24,6 +24,7 @@
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
+
 	type CarouselImage = {
 		attribution: string;
 		id: number;
@@ -196,13 +197,13 @@
 		}
 	}
 
-	function handleSelectChange(event: any) {
-		const selectedValue = event.target.value;
+	function handleSelectChange(event: Event) {
+		const selectedValue = (event.target as HTMLSelectElement).value;
 
 		if (selectedValue === 'Select Type') {
 			delete magazineObject.exhibition_id;
 		} else {
-			magazineObject.exhibition_id = selectedValue;
+			magazineObject.exhibition_id = parseInt(selectedValue, 10);
 		}
 	}
 
