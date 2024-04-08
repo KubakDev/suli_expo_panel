@@ -73,9 +73,11 @@
 	</button>
 </div>
 
-<div class="flex flex-col justify-start items-center w-full pt-10 min-h-screen">
-	<div>
-		<Button on:click={createNewDesign}>Create New Seat Design</Button>
+<div class="flex flex-col justify-center items-center w-full pt-10">
+	<div class="px-4 w-full lg:w-10/12">
+		<div class="my-6 flex w-full justify-end">
+			<Button on:click={createNewDesign}>Create New Seat Design</Button>
+		</div>
 	</div>
 	<div class="px-4 grid grid-cols-3 gap-4 mt-10">
 		{#if designs}
@@ -135,11 +137,12 @@
 			{/each}
 		{/if}
 	</div>
-	<div class="px-4 mt-10 w-full lg:w-10/12">
+	<div class="w-full lg:w-10/12 my-10 px-4 border border-gray-300" />
+	<div class="px-4 w-full lg:w-10/12">
 		<div class="my-6 flex w-full justify-between">
 			<div><h1 class="  text-lg font-bold">Reservation by area</h1></div>
 			<div>
-				<Button on:click={() => goto('seats_ui/reservation_by_area')}>add new area</Button>
+				<Button on:click={() => goto('seats_ui/reservation_by_area')}>Add New Area</Button>
 			</div>
 		</div>
 		<table class="min-w-full border-collapse">
