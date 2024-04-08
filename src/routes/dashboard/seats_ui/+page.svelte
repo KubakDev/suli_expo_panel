@@ -5,6 +5,7 @@
 	import type { SeatLayoutModel } from '../seats/seatLayoutStore';
 	import { goto } from '$app/navigation';
 	import { SeatsLayoutTypeEnum } from '../../../models/seatsLayoutTypeEnum';
+
 	export let data: PageData;
 
 	$: ({ supabase } = data);
@@ -49,8 +50,16 @@
 	function openSeatInfo(seatId: number) {
 		goto(`seats_ui/seatInfo/${seatId}`);
 	}
+
+	function backToHome() {
+		console.log('sdf');
+		goto('/dashboard/promotions');
+	}
 </script>
 
+<div>
+	<Button on:click={backToHome}>Back to Home</Button>
+</div>
 <div class="flex flex-col justify-start items-center w-full pt-10 min-h-screen">
 	<div>
 		<Button on:click={createNewDesign}>Create New Seat Design</Button>
