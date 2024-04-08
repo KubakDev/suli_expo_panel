@@ -78,7 +78,7 @@
 
 		// Set disableCheckbox to true if any reservation has status 'accept'
 		disableCheckbox = reservations.some((reservation) => reservation.status === 'accept');
-		console.log('disableCheckbox : ', disableCheckbox);
+	 
 
 		if (reservations[0]?.type !== SeatsLayoutTypeEnum.AREAFIELDS) {
 			await getSeatLayout();

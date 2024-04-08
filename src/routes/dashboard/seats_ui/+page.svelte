@@ -5,7 +5,6 @@
 	import type { SeatLayoutModel } from '../seats/seatLayoutStore';
 	import { goto } from '$app/navigation';
 	import { SeatsLayoutTypeEnum } from '../../../models/seatsLayoutTypeEnum';
-
 	export let data: PageData;
 
 	$: ({ supabase } = data);
@@ -50,19 +49,35 @@
 	function openSeatInfo(seatId: number) {
 		goto(`seats_ui/seatInfo/${seatId}`);
 	}
-
-	function backToHome() {
-		console.log('sdf');
-		goto('/dashboard/promotions');
-	}
 </script>
 
-<div>
-	<Button on:click={backToHome}>Back to Home</Button>
+<div class="p-3">
+	<button
+		class="flex justify-start items-center text-md gap-2 text-primary hover:transition-opacity duration-300 hover:opacity-70"
+		on:click={() => goto('/dashboard')}
+		><svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+			stroke="currentColor"
+			class="w-4 h-4"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+			/>
+		</svg>
+		Back
+	</button>
 </div>
-<div class="flex flex-col justify-start items-center w-full pt-10 min-h-screen">
-	<div>
-		<Button on:click={createNewDesign}>Create New Seat Design</Button>
+
+<div class="flex flex-col justify-center items-center w-full pt-10">
+	<div class="px-4 w-full lg:w-10/12">
+		<div class="my-6 flex w-full justify-end">
+			<Button on:click={createNewDesign}>Create New Seat Design</Button>
+		</div>
 	</div>
 	<div class="px-4 grid grid-cols-3 gap-4 mt-10">
 		{#if designs}
@@ -73,8 +88,8 @@
 					class="w-52 hover:shadow-sm duration-300 h-52 flex flex-col p-0 border rounded-2xl border-gray-600"
 				>
 					<div
-						class="h-32 w-full bg-black rounded-tl-2xl rounded-tr-2xl cursor-pointer"
-						on:click={() => openSeatDesignEditor(design.id)}
+						class="h-32 w-full bg-white rounded-tl-2xl rounded-tr-2xl cursor-pointer"
+						on:click={() => openSeatDesignEditor(design.id ?? 0)}
 					>
 						<!-- svelte-ignore a11y-missing-attribute -->
 						<img
@@ -122,11 +137,12 @@
 			{/each}
 		{/if}
 	</div>
-	<div class="px-4 mt-10 w-full lg:w-10/12">
+	<div class="w-full lg:w-10/12 my-10 px-4 border border-gray-300" />
+	<div class="px-4 w-full lg:w-10/12">
 		<div class="my-6 flex w-full justify-between">
-			<div><h1 class="  text-lg font-bold">reservation by area</h1></div>
+			<div><h1 class="  text-lg font-bold">Reservation by area</h1></div>
 			<div>
-				<Button on:click={() => goto('seats_ui/reservation_by_area')}>add new area</Button>
+				<Button on:click={() => goto('seats_ui/reservation_by_area')}>Add New Area</Button>
 			</div>
 		</div>
 		<table class="min-w-full border-collapse">

@@ -184,6 +184,7 @@
 						name="type"
 						size="md"
 						placeholder="Please select a valid type"
+						disabled="true"
 					>
 						<option value={SeatServiceTypeEnum.SINGULAR}>{SeatServiceTypeEnum.SINGULAR}</option>
 						<option value={SeatServiceTypeEnum.PLURAL}>{SeatServiceTypeEnum.PLURAL}</option>

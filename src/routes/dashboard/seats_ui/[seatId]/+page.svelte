@@ -64,9 +64,6 @@
 	let objects: any[] = [];
 
 	let objectDetailDescription: { language?: LanguageEnum; description?: string }[] = [];
-	$: {
-		// console.log(data);
-	}
 
 	let objectDetail: {
 		selectable: boolean;
@@ -485,7 +482,7 @@
 							}
 
 							canvas.setActiveObject(clonedObj);
-							// console.log(clonedObj);
+
 							// update layer
 							updateLayers();
 							canvas.requestRenderAll();
@@ -932,9 +929,12 @@
 	function getSelectedObjectServiceDetail(service: any) {
 		return objectDetail.services.find((serviceDetail) => serviceDetail.id == service.id) as any;
 	}
+
+	$: isLoading = true;
 </script>
 
 <!-- {#if fabric} -->
+
 <TopBarComponent
 	data={{
 		fillColor: fillColor,
@@ -960,6 +960,7 @@
 		{currentSeatLayoutData}
 	/>
 </Modal>
+
 <div class="flex flex-col w-full h-full flex-1 bg-gray-100 text-gray-700">
 	<div class="w-full grid grid-cols-6 h-full">
 		<DrawingBar
@@ -1162,6 +1163,7 @@
 						</Tabs>
 					</div>
 					<div class="border-t-2 border-gray-200 my-5" />
+					<p class="text-lg font-bold text-center text-primary">Select services for this seat</p>
 					{#if $seatServices}
 						{#each $seatServices as service}
 							<div
@@ -1169,31 +1171,26 @@
 							>
 								{#if service.seat_services_languages}
 									<div class="flex items-center">
+										<div>
+											<input
+												type="checkbox"
+												class="w-4 h-4 bg-gray-100 border-gray-300 focus:ring-2 mr-2 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
+												checked={getSelectedObjectServiceDetail(service) ? true : false}
+												on:click={() => {
+													addServiceToActiveObject(service);
+												}}
+											/>
+										</div>
 										<div class="m-1 text-lg font-bold text-gray-700">
 											{service?.seat_services_languages[0]?.title}
 										</div>
-										<div class="mx-3">
-											<h1>{service.price}</h1>
+										<div class="mx-3 text-primary font-bold">
+											<h1>{service.price}$</h1>
 										</div>
 									</div>
 								{/if}
-								<div class="flex items-center my-6 w-full justify-between">
-									<div class="flex items-center">
-										<input
-											type="checkbox"
-											class="w-4 h-4 bg-gray-100 border-gray-300 focus:ring-2 mr-2 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600"
-											checked={getSelectedObjectServiceDetail(service) ? true : false}
-											on:click={() => {
-												addServiceToActiveObject(service);
-											}}
-										/>
-										<p>select this service for this seat</p>
-									</div>
-									<div>
-										<h1>{service.price}</h1>
-									</div>
-								</div>
-								<div class="d grid-cols-1 mb-6 w-full">
+								<div class="flex items-center w-full justify-between" />
+								<div class="grid-cols-1 w-full">
 									<Input
 										class={localStorage.getItem('theme') === 'dark'
 											? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
@@ -1234,7 +1231,8 @@
 												value={getSelectedObjectServiceDetail(service)?.maxFreeCount}
 												on:change={(e) => addMaxFreeServiceCount(e, service)}
 												disabled={!objectDetail.services[0] ||
-													objectDetail.services.find((x) => x.id == service.id) == undefined}
+													objectDetail.services.find((x) => x.id == service.id) == undefined ||
+													getSelectedObjectServiceDetail(service)?.unlimitedFree === true}
 											/>
 										</ButtonGroup>
 									</div>
@@ -1250,7 +1248,6 @@
 </div>
 
 <!-- {/if} -->
-
 <style lang="scss">
 	canvas {
 		border: 1px solid #89909c;
@@ -1292,5 +1289,31 @@
 	/* Style the scrollbar thumb (optional) */
 	div::-webkit-scrollbar-thumb {
 		background-color: transparent; /* Hide the scrollbar thumb */
+	}
+
+	//spinner
+	.spinner-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+	}
+
+	.loader {
+		border: 5px solid #f3f3f3;
+		border-top: 5px solid #000000;
+		border-radius: 50%;
+		width: 50px;
+		height: 50px;
+		animation: spin 2s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 </style>

@@ -31,6 +31,7 @@
 		return themeArray.join(';');
 	}
 
+	$: activeUrl = $page.url.pathname;
 	function updateActiveUrl(url: string) {
 		activeUrl = url;
 	}

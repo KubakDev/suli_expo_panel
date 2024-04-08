@@ -37,6 +37,7 @@
 	import UploadContractFile from '../uploadContractFile.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import type { PageData } from '../$types';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 	interface areaType {
@@ -49,6 +50,8 @@
 		maxFreeCount: number;
 		maxQuantityPerUser: number;
 		unlimitedFree: boolean;
+		title: string;
+		selected: boolean;
 	}
 
 	let excelFilePreviewSelected: File;
@@ -113,8 +116,6 @@
 			maxFreeCount: 0,
 			unlimitedFree: false
 		}));
-
-		// console.log(seatServices);
 	});
 
 	async function getSeatDetail() {
@@ -146,7 +147,7 @@
 
 	// get the current services that exist in db
 	function updateServicesWithResponse(responseData: any) {
-		responseData.forEach((responseService) => {
+		responseData.forEach((responseService: any) => {
 			const serviceIndex = seatServices.findIndex(
 				(service) => service.serviceId === responseService.serviceId
 			);
@@ -228,38 +229,39 @@
 	async function updatedSeat() {
 		formSubmitted = true;
 		const supabase = data.supabase;
-		if (!seatInfoData.name || !seatInfoData.exhibition || seatInfoData.isActive == undefined) {
+		if (!seatInfoData.name || !seatInfoData.exhibition || seatInfoData.isActive === undefined) {
 			return;
 		}
 		loading = true;
-		if (seatInfoData.isActive) {
-			await supabase
-				.from('seat_layout')
-				.update({ is_active: false })
-				.eq('exhibition', seatInfoData.exhibition?.id);
-		}
-		const areasArray = JSON.stringify(areas);
 
-		if (excelFilePreviewSelected) {
-			const randomText = getRandomTextNumber();
-			await supabase.storage
-				.from('image')
-				.upload(
-					`seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
-					excelFilePreviewSelected
-				)
-				.then((response: any) => {
+		try {
+			if (seatInfoData.isActive) {
+				await supabase
+					.from('seat_layout')
+					.update({ is_active: false })
+					.eq('exhibition', seatInfoData.exhibition?.id);
+			}
+
+			const areasArray = JSON.stringify(areas);
+
+			if (excelFilePreviewSelected) {
+				const randomText = getRandomTextNumber();
+				const response = await supabase.storage
+					.from('image')
+					.upload(
+						`seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
+						excelFilePreviewSelected
+					);
+				if (response.data) {
 					excel_preview_url = response.data.path;
-				});
-		}
+				}
+			}
 
-		//send new service
-		addSelectedServices();
-		const servicesData = prepareDataForUpdate();
+			// Send new service
+			addSelectedServices();
+			const servicesData = prepareDataForUpdate();
 
-		// console.log(servicesData);
-		await supabase
-			.rpc('update_seat_and_seat_privacy', {
+			const response = await supabase.rpc('update_seat_and_seat_privacy', {
 				seat_layout_data: {
 					name: seatInfoData.name,
 					is_active: seatInfoData.isActive,
@@ -274,35 +276,34 @@
 					excel_preview_url
 				},
 				privacy_lang_data: privacyPolicyLang
-			})
-			.then((response: any) => {
-				loading = false;
-				if (response.error) {
-					addNewToast({
-						type: ToastTypeEnum.ERROR,
-						message: 'Failed To Update this seat',
-						title: 'Failed',
-						duration: 1000
-					});
-				} else {
-					addNewToast({
-						type: ToastTypeEnum.SUCCESS,
-						message: 'The Seat Added Successfully',
-						title: 'Success',
-						duration: 1000
-					});
-				}
-				getSeatDetail();
-			})
-			.catch(() => {
-				loading = false;
+			});
+
+			loading = false;
+			if (response.error) {
 				addNewToast({
 					type: ToastTypeEnum.ERROR,
 					message: 'Failed To Update this seat',
 					title: 'Failed',
 					duration: 1000
 				});
+			} else {
+				addNewToast({
+					type: ToastTypeEnum.SUCCESS,
+					message: 'The Seat Added Successfully',
+					title: 'Success',
+					duration: 1000
+				});
+			}
+			getSeatDetail();
+		} catch (error) {
+			loading = false;
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Failed To Update this seat',
+				title: 'Failed',
+				duration: 1000
 			});
+		}
 	}
 
 	function addNewArea() {
@@ -377,6 +378,27 @@
 	}
 </script>
 
+<div class="p-3">
+	<button
+		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
+		on:click={() => goto('/dashboard/seats_ui')}
+		><svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+			stroke="currentColor"
+			class="w-4 h-4"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+			/>
+		</svg>
+		Back to Seats Dashboard
+	</button>
+</div>
 <Modal title="edit Area" bind:open={isOpenEditModal} class="bg-white max-w-sm mx-auto " autoclose>
 	<div class=" w-full">
 		<div class="my-2">
@@ -541,8 +563,12 @@
 														checked={service.unlimitedFree}
 														bind:value={service.unlimitedFree}
 														class="cursor-pointer"
-														on:change={(e) =>
-															handleUnlimitedFreeChange(service.id, e.target.checked)}
+														on:change={(e) => {
+															const target = e.target;
+															if (target instanceof HTMLInputElement) {
+																handleUnlimitedFreeChange(service.id, target.checked);
+															}
+														}}
 														disabled={!service.selected}
 													/>
 

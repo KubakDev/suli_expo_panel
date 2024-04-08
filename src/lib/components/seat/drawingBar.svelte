@@ -16,14 +16,7 @@
 		selectedObjectId: number;
 		fabric: any;
 	};
-	// $: {
-	// 	console.log(data.canvas);
-	// }
-
-	$: {
-		// console.log(data);
-	}
-
+ 
 	let images: SeatImageItemModel[] = [];
 	let uploadImageModal = false;
 	let itemName: string = '';
