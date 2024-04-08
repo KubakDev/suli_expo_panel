@@ -64,9 +64,7 @@
 	let objects: any[] = [];
 
 	let objectDetailDescription: { language?: LanguageEnum; description?: string }[] = [];
-	$: {
-		// console.log(data);
-	}
+ 
 
 	let objectDetail: {
 		selectable: boolean;
@@ -485,7 +483,7 @@
 							}
 
 							canvas.setActiveObject(clonedObj);
-							// console.log(clonedObj);
+						 
 							// update layer
 							updateLayers();
 							canvas.requestRenderAll();
