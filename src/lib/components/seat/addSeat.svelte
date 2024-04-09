@@ -22,6 +22,7 @@
 	import type { SeatPrivacyPolicyModel } from '../../../models/addSeatDataModel';
 	import { canvasToFile } from '$lib/utils/canva_to_image';
 	import type { PageData } from '../../../routes/$types';
+	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 
 	export let data: PageData;
 	export let seatInfo: any;
