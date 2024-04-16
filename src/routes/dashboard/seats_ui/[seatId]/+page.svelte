@@ -974,13 +974,14 @@
 			on:updateLayers={() => updateLayers()}
 		/>
 
-		<div bind:this={container} class="w-full col-span-4 relative overflow-hidden">
-			<canvas id="canvas" />
+		<div bind:this={container} class="w-full min-h-[200px] col-span-4 relative overflow-hidden">
+			<canvas id="canvas" class="h-full w-full fabric-canvas" />
 			<div class="absolute bottom-20 right-10 w-40 flex justify-between">
 				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
 				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
 			</div>
 		</div>
+
 		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
