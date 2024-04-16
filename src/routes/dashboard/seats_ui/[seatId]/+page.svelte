@@ -909,6 +909,7 @@
 			.from('fav_colors')
 			.select('*')
 			.then((Response) => {
+				console.log(Response.data);
 				favColors = Response.data?.map((x) => x.color) as string[];
 			});
 	}
@@ -1132,7 +1133,7 @@
 						<InputAddon
 							class={localStorage.getItem('theme') === 'dark'
 								? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
-								: 'bg-white border-1 dark:border-gray-400 text-gray-700'}>Price</InputAddon
+								: 'bg-white border-1 dark:border-gray-400 text-gray-700'}>Price $</InputAddon
 						>
 						<Input
 							class={localStorage.getItem('theme') === 'dark'
