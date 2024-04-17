@@ -89,7 +89,7 @@
 			await getFavColors();
 
 			seatImageItemStore.getAllSeatItems();
-			const x = await getSeatServices(data.supabase, 1, 15);
+			const x = await getSeatServices(data.supabase);
 			canvas = new fabricResponse.fabric.Canvas('canvas', { isDrawingMode: false });
 			canvas.on('path:created', (e: any) => {
 				let path = e.path;
@@ -138,7 +138,6 @@
 								canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
 							}
 							await tick(); // wait for the next update cycle
-
 							// get data
 							getData();
 
@@ -158,6 +157,8 @@
 								obj.top = tempTop;
 
 								obj.setCoords();
+								// Ensure the object is above the background
+								obj.set('z-index', 1);
 							});
 
 							canvas.renderAll();
@@ -182,12 +183,15 @@
 			});
 			updateLayers();
 			canvas.on('object:moving', function (options: fabric.IEvent) {
-				// if (options.target) {
-				// 	options.target.set({
-				// 		left: Math.round(options.target.left! / gridSize) * gridSize,
-				// 		top: Math.round(options.target.top! / gridSize) * gridSize
-				// 	});
-				// }
+				if (options.target) {
+					// Manipulate z-index when moving objects to ensure they are displayed above the background
+					let movingObject = options.target;
+					movingObject && movingObject.set('z-index', new Date().getTime());
+					options.target.set({
+						left: Math.round(options.target.left! / gridSize) * gridSize,
+						top: Math.round(options.target.top! / gridSize) * gridSize
+					});
+				}
 			});
 			var panning = false;
 			var lastPosX: any, lastPosY: any;
@@ -457,7 +461,7 @@
 			window.addEventListener('keydown', (e) => {
 				if (e.ctrlKey && e.code === 'KeyV') {
 					if (copiedObject) {
-						copiedObject.clone((clonedObj) => {
+						copiedObject.clone((clonedObj: any) => {
 							canvas.discardActiveObject(); // Deselect current object
 							clonedObj.set({
 								left: clonedObj.left + 10,
@@ -624,6 +628,7 @@
 		}
 		canvas.renderAll(); // Render changes
 	}
+
 	function clearAllInput() {
 		strokeWidth = null;
 		itemWidth = null;
@@ -638,7 +643,6 @@
 		selectedObjectId = 0;
 		objectDetailDescription = [];
 	}
-
 	function onObjectModified(selectedObject: any) {
 		if (selectedObject.scaleX !== 1 || selectedObject.scaleY !== 1) {
 			itemWidth = selectedObject.getScaledWidth();
