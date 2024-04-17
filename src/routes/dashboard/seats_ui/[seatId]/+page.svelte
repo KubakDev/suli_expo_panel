@@ -89,7 +89,7 @@
 			await getFavColors();
 
 			seatImageItemStore.getAllSeatItems();
-			const x = await getSeatServices(data.supabase, 1, 15);
+			const x = await getSeatServices(data.supabase);
 			canvas = new fabricResponse.fabric.Canvas('canvas', { isDrawingMode: false });
 			canvas.on('path:created', (e: any) => {
 				let path = e.path;
