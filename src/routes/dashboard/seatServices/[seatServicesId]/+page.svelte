@@ -219,7 +219,7 @@
 				</Label>
 			</div>
 
-			<!-- <div class="col-span-1">
+			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="icon" class="mb-2">Enter price</Label>
 					<Input type="number" bind:value={seatServicesData.price} placeholder="Enter a number" />
@@ -227,7 +227,7 @@
 						Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
 					</p>
 				</Label>
-			</div> -->
+			</div>
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<Label for="icon" class="mb-2">Quantity</Label>
