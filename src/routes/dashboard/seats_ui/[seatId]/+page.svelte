@@ -446,17 +446,21 @@
 			// });
 
 			//function for copy
+			// Function for copying, including custom properties
 			window.addEventListener('keydown', (e) => {
 				if (e.ctrlKey && e.code === 'KeyC') {
 					const activeObject = canvas.getActiveObject();
-					if (activeObject) {
-						// copy the object and store it
+					if (activeObject && activeObject.objectDetail) {
+						// Use the extend method to ensure all properties are copied
 						activeObject.clone((cloned: any) => {
-							copiedObject = cloned;
+							copiedObject = fabric.util.object.extend(cloned, {
+								objectDetail: JSON.parse(JSON.stringify(activeObject.objectDetail))
+							});
 						});
 					}
 				}
 			});
+
 			//function for paste
 			window.addEventListener('keydown', (e) => {
 				if (e.ctrlKey && e.code === 'KeyV') {
@@ -466,7 +470,8 @@
 							clonedObj.set({
 								left: clonedObj.left + 10,
 								top: clonedObj.top + 10,
-								evented: true
+								evented: true,
+								objectDetail: JSON.parse(JSON.stringify(copiedObject.objectDetail))
 							});
 
 							if (clonedObj.type === 'activeSelection') {
@@ -493,6 +498,38 @@
 						});
 					}
 				}
+			});
+
+			//functio to handle arrow keys
+			// Function to handle arrow keys for moving objects
+			window.addEventListener('keydown', (e) => {
+				const activeObject = canvas.getActiveObject();
+				if (!activeObject) return; // Exit if no object is selected
+
+				const moveStep = 10; // Adjust this value to change the movement increment
+
+				// Determine the direction and apply the movement
+				switch (e.key) {
+					case 'ArrowLeft':
+						activeObject.set('left', activeObject.left - moveStep);
+						e.preventDefault(); // Prevent the default action (scroll / move caret)
+						break;
+					case 'ArrowRight':
+						activeObject.set('left', activeObject.left + moveStep);
+						e.preventDefault();
+						break;
+					case 'ArrowUp':
+						activeObject.set('top', activeObject.top - moveStep);
+						e.preventDefault();
+						break;
+					case 'ArrowDown':
+						activeObject.set('top', activeObject.top + moveStep);
+						e.preventDefault();
+						break;
+				}
+
+				activeObject.setCoords(); // Recalculate object boundaries and controls
+				canvas.requestRenderAll(); // Refresh canvas to reflect changes
 			});
 		});
 	});
@@ -913,7 +950,6 @@
 			.from('fav_colors')
 			.select('*')
 			.then((Response) => {
-				console.log(Response.data);
 				favColors = Response.data?.map((x) => x.color) as string[];
 			});
 	}
