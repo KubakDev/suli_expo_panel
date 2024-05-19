@@ -48,6 +48,10 @@ export const load = async () => {
 			url: '/dashboard/companiesInfo/1'
 		},
 		{
+			title: 'Users',
+			url: '/dashboard/users'
+		},
+		{
 			title: 'Web Builder',
 			url: '/dashboard/web_builder/buildThemeColor'
 		},
