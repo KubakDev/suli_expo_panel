@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Pagination from '../../../lib/components/pagination/Pagination.svelte';
+	import { goto } from '$app/navigation';
 
 	export let data;
 	let currentPage = 1;
@@ -86,6 +87,12 @@
 				</svg>
 				Clear Filter
 			</button>
+			<button
+				class="text-center font-medium focus:ring-4 focus:outline-none inline-flex items-center justify-center px-5 py-2 bg-gray-200 border border-gray-300 dark:text-gray-900 dark:bg-[#e0e1dd] dark:hover:bg-gray-300 focus:ring-gray-300 dark:focus:ring-gray-900 rounded"
+				on:click={() => {
+					goto(`/dashboard/users/userProfile`);
+				}}>User Profile</button
+			>
 		</div>
 	</div>
 
