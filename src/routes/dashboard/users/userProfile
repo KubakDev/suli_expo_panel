@@ -1,0 +1,186 @@
+<script lang="ts">
+	export let data;
+	let userId = 1;
+	let userProfile: any = {
+		id: null,
+		name: '',
+		companyName: '',
+		fieldWork: '',
+		jobGrade: '',
+		phoneNumber: '',
+		email: '',
+		country: '',
+		city: '',
+		hotelBooking: '',
+		title: {
+			en: '',
+			ar: '',
+			ckb: ''
+		}
+	};
+
+	let includeFields: any = {
+		name: 'false',
+		companyName: 'false',
+		fieldWork: 'false',
+		jobGrade: 'false',
+		phoneNumber: 'false',
+		email: 'false',
+		country: 'false',
+		city: 'false',
+		hotelBooking: 'false'
+	};
+
+	const fetchUserProfile = async () => {
+		const { data: userProfileData, error } = await data.supabase
+			.from('userProfile')
+			.select('*')
+			.eq('id', userId)
+			.single();
+		console.log(userProfileData);
+
+		if (error) {
+			console.error('Error fetching data:', error);
+		} else {
+			userProfile = { ...userProfile, ...userProfileData };
+
+			Object.keys(includeFields).forEach((key) => {
+				includeFields[key] = userProfile[key] === 'true' ? 'true' : 'false'; // Maintain string values
+			});
+		}
+	};
+
+	const handleSubmit = async () => {
+		const dataToSubmit: any = {};
+
+		Object.keys(includeFields).forEach((key) => {
+			dataToSubmit[key] = includeFields[key] === 'true' ? userProfile[key] : 'false';
+		});
+
+		let response;
+		if (userProfile.id) {
+			response = await data.supabase
+				.from('userProfile')
+				.update(dataToSubmit)
+				.eq('id', userProfile.id);
+		} else {
+			response = await data.supabase.from('userProfile').insert([dataToSubmit]);
+		}
+
+		if (response.error) {
+			console.error('Error submitting data:', response.error);
+		} else {
+			alert('Data submitted successfully!');
+		}
+	};
+
+	fetchUserProfile();
+</script>
+
+<form on:submit|preventDefault={handleSubmit}>
+	{#each Object.keys(includeFields) as key}
+		{#if key !== 'title'}
+			<div class="form-group">
+				<label>
+					<input
+						class="mr-3"
+						type="checkbox"
+						checked={includeFields[key] === 'true'}
+						on:change={(e) =>
+							(includeFields = { ...includeFields, [key]: e.target.checked ? 'true' : 'false' })}
+					/>
+					{key.charAt(0).toUpperCase() + key.slice(1)}
+				</label>
+			</div>
+		{/if}
+	{/each}
+
+	<button type="submit">Submit</button>
+</form>
+
+<style>
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		max-width: 600px;
+		margin: auto;
+		padding: 1rem;
+		border: 1px solid #ccc;
+		border-radius: 8px;
+		background-color: #f9f9f9;
+	}
+
+	.form-group {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.form-group label {
+		display: flex;
+		align-items: center;
+		flex: 1;
+	}
+
+	.form-group input[type='text'],
+	.form-group input[type='email'] {
+		flex: 1;
+		margin-left: 0.5rem;
+	}
+
+	.title-group {
+		border: 1px solid #ccc;
+		padding: 1rem;
+		border-radius: 8px;
+		background-color: #f0f0f0;
+	}
+
+	.title-group .form-group {
+		flex-direction: column;
+	}
+
+	.title-group label {
+		margin-bottom: 0.5rem;
+	}
+
+	button {
+		align-self: flex-end;
+		padding: 0.5rem 1rem;
+		border: none;
+		border-radius: 4px;
+		background-color: #007bff;
+		color: white;
+		cursor: pointer;
+		transition: background-color 0.3s;
+	}
+
+	button:hover {
+		background-color: #0056b3;
+	}
+
+	@media (max-width: 600px) {
+		form {
+			padding: 0.5rem;
+		}
+
+		.form-group {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.form-group input[type='text'],
+		.form-group input[type='email'] {
+			margin-left: 0;
+			margin-top: 0.5rem;
+		}
+
+		.title-group {
+			padding: 0.5rem;
+		}
+
+		.title-group label {
+			margin-bottom: 0.25rem;
+		}
+	}
+</style>
