@@ -79,7 +79,7 @@
 	fetchUserProfile();
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 rounded">
 	<p class="text-center py-2 font-semibold">Required fields to user profiles</p>
 	{#each Object.keys(includeFields) as key}
 		<div class="form-group">
@@ -95,7 +95,7 @@
 			</label>
 		</div>
 	{/each}
-	<div class="border" />
+	<div class="border dark:border-gray-700" />
 	<div class="form-group">
 		<label for="title-en">Title (English)</label>
 		<input
@@ -110,7 +110,7 @@
 	<div class="form-group">
 		<label for="title-ar">Title (Arabic)</label>
 		<input
-			class="rounded dark:text-gray-900"
+			class="rounded dark:text-gray-900 border"
 			id="title-ar"
 			type="text"
 			bind:value={userProfile.title.ar}
@@ -140,8 +140,6 @@
 		max-width: 600px;
 		margin: 10px auto;
 		padding: 1rem;
-		border: 1px solid #ccc;
-		border-radius: 8px;
 	}
 
 	.form-group {
