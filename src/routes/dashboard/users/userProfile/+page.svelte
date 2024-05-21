@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { TabItem, Tabs } from 'flowbite-svelte';
+	import { goto } from '$app/navigation';
+
 	export let data;
 	let userId = 1;
 	let userProfile: any = {
@@ -13,6 +16,16 @@
 		city: '',
 		hotelBooking: '',
 		title: {
+			en: '',
+			ar: '',
+			ckb: ''
+		},
+		emailSubject: {
+			en: '',
+			ar: '',
+			ckb: ''
+		},
+		emailDescription: {
 			en: '',
 			ar: '',
 			ckb: ''
@@ -43,6 +56,8 @@
 		} else {
 			userProfile = { ...userProfile, ...userProfileData };
 			userProfile.title = JSON.parse(userProfile.title);
+			userProfile.emailSubject = JSON.parse(userProfile.emailSubject);
+			userProfile.emailDescription = JSON.parse(userProfile.emailDescription);
 
 			Object.keys(includeFields).forEach((key) => {
 				includeFields[key] = userProfile[key] === 'true';
@@ -58,6 +73,8 @@
 		});
 
 		dataToSubmit.title = JSON.stringify(userProfile.title);
+		dataToSubmit.emailSubject = JSON.stringify(userProfile.emailSubject);
+		dataToSubmit.emailDescription = JSON.stringify(userProfile.emailDescription);
 
 		let response;
 		if (userProfile.id) {
@@ -73,6 +90,7 @@
 			console.error('Error submitting data:', response.error);
 		} else {
 			alert('Data submitted successfully!');
+			goto(`/dashboard/users`);
 		}
 	};
 
@@ -80,7 +98,123 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 rounded">
-	<p class="text-center py-2 font-semibold">Required fields to user profiles</p>
+	<div class="container mx-auto p-4">
+		<Tabs>
+			<TabItem title="EN" open>
+				<form
+					on:submit|preventDefault={handleSubmit}
+					class="border dark:border-gray-700 rounded p-4"
+				>
+					<p class="text-center py-2 font-semibold">Add form data for EN language</p>
+					<div class="form-group">
+						<label for="title-en">Title</label>
+						<input
+							class="rounded dark:text-gray-900 w-full"
+							id="title-en"
+							type="text"
+							bind:value={userProfile.title.en}
+							placeholder="Enter title in English"
+						/>
+					</div>
+					<div class="form-group">
+						<label for="email-subject-en">Email Subject</label>
+						<input
+							class="rounded dark:text-gray-900 w-full"
+							id="email-subject-en"
+							type="text"
+							bind:value={userProfile.emailSubject.en}
+							placeholder="Enter email subject in English"
+						/>
+					</div>
+					<div class="form-group">
+						<label for="email-description-en">Email Description</label>
+						<textarea
+							class="rounded dark:text-gray-900 w-full"
+							id="email-description-en"
+							bind:value={userProfile.emailDescription.en}
+							placeholder="Enter email description in English"
+						/>
+					</div>
+				</form>
+			</TabItem>
+			<TabItem title="AR">
+				<form
+					on:submit|preventDefault={handleSubmit}
+					class="border dark:border-gray-700 rounded p-4"
+				>
+					<p class="text-center py-2 font-semibold">Add data for AR language</p>
+					<div class="form-group">
+						<label for="title-ar">Title</label>
+						<input
+							class="rounded dark:text-gray-900 w-full"
+							id="title-ar"
+							type="text"
+							bind:value={userProfile.title.ar}
+							placeholder="Enter title in Arabic"
+						/>
+					</div>
+					<div class="form-group">
+						<label for="email-subject-ar">Email Subject</label>
+						<input
+							class="rounded dark:text-gray-900 w-full"
+							id="email-subject-ar"
+							type="text"
+							bind:value={userProfile.emailSubject.ar}
+							placeholder="Enter email subject in Arabic"
+						/>
+					</div>
+					<div class="form-group">
+						<label for="email-description-ar">Email Description</label>
+						<textarea
+							class="rounded dark:text-gray-900 w-full"
+							id="email-description-ar"
+							bind:value={userProfile.emailDescription.ar}
+							placeholder="Enter email description in Arabic"
+						/>
+					</div>
+				</form>
+			</TabItem>
+			<TabItem title="CKB">
+				<form
+					on:submit|preventDefault={handleSubmit}
+					class="border dark:border-gray-700 rounded p-4"
+				>
+					<p class="text-center py-2 font-semibold">Add data for CKB language</p>
+					<div class="form-group">
+						<label for="title-ckb">Title</label>
+						<input
+							class="rounded dark:text-gray-900 w-full"
+							id="title-ckb"
+							type="text"
+							bind:value={userProfile.title.ckb}
+							placeholder="Enter title in Kurdish"
+						/>
+					</div>
+					<div class="form-group">
+						<label for="email-subject-ckb">Email Subject</label>
+						<input
+							class="rounded dark:text-gray-900 w-full"
+							id="email-subject-ckb"
+							type="text"
+							bind:value={userProfile.emailSubject.ckb}
+							placeholder="Enter email subject in Kurdish"
+						/>
+					</div>
+					<div class="form-group">
+						<label for="email-description-ckb">Email Description</label>
+						<textarea
+							class="rounded dark:text-gray-900 w-full"
+							id="email-description-ckb"
+							bind:value={userProfile.emailDescription.ckb}
+							placeholder="Enter email description in Kurdish"
+						/>
+					</div>
+				</form>
+			</TabItem>
+		</Tabs>
+	</div>
+
+	<p class="text-center font-semibold">Required fields to user profiles</p>
 	{#each Object.keys(includeFields) as key}
 		<div class="form-group">
 			<label>
@@ -95,40 +229,6 @@
 			</label>
 		</div>
 	{/each}
-	<div class="border dark:border-gray-700" />
-	<div class="form-group">
-		<label for="title-en">Title (English)</label>
-		<input
-			class="rounded dark:text-gray-900"
-			id="title-en"
-			type="text"
-			bind:value={userProfile.title.en}
-			placeholder="Enter title in English"
-		/>
-	</div>
-
-	<div class="form-group">
-		<label for="title-ar">Title (Arabic)</label>
-		<input
-			class="rounded dark:text-gray-900 border"
-			id="title-ar"
-			type="text"
-			bind:value={userProfile.title.ar}
-			placeholder="Enter title in Arabic"
-		/>
-	</div>
-
-	<div class="form-group">
-		<label for="title-ckb">Title (Kurdish)</label>
-		<input
-			class="rounded dark:text-gray-900"
-			id="title-ckb"
-			type="text"
-			bind:value={userProfile.title.ckb}
-			placeholder="Enter title in Kurdish"
-		/>
-	</div>
-
 	<button type="submit">Submit</button>
 </form>
 
@@ -144,35 +244,26 @@
 
 	.form-group {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column;
+		align-items: flex-start;
 	}
 
 	.form-group label {
-		display: flex;
-		align-items: center;
-		flex: 1;
+		margin-bottom: 0.5rem;
 	}
 
 	.form-group input[type='text'],
-	.form-group input[type='email'] {
-		flex: 1;
-		margin-left: 0.5rem;
-	}
-
-	.title-group {
+	.form-group input[type='email'],
+	.form-group textarea {
+		width: 100%;
+		padding: 0.5rem;
 		border: 1px solid #ccc;
-		padding: 1rem;
-		border-radius: 8px;
-		background-color: #f0f0f0;
+		border-radius: 4px;
 	}
 
-	.title-group .form-group {
-		flex-direction: column;
-	}
-
-	.title-group label {
-		margin-bottom: 0.5rem;
+	.form-group textarea {
+		resize: vertical;
+		min-height: 100px;
 	}
 
 	button {
@@ -228,17 +319,10 @@
 		}
 
 		.form-group input[type='text'],
-		.form-group input[type='email'] {
+		.form-group input[type='email'],
+		.form-group textarea {
 			margin-left: 0;
 			margin-top: 0.5rem;
-		}
-
-		.title-group {
-			padding: 0.5rem;
-		}
-
-		.title-group label {
-			margin-bottom: 0.25rem;
 		}
 	}
 </style>
