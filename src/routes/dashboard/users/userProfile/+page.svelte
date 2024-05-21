@@ -98,7 +98,7 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 rounded">
-	<div class="container mx-auto p-4">
+	<div class="container mx-auto p-4 flex flex-col justify-center">
 		<Tabs>
 			<TabItem title="EN" open>
 				<form
@@ -212,24 +212,23 @@
 				</form>
 			</TabItem>
 		</Tabs>
+		<p class="text-center font-semibold">Required fields to user profiles</p>
+		{#each Object.keys(includeFields) as key}
+			<div class="form-group mx-4">
+				<label>
+					<input
+						class:active-checkbox={includeFields[key]}
+						class="mr-3"
+						type="checkbox"
+						checked={includeFields[key]}
+						on:change={(e) => (includeFields[key] = e.target?.checked)}
+					/>
+					{key.charAt(0).toUpperCase() + key.slice(1)}
+				</label>
+			</div>
+		{/each}
+		<button type="submit">Submit</button>
 	</div>
-
-	<p class="text-center font-semibold">Required fields to user profiles</p>
-	{#each Object.keys(includeFields) as key}
-		<div class="form-group">
-			<label>
-				<input
-					class:active-checkbox={includeFields[key]}
-					class="mr-3"
-					type="checkbox"
-					checked={includeFields[key]}
-					on:change={(e) => (includeFields[key] = e.target?.checked)}
-				/>
-				{key.charAt(0).toUpperCase() + key.slice(1)}
-			</label>
-		</div>
-	{/each}
-	<button type="submit">Submit</button>
 </form>
 
 <style>
