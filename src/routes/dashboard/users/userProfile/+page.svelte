@@ -89,7 +89,7 @@
 					class="mr-3"
 					type="checkbox"
 					checked={includeFields[key]}
-					on:change={(e) => (includeFields[key] = e.target.checked)}
+					on:change={(e) => (includeFields[key] = e.target?.checked)}
 				/>
 				{key.charAt(0).toUpperCase() + key.slice(1)}
 			</label>
@@ -193,7 +193,7 @@
 	}
 
 	input[type='checkbox'].active-checkbox {
-		background-color: #28a745; /* Green background when checked */
+		background-color: #10b981; /* Green background when checked */
 	}
 
 	input[type='checkbox'] {
@@ -214,7 +214,7 @@
 		left: 50%;
 		width: 0.75em;
 		height: 0.75em;
-		background-color: #28a745; /* Green checkmark */
+		background-color: #10b981; /* Green checkmark */
 		transform: translate(-50%, -50%) scale(1);
 		border-radius: 0.25em;
 	}
