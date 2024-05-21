@@ -99,7 +99,7 @@
 	<div class="form-group">
 		<label for="title-en">Title (English)</label>
 		<input
-			class="rounded"
+			class="rounded dark:text-gray-900"
 			id="title-en"
 			type="text"
 			bind:value={userProfile.title.en}
@@ -110,7 +110,7 @@
 	<div class="form-group">
 		<label for="title-ar">Title (Arabic)</label>
 		<input
-			class="rounded"
+			class="rounded dark:text-gray-900"
 			id="title-ar"
 			type="text"
 			bind:value={userProfile.title.ar}
@@ -121,7 +121,7 @@
 	<div class="form-group">
 		<label for="title-ckb">Title (Kurdish)</label>
 		<input
-			class="rounded"
+			class="rounded dark:text-gray-900"
 			id="title-ckb"
 			type="text"
 			bind:value={userProfile.title.ckb}
