@@ -58,13 +58,13 @@
 			type="text"
 			placeholder="Filter by name"
 			bind:value={filterName}
-			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900"
+			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900 text-gray-900"
 		/>
 		<input
 			type="text"
 			placeholder="Filter by phone number"
 			bind:value={filterPhoneNumber}
-			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900"
+			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900 text-gray-900"
 		/>
 		<div class="flex flex-col sm:flex-row gap-4">
 			<button
