@@ -2,12 +2,30 @@
 	import { onMount } from 'svelte';
 	import Pagination from '../../../lib/components/pagination/Pagination.svelte';
 	import { goto } from '$app/navigation';
+	//@ts-ignore
+	import Icon from 'svelte-icons-pack/Icon.svelte';
+	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
+	import { exportToExcel } from '$lib/utils/exportToExcel';
+
+	interface User {
+		id: number;
+		created_at: string;
+		name: string;
+		companyName: string;
+		fieldWork: string;
+		jobGrade: string;
+		phoneNumber: string;
+		email: string;
+		country: string;
+		city: string;
+		hotelBooking: string;
+	}
 
 	export let data;
 	let currentPage = 1;
 	const pageSize = 10;
 	let totalPages = 1;
-	let users: any = [];
+	let users: User[] = [];
 	let filterName = '';
 	let filterPhoneNumber = '';
 	let notFound = false;
@@ -50,6 +68,12 @@
 		currentPage = page;
 		await getUserRegistrations();
 	}
+
+	// Handle export all data
+	async function handleExport() {
+		const { data: result, error } = await data.supabase.rpc('get_all_users_data');
+		exportToExcel(result);
+	}
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10 mt-5">
@@ -91,7 +115,11 @@
 				class="text-center font-medium focus:ring-4 focus:outline-none inline-flex items-center justify-center px-5 py-2 bg-gray-200 border border-gray-300 dark:text-gray-900 dark:bg-[#e0e1dd] dark:hover:bg-gray-300 focus:ring-gray-300 dark:focus:ring-gray-900 rounded"
 				on:click={() => {
 					goto(`/dashboard/users/userProfile`);
-				}}>User Profile</button
+				}}>View User Profile</button
+			>
+			<button
+				class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+				on:click={handleExport}>Export</button
 			>
 		</div>
 	</div>
@@ -128,6 +156,9 @@
 						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
 							>Created At</th
 						>
+						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
+							>Action</th
+						>
 					</tr>
 				</thead>
 				<tbody>
@@ -146,6 +177,25 @@
 							<td class="p-3 border dark:border-gray-800"
 								>{new Date(user.created_at).toLocaleString()}</td
 							>
+							<td class="p-3 border dark:border-gray-800">
+								<button
+									on:click={() => {
+										goto(`/dashboard/users/${user.id}`);
+									}}
+									class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
+								>
+									Edit
+									<span
+										><Icon
+											src={AiFillEdit}
+											color="green"
+											size="20"
+											className="custom-icon"
+											title="Custom icon params"
+										/></span
+									>
+								</button>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
