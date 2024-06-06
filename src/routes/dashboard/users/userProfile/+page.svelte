@@ -212,7 +212,7 @@
 				</form>
 			</TabItem>
 		</Tabs>
-		<p class="text-center font-semibold">Required fields to user profiles</p>
+		<p class="text-center font-semibold my-3">Required fields to user profiles</p>
 		{#each Object.keys(includeFields) as key}
 			<div class="form-group mx-4">
 				<label>

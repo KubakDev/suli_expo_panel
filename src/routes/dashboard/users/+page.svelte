@@ -6,6 +6,7 @@
 	import Icon from 'svelte-icons-pack/Icon.svelte';
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import { exportToExcel } from '$lib/utils/exportToExcel';
+	import { Button } from 'flowbite-svelte';
 
 	interface User {
 		id: number;
@@ -80,13 +81,13 @@
 	<div class="filter-container mb-6 flex flex-col sm:flex-row gap-4">
 		<input
 			type="text"
-			placeholder="Filter by name"
+			placeholder="Filter by FullName"
 			bind:value={filterName}
 			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900 text-gray-900"
 		/>
 		<input
 			type="text"
-			placeholder="Filter by phone number"
+			placeholder="Filter by PhoneNumber"
 			bind:value={filterPhoneNumber}
 			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900 text-gray-900"
 		/>
@@ -117,10 +118,7 @@
 					goto(`/dashboard/users/userProfile`);
 				}}>View User Profile</button
 			>
-			<button
-				class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-				on:click={handleExport}>Export</button
-			>
+			<Button on:click={handleExport}>Export</Button>
 		</div>
 	</div>
 
@@ -133,7 +131,7 @@
 					<tr>
 						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border">#</th>
 						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Name</th
+							>Full Name</th
 						>
 						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
 							>Company Name / Field Work</th
