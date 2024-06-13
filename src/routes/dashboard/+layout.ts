@@ -55,7 +55,7 @@ export const load = async () => {
 					url: '/dashboard/users'
 				},
 				{
-					title: 'Game Exhibition Users',
+					title: 'Entertainment Exhibition Users',
 					url: '/dashboard/usersGameExhibition'
 				}
 			]
