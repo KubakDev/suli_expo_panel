@@ -48,8 +48,17 @@ export const load = async () => {
 			url: '/dashboard/companiesInfo/1'
 		},
 		{
-			title: 'Users',
-			url: '/dashboard/users'
+			title: 'Registered User',
+			children: [
+				{
+					title: 'All Users',
+					url: '/dashboard/users'
+				},
+				{
+					title: 'Game Exhibition Users',
+					url: '/dashboard/usersGameExhibition'
+				}
+			]
 		},
 		{
 			title: 'Web Builder',
