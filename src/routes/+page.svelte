@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Editor from '@tinymce/tinymce-svelte';
 	import ToastComponent from '$lib/components/reusables/toastComponent.svelte';
 	import { Button } from 'flowbite-svelte';
 	import { addNewToast } from '../stores/toastStore';
