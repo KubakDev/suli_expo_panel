@@ -10,7 +10,10 @@
 	$: ({ supabase } = data);
 	let designs: SeatLayoutModel[] | undefined;
 	let seatsAreaFieldsType: SeatLayoutModel[] = [];
+    let loaded: boolean = false;
+
 	async function getData() {
+		loaded = false;
 		if (!supabase) return;
 		const seatsData = await supabase.from('seat_layout').select('*');
 		seatsAreaFieldsType =
@@ -24,6 +27,7 @@
 		designs = seatsData.data?.map((seat) => {
 			return seat as SeatLayoutModel;
 		});
+		loaded = true;
 	}
 	onMount(async () => {
 		getData();
@@ -73,7 +77,10 @@
 	</button>
 </div>
 
-<div class="flex flex-col justify-center items-center w-full pt-10">
+{#if !loaded}
+ <div class="loading">Loading...</div>
+{:else}
+<div class="flex flex-col justify-center items-center w-full py-5">
 	<div class="px-4 w-full lg:w-10/12">
 		<div class="my-6 flex w-full justify-end">
 			<Button on:click={createNewDesign}>Create New Seat Design</Button>
@@ -166,7 +173,7 @@
 			<tbody class="dark:text-gray-300">
 				{#each seatsAreaFieldsType as seat}
 					<tr class="border-2 border-[#edeff2]">
-						<td>
+						<td class="p-4">
 							<div>{seat.name}</div>
 						</td>
 						<td>
@@ -205,7 +212,7 @@
 		</table>
 	</div>
 </div>
-
+{/if}
 <style>
 	.table_header {
 		padding: 0.75rem;
@@ -219,4 +226,17 @@
 		border-width: 1px;
 		display: table-cell;
 	}
+
+	    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-size: 2rem;
+    }
+
+    .loaded {
+        display: none;
+    }
+
 </style>

@@ -1,18 +1,18 @@
-import type { ExhibitionsModel } from "./exhibitionModel"
-import type { LanguageEnum } from "./languageEnum"
+import type { ExhibitionsModel } from './exhibitionModel';
+import type { LanguageEnum } from './languageEnum';
 
 export interface InsertSeatDataModel {
-
-  name?: string,
-  exhibition?: ExhibitionsModel,
-  image_url?: string,
-  is_active?: boolean,
-  design?: string,
-
+	name?: string;
+	exhibition?: ExhibitionsModel;
+	image_url?: string;
+	is_active?: boolean;
+	design?: string;
 }
 export interface SeatPrivacyPolicyModel {
-  language?: LanguageEnum,
-  description?: string,
-  discount_description?: string,
-  extra_discount_description?: string,
+	language?: LanguageEnum;
+	description?: string;
+	discount_description?: string;
+	extra_discount_description?: string;
+	description_seat: string;
+	price_sign: string;
 }
