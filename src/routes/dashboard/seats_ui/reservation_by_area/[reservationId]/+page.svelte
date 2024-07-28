@@ -56,19 +56,21 @@
 
 	let excelFilePreviewSelected: File;
 
-	let seatInfoData: {
-		exhibition?: ExhibitionsModel;
-		name: string;
-		isActive?: boolean;
-		privacy_policy?: string;
-		price_per_meter?: number;
-		discounted_price?: number;
-		extra_discount?: number;
-	} = {
-		exhibition: undefined,
-		name: '',
-		isActive: undefined
-	};
+	 let seatInfoData: {
+        exhibition?: ExhibitionsModel;
+        name: string;
+        isActive?: boolean;
+        privacy_policy?: string;
+        price_per_meter?: number;
+        discounted_price?: number;
+        extra_discount?: number;
+        price_sign?: string;
+        description_seat?: string;
+    } = {
+        exhibition: undefined,
+        name: '',
+        isActive: undefined
+    };
 
 	let excel_preview_url = '';
 	let isOpenEditModal = false;
@@ -273,6 +275,8 @@
 					id: $page.params.reservationId,
 					discounted_price: seatInfoData.discounted_price,
 					extra_discount: seatInfoData.extra_discount,
+					price_sign: seatInfoData.price_sign,
+                    description_seat: seatInfoData.description_seat,
 					excel_preview_url
 				},
 				privacy_lang_data: privacyPolicyLang
@@ -323,14 +327,16 @@
 		if (dataLang) {
 			dataLang.description = description.value;
 		} else {
-			privacyPolicyLang.push({
-				description: description,
-				language: lang as LanguageEnum,
-				discount_description: '',
-				extra_discount_description: ''
-			});
-		}
-	}
+		  privacyPolicyLang.push({
+                description: description,
+                language: lang as LanguageEnum,
+                discount_description: '',
+                extra_discount_description: '',
+                price_sign: '',
+                description_seat: ''
+            });
+        }
+    }
 	function addDiscountDetail(discount_description: any, lang: string) {
 		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
 		if (dataLang) {
@@ -340,7 +346,9 @@
 				description: '',
 				language: lang as LanguageEnum,
 				discount_description: discount_description,
-				extra_discount_description: ''
+				extra_discount_description: '',
+				 price_sign: '',
+                description_seat: ''
 			});
 		}
 	}
@@ -353,10 +361,45 @@
 				description: '',
 				language: lang as LanguageEnum,
 				discount_description: '',
-				extra_discount_description: description
+				extra_discount_description: description,
+				 price_sign: '',
+                description_seat: ''
 			});
 		}
 	}
+
+	 function addPriceSign(price_sign: any, lang: string) {
+        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+        if (dataLang) {
+            dataLang.price_sign = price_sign.value;
+        } else {
+            privacyPolicyLang.push({
+                description: '',
+                language: lang as LanguageEnum,
+                discount_description: '',
+                extra_discount_description: '',
+                price_sign: price_sign.value,
+                description_seat: ''
+            });
+        }
+    }
+
+    function addDescriptionSeat(description_seat: any, lang: string) {
+        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+        if (dataLang) {
+            dataLang.description_seat = description_seat.value;
+        } else {
+            privacyPolicyLang.push({
+                description: '',
+                language: lang as LanguageEnum,
+                discount_description: '',
+                extra_discount_description: '',
+                price_sign: '',
+                description_seat: description_seat.value
+            });
+        }
+    }
+
 	function handleFileUpload(e: any) {
 		const fileInput = e.target as HTMLInputElement;
 		excelFilePreviewSelected = fileInput.files![0];
@@ -604,7 +647,22 @@
 						<Tabs>
 							{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
-									<Textarea
+									     <Input
+                                        id="textarea-id"
+                                        placeholder={`Add price sign for ${lang}`}
+                                        class="my-3 col-span-3"
+                                        value={privacyPolicyLang?.find((x) => x.language === lang)?.price_sign}
+                                        on:input={(e) => addPriceSign(e.target, lang)}
+                                    />
+                                    <Textarea
+                                        id="textarea-id"
+                                        placeholder={`add description seat for ${lang}`}
+                                        rows="8"
+                                        class="my-3 col-span-3"
+                                        value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
+                                        on:input={(e) => addDescriptionSeat(e.target, lang)}
+                                    />
+								  	<Textarea
 										id="textarea-id"
 										placeholder={`add privacy & policy for ${lang}`}
 										rows="8"
