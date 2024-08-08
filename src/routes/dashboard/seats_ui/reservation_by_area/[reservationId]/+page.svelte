@@ -56,21 +56,22 @@
 
 	let excelFilePreviewSelected: File;
 
-	 let seatInfoData: {
-        exhibition?: ExhibitionsModel;
-        name: string;
-        isActive?: boolean;
-        privacy_policy?: string;
-        price_per_meter?: number;
-        discounted_price?: number;
-        extra_discount?: number;
-        price_sign?: string;
-        description_seat?: string;
-    } = {
-        exhibition: undefined,
-        name: '',
-        isActive: undefined
-    };
+	let seatInfoData: {
+		exhibition?: ExhibitionsModel;
+		name: string;
+		isActive?: boolean;
+		is_excel_required?: boolean;
+		privacy_policy?: string;
+		price_per_meter?: number;
+		discounted_price?: number;
+		extra_discount?: number;
+		price_sign?: string;
+		description_seat?: string;
+	} = {
+		exhibition: undefined,
+		name: '',
+		isActive: undefined
+	};
 
 	let excel_preview_url = '';
 	let isOpenEditModal = false;
@@ -130,6 +131,7 @@
 				seatInfoData.exhibition = response.data.exhibition;
 				seatInfoData.name = response.data.name;
 				seatInfoData.isActive = response.data.is_active;
+				seatInfoData.is_excel_required = response.data.is_excel_required;
 				seatInfoData.privacy_policy = response.data.seat_privacy_policy_lang;
 				privacyPolicyLang = response.data.seat_privacy_policy_lang;
 				seatInfoData.price_per_meter = response.data.price_per_meter;
@@ -267,6 +269,7 @@
 				seat_layout_data: {
 					name: seatInfoData.name,
 					is_active: seatInfoData.isActive,
+					is_excel_required: seatInfoData.is_excel_required,
 					exhibition: seatInfoData.exhibition?.id,
 					areas: `${areasArray}`,
 					services: servicesData,
@@ -276,7 +279,7 @@
 					discounted_price: seatInfoData.discounted_price,
 					extra_discount: seatInfoData.extra_discount,
 					price_sign: seatInfoData.price_sign,
-                    description_seat: seatInfoData.description_seat,
+					description_seat: seatInfoData.description_seat,
 					excel_preview_url
 				},
 				privacy_lang_data: privacyPolicyLang
@@ -327,16 +330,16 @@
 		if (dataLang) {
 			dataLang.description = description.value;
 		} else {
-		  privacyPolicyLang.push({
-                description: description,
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: '',
-                price_sign: '',
-                description_seat: ''
-            });
-        }
-    }
+			privacyPolicyLang.push({
+				description: description,
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: '',
+				price_sign: '',
+				description_seat: ''
+			});
+		}
+	}
 	function addDiscountDetail(discount_description: any, lang: string) {
 		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
 		if (dataLang) {
@@ -347,8 +350,8 @@
 				language: lang as LanguageEnum,
 				discount_description: discount_description,
 				extra_discount_description: '',
-				 price_sign: '',
-                description_seat: ''
+				price_sign: '',
+				description_seat: ''
 			});
 		}
 	}
@@ -362,43 +365,43 @@
 				language: lang as LanguageEnum,
 				discount_description: '',
 				extra_discount_description: description,
-				 price_sign: '',
-                description_seat: ''
+				price_sign: '',
+				description_seat: ''
 			});
 		}
 	}
 
-	 function addPriceSign(price_sign: any, lang: string) {
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.price_sign = price_sign.value;
-        } else {
-            privacyPolicyLang.push({
-                description: '',
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: '',
-                price_sign: price_sign.value,
-                description_seat: ''
-            });
-        }
-    }
+	function addPriceSign(price_sign: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.price_sign = price_sign.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: '',
+				price_sign: price_sign.value,
+				description_seat: ''
+			});
+		}
+	}
 
-    function addDescriptionSeat(description_seat: any, lang: string) {
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.description_seat = description_seat.value;
-        } else {
-            privacyPolicyLang.push({
-                description: '',
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: '',
-                price_sign: '',
-                description_seat: description_seat.value
-            });
-        }
-    }
+	function addDescriptionSeat(description_seat: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.description_seat = description_seat.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: '',
+				price_sign: '',
+				description_seat: description_seat.value
+			});
+		}
+	}
 
 	function handleFileUpload(e: any) {
 		const fileInput = e.target as HTMLInputElement;
@@ -575,6 +578,19 @@
 							bind:value={seatInfoData.extra_discount}
 						/></ButtonGroup
 					>
+					<div class="flex items-center mb-4">
+						<input
+							bind:checked={seatInfoData.is_excel_required}
+							id="default-checkbox"
+							type="checkbox"
+							class="w-4 h-4 text-[#e1b168] bg-gray-100 border-gray-300 rounded focus:ring-[#e1b168] dark:focus:ring-[#e1b168] dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+						/>
+						<label
+							for="default-checkbox"
+							class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+							>Is excel required</label
+						>
+					</div>
 					<br />
 					<!-- show modal  -->
 					<div class="col-span-3">
@@ -647,22 +663,22 @@
 						<Tabs>
 							{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
-									     <Input
-                                        id="textarea-id"
-                                        placeholder={`Add price sign for ${lang}`}
-                                        class="my-3 col-span-3"
-                                        value={privacyPolicyLang?.find((x) => x.language === lang)?.price_sign}
-                                        on:input={(e) => addPriceSign(e.target, lang)}
-                                    />
-                                    <Textarea
-                                        id="textarea-id"
-                                        placeholder={`add description seat for ${lang}`}
-                                        rows="8"
-                                        class="my-3 col-span-3"
-                                        value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
-                                        on:input={(e) => addDescriptionSeat(e.target, lang)}
-                                    />
-								  	<Textarea
+									<Input
+										id="textarea-id"
+										placeholder={`Add price sign for ${lang}`}
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)?.price_sign}
+										on:input={(e) => addPriceSign(e.target, lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add description seat for ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
+										on:input={(e) => addDescriptionSeat(e.target, lang)}
+									/>
+									<Textarea
 										id="textarea-id"
 										placeholder={`add privacy & policy for ${lang}`}
 										rows="8"

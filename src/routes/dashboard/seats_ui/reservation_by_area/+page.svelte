@@ -37,408 +37,375 @@
 	import type { PageData } from '../$types';
 	import { goto } from '$app/navigation';
 
-		export let data: PageData;
-		interface areaType {
-			area: string;
-			quantity: number;
-		}
+	export let data: PageData;
+	interface areaType {
+		area: string;
+		quantity: number;
+	}
 
-		interface serviceType {
-			id: number;
-			serviceId: number;
-			maxFreeCount: number;
-			maxQuantityPerUser: number;
-			unlimitedFree: boolean;
-			title: string;
-			selected: boolean;
-		}
+	interface serviceType {
+		id: number;
+		serviceId: number;
+		maxFreeCount: number;
+		maxQuantityPerUser: number;
+		unlimitedFree: boolean;
+		title: string;
+		selected: boolean;
+	}
 
-     let seatInfoData: {
-        exhibition?: ExhibitionsModel;
-        name: string;
-        isActive?: boolean;
-        privacy_policy?: string;
-        price_per_meter?: number;
-        discounted_price?: number;
-        extra_discount?: number;
-        price_sign?: string;
-        description_seat?: string;
-    } = {
-        exhibition: undefined,
-        name: '',
-        isActive: undefined
-    };
-	
-		let loading = false;
-		let serviceStatus = (
-			Object.keys(SeatServiceStatusEnum) as Array<keyof typeof SeatServiceStatusEnum>
-		).map((key) => SeatServiceStatusEnum[key]);
+	let seatInfoData: {
+		exhibition?: ExhibitionsModel;
+		name: string;
+		isActive?: boolean;
+		is_excel_required?: boolean;
+		privacy_policy?: string;
+		price_per_meter?: number;
+		discounted_price?: number;
+		extra_discount?: number;
+		price_sign?: string;
+		description_seat?: string;
+	} = {
+		exhibition: undefined,
+		name: '',
+		isActive: undefined
+	};
 
-		let languageEnumKeys = Object.values(LanguageEnum);
+	let loading = false;
+	let serviceStatus = (
+		Object.keys(SeatServiceStatusEnum) as Array<keyof typeof SeatServiceStatusEnum>
+	).map((key) => SeatServiceStatusEnum[key]);
 
-		let formSubmitted = false;
-		let dropdownOpen = false;
-		let isActiveDropdownOpen = false;
-		let areas: areaType[] = [];
+	let languageEnumKeys = Object.values(LanguageEnum);
 
-		let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
-		let excelFilePreviewSelected: File;
+	let formSubmitted = false;
+	let dropdownOpen = false;
+	let isActiveDropdownOpen = false;
+	let areas: areaType[] = [];
 
-		let newArea: areaType = {
+	let privacyPolicyLang: SeatPrivacyPolicyModel[] = [];
+	let excelFilePreviewSelected: File;
+
+	let newArea: areaType = {
+		area: '',
+		quantity: 0
+	};
+
+	onMount(async () => {
+		await getData(data.supabase);
+	});
+
+	function addNewArea() {
+		areas.push(newArea);
+		areas = [...areas];
+		newArea = {
 			area: '',
 			quantity: 0
 		};
+	}
 
-		onMount(async () => {
-			await getData(data.supabase);
-		});
+	function deleteArea(index: number) {
+		areas.splice(index, 1);
+		areas = [...areas];
+	}
 
-		function addNewArea() {
-			areas.push(newArea);
-			areas = [...areas];
-			newArea = {
-				area: '',
-				quantity: 0
-			};
+	// for getting modal data
+
+	const handleInputChange = (serviceId: number, field: string, value: any) => {
+		const index = seatServices.findIndex((service: any) => service.id === serviceId);
+		if (index !== -1) {
+			// Convert value to a number if it's one of the numeric fields
+			if (field === 'maxFreeCount' || field === 'maxQuantityPerUser') {
+				seatServices[index][field] = Number(value);
+			} else {
+				seatServices[index][field] = value;
+			}
+		}
+	};
+
+	const handleCheckboxChange = (serviceId: number, checked: boolean) => {
+		const index = seatServices.findIndex((service: any) => service.id === serviceId);
+		if (index !== -1) {
+			seatServices[index].selected = checked;
+		}
+	};
+
+	// Add a new function to handle changes to the 'unlimitedFree' checkbox
+	const handleUnlimitedFreeChange = (serviceId: number, checked: boolean) => {
+		const index = seatServices.findIndex((service: any) => service.id === serviceId);
+		if (index !== -1) {
+			seatServices[index].unlimitedFree = checked;
+			if (checked) {
+				seatServices[index].maxFreeCount = 0;
+			}
+		}
+	};
+
+	async function addNewSeat() {
+		formSubmitted = true;
+		const supabase = data.supabase;
+
+		if (!seatInfoData.name || !seatInfoData.exhibition || seatInfoData.isActive == undefined) {
+			return;
 		}
 
-		function deleteArea(index: number) {
-			areas.splice(index, 1);
-			areas = [...areas];
-		}
+		loading = true;
 
-		// for getting modal data
+		try {
+			if (seatInfoData.isActive) {
+				await supabase
+					.from('seat_layout')
+					.update({ is_active: false })
+					.eq('exhibition', seatInfoData.exhibition?.id);
+			}
 
-		const handleInputChange = (serviceId: number, field: string, value: any) => {
-			const index = seatServices.findIndex((service) => service.id === serviceId);
-			if (index !== -1) {
-				// Convert value to a number if it's one of the numeric fields
-				if (field === 'maxFreeCount' || field === 'maxQuantityPerUser') {
-					seatServices[index][field] = Number(value);
-				} else {
-					seatServices[index][field] = value;
+			let excel_preview_url = '';
+			if (excelFilePreviewSelected) {
+				const randomText = getRandomTextNumber();
+				const response = await supabase.storage
+					.from('image')
+					.upload(
+						`seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
+						excelFilePreviewSelected
+					);
+				if (response.data) {
+					excel_preview_url = response.data.path;
 				}
 			}
-		};
 
-		const handleCheckboxChange = (serviceId: number, checked: boolean) => {
-			const index = seatServices.findIndex((service) => service.id === serviceId);
-			if (index !== -1) {
-				seatServices[index].selected = checked;
+			const areasArray = JSON.stringify(areas);
+			const selectedServices = seatServices
+				.filter((service: any) => service.selected)
+				.map((service: any) => ({
+					serviceId: service.serviceId,
+					maxFreeCount: Number(service.maxFreeCount),
+					maxQuantityPerUser: Number(service.maxQuantityPerUser),
+					unlimitedFree: service.unlimitedFree
+				}));
+
+			const response = await supabase.rpc('insert_seat_and_seat_privacy', {
+				seat_layout_data: {
+					services: selectedServices,
+					name: seatInfoData.name,
+					is_active: seatInfoData.isActive,
+					is_excel_required: seatInfoData.is_excel_required,
+					exhibition: seatInfoData.exhibition?.id,
+					areas: `${areasArray}`,
+					type: SeatsLayoutTypeEnum.AREAFIELDS,
+					price_per_meter: seatInfoData.price_per_meter,
+					discounted_price: seatInfoData.discounted_price,
+					excel_preview_url,
+					extra_discount: seatInfoData.extra_discount,
+					price_sign: seatInfoData.price_sign,
+					description_seat: seatInfoData.description_seat
+				},
+				privacy_lang_data: privacyPolicyLang
+			});
+
+			if (response.error) {
+				addNewToast({
+					type: ToastTypeEnum.ERROR,
+					message: 'Failed To Update this seat',
+					title: 'Failed',
+					duration: 1000
+				});
+			} else {
+				addNewToast({
+					type: ToastTypeEnum.SUCCESS,
+					message: 'The Seat Added Successfully',
+					title: 'Success',
+					duration: 1000
+				});
 			}
-		};
-
-		// Add a new function to handle changes to the 'unlimitedFree' checkbox
-		const handleUnlimitedFreeChange = (serviceId: number, checked: boolean) => {
-			const index = seatServices.findIndex((service) => service.id === serviceId);
-			if (index !== -1) {
-				seatServices[index].unlimitedFree = checked;
-				if (checked) {
-					seatServices[index].maxFreeCount = 0;
-				}
-			}
-		};
-
-	  async function addNewSeat() {
-        formSubmitted = true;
-        const supabase = data.supabase;
-
-        if (!seatInfoData.name || !seatInfoData.exhibition || seatInfoData.isActive == undefined) {
-            return;
-        }
-
-        loading = true;
-
-        try {
-            if (seatInfoData.isActive) {
-                await supabase
-                    .from('seat_layout')
-                    .update({ is_active: false })
-                    .eq('exhibition', seatInfoData.exhibition?.id);
-            }
-
-            let excel_preview_url = '';
-            if (excelFilePreviewSelected) {
-                const randomText = getRandomTextNumber();
-                const response = await supabase.storage
-                    .from('image')
-                    .upload(
-                        `seat_layout/${randomText}_${excelFilePreviewSelected.name}`,
-                        excelFilePreviewSelected
-                    );
-                if (response.data) {
-                    excel_preview_url = response.data.path;
-                }
-            }
-
-            const areasArray = JSON.stringify(areas);
-            const selectedServices = seatServices
-                .filter((service) => service.selected)
-                .map((service) => ({
-                    serviceId: service.serviceId,
-                    maxFreeCount: Number(service.maxFreeCount),
-                    maxQuantityPerUser: Number(service.maxQuantityPerUser),
-                    unlimitedFree: service.unlimitedFree
-                }));
-
-            const response = await supabase.rpc('insert_seat_and_seat_privacy', {
-                seat_layout_data: {
-                    services: selectedServices,
-                    name: seatInfoData.name,
-                    is_active: seatInfoData.isActive,
-                    exhibition: seatInfoData.exhibition?.id,
-                    areas: `${areasArray}`,
-                    type: SeatsLayoutTypeEnum.AREAFIELDS,
-                    price_per_meter: seatInfoData.price_per_meter,
-                    discounted_price: seatInfoData.discounted_price,
-                    excel_preview_url,
-                    extra_discount: seatInfoData.extra_discount,
-                    price_sign: seatInfoData.price_sign,
-                    description_seat: seatInfoData.description_seat
-                },
-                privacy_lang_data: privacyPolicyLang
-            });
-
-            if (response.error) {
-                addNewToast({
-                    type: ToastTypeEnum.ERROR,
-                    message: 'Failed To Update this seat',
-                    title: 'Failed',
-                    duration: 1000
-                });
-            } else {
-                addNewToast({
-                    type: ToastTypeEnum.SUCCESS,
-                    message: 'The Seat Added Successfully',
-                    title: 'Success',
-                    duration: 1000
-                });
-            }
-        } catch (error) {
-            addNewToast({
-                type: ToastTypeEnum.ERROR,
-                message: 'Failed To Update this seat',
-                title: 'Failed',
-                duration: 1000
-            });
-        } finally {
-            loading = false;
-        }
-    }
-
-
-	 function addPrivacyPolicyLang(description: any, lang: string) {
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.description = description.value;
-        } else {
-            privacyPolicyLang.push({
-                description: description,
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: '',
-                price_sign: '',
-                description_seat: ''
-            });
-        }
-    }
-
-	 function addPriceSign(price_sign: any, lang: string) {
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.price_sign = price_sign.value;
-        } else {
-            privacyPolicyLang.push({
-                description: '',
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: '',
-                price_sign: price_sign.value,
-                description_seat: ''
-            });
-        }
-    }
-
-    function addDescriptionSeat(description_seat: any, lang: string) {
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.description_seat = description_seat.value;
-        } else {
-            privacyPolicyLang.push({
-                description: '',
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: '',
-                price_sign: '',
-                description_seat: description_seat.value
-            });
-        }
-    }
-
-	   function addPrivacyPolicyExtraDiscountDescription(description: any, lang: string) {
-        let descriptionValue = (description as HTMLInputElement).value;
-
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.extra_discount_description = descriptionValue;
-        } else {
-            privacyPolicyLang.push({
-                description: '',
-                language: lang as LanguageEnum,
-                discount_description: '',
-                extra_discount_description: descriptionValue,
-                price_sign: '',
-                description_seat: ''
-            });
-        }
-    }
-
-    function addDiscountDetail(discount_description: any, lang: string) {
-        let dataLang = privacyPolicyLang.find((x) => x.language == lang);
-        if (dataLang) {
-            dataLang.discount_description = discount_description.value;
-        } else {
-            privacyPolicyLang.push({
-                description: '',
-                language: lang as LanguageEnum,
-                discount_description: discount_description,
-                extra_discount_description: '',
-                price_sign: '',
-                description_seat: ''
-            });
-        }
-    }
-
-		function handleFileUpload(e: any) {
-			const fileInput = e.target as HTMLInputElement;
-			excelFilePreviewSelected = fileInput.files![0];
+		} catch (error) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Failed To Update this seat',
+				title: 'Failed',
+				duration: 1000
+			});
+		} finally {
+			loading = false;
 		}
+	}
 
-		// return services
+	function addPrivacyPolicyLang(description: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.description = description.value;
+		} else {
+			privacyPolicyLang.push({
+				description: description,
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: '',
+				price_sign: '',
+				description_seat: ''
+			});
+		}
+	}
 
-		let showModal = false;
-		let seatServices: serviceType[] = [];
+	function addPriceSign(price_sign: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.price_sign = price_sign.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: '',
+				price_sign: price_sign.value,
+				description_seat: ''
+			});
+		}
+	}
 
-		onMount(async () => {
-			const response = await data.supabase
-				.from('seat_services')
-				.select('*, seat_services_languages(*)')
-				.order('position', { ascending: true });
+	function addDescriptionSeat(description_seat: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.description_seat = description_seat.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: '',
+				price_sign: '',
+				description_seat: description_seat.value
+			});
+		}
+	}
 
-			seatServices = response?.data?.map((service) => ({
-				serviceId: service.id,
-				id: service.id,
-				title:
-					service.seat_services_languages.find((lang: any) => lang.language === 'en')?.title ||
-					'No title',
-				selected: false,
-				quantity: 0,
-				maxFreeCount: 0,
-				unlimitedFree: false
-			}));
-		});
-	</script>
+	function addPrivacyPolicyExtraDiscountDescription(description: any, lang: string) {
+		let descriptionValue = (description as HTMLInputElement).value;
 
-	<div class="p-3">
-		<button
-			class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
-			on:click={() => goto('/dashboard/seats_ui')}
-			><svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				class="w-4 h-4"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-				/>
-			</svg>
-			Back to Seats Dashboard
-		</button>
-	</div>
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.extra_discount_description = descriptionValue;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: '',
+				extra_discount_description: descriptionValue,
+				price_sign: '',
+				description_seat: ''
+			});
+		}
+	}
 
-	<div class="w-full h-full flex flex-col justify-center items-center">
-		<div class="w-7/12 p-14 rounded-lg border-2 dark:border-gray-800 light:border-gray-500 my-5">
-			<Tabs>
-				<TabItem title="add Seat Area fields" open>
-					<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
-						<ButtonGroup class="" size="sm">
-							<InputAddon>Name</InputAddon><Input
-								type="text"
-								size="sm"
-								let:props
-								placeholder={!seatInfoData.name && formSubmitted ? 'Name Required' : ' Name'}
-								color={!seatInfoData.name && formSubmitted ? 'red' : 'base'}
-								bind:value={seatInfoData.name}
-							/></ButtonGroup
-						>
-						<ButtonGroup class="" size="sm">
-							<InputAddon>price per meter</InputAddon><Input
-								type="text"
-								size="sm"
-								bind:value={seatInfoData.price_per_meter}
-							/></ButtonGroup
-						>
+	function addDiscountDetail(discount_description: any, lang: string) {
+		let dataLang = privacyPolicyLang.find((x) => x.language == lang);
+		if (dataLang) {
+			dataLang.discount_description = discount_description.value;
+		} else {
+			privacyPolicyLang.push({
+				description: '',
+				language: lang as LanguageEnum,
+				discount_description: discount_description,
+				extra_discount_description: '',
+				price_sign: '',
+				description_seat: ''
+			});
+		}
+	}
 
-						<Button
-							color={!seatInfoData.exhibition && formSubmitted ? 'red' : 'light'}
-							outline
-							class=""
-							style="
+	function handleFileUpload(e: any) {
+		const fileInput = e.target as HTMLInputElement;
+		excelFilePreviewSelected = fileInput.files![0];
+	}
+
+	// return services
+
+	let showModal = false;
+	let seatServices: any = [];
+
+	onMount(async () => {
+		const response = await data.supabase
+			.from('seat_services')
+			.select('*, seat_services_languages(*)')
+			.order('position', { ascending: true });
+
+		seatServices = response?.data?.map((service) => ({
+			serviceId: service.id,
+			id: service.id,
+			title:
+				service.seat_services_languages.find((lang: any) => lang.language === 'en')?.title ||
+				'No title',
+			selected: false,
+			quantity: 0,
+			maxFreeCount: 0,
+			unlimitedFree: false
+		}));
+	});
+</script>
+
+<div class="p-3">
+	<button
+		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
+		on:click={() => goto('/dashboard/seats_ui')}
+		><svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+			stroke="currentColor"
+			class="w-4 h-4"
+		>
+			<path
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+			/>
+		</svg>
+		Back to Seats Dashboard
+	</button>
+</div>
+
+<div class="w-full h-full flex flex-col justify-center items-center">
+	<div class="w-7/12 p-14 rounded-lg border-2 dark:border-gray-800 light:border-gray-500 my-5">
+		<Tabs>
+			<TabItem title="add Seat Area fields" open>
+				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
+					<ButtonGroup class="" size="sm">
+						<InputAddon>Name</InputAddon><Input
+							type="text"
+							size="sm"
+							let:props
+							placeholder={!seatInfoData.name && formSubmitted ? 'Name Required' : ' Name'}
+							color={!seatInfoData.name && formSubmitted ? 'red' : 'base'}
+							bind:value={seatInfoData.name}
+						/></ButtonGroup
+					>
+					<ButtonGroup class="" size="sm">
+						<InputAddon>price per meter</InputAddon><Input
+							type="text"
+							size="sm"
+							bind:value={seatInfoData.price_per_meter}
+						/></ButtonGroup
+					>
+
+					<Button
+						color={!seatInfoData.exhibition && formSubmitted ? 'red' : 'light'}
+						outline
+						class=""
+						style="
 				text-overflow: ellipsis;
 				white-space: nowrap;
 				overflow: hidden;
 				"
-							><Chevron
-								>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
-									? seatInfoData.exhibition.exhibition_type
-									: !seatInfoData.exhibition && formSubmitted
-									? 'exhibition is required'
-									: 'choose an exhibition'}</Chevron
-							></Button
-						>
-						<Dropdown bind:open={dropdownOpen} ulClass="dropdownUi py-1 w-full">
-							{#if $exhibitions}
-								{#each $exhibitions as exhibition}
-									<DropdownItem on:click={() => (dropdownOpen = false)}>
-										<!-- svelte-ignore a11y-click-events-have-key-events -->
-										<!-- svelte-ignore a11y-no-static-element-interactions -->
-										<div
-											style="
-									text-overflow: ellipsis;
-								white-space: nowrap;
-								overflow: hidden;
-								"
-											on:click={() => (seatInfoData.exhibition = exhibition)}
-										>
-											{exhibition.exhibition_type ?? ''}
-										</div>
-									</DropdownItem>
-								{/each}
-							{/if}
-						</Dropdown>
-						<Button
-							color={seatInfoData.isActive == undefined && formSubmitted ? 'red' : 'light'}
-							outline
-							class=""
-							><Chevron
-								>{seatInfoData.isActive !== undefined
-									? seatInfoData.isActive
-										? 'Active'
-										: 'Inactive'
-									: seatInfoData.isActive == undefined && formSubmitted
-									? 'status is required'
-									: 'Seat Status'}</Chevron
-							></Button
-						>
-
-						<Dropdown bind:open={isActiveDropdownOpen} ulClass="dropdownUi py-1 w-full">
-							{#each serviceStatus as status}
-								<DropdownItem on:click={() => (isActiveDropdownOpen = false)}>
+						><Chevron
+							>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
+								? seatInfoData.exhibition.exhibition_type
+								: !seatInfoData.exhibition && formSubmitted
+								? 'exhibition is required'
+								: 'choose an exhibition'}</Chevron
+						></Button
+					>
+					<Dropdown bind:open={dropdownOpen} ulClass="dropdownUi py-1 w-full">
+						{#if $exhibitions}
+							{#each $exhibitions as exhibition}
+								<DropdownItem on:click={() => (dropdownOpen = false)}>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 									<!-- svelte-ignore a11y-no-static-element-interactions -->
 									<div
@@ -447,152 +414,199 @@
 								white-space: nowrap;
 								overflow: hidden;
 								"
-										on:click={() => (seatInfoData.isActive = status == SeatServiceStatusEnum.Active)}
+										on:click={() => (seatInfoData.exhibition = exhibition)}
 									>
-										{status}
+										{exhibition.exhibition_type ?? ''}
 									</div>
 								</DropdownItem>
 							{/each}
-						</Dropdown>
-						<ButtonGroup class="" size="sm">
-							<InputAddon>Discounted Price</InputAddon><Input
-								type="text"
-								size="sm"
-								bind:value={seatInfoData.discounted_price}
-							/></ButtonGroup
-						>
-						<ButtonGroup class="" size="sm">
-							<InputAddon>Extra Discounted Price</InputAddon><Input
-								type="text"
-								size="sm"
-								bind:value={seatInfoData.extra_discount}
-							/></ButtonGroup
-						>
+						{/if}
+					</Dropdown>
+					<Button
+						color={seatInfoData.isActive == undefined && formSubmitted ? 'red' : 'light'}
+						outline
+						class=""
+						><Chevron
+							>{seatInfoData.isActive !== undefined
+								? seatInfoData.isActive
+									? 'Active'
+									: 'Inactive'
+								: seatInfoData.isActive == undefined && formSubmitted
+								? 'status is required'
+								: 'Seat Status'}</Chevron
+						></Button
+					>
 
-						<br />
-						<!-- show modal  -->
-						<div class="col-span-3">
-							<Button on:click={() => (showModal = true)}>Add service</Button>
-							<Modal title="List of Services" bind:open={showModal} autoclose>
-								<ul class="list-disc pl-5 space-y-2">
-									{#each seatServices as service}
-										<li class="flex items-center space-x-2">
-											<Checkbox
-												on:change={(e) => {
-													if (e.target instanceof HTMLInputElement) {
-														handleCheckboxChange(service.id, e.target.checked);
-													}
-												}}
-											/>
-											<div class="w-full">
-												{service.title}
-											</div>
+					<Dropdown bind:open={isActiveDropdownOpen} ulClass="dropdownUi py-1 w-full">
+						{#each serviceStatus as status}
+							<DropdownItem on:click={() => (isActiveDropdownOpen = false)}>
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
+								<div
+									style="
+									text-overflow: ellipsis;
+								white-space: nowrap;
+								overflow: hidden;
+								"
+									on:click={() => (seatInfoData.isActive = status == SeatServiceStatusEnum.Active)}
+								>
+									{status}
+								</div>
+							</DropdownItem>
+						{/each}
+					</Dropdown>
+					<ButtonGroup class="" size="sm">
+						<InputAddon>Discounted Price</InputAddon><Input
+							type="text"
+							size="sm"
+							bind:value={seatInfoData.discounted_price}
+						/></ButtonGroup
+					>
+					<ButtonGroup class="" size="sm">
+						<InputAddon>Extra Discounted Price</InputAddon><Input
+							type="text"
+							size="sm"
+							bind:value={seatInfoData.extra_discount}
+						/></ButtonGroup
+					>
+					<div class="flex items-center mb-4">
+						<input
+							bind:checked={seatInfoData.is_excel_required}
+							id="default-checkbox"
+							type="checkbox"
+							class="w-4 h-4 text-[#e1b168] bg-gray-100 border-gray-300 rounded focus:ring-[#e1b168] dark:focus:ring-[#e1b168] dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+						/>
+						<label
+							for="default-checkbox"
+							class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+							>Is excel required</label
+						>
+					</div>
 
+					<br />
+					<!-- show modal  -->
+					<div class="col-span-3">
+						<Button on:click={() => (showModal = true)}>Add service</Button>
+						<Modal title="List of Services" bind:open={showModal} autoclose>
+							<ul class="list-disc pl-5 space-y-2">
+								{#each seatServices as service}
+									<li class="flex items-center space-x-2">
+										<Checkbox
+											on:change={(e) => {
+												if (e.target instanceof HTMLInputElement) {
+													handleCheckboxChange(service.id, e.target.checked);
+												}
+											}}
+										/>
+										<div class="w-full">
+											{service.title}
+										</div>
+
+										<Input
+											type="number"
+											placeholder="Max Quantity Per User"
+											bind:value={service.maxQuantityPerUser}
+											on:input={(e) => {
+												const target = e.target;
+												if (target instanceof HTMLInputElement) {
+													handleInputChange(service.id, 'maxQuantityPerUser', target.value);
+												}
+											}}
+											disabled={!service.selected}
+										/>
+
+										<ButtonGroup class="w-full" size="sm">
+											<InputAddon>
+												<div class="flex items-center">
+													<Checkbox
+														bind:value={service.unlimitedFree}
+														class="cursor-pointer"
+														on:change={(e) => {
+															const target = e.target;
+															if (target instanceof HTMLInputElement) {
+																handleUnlimitedFreeChange(service.id, target.checked);
+															}
+														}}
+														disabled={!service.selected}
+													/>
+
+													<p>Unlimited</p>
+												</div>
+											</InputAddon>
 											<Input
-												type="number"
-												placeholder="Max Quantity Per User"
-												bind:value={service.maxQuantityPerUser}
-												on:input={(e) => {
-													const target = e.target;
-													if (target instanceof HTMLInputElement) {
-														handleInputChange(service.id, 'maxQuantityPerUser', target.value);
-													}
-												}}
-												disabled={!service.selected}
+												id="input-addon-sm"
+												placeholder="max free quantity for a user"
+												bind:value={service.maxFreeCount}
+												disabled={!service.selected || service.unlimitedFree}
 											/>
-
-											<ButtonGroup class="w-full" size="sm">
-												<InputAddon>
-													<div class="flex items-center">
-														<Checkbox
-															bind:value={service.unlimitedFree}
-															class="cursor-pointer"
-															on:change={(e) => {
-																const target = e.target;
-																if (target instanceof HTMLInputElement) {
-																	handleUnlimitedFreeChange(service.id, target.checked);
-																}
-															}}
-															disabled={!service.selected}
-														/>
-
-														<p>Unlimited</p>
-													</div>
-												</InputAddon>
-												<Input
-													id="input-addon-sm"
-													placeholder="max free quantity for a user"
-													bind:value={service.maxFreeCount}
-													disabled={!service.selected || service.unlimitedFree}
-												/>
-											</ButtonGroup>
-										</li>
-									{/each}
-								</ul>
-							</Modal>
-						</div>
-
-						<br />
-						<div class="col-span-3 my-4">
-							<div class="max-w-[400px]">
-								<p>upload image for sheet preview</p>
-								<Fileupload
-									accept=".jpg, .jpeg, .png"
-									class=" "
-									on:change={(event) => handleFileUpload(event)}
-								/>
-							</div>
-						</div>
-
-						<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
-						<div class=" col-span-3">
-							<Tabs>
-								{#each languageEnumKeys as lang}
-									<TabItem title={lang} open={lang === languageEnumKeys[0]}>
-								           <Input
-                                        id="textarea-id"
-                                        placeholder={`Add price sign for ${lang}`}
-                                        class="my-3 col-span-3"
-                                        value={privacyPolicyLang?.find((x) => x.language === lang)?.price_sign}
-                                        on:input={(e) => addPriceSign(e.target, lang)}
-                                    />
-                                    <Textarea
-                                        id="textarea-id"
-                                        placeholder={`add description seat for ${lang}`}
-                                        rows="8"
-                                        class="my-3 col-span-3"
-                                        value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
-                                        on:input={(e) => addDescriptionSeat(e.target, lang)}
-                                    />
-										<Textarea
-											id="textarea-id"
-											placeholder={`add privacy & policy for ${lang}`}
-											rows="8"
-											class="my-3 col-span-3"
-											value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
-											on:input={(e) => addPrivacyPolicyLang(e.target, lang)}
-										/>
-										<Textarea
-											id="textarea-id"
-											placeholder={`add discount description for  ${lang}`}
-											rows="8"
-											class="my-3 col-span-3"
-											value={privacyPolicyLang?.find((x) => x.language === lang)
-												?.discount_description}
-											on:input={(e) => addDiscountDetail(e.target ?? '', lang)}
-										/>
-										<Textarea
-											id="textarea-id"
-											placeholder={`add extra discount description for  ${lang}`}
-											rows="8"
-											class="my-3 col-span-3"
-											value={privacyPolicyLang?.find((x) => x.language === lang)
-												?.extra_discount_description}
-											on:input={(e) => addPrivacyPolicyExtraDiscountDescription(e.target, lang)}
-										/>
-									</TabItem>
+										</ButtonGroup>
+									</li>
 								{/each}
-							</Tabs>
+							</ul>
+						</Modal>
+					</div>
+
+					<br />
+					<div class="col-span-3 my-4">
+						<div class="max-w-[400px]">
+							<p>upload image for sheet preview</p>
+							<Fileupload
+								accept=".jpg, .jpeg, .png"
+								class=" "
+								on:change={(event) => handleFileUpload(event)}
+							/>
+						</div>
+					</div>
+
+					<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
+					<div class=" col-span-3">
+						<Tabs>
+							{#each languageEnumKeys as lang}
+								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
+									<Input
+										id="textarea-id"
+										placeholder={`Add price sign for ${lang}`}
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)?.price_sign}
+										on:input={(e) => addPriceSign(e.target, lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add description seat for ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
+										on:input={(e) => addDescriptionSeat(e.target, lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add privacy & policy for ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
+										on:input={(e) => addPrivacyPolicyLang(e.target, lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add discount description for  ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)
+											?.discount_description}
+										on:input={(e) => addDiscountDetail(e.target ?? '', lang)}
+									/>
+									<Textarea
+										id="textarea-id"
+										placeholder={`add extra discount description for  ${lang}`}
+										rows="8"
+										class="my-3 col-span-3"
+										value={privacyPolicyLang?.find((x) => x.language === lang)
+											?.extra_discount_description}
+										on:input={(e) => addPrivacyPolicyExtraDiscountDescription(e.target, lang)}
+									/>
+								</TabItem>
+							{/each}
+						</Tabs>
 					</div>
 				</div>
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
