@@ -431,9 +431,8 @@
 
 			window.addEventListener('keydown', function (e) {
 				const selectedObject = canvas.getActiveObject();
-				if (e.key === 'Delete') {
+				if (e.ctrlKey && e.key === 'Delete') {
 					removeSelectedObject();
-				} else if (e.key === 'Delete') {
 				}
 			});
 
