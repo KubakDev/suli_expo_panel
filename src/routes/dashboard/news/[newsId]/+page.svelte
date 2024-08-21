@@ -18,6 +18,7 @@
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
+	
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
@@ -42,7 +43,7 @@
 		id: 0,
 		images: [],
 		thumbnail: '',
-		created_at: new Date()
+		created_at: ''
 	};
 	const id = $page.params.newsId;
 	let images: ImagesModel[] = [];
@@ -55,6 +56,8 @@
 			.eq('id', id)
 			.single()
 			.then((result) => {
+				 const createdAt = new Date(result.data?.created_at).toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+
 				newsData = {
 					id: result.data?.id,
 					exhibition_id: result.data?.exhibition_id,
@@ -62,12 +65,10 @@
 					thumbnail: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
 						result.data?.thumbnail
 					}`,
-					created_at: result.data?.created_at
+					created_at: createdAt
 				};
 
-				//
-				//
-				prevThumbnail = result.data?.thumbnail;
+				 prevThumbnail = result.data?.thumbnail;
 				images = getImage();
 				for (let i = 0; i < languageEnumLength; i++) {
 					const index = result.data?.news_languages.findIndex(
@@ -237,7 +238,7 @@
 		reader.readAsDataURL(file);
 	}
 </script>
-
+ 
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -268,7 +269,7 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<span>Date</span>
-					<Input
+					 <Input
 						type="date"
 						bind:value={newsData.created_at}
 						class="dark:bg-white dark:text-black"
