@@ -17,6 +17,7 @@
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import { page } from '$app/stores';
+	import { exportToExcel } from '$lib/utils/exportToExcel';
 
 	export let data;
 	let p_company_name: string | undefined;
@@ -238,6 +239,19 @@
 
 		fetchReservationData();
 	}
+
+// Handle export all data
+async function handleExport(selectedExhibitionId: number) {
+    const { data: result, error } = await data.supabase.rpc('get_all_reserve_data', {
+        exhibition_id_param: selectedExhibitionId || null
+    });
+    if (error) {
+        console.error('Error fetching data:', error);
+    } else {
+        exportToExcel(result);
+    }
+}
+
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10">
@@ -412,6 +426,9 @@
 					{/each}
 				</Dropdown>
 			</div>
+
+			<!-- Export data  -->
+			 	<Button on:click={handleExport(selectedExhibition)}>Export</Button>
 		</div>
 	</div>
 

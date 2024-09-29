@@ -75,6 +75,7 @@
 		const { data: result, error } = await data.supabase.rpc('get_all_users_data');
 		exportToExcel(result);
 	}
+	
 </script>
 
 <div class="max-w-screen-2xl mx-auto py-10 mt-5">
