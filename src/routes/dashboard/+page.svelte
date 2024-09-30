@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 	import { getViewerData, viewerData } from '../../stores/viewersStore.js';
 	//@ts-ignore
-	import Countup from 'svelte-countup';
 	import BarChart from '$lib/components/BarChart.svelte';
+	import LineChart from '$lib/components/LineChart.svelte';
 
 	export let data;
 	let isDataLoaded = false;
@@ -37,7 +37,7 @@
 			<input
 				type="date"
 				name="date_filter"
-				class="text-gray-900 rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
+				class="cursor-pointer text-gray-900 rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
 				bind:value={selectedDate}
 				on:change={handleDateChange}
 			/>
@@ -209,8 +209,17 @@
 				</div>
 			</div>
 		</div>
-
+      
+		<h1 class="text-color font-bold text-xl mx-4">Yearly Visitor Data</h1>
+   
 		<!-- chart js -->
-		<div class="px-4"><BarChart {data} /></div>
+		<div class="px-4 mt-4"><BarChart {data} /></div>
 	</div>
+{/if}
+{#if isDataLoaded}
+  <div>
+    {#if data}
+      <LineChart data={data} />
+    {/if}
+  </div>
 {/if}
