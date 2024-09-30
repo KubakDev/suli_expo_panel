@@ -137,9 +137,9 @@
 
 <div class="max-w-screen-2xl mx-auto py-10">
   <div class="flex justify-between items-center relative">
-    <h1 class="text-color font-bold text-xl">Weekly Reservation Data</h1>
     <!-- Date Pickers and Exhibition Filter for Filtering -->
-    <div class="flex gap-2 items-end ">
+    <h1 class="text-color font-bold text-xl">Weekly Reservation Data</h1>
+    <div class="flex gap-2 items-end mb-4">
       <div>
         <label for="start-date" class="block mb-1 text-color">Start Date</label>
         <input class="text-gray-900 cursor-pointer rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
@@ -176,7 +176,7 @@
   </div>
   
   <!-- Full Width Chart Section -->
-  <div class="border dark:border-gray-800 p-10 w-full rounded-lg mt-4">
+  <div class="border dark:border-gray-800 p-10 w-full rounded-lg">
     <canvas bind:this={canvas}></canvas>
   </div>
 </div>

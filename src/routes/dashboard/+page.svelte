@@ -213,7 +213,7 @@
 		<h1 class="text-color font-bold text-xl mx-4">Yearly Visitor Data</h1>
    
 		<!-- chart js -->
-		<div class="px-4 mt-4"><BarChart {data} /></div>
+		<div class="px-4 mt-6"><BarChart {data} /></div>
 	</div>
 {/if}
 {#if isDataLoaded}
