@@ -22,6 +22,7 @@
 		fetchChartData();
 	});
 
+	
 	//data type
 	interface ViewerDataForYear {
 		news_viewers: number;
