@@ -29,6 +29,7 @@
 		suly_expo_viewers: number;
 	}
 
+	
 	type YearlyViewerData = {
 		[year: string]: ViewerDataForYear;
 	};
