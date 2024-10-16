@@ -518,18 +518,18 @@
 							<div class="flex items-center gap-2 mx-[50px] uppercase">change status</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex flex-col items-center gap-2 justify-between">
+							<div class="flex flex-col items-center gap-2 justify-between uppercase">
 								extra discount check status
 							</div></th
 						>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex flex-col items-center gap-2 justify-between">contract file</div>
+							<div class="flex flex-col items-center gap-2 justify-between uppercase">contract file</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2">export excel sheet</div>
+							<div class="flex items-center gap-2 uppercase">export excel sheet</div>
 						</th>
 						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2">total price</div>
+							<div class="flex items-center gap-2 uppercase">total price</div>
 						</th>
 					</tr>
 				</thead>
