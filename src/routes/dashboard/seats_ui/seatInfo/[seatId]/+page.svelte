@@ -66,7 +66,7 @@
 			// Upload the new file
 			if (imageFile) {
 				const response = await data.supabase.storage.from('image').upload(fileName, imageFile);
-				seatData.excel_preview_url = response?.data?.path;
+				seatData.excel_preview_url = response?.data?.path || '';  
 			}
 
 			// Update the database record

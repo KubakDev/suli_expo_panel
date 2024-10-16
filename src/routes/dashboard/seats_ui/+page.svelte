@@ -115,7 +115,7 @@
 					<div class="flex justify-end px-2 items-center my-2 h-10">
 						<!-- Add require field -->
 						<button
-							on:click={() => openSeatInfo(design.id)}
+							on:click={() => design.id && openSeatInfo(design.id)} 
 							class="p-2 tetx-white rounded-full bg-primary-200 flex justify-center items-center font-bold"
 						>
 							<svg

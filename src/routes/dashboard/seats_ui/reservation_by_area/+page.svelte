@@ -151,14 +151,8 @@
 		loading = true;
 
 		try {
-			if (seatInfoData.isActive) {
-				await supabase
-					.from('seat_layout')
-					.update({ is_active: false })
-					.eq('exhibition', seatInfoData.exhibition?.id);
-			}
 
-			let excel_preview_url = '';
+	        let excel_preview_url = '';
 			if (excelFilePreviewSelected) {
 				const randomText = getRandomTextNumber();
 				const response = await supabase.storage
@@ -215,6 +209,7 @@
 					title: 'Success',
 					duration: 1000
 				});
+				goto('/dashboard/seats_ui');
 			}
 		} catch (error) {
 			addNewToast({
