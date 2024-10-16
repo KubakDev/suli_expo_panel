@@ -156,16 +156,16 @@
 			<thead>
 				<tr>
 					<th class="table_header">
-						<div class="flex items-center gap-2">name</div>
+						<div class="flex items-center gap-2">Name</div>
 					</th>
 					<th class="table_header">
-						<div class="flex items-center gap-2">is active</div>
+						<div class="flex items-center gap-2">Status</div>
 					</th>
 					<th class="table_header">
-						<div class="flex items-center gap-2">ares</div>
+						<div class="flex items-center gap-2">Area</div>
 					</th>
 					<th class="table_header">
-						<div class="flex items-center gap-2">go to detail</div>
+						<div class="flex items-center gap-2">Detail</div>
 					</th>
 				</tr>
 			</thead>
