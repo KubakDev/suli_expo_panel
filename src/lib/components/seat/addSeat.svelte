@@ -7,7 +7,7 @@
 		DropdownItem,
 		Input,
 		InputAddon,
-		Spinner,
+				Spinner,
 		TabItem,
 		Tabs,
 		Textarea
@@ -23,6 +23,7 @@
 	import { canvasToFile } from '$lib/utils/canva_to_image';
 	import type { PageData } from '../../../routes/$types';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 	export let seatInfo: any;
@@ -85,12 +86,7 @@
 		}
 		loading = true;
 
-		if (seatInfoData.isActive) {
-			await supabase
-				.from('seat_layout')
-				.update({ is_active: false })
-				.eq('exhibition', seatInfoData.exhibition?.id);
-		}
+		 
 		const randomImageName = getRandomTextNumber();
 		const canvasImage = await canvasToFile(seatInfo.canvas, randomImageName);
 		const fileResult = await supabase.storage
@@ -101,61 +97,65 @@
 		}
 		const seatId = seatInfo.seatId;
 		if (seatId !== 'create') {
-			await supabase
-				.rpc('update_seat_and_seat_privacy', {
-					seat_layout_data: {
-						name: seatInfoData.name,
-						design: json,
-						is_active: seatInfoData.isActive,
-						exhibition: seatInfoData.exhibition?.id,
-						image_url: fileResult.data.path,
-						id: +seatId
-					},
-					privacy_lang_data: privacyPolicyLang
-				})
-				.then(() => {
-					loading = false;
-					dispatch('closeModal');
-					addNewToast({
-						type: ToastTypeEnum.SUCCESS,
-						message: 'The Seat Updated Successfully',
-						title: 'Success',
-						duration: 1000
+			try {
+				await supabase
+					.rpc('update_seat_and_seat_privacy', {
+						seat_layout_data: {
+							name: seatInfoData.name,
+							design: json,
+							is_active: seatInfoData.isActive,
+							exhibition: seatInfoData.exhibition?.id,
+							image_url: fileResult.data.path,
+							id: +seatId
+						},
+						privacy_lang_data: privacyPolicyLang
 					});
-				})
-				.catch(() => {
-					loading = false;
+				loading = false;
+				dispatch('closeModal');
+				addNewToast({
+					type: ToastTypeEnum.SUCCESS,
+					message: 'The Seat Updated Successfully',
+					title: 'Success',
+					duration: 1000
 				});
+				goto('/dashboard/seats_ui');  
+			} catch (error) {
+				loading = false;
+			}
 		} else {
-			await supabase
-				.rpc('insert_seat_and_seat_privacy', {
-					seat_layout_data: {
-						name: seatInfoData.name,
-						design: json,
-						is_active: seatInfoData.isActive,
-						exhibition: seatInfoData.exhibition?.id,
-						image_url: fileResult.data.path
-					},
-					privacy_lang_data: privacyPolicyLang
-				})
-				.then(() => {
-					loading = false;
-					dispatch('closeModal');
-					addNewToast({
-						type: ToastTypeEnum.SUCCESS,
-						message: 'The Seat Added Successfully',
-						title: 'Success',
-						duration: 1000
+			try {
+				await supabase
+					.rpc('insert_seat_and_seat_privacy', {
+						seat_layout_data: {
+							name: seatInfoData.name,
+							design: json,
+							is_active: seatInfoData.isActive,
+							exhibition: seatInfoData.exhibition?.id,
+							image_url: fileResult.data.path
+						},
+						privacy_lang_data: privacyPolicyLang
 					});
-				})
-				.catch(() => {
-					loading = false;
+				loading = false;
+				dispatch('closeModal');
+				addNewToast({
+					type: ToastTypeEnum.SUCCESS,
+					message: 'The Seat Added Successfully',
+					title: 'Success',
+					duration: 1000
 				});
+				goto('/dashboard/seats_ui'); 
+			} catch (error) {
+				loading = false;
+			}
 		}
 	}
 	function addPrivacyPolicyLang(description: string, lang: string) {
 		privacyPolicyLang = privacyPolicyLang.filter((x) => x.language !== lang);
-		privacyPolicyLang.push({ description, language: lang as LanguageEnum });
+		privacyPolicyLang.push({ 
+			description_seat: description,
+			price_sign: '', 
+			language: lang as LanguageEnum 
+		});
 	}
 </script>
 

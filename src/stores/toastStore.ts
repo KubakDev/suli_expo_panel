@@ -1,18 +1,25 @@
 import { writable } from "svelte/store";
 import type { ToastType } from "../models/toast";
-import { ToastTypeEnum } from "../models/toastTypeEnum";
-
+ 
 let toastsData = writable<ToastType[]>([
 ]);
 
-export function addNewToast({ title, message, type }: ToastType) {
+export function addNewToast({ title, message, type, duration = 3000 }: ToastType & { duration?: number }) {
+  const newToast: ToastType = {
+    title: title,
+    message: message,
+    type: type
+  };
+
   toastsData.update((toasts) => {
-    const newToast: ToastType = {
-      title: title,
-      message: message,
-      type: type
-    };
-    return [...toasts, newToast];
+    const updatedToasts = [...toasts, newToast];
+    
+    // Remove the toast after the specified duration
+    setTimeout(() => {
+      toastsData.update((toasts) => toasts.filter(t => t !== newToast));
+    }, duration);
+
+    return updatedToasts;
   });
 }
 

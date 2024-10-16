@@ -391,12 +391,8 @@
 	</div>
 
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div class="mx-12">
-		<div
-			class="h-full flex justify-center items-center px-2 rounded-sm cursor-pointer"
-			on:click={() => dispatch('openAddSeatModal')}
-		>
-			<Button>
+	<div class="p-2">
+	  <Button on:click={() => dispatch('openAddSeatModal')}>
 				<svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
 					><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
 						id="SVGRepo_tracerCarrier"
@@ -435,7 +431,7 @@
 				>
 				Save Seat
 			</Button>
-		</div>
+		  
 	</div>
 </div>
 

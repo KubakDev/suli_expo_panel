@@ -113,12 +113,12 @@
 			serviceId: service.id,
 			id: service.id,
 			title:
-				service.seat_services_languages.find((lang) => lang.language === 'en')?.title || 'No title',
+				service.seat_services_languages.find((lang: { language: string }) => lang.language === 'en')?.title || 'No title',
 			selected: false,
 			quantity: 0,
 			maxFreeCount: 0,
 			unlimitedFree: false
-		}));
+		})) || [];  
 	});
 
 	async function getSeatDetail() {
