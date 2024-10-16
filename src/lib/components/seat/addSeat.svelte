@@ -7,8 +7,8 @@
 		DropdownItem,
 		Input,
 		InputAddon,
-				Spinner,
-		TabItem,
+					Spinner,
+				TabItem,
 		Tabs,
 		Textarea
 	} from 'flowbite-svelte';
@@ -86,7 +86,28 @@
 		}
 		loading = true;
 
-		 
+		//deactivate other seats with the same exhibition ID
+		if (seatInfoData.isActive) {
+			const { data: activeSeats, error: fetchError } = await supabase
+				.from('seat_layout')
+				.select('id')
+				.eq('exhibition', seatInfoData.exhibition.id)
+				.eq('is_active', true);
+
+			if (fetchError) {
+				loading = false;
+				return;
+			}
+
+			if (activeSeats.length > 0) {
+				const seatIds = activeSeats.map(seat => seat.id);
+				await supabase
+					.from('seat_layout')
+					.update({ is_active: false })
+					.in('id', seatIds);
+			}
+		}
+
 		const randomImageName = getRandomTextNumber();
 		const canvasImage = await canvasToFile(seatInfo.canvas, randomImageName);
 		const fileResult = await supabase.storage
@@ -149,6 +170,7 @@
 			}
 		}
 	}
+	
 	function addPrivacyPolicyLang(description: string, lang: string) {
 		privacyPolicyLang = privacyPolicyLang.filter((x) => x.language !== lang);
 		privacyPolicyLang.push({ 

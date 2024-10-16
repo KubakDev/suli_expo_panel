@@ -151,8 +151,29 @@
 		loading = true;
 
 		try {
+			//  deactivate other seats with the same exhibition ID
+			if (seatInfoData.isActive) {
+				const { data: activeSeats, error: fetchError } = await supabase
+					.from('seat_layout')
+					.select('id')
+					.eq('exhibition', seatInfoData.exhibition.id)
+					.eq('is_active', true);
 
-	        let excel_preview_url = '';
+				if (fetchError) {
+					loading = false;
+					return;
+				}
+
+				if (activeSeats.length > 0) {
+					const seatIds = activeSeats.map(seat => seat.id);
+					await supabase
+						.from('seat_layout')
+						.update({ is_active: false })
+						.in('id', seatIds);
+				}
+			}
+
+			let excel_preview_url = '';
 			if (excelFilePreviewSelected) {
 				const randomText = getRandomTextNumber();
 				const response = await supabase.storage

@@ -239,7 +239,30 @@
 		loading = true;
 
 		try {
-		  const areasArray = JSON.stringify(areas);
+			const areasArray = JSON.stringify(areas);
+
+			// deactivate other seats with the same exhibition ID
+			if (seatInfoData.isActive) {
+				const { data: activeSeats, error: fetchError } = await supabase
+					.from('seat_layout')
+					.select('id')
+					.eq('exhibition', seatInfoData.exhibition.id)
+					.eq('is_active', true)
+					.not('id', 'eq', $page.params.reservationId); // Exclude the current seat
+
+				if (fetchError) {
+					loading = false;
+					return;
+				}
+
+				if (activeSeats.length > 0) {
+					const seatIds = activeSeats.map(seat => seat.id);
+					await supabase
+						.from('seat_layout')
+						.update({ is_active: false })
+						.in('id', seatIds);
+				}
+			}
 
 			if (excelFilePreviewSelected) {
 				const randomText = getRandomTextNumber();
@@ -289,7 +312,7 @@
 			} else {
 				addNewToast({
 					type: ToastTypeEnum.SUCCESS,
-					message: 'The Seat Added Successfully',
+					message: 'The Seat Updated Successfully',
 					title: 'Success',
 					duration: 1000
 				});
@@ -495,8 +518,7 @@
 			white-space: nowrap;
 			overflow: hidden;
 			"
-						disabled={true}
-						><Chevron
+		   ><Chevron
 							>{seatInfoData.exhibition && seatInfoData.exhibition.exhibition_languages
 								? seatInfoData.exhibition.exhibition_languages[0].title
 								: !seatInfoData.exhibition && formSubmitted
