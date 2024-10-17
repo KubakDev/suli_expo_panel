@@ -11,28 +11,41 @@
 	let designs: SeatLayoutModel[] | undefined;
 	let seatsAreaFieldsType: SeatLayoutModel[] = [];
     let loaded: boolean = false;
+  let exhibitionTypeMap: Map<number, string> = new Map();
 
-	async function getData() {
-		loaded = false;
-		if (!supabase) return;
-		const seatsData = await supabase.from('seat_layout').select('*');
-		seatsAreaFieldsType =
-			seatsData.data?.filter((seat) => {
-				return seat.type == SeatsLayoutTypeEnum.AREAFIELDS;
-			}) ?? [];
-		seatsData.data =
-			seatsData.data?.filter((seat) => {
-				return seat.type !== SeatsLayoutTypeEnum.AREAFIELDS;
-			}) ?? [];
-		designs = seatsData.data?.map((seat) => {
-			return seat as SeatLayoutModel;
-		});
-		loaded = true;
-	}
-	onMount(async () => {
-		getData();
-	});
 
+   async function getData() {
+        loaded = false;
+        if (!supabase) return;
+
+        // Fetch seat layout data
+        const seatsData = await supabase.from('seat_layout').select('*');
+
+        if (seatsData.data) {
+            await Promise.all(
+                seatsData.data.map(async (seat) => {
+                    if (seat.exhibition) {
+                        const exhibitionData = await supabase
+                            .from('exhibition')
+                            .select('exhibition_type')
+                            .eq('id', seat.exhibition)
+                            .single();
+                        
+                         exhibitionTypeMap.set(seat.id, exhibitionData?.data?.exhibition_type || 'N/A');
+                    } else {
+                         exhibitionTypeMap.set(seat.id, 'N/A');
+                    }
+                })
+            );
+        }
+
+        seatsAreaFieldsType = seatsData.data?.filter(seat => seat.type == SeatsLayoutTypeEnum.AREAFIELDS) ?? [];
+        designs = seatsData.data?.filter(seat => seat.type !== SeatsLayoutTypeEnum.AREAFIELDS) ?? [];
+        loaded = true;
+    }
+
+
+ 
 	function openSeatDesignEditor(designId: number) {
 		goto(`seats_ui/${designId}`);
 	}
@@ -49,23 +62,27 @@
 		}
 		return result;
 	}
+ 
+   async function openSeatInfo(seatId: number) {
+      goto(`seats_ui/seatInfo/${seatId}`);
+  }
 
-	function openSeatInfo(seatId: number) {
-		goto(`seats_ui/seatInfo/${seatId}`);
-	}
+  onMount(async () => {
+    getData();
+  });
 </script>
-
 <div class="p-3">
 	<button
-		class="flex justify-start items-center text-md gap-2 text-primary hover:transition-opacity duration-300 hover:opacity-70"
+		class="flex justify-start items-center text-md gap-2 text-primary hover:transition-opacity duration-300 hover:opacity-90"
 		on:click={() => goto('/dashboard')}
-		><svg
+	>
+		<svg
 			xmlns="http://www.w3.org/2000/svg"
 			fill="none"
 			viewBox="0 0 24 24"
 			stroke-width="1.5"
 			stroke="currentColor"
-			class="w-4 h-4"
+			class="w-6 h-6"
 		>
 			<path
 				stroke-linecap="round"
@@ -73,138 +90,94 @@
 				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
 			/>
 		</svg>
-		Back
+		<span class="font-semibold">Back</span>
 	</button>
 </div>
 
 {#if !loaded}
- <div class="loading">Loading...</div>
+<div class="loading flex justify-center items-center h-screen">
+	<div class="text-center">
+		<div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full"></div>
+		<p class="text-lg font-semibold mt-4">Loading...</p>
+	</div>
+</div>
 {:else}
 <div class="flex flex-col justify-center items-center w-full py-5">
 	<div class="px-4 w-full lg:w-10/12">
 		<div class="my-6 flex w-full justify-end">
-			<Button on:click={createNewDesign}>Create New Seat Design</Button>
+		  <Button on:click={createNewDesign} class=" text-white transition-all duration-300">
+		   Add New Seat  
+		   </Button>
 		</div>
 	</div>
-	<div class="px-4 grid grid-cols-3 gap-4 mt-10">
+	<!-- Seat Design Grid -->
+	<div class="px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">
 		{#if designs}
 			{#each designs as design}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<!-- svelte-ignore a11y-no-static-element-interactions -->
-				<div
-					class="w-52 hover:shadow-sm duration-300 h-52 flex flex-col p-0 border rounded-2xl border-gray-600"
-				>
-					<div
-						class="h-32 w-full bg-white rounded-tl-2xl rounded-tr-2xl cursor-pointer"
-						on:click={() => openSeatDesignEditor(design.id ?? 0)}
-					>
-						<!-- svelte-ignore a11y-missing-attribute -->
-						<img
-							class="object-cover w-full h-full rounded-tl-2xl rounded-tr-2xl"
-							src={import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + design.image_url}
-						/>
-					</div>
-
-					<div class="flex justify-between px-2 items-center h-5">
-						<h5
-							class=" font-bold tracking-tight flex-1 flex justify-start items-start p-2 rounded-bl-2xl rounded-br-2xl"
-						>
-							{design.name}
-						</h5>
-					</div>
-					<div class="flex justify-end px-2 items-center my-2 h-10">
-						<!-- Add require field -->
-						<button
-							on:click={() => design.id && openSeatInfo(design.id)} 
-							class="p-2 tetx-white rounded-full bg-primary-200 flex justify-center items-center font-bold"
-						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-4 h-4"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-								/>
-							</svg>
-						</button>
-						<Tooltip placement="bottom">Update seat data</Tooltip>
-						<div
-							class={`h-3 w-3 mx-2 ${
-								design.is_active ? 'bg-[#31c48d]' : 'bg-[#cc2827]'
-							} rounded-full`}
-						/>
-					</div>
+			<div class="w-full hover:shadow-lg transition-shadow duration-300 rounded-2xl overflow-hidden border border-gray-300 hover:border-primary-500">
+				<div class="h-40 w-full bg-gray-100 cursor-pointer" on:click={() => openSeatDesignEditor(design.id ?? 0)}>
+					<img class="object-cover w-full h-full" src={import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + design.image_url} />
 				</div>
+				<div class="p-4 flex flex-col">
+					<h5 class="text-xl font-bold mb-2 text-gray-800 dark:text-gray-300">{design.name}</h5>
+					<p class="text-gray-600 mb-4"> {design.id &&  exhibitionTypeMap.get(design.id) || 'N/A'}</p>
+					<button on:click={() => design.id && openSeatInfo(design.id)} class="bg-primary-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-primary-700 transition-all duration-300">
+						Update Seat Information
+					</button>
+					<div class={`h-3 w-3 mt-3 ${design.is_active ? 'bg-green-500' : 'bg-red-500'} rounded-full`}></div>
+				</div>
+			</div>
 			{/each}
 		{/if}
 	</div>
-	<div class="w-full lg:w-10/12 my-10 px-4 border border-gray-300" />
-	<div class="px-4 w-full lg:w-10/12">
-		<div class="my-6 flex w-full justify-between">
-			<div><h1 class="  text-lg font-bold">Reservation by area</h1></div>
-			<div>
-				<Button on:click={() => goto('seats_ui/reservation_by_area')}>Add New Area</Button>
-			</div>
+
+	<!-- Reservation Table -->
+	<div class="w-full lg:w-10/12 my-10 px-4 border-t border-gray-300 pt-6">
+		<div class="flex w-full justify-between items-center mb-6">
+			<h1 class="text-lg font-bold text-gray-800 dark:text-gray-300">Reservation by Area</h1>
+			<Button on:click={() => goto('seats_ui/reservation_by_area')} class="bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-primary-700 transition-all duration-300">
+				Add New Area
+			</Button>
 		</div>
-		<table class="min-w-full border-collapse">
-			<thead>
+		<table class="min-w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden">
+			<thead class="bg-gray-100">
 				<tr>
-					<th class="table_header">
-						<div class="flex items-center gap-2">Name</div>
-					</th>
-					<th class="table_header">
-						<div class="flex items-center gap-2">Status</div>
-					</th>
-					<th class="table_header">
-						<div class="flex items-center gap-2">Area</div>
-					</th>
-					<th class="table_header">
-						<div class="flex items-center gap-2">Detail</div>
-					</th>
+					<th class="table_header">Name</th>
+					<th class="table_header">Status</th>
+					<th class="table_header">Area</th>
+					<th class="table_header">Exhibition Type</th>
+					<th class="table_header">Detail</th>
 				</tr>
 			</thead>
-
-			<tbody class="dark:text-gray-300">
+			<tbody class="text-gray-700">
 				{#each seatsAreaFieldsType as seat}
-					<tr class="border-2 border-[#edeff2]">
-						<td class="p-4">
-							<div>{seat.name}</div>
-						</td>
+					<tr class="border-b hover:bg-gray-50 transition-all duration-150">
+						<td class="p-4">{seat.name}</td>
 						<td>
 							{#if seat.is_active}
 								<div class="flex items-center">
-									<div class="mx-2 bg-[#31c48d] rounded-full h-3 w-3" />
-									Active
+									<div class="h-3 w-3 bg-green-500 rounded-full mx-2"></div>
+									<span>Active</span>
 								</div>
 							{:else}
 								<div class="flex items-center">
-									<div class="mx-2 bg-[#cc2827] rounded-full h-3 w-3" />
-									Inactive
+									<div class="h-3 w-3 bg-red-500 rounded-full mx-2"></div>
+									<span>Inactive</span>
 								</div>
 							{/if}
 						</td>
 						<td>
-							<div>
-								{#each getAreaDetail(seat.areas) as areaDetail}
-									<div class="my-3">
-										area: {areaDetail.area} M<span class="mx-4">
-											quantity:{areaDetail.quantity}
-										</span>
-									</div>
-								{/each}
-							</div>
+							{#each getAreaDetail(seat.areas) as areaDetail}
+								<div class="my-3">
+									Area: {areaDetail.area} M <span class="mx-4">Quantity: {areaDetail.quantity}</span>
+								</div>
+							{/each}
 						</td>
-
+						<td>{seat.id && exhibitionTypeMap.get(seat.id) || 'N/A'}</td>
 						<td>
-							<Button class="m-2" on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)}
-								>Detail</Button
-							>
+							<Button on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)} class=" text-white transition-all duration-300">
+								Detail
+							</Button>
 						</td>
 					</tr>
 				{/each}
@@ -213,30 +186,32 @@
 	</div>
 </div>
 {/if}
+
 <style>
 	.table_header {
-		padding: 0.75rem;
-		font-weight: 600;
-		font-weight: 600;
-		background-color: #e9ecefd2;
-		color: rgb(75 85 99 / var(--tw-text-opacity));
-		font-size: 0.875rem;
+		padding: 1rem;
+		font-weight: bold;
+		text-align: left;
+		color: #555;
+		font-size: 1rem;
 		line-height: 1.25rem;
-
-		border-width: 1px;
-		display: table-cell;
 	}
 
-	    .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        font-size: 2rem;
-    }
+	.loading .spinner-border {
+		border-color: #ccc;
+		border-top-color: #000;
+	}
 
-    .loaded {
-        display: none;
-    }
+	.loading {
+		font-size: 1.5rem;
+	}
 
+	/* Additional styling for smoother transitions and hover effects */
+	.hover\:bg-primary-500:hover {
+		background-color: #3b82f6;
+	}
+
+	.transition-all {
+		transition: all 0.3s ease;
+	}
 </style>
