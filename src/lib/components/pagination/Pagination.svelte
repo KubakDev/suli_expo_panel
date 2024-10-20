@@ -33,7 +33,7 @@
 				</svg>
 			</div>
 		</button>
-		<div class="flex items-center justify-center">
+		<div class="flex items-center justify-center text-gray-800 dark:text-gray-200">
 			<span class="text-gray-700 mx-2 font-semibold">{currentPage} </span> of
 			<span class="text-gray-400 mx-2 font-semibold"> {totalPages}</span>
 		</div>

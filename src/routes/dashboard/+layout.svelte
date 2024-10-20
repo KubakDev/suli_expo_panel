@@ -16,6 +16,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
+
 	export let data: PageData;
 	let activeUrl: string;
 
@@ -32,25 +33,32 @@
 	}
 
 	$: activeUrl = $page.url.pathname;
+
 	function updateActiveUrl(url: string) {
 		activeUrl = url;
 	}
 </script>
 
-<div class="app h-screen flex flex-col" style={getTheme()}>
+<style>
+	/* Optional: Add any additional custom styles here */
+</style>
+
+<div class="app min-h-screen flex flex-col" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
-		<Navbar class="dark:bg-gray-900 bg-gray-900 border-b shadow-lg" let:hidden let:toggle>
+		<Navbar class="dark:bg-gray-900 bg-gray-800 border-b border-gray-700 shadow-lg" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
-				<span
-					class="self-center whitespace-nowrap text-xl font-semibold text-gray-50 dark:text-white"
-				>
+				<span class="self-center whitespace-nowrap text-2xl font-bold text-white">
 					SulyExpo
 				</span>
 			</NavBrand>
-			<div class="flex items-center md:order-2">
-				<DarkMode class="text-xl mr-4" />
+
+			<div class="flex items-center space-x-4 md:space-x-6">
+				<DarkMode class="text-2xl" />
 				<form action="/?/signout" method="POST">
-					<button type="submit" class="flex items-center mr-4 text-gray-300 hover:text-gray-100">
+					<button
+						type="submit"
+						class="flex items-center px-3 py-2 text-gray-300 hover:text-white transition-colors duration-200"
+					>
 						<span class="inline-flex items-center gap-2">
 							Logout
 							<svg
@@ -72,48 +80,57 @@
 				</form>
 				<NavHamburger on:click={toggle} />
 			</div>
+
 			<NavUl
 				{hidden}
-				divClass="w-full lg:block lg:w-auto"
-				nonActiveClass="text-gray-900 hover:bg-gray-50 hover:bg-opacity-10 font-medium lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 transition-all"
-				activeClass="text-primary-700 font-medium bg-gray-50 bg-opacity-10 lg:bg-transparent lg:text-primary-700"
-				ulClass="flex flex-col p-2 mt-2 lg:flex-row lg:space-x-4 lg:mt-0 lg:text-sm lg:font-medium dark:bg-gray-900 bg-gray-900"
+				divClass="w-full lg:block lg:w-auto transition-all duration-300"
+				nonActiveClass="text-gray-300 hover:bg-gray-700 hover:text-white font-medium lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-500 transition-colors"
+				activeClass="text-primary-500 font-semibold bg-gray-700 lg:bg-transparent"
+				ulClass="flex flex-col	items-center p-4 mt-4 space-y-2 rounded-lg bg-gray-800 lg:flex-row lg:space-x-6 lg:mt-0 lg:text-sm lg:font-medium"
 				class="order-1"
 			>
 				{#each data.pages as page}
-					{#if page.children}
-						<div class="text-[#e9ecef] pl-2 md:pl-0 py-2 lg:py-0">
-							<button class="flex items-center focus:outline-none focus:ring-0 dark:focus:ring-0">
-								<Chevron>{page.title}</Chevron>
+					{#if page.children && page.children.length > 0}
+						<div class="relative group">
+							<button
+								class="flex items-center justify-between w-full px-3 py-2 text-gray-300 hover:text-white transition-colors"
+							>
+								<span>{page.title}</span>
+								<Chevron class="ml-2 transition-transform group-hover:rotate-180" />
 							</button>
-							<Dropdown class="font-medium">
+							<Dropdown class="absolute left-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
 											updateActiveUrl(item.url);
 											goto(item.url);
 										}}
-										class="py-1">{item.title}</DropdownItem
+										class="px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
 									>
+										{item.title}
+									</DropdownItem>
 								{/each}
 							</Dropdown>
 						</div>
 					{:else}
 						<NavLi
-							class="cursor-pointer px-2 py-1"
+							class="px-3 py-2 rounded-md cursor-pointer"
 							on:click={() => {
 								updateActiveUrl(page.url + '');
 								goto(page.url + '');
 							}}
-							active={activeUrl == page.url}
-							style={activeUrl == page.url ? '' : 'color:#e9ecef'}>{page.title}</NavLi
+							active={activeUrl === page.url}
+							style={activeUrl === page.url ? '' : 'color:#e9ecef'}
 						>
+						 	{page.title}
+						</NavLi>
 					{/if}
 				{/each}
 			</NavUl>
 		</Navbar>
 	{/if}
-	<div class="flex-1 justify-center dark:bg-gray-900 dark:text-white">
+
+	<main class="flex-1 p-4 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
 		<slot />
-	</div>
+	</main>
 </div>
