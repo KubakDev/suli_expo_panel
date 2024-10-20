@@ -5,15 +5,12 @@
 </script>
 
 <div class="flex justify-end items-center px-4 lg:px-0">
-	<div class="flex items-center justify-center">
-		<span class="text-gray-700 mx-2">{currentPage} </span> of
-		<span class="text-gray-400 mx-2"> {totalPages}</span>
-	</div>
+
 	<div class="py-5 flex justify-center items-center">
 		<button
 			on:click={() => goToPage(currentPage - 1)}
 			disabled={currentPage === 1}
-			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-primary-dark dark:hover:bg-primary-dark cursor-pointer text-black py-2 px-4 rounded-l-md"
+			class="border border-gray-300 bg-white dark:bg-[#e9ecefd2] hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer text-black py-2 px-4 rounded-l-md transition duration-200 ease-in-out"
 		>
 			<div>
 				<svg
@@ -36,10 +33,13 @@
 				</svg>
 			</div>
 		</button>
-
+		<div class="flex items-center justify-center">
+			<span class="text-gray-700 mx-2 font-semibold">{currentPage} </span> of
+			<span class="text-gray-400 mx-2 font-semibold"> {totalPages}</span>
+		</div>
 		<button
 			on:click={() => goToPage(currentPage + 1)}
-			class="border bg-white dark:bg-[#e9ecefd2] hover:bg-primary-dark dark:hover:bg-primary-dark cursor-pointer text-black py-2 px-4 rounded-r-md"
+			class="border border-gray-300 bg-white dark:bg-[#e9ecefd2] hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer text-black py-2 px-4 rounded-r-md transition duration-200 ease-in-out"
 			disabled={currentPage == totalPages}
 		>
 			<div>

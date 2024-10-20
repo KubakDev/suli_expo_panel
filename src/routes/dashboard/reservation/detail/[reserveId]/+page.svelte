@@ -14,6 +14,7 @@
 	import { browser } from '$app/environment';
 	import { addNewToast } from '../../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
+	import * as XLSX from 'xlsx'; // Import SheetJS
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -25,7 +26,7 @@
 		id?: number;
 		exhibition_id?: number;
 		object_id?: number;
-		comment?: [];
+		comment?: string[] | string; // Accept both string arrays and strings
 		services?: string[];
 		company_id?: number;
 		company?: CompanyType;
@@ -37,19 +38,20 @@
 		extra_discount_checked?: boolean;
 		rejected_by_user?: boolean;
 		total_price: number;
+		file_url?: string; // Assuming there's a file_url for downloads
 	}
 	let openPreviewImage = false;
 	let selectedImageUrlForPreview = '';
 	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | any[] = undefined;
 	let extraDiscountChecked = false;
-	let reservations: any[] = [];
+	let reservations: reservationType[] = []; // Typed reservations
 	let reservedSeatData: any = [];
 	let exhibitionId = 0;
 
 	onMount(async () => {
 		objectId = $page.params.reserveId;
-		getReservationData();
+		await getReservationData();
 		await data.supabase
 			.from('seat_reservation')
 			.update({
@@ -69,22 +71,27 @@
 
 		if (response.error) {
 			console.error('Failed to fetch reservations:', response.error);
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Failed to fetch reservations.',
+				title: 'Error',
+				duration: 3000
+			});
 			loading = false;
 			return;
 		}
 
-		reservations = response.data;
+		reservations = response.data as reservationType[];
 		reservedSeatData = JSON.parse(reservations[0]?.reserved_areas ?? '[]');
 
 		// Set disableCheckbox to true if any reservation has status 'accept'
 		disableCheckbox = reservations.some((reservation) => reservation.status === 'accept');
-	 
 
 		if (reservations[0]?.type !== SeatsLayoutTypeEnum.AREAFIELDS) {
 			await getSeatLayout();
 		}
 		exhibitionId = reservations[0]?.exhibition?.id ?? 0;
-		calculateTotalPrice();
+		await calculateTotalPrice();
 		loading = false;
 	}
 
@@ -100,38 +107,43 @@
 
 	function statusMessage(status: ReservationStatusEnum, lang: LanguageEnum) {
 		let result = '';
-		if (lang == LanguageEnum.EN) {
+		if (lang === LanguageEnum.EN) {
 			switch (status) {
 				case ReservationStatusEnum.ACCEPT:
-					result = 'this reserve is accepted by admin';
-					return result;
+					result = 'This reservation is accepted by admin';
+					break;
 				case ReservationStatusEnum.REJECT:
-					result = 'this reserve is rejected by admin';
-					return result;
+					result = 'This reservation is rejected by admin';
+					break;
+				default:
+					result = 'Pending';
 			}
-		}
-		if (lang == LanguageEnum.CKB) {
+		} else if (lang === LanguageEnum.CKB) {
 			switch (status) {
 				case ReservationStatusEnum.ACCEPT:
 					result = 'داواکاری شوێنگرتن وەرگیرا';
-					return result;
+					break;
 				case ReservationStatusEnum.REJECT:
 					result = 'داواکاری شوێنگرتن ڕەتکرایەوە';
-					return result;
+					break;
+				default:
+					result = 'لەدەرچوون';
 			}
-		}
-		if (lang == LanguageEnum.AR) {
+		} else if (lang === LanguageEnum.AR) {
 			switch (status) {
 				case ReservationStatusEnum.ACCEPT:
 					result = 'قبلت';
-					return result;
+					break;
 				case ReservationStatusEnum.REJECT:
 					result = 'مرفوض';
-					return result;
+					break;
+				default:
+					result = 'قيد الانتظار';
 			}
 		}
 		return result;
 	}
+
 	function addNotificationData(reserveData: any, lang: LanguageEnum) {
 		return {
 			message: statusMessage(reserveData.status!, lang),
@@ -139,7 +151,7 @@
 			company_id: reserveData.company.id,
 			exhibition_name:
 				reserveData.exhibition?.exhibition_languages?.find(
-					(exhibitionLanguage: any) => exhibitionLanguage.language == lang
+					(exhibitionLanguage: any) => exhibitionLanguage.language === lang
 				)?.title ?? '',
 			seen: false,
 			status: reserveData.status,
@@ -158,7 +170,7 @@
 	let key = 0;
 
 	function isCheckboxDisabled(
-		reservation: any,
+		reservation: reservationType,
 		currentStatus: ReservationStatusEnum,
 		checkboxStatus: ReservationStatusEnum
 	) {
@@ -172,12 +184,10 @@
 		return false;
 	}
 
-	async function updateStatus(itemID?: number, selectedStatus?: string, reservationData?: any) {
-		loading = true;
-
+	async function updateStatus(itemID?: number, selectedStatus?: ReservationStatusEnum, reservationData?: reservationType) {
 		if (itemID == undefined || selectedStatus == undefined) return;
 
-		if (selectedStatus == ReservationStatusEnum.ACCEPT) {
+		if (selectedStatus === ReservationStatusEnum.ACCEPT) {
 			// Check if updating service quantity is allowed
 			const quantityCheck = await updateServiceQuantity();
 			if (!quantityCheck.updateAllowed) {
@@ -191,18 +201,19 @@
 			}
 		}
 
-		// Fetch the active seat data
-		let seatLayoutDataResponse = await data.supabase
-			.from('seat_layout')
-			.select('*')
-			.eq('is_active', true);
+		loading = true;
 
-		// checkbox
-		reservations[0].status = selectedStatus;
+		// Update the status in the local state
+		reservations = reservations.map((reservation) => {
+			if (reservation.id === itemID) {
+				return { ...reservation, status: selectedStatus };
+			}
+			return reservation;
+		});
 		key++;
 
-		// Proceed to update the status if quantity check passes
-		let response = await data.supabase
+		// Proceed to update the status in the database
+		const response = await data.supabase
 			.from('seat_reservation')
 			.update({ status: selectedStatus })
 			.eq('id', itemID);
@@ -215,19 +226,20 @@
 				duration: 3000
 			});
 		} else {
-			if (selectedStatus == ReservationStatusEnum.REJECT) {
-				let activeSeat = seatLayout?.find((seat) => seat.is_active == true);
-				let seatAreasData = JSON.parse(activeSeat?.areas);
+			if (selectedStatus === ReservationStatusEnum.REJECT) {
+				let activeSeat = seatLayout?.find((seat) => seat.is_active === true);
+				let seatAreasData = JSON.parse(activeSeat?.areas ?? '[]');
 				if (reservationData?.reserved_areas) {
-					let userReservedAreas = JSON.parse(reservationData?.reserved_areas);
+					let userReservedAreas = JSON.parse(reservationData.reserved_areas);
 
-					userReservedAreas.map((userReservedArea: any) => {
+					userReservedAreas.forEach((userReservedArea: any) => {
 						if (seatAreasData) {
 							let areaIndex = seatAreasData.findIndex(
-								(area: any) => area.area == userReservedArea.area
+								(area: any) => area.area === userReservedArea.area
 							);
-							seatAreasData[areaIndex].quantity =
-								seatAreasData[areaIndex]?.quantity + userReservedArea.quantity;
+							if (areaIndex !== -1) {
+								seatAreasData[areaIndex].quantity += userReservedArea.quantity;
+							}
 						}
 					});
 				}
@@ -241,24 +253,28 @@
 						getReservationData();
 					});
 			}
-			reservations.map(async (reserveData) => {
-				if (reserveData.status == ReservationStatusEnum.PENDING) return;
-				reserveData.status = selectedStatus as any;
 
-				await data.supabase
-					.from('notification')
-					.insert([
-						addNotificationData(reserveData, LanguageEnum.EN),
-						addNotificationData(reserveData, LanguageEnum.CKB),
-						addNotificationData(reserveData, LanguageEnum.AR)
-					])
-					.then((response) => {});
-			});
+			// Insert notifications
+			await Promise.all(
+				reservations.map(async (reserveData) => {
+					if (reserveData.status === ReservationStatusEnum.PENDING) return;
+					reserveData.status = selectedStatus;
+
+					await data.supabase
+						.from('notification')
+						.insert([
+							addNotificationData(reserveData, LanguageEnum.EN),
+							addNotificationData(reserveData, LanguageEnum.CKB),
+							addNotificationData(reserveData, LanguageEnum.AR)
+						]);
+				})
+			);
 		}
-		getReservationData();
+		await getReservationData();
 	}
+
 	////////////////////////////////////////////////////////////////////////////
-	// update quantity data
+	// Update quantity data
 	async function updateServiceQuantity() {
 		let result = { updateAllowed: true, message: '' };
 		let updates = [];
@@ -327,7 +343,7 @@
 
 	////////////////////////////////////////////////////
 
-	// allow to update status
+	// Allow to update status
 	let isEditing = false;
 	function toggleEdit() {
 		isEditing = !isEditing;
@@ -360,35 +376,45 @@
 			totalRawPriceText: convertNumberToWord(totalRawPrice, lang),
 			totalAreaText: convertNumberToWord(totalArea, lang)
 		};
-		await data.supabase
+		const response = await data.supabase
 			.from('contract_decode_files')
 			.select('*')
 			.eq('exhibition_id', exhibitionId)
-			.eq('language', lang)
-			.then(async (Response: any) => {
-				generateDocx(Response.data[0].decoded_file, docxData);
+			.eq('language', lang);
+
+		if (response.error || response.data.length === 0) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Failed to fetch contract template.',
+				title: 'Export Error',
+				duration: 3000
 			});
+			return;
+		}
+
+		generateDocx(response.data[0].decoded_file, docxData);
 	}
+
 	async function calculateTotalPrice() {
-		await data.supabase
+		const response = await data.supabase
 			.from('seat_layout')
 			.select('*')
 			.eq('exhibition', exhibitionId)
 			.eq('is_active', true)
-			.single()
-			.then((response) => {
-				if (response.data) {
-					pricePerMeter = response.data.price_per_meter;
-					if (extraDiscountChecked) {
-						discountedPrice = response.data.extra_discount;
-					} else {
-						discountedPrice = response.data.discounted_price;
-					}
-				}
-			});
+			.single();
+
+		if (response.data) {
+			pricePerMeter = response.data.price_per_meter;
+			if (extraDiscountChecked) {
+				discountedPrice = response.data.extra_discount;
+			} else {
+				discountedPrice = response.data.discounted_price;
+			}
+		}
+
 		reservedAreas = reservedSeatData?.map((data: any) => {
 			let result = {
-				id: data.id++,
+				id: data.id++, // Be cautious with auto-incrementing IDs
 				area: data.area,
 				quantity: data.quantity,
 				pricePerMeter: pricePerMeter,
@@ -397,21 +423,83 @@
 			};
 			return result;
 		});
-		reservedAreas.map((seatArea: any) => {
+
+		reservedAreas.forEach((seatArea: any) => {
 			totalArea += +seatArea.area * +seatArea.quantity;
-			totalAreaPrice += +seatArea.quantity * +(discountedPrice ?? pricePerMeter) * +seatArea.area;
+			totalAreaPrice += +seatArea.quantity * (discountedPrice ?? pricePerMeter) * +seatArea.area;
 			totalRawPrice += +seatArea.quantity * pricePerMeter * +seatArea.area;
 		});
+
 		loadedTotalPrice = true;
 	}
+
 	function getServices(service: string) {
-		return JSON.parse(service ?? '');
+		try {
+			return JSON.parse(service ?? '');
+		} catch (e) {
+			return null;
+		}
 	}
-	function exportFile(reservation: any) {
-		window.open(
-			import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL + '/' + reservation?.file_url
-		);
+
+	function exportFile(reservation: reservationType) {
+		if (!reservation) {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'Reservation data is unavailable.',
+				title: 'Export Error',
+				duration: 3000
+			});
+			return;
+		}
+
+		// Prepare data for Excel
+		const dataToExport = [
+			{
+				'Reservation Date': reservation.created_at
+					? moment.utc(reservation.created_at).local().format('DD-MM-YYYY hh:mm A')
+					: 'N/A',
+				'Company Name': reservation.company?.company_name || 'N/A',
+				Country: reservation.company?.country || 'N/A',
+				Comment: Array.isArray(reservation.comment)
+					? reservation.comment.join(', ')
+					: reservation.comment || 'No Comment',
+				'Company Address': reservation.company?.address || 'N/A',
+				'Company Phone Number': reservation.company?.phone_number || 'N/A',
+				'Exhibition Type': reservation.exhibition?.exhibition_type || 'N/A',
+				'Total Price': reservation.total_price ? `${reservation.total_price}$` : 'N/A'
+			}
+		];
+
+		// Create a new workbook and add the data
+		const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, 'Reservation');
+
+		// Generate Excel file and trigger download
+		XLSX.writeFile(workbook, `Reservation_${reservation.id}.xlsx`);
+
+		// Optional: Notify the user of a successful export
+		addNewToast({
+			type: ToastTypeEnum.SUCCESS,
+			message: 'Excel file exported successfully.',
+			title: 'Export Success',
+			duration: 3000
+		});
 	}
+
+	function exportOriginalFile(reservation: reservationType) {
+		if (reservation.file_url) {
+			window.open(`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL}/${reservation.file_url}`, '_blank');
+		} else {
+			addNewToast({
+				type: ToastTypeEnum.ERROR,
+				message: 'No file available for download.',
+				title: 'Download Error',
+				duration: 3000
+			});
+		}
+	}
+
 	function goBackToPreviewsPage() {
 		if (browser) {
 			window.history.back();
@@ -419,414 +507,447 @@
 	}
 </script>
 
-<Modal bind:open={openPreviewImage} autoclose outsideclose>
-	<!-- svelte-ignore a11y-missing-attribute -->
-	<img src={selectedImageUrlForPreview} class="rounded w-full h-full min-w-[150px] pt-8" />
+<!-- Modal Component -->
+<Modal bind:open={openPreviewImage} autoclose={true} outsideclose={true} aria-labelledby="preview-modal-title">
+	<div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
+		 <!-- Image -->
+		<img src={selectedImageUrlForPreview} alt="Preview Image" class="rounded w-full h-full object-contain" />
+	</div>
 </Modal>
 
-<!-- content  -->
-<div
-	class="w-full flex flex-col py-32 items-center"
-	style="min-height: calc(100vh - 80px); flex-direction: column;"
->
-	<div class="w-full lg:w-9/12">
-		<!-- Title (BreadCrumb) -->
-		<div class="flex justify-start items-start mb-5">
-			<Breadcrumb aria-label="Solid background breadcrumb example">
-				<BreadcrumbItem>
-					<svelte:fragment slot="icon">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							class="w-4 h-4 -mr-2"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5h-3a.75.75 0 010-1.5h3a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-					</svelte:fragment>
-				</BreadcrumbItem>
-				<button on:click={goBackToPreviewsPage}>List of Reservations </button>
-				<BreadcrumbItem>
-					<svelte:fragment slot="icon"
-						><svg
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 24 24"
-							fill="currentColor"
-							class="w-4 h-4"
-						>
-							<path
-								fill-rule="evenodd"
-								d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z"
-								clip-rule="evenodd"
-							/>
-						</svg>
-					</svelte:fragment>
-					<span class="text-gray-500 dark:text-gray-400">
-						{reservations[0]?.exhibition?.exhibition_type}
-					</span>
-				</BreadcrumbItem>
-			</Breadcrumb>
-		</div>
-		<div class="w-full overflow-x-auto">
-			<table class="min-w-full border-collapse">
-				<thead>
-					<tr>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">reservation date</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">company name</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">avatar</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">country</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">passport images</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">user images</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">comment</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">company address</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">company phone number</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">exhibition type</div>
-						</th>
-						{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-							<th class="table_header dark:border-gray-800">
-								<div class="flex items-center gap-2 mx-[50px] uppercase">reserved areas</div>
+<!-- Loading Spinner Component -->
+{#if loading}
+	<div class="flex justify-center items-center h-screen">
+		<div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray-500"></div>
+	</div>
+{:else}
+	<!-- Content -->
+	<div
+		class="w-full flex flex-col py-16 md:py-32 items-center"
+		style="min-height: calc(100vh - 80px); flex-direction: column;"
+	>
+		<div class="w-full lg:w-10/12 xl:w-9/12">
+			<!-- Breadcrumb -->
+			<div class="flex justify-start items-center mb-6">
+				<Breadcrumb aria-label="Breadcrumb">
+					<BreadcrumbItem>
+						<svelte:fragment slot="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 -mr-2">
+								<path
+									fill-rule="evenodd"
+									d="M9.53 2.47a.75.75 0 010 1.06L4.81 8.25H15a6.75 6.75 0 010 13.5h-3a.75.75 0 010-1.5h3a5.25 5.25 0 100-10.5H4.81l4.72 4.72a.75.75 0 11-1.06 1.06l-6-6a.75.75 0 010-1.06l6-6a.75.75 0 011.06 0z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+						</svelte:fragment>
+					</BreadcrumbItem>
+					<button on:click={goBackToPreviewsPage} class="text-gray-600 hover:underline">
+						List of Reservations
+					</button>
+					<BreadcrumbItem>
+						<svelte:fragment slot="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+								<path
+									fill-rule="evenodd"
+									d="M16.28 11.47a.75.75 0 010 1.06l-7.5 7.5a.75.75 0 01-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 011.06-1.06l7.5 7.5z"
+									clip-rule="evenodd"
+								/>
+							</svg>
+						</svelte:fragment>
+						<span class="text-gray-500 dark:text-gray-400">
+							{reservations[0]?.exhibition?.exhibition_type}
+						</span>
+					</BreadcrumbItem>
+				</Breadcrumb>
+			</div>
+
+			<!-- Table Container -->
+			<div class="overflow-x-auto shadow-md rounded-lg custom-scrollbar">
+				<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ">
+					<thead class="bg-gray-600 dark:bg-gray-800">
+						<tr>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Reservation Date
 							</th>
-						{/if}
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Company Name
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Avatar
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Country
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Passport Images
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								User Images
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Comment
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Company Address
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Company Phone Number
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Exhibition Type
+							</th>
+							{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+									Reserved Areas
+								</th>
+							{/if}
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Services
+							</th>
+							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Change Status
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Extra Discount
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Contract File
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Export Excel Sheet
+							</th>
+							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								Total Price
+							</th>
+						</tr>
+					</thead>
+					<tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+						{#each reservations as reservation}
+							<tr class="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									<span class="inline-block p-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-900 dark:text-gray-100 text-xs md:text-sm">
+										{#if reservation.created_at}
+											{moment.utc(reservation.created_at).local().format('DD-MM-YYYY hh:mm A')}
+										{:else}
+											<span class="text-red-500">N/A</span>
+										{/if}
+									</span>
+								</td>
 
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">services</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 mx-[50px] uppercase">change status</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex flex-col items-center gap-2 justify-between uppercase">
-								extra discount check status
-							</div></th
-						>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex flex-col items-center gap-2 justify-between uppercase">contract file</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 uppercase">export excel sheet</div>
-						</th>
-						<th class="table_header dark:border-gray-800">
-							<div class="flex items-center gap-2 uppercase">total price</div>
-						</th>
-					</tr>
-				</thead>
-				<!-- comment -->
-				<tbody class="dark:text-gray-300">
-					{#each reservations as reservation}
-						<tr class="border-2 border-[#edeff2]">
-							<td class="max-w-sm px-4">
-								<span
-									class="p-2 bg-gray-100 dark:bg-gray-900 dark:text-gray-100 rounded text-gray-900 text-sm border"
-								>
-									{#if reservation.created_at}
-										{moment
-											.utc(reservation.created_at)
-											.local()
-											.format('DD-MM-YYYY hh:mm A')
-											.toString()}
-									{:else}
-										does not exist
-									{/if}
-								</span>
-							</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{reservation.company?.company_name}
+								</td>
 
-							<td class="">
-								<div>{reservation.company?.company_name}</div>
-							</td>
-
-							<td>
-								<div class="min-w-[100px] flex justify-center">
+								<td class="px-6 py-4 whitespace-nowrap text-center">
 									{#if reservation.company?.logo_url}
 										<img
-											src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{reservation.company
-												?.logo_url}"
-											alt=""
-											class="rounded w-16 h-16 m-3"
+											src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${reservation.company.logo_url}`}
+											alt="Company Logo"
+											class="mx-auto h-16 w-16 rounded-full object-cover"
 										/>
+									{:else}
+										<span class="text-gray-500">No Image</span>
 									{/if}
-								</div>
-							</td>
-							<td>
-								<div>
-									{reservation?.company?.country}
-								</div>
-							</td>
-							<td>
-								<div class="min-w-[100px] flex justify-center mx-2">
+								</td>
+
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{reservation.company?.country}
+								</td>
+
+								<td class="px-6 py-4 whitespace-nowrap text-center">
 									{#if reservation.company?.passport_image}
-										{#each reservation.company?.passport_image as image}
-											<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-											<!-- svelte-ignore a11y-click-events-have-key-events -->
-											<img
-												src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
-												alt=""
-												class="rounded w-full h-32 min-w-[150px] object-cover cursor-pointer"
-												on:click={() => {
-													openPreviewImage = true;
-													selectedImageUrlForPreview =
-														import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + image;
-												}}
-											/>
-											<br />
-										{/each}
+										<div class="flex flex-wrap justify-center gap-2">
+											{#each reservation.company.passport_image as image}
+												<img
+													src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`}
+													alt="Passport Image"
+													class="h-20 w-20 object-cover rounded cursor-pointer"
+													on:click={() => {
+														openPreviewImage = true;
+														selectedImageUrlForPreview = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`;
+													}}
+												/>
+											{/each}
+										</div>
+									{:else}
+										<span class="text-gray-500">No Images</span>
 									{/if}
-								</div>
-							</td>
-							<td>
-								<div class="min-w-[100px] flex justify-center mx-2">
+								</td>
+
+								<td class="px-6 py-4 whitespace-nowrap text-center">
 									{#if reservation.company?.user_image}
-										<!-- {#each reservation.company?.user_image as image} -->
-										<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-										<!-- svelte-ignore a11y-click-events-have-key-events -->
-										{#each reservation.company?.user_image as image}
-											<img
-												src="{import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/{image}"
-												alt=""
-												class="rounded w-full h-32 min-w-[150px] object-cover cursor-pointer"
-												on:click={() => {
-													openPreviewImage = true;
-													selectedImageUrlForPreview =
-														import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL + '/' + image;
-												}}
-											/>
-											<br />
-											<!-- {/each} -->
-										{/each}
+										<div class="flex flex-wrap justify-center gap-2">
+											{#each reservation.company.user_image as image}
+												<img
+													src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`}
+													alt="User Image"
+													class="h-20 w-20 object-cover rounded cursor-pointer"
+													on:click={() => {
+														openPreviewImage = true;
+														selectedImageUrlForPreview = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`;
+													}}
+												/>
+											{/each}
+										</div>
+									{:else}
+										<span class="text-gray-500">No Images</span>
 									{/if}
-								</div>
-							</td>
+								</td>
 
-							<td>
-								<div>{reservation.comment}</div>
-							</td>
-							<td>
-								<div>{reservation.company?.address}</div>
-							</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{Array.isArray(reservation.comment)
+										? reservation.comment.join(', ')
+										: reservation.comment || 'No Comment'}
+								</td>
 
-							<td>
-								<div>{reservation.company?.phone_number}</div>
-							</td>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{reservation.company?.address}
+								</td>
 
-							<td>
-								<div>{reservation?.exhibition?.exhibition_type}</div>
-							</td>
-							{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-								<td>
-									{#if reservation?.reserved_areas}
-										{#each JSON.parse(reservation?.reserved_areas) as reservedAreaData}
-											<div class="flex justify-between px-7">
-												<div>{reservedAreaData.area} M</div>
-												<div>{reservedAreaData.quantity}</div>
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{reservation.company?.phone_number}
+								</td>
+
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{reservation.exhibition?.exhibition_type}
+								</td>
+
+								{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+										{#if reservation?.reserved_areas}
+											<div class="space-y-1">
+												{#each JSON.parse(reservation.reserved_areas) as reservedAreaData}
+													<div class="flex justify-between">
+														<span>{reservedAreaData.area} M</span>
+														<span>{reservedAreaData.quantity}</span>
+													</div>
+												{/each}
 											</div>
-										{/each}
-									{/if}
+										{/if}
+										<div class="mt-2 font-semibold text-gray-800 dark:text-gray-200">
+											Total: {totalAreaPrice}$
+										</div>
+									</td>
+								{/if}
 
-									<div
-										class="flex flex-col border-t-2 border-[#696868] border-dashed justify-center items-center"
-									>
-										{totalAreaPrice}
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									{#if reservation?.services && reservation.services.length > 0}
+										<div class="space-y-2">
+											{#each reservation.services as service}
+												<div class="p-2 border rounded bg-gray-50 dark:bg-gray-800">
+													<p><strong>Service:</strong> {getServices(service)?.serviceDetail?.title || 'N/A'}</p>
+													<p><strong>Quantity:</strong> {getServices(service)?.quantity || 'N/A'}</p>
+													<p><strong>Price:</strong> {getServices(service)?.serviceDetail?.price || 'N/A'}$</p>
+													<p><strong>Discount:</strong> {getServices(service)?.serviceDetail?.discount || 'N/A'}%</p>
+													<p><strong>Total:</strong> {getServices(service)?.totalPrice || 'N/A'}$</p>
+												</div>
+											{/each}
+										</div>
+									{:else}
+										<span class="text-gray-500">No Services</span>
+									{/if}
+								</td>
+
+								<td class="px-6 py-4 whitespace-nowrap text-sm">
+									<div class="flex flex-col space-y-2">
+										<label class="text-xs text-gray-500 dark:text-gray-400">
+											Once you change the status, it cannot be altered.
+										</label>
+										<div class="flex items-center space-x-4">
+											<label class="flex items-center space-x-1">
+												<input
+													type="checkbox"
+													disabled={isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.PENDING)}
+													checked={reservation.status === ReservationStatusEnum.PENDING}
+													on:change={() => updateStatus(reservation.id, ReservationStatusEnum.PENDING, reservation)}
+													class="form-checkbox h-4 w-4 text-yellow-500 border-gray-300 rounded"
+												/>
+												<span class="text-yellow-500">Pending</span>
+											</label>
+											<label class="flex items-center space-x-1">
+												<input
+													type="checkbox"
+													disabled={
+														isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.ACCEPT) ||
+														disableCheckbox
+													}
+													checked={reservation.status === ReservationStatusEnum.ACCEPT}
+													on:change={() => updateStatus(reservation.id, ReservationStatusEnum.ACCEPT, reservation)}
+													class="form-checkbox h-4 w-4 text-green-500 border-gray-300 rounded"
+												/>
+												<span class="text-green-500">Accept</span>
+											</label>
+											<label class="flex items-center space-x-1">
+												<input
+													type="checkbox"
+													disabled={
+														isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.REJECT) ||
+														disableCheckbox
+													}
+													checked={reservation.status === ReservationStatusEnum.REJECT}
+													on:change={() => updateStatus(reservation.id, ReservationStatusEnum.REJECT, reservation)}
+													class="form-checkbox h-4 w-4 text-red-500 border-gray-300 rounded"
+												/>
+												<span class="text-red-500">Reject</span>
+											</label>
+										</div>
+										{#if reservation.rejected_by_user}
+											<p class="text-xs text-red-500 mt-1">Rejected by user</p>
+										{/if}
 									</div>
 								</td>
-							{/if}
 
-							<td>
-								<div>
-									{#if reservation?.services}
-										{#each reservation?.services as service}
-											<div
-												class="flex flex-col border-b-2 border-[#696868] border-dashed justify-center items-center"
-											>
-												<h3>
-													service name :
-													{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-														{getServices(service)?.serviceDetail?.languages[0]?.title}
-													{:else}
-														{getServices(service)?.serviceDetail?.title}
-													{/if}
-												</h3>
-												<h3>quantity : {getServices(service)?.quantity}</h3>
-												<h3>price : {getServices(service)?.serviceDetail?.price}</h3>
-												<h3>discount: {getServices(service)?.serviceDetail?.discount}</h3>
-												<h3>total price : {getServices(service)?.totalPrice}</h3>
-											</div>
-										{/each}
-									{/if}
-								</div>
-							</td>
-
-							<td>
-								<div class="flex flex-col justify-start items-start space-y-2 mx-2">
-									<label for="" class="text-sm text-gray-400">
-										Please, Once you change the status, it cannot be altered.
-									</label>
-
-									<label class="flex items-center space-x-2">
-										<input
-											disabled={isCheckboxDisabled(
-												reservation,
-												reservation.status,
-												ReservationStatusEnum.PENDING
-											)}
-											type="checkbox"
-											checked={reservation.status === ReservationStatusEnum.PENDING}
-											on:change={() =>
-												updateStatus(reservation?.id, ReservationStatusEnum.PENDING, reservation)}
-											class="w-5 h-5 form-checkbox rounded border-yellow-400 text-yellow-400"
-										/>
-										<span class="text-yellow-400 uppercase">{ReservationStatusEnum.PENDING}</span>
-									</label>
-
-									<label
-										class="flex items-center space-x-2 {disableCheckbox
-											? 'opacity-50 cursor-not-allowed'
-											: ''}"
+								<td class="px-6 py-4 whitespace-nowrap text-center">
+									<span
+										class={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+											reservation.extra_discount_checked
+												? 'bg-green-500 text-white'
+												: 'bg-gray-300 text-gray-700'
+										}`}
 									>
-										<input
-											disabled={isCheckboxDisabled(
-												reservation,
-												reservation.status,
-												ReservationStatusEnum.ACCEPT
-											) ||
-												reservation.status == ReservationStatusEnum.ACCEPT ||
-												reservation.status == ReservationStatusEnum.REJECT}
-											type="checkbox"
-											checked={reservation.status === ReservationStatusEnum.ACCEPT}
-											on:change={() =>
-												updateStatus(reservation?.id, ReservationStatusEnum.ACCEPT, reservation)}
-											class="w-5 h-5 form-checkbox rounded border-green-400 text-green-400"
-										/>
-										<span class="text-green-400 uppercase">{ReservationStatusEnum.ACCEPT}</span>
-									</label>
+										{reservation.extra_discount_checked ? 'Checked' : 'Not Checked'}
+									</span>
+								</td>
 
-									<label class="flex items-center space-x-2">
-										<input
-											disabled={isCheckboxDisabled(
-												reservation,
-												reservation.status,
-												ReservationStatusEnum.REJECT
-											) ||
-												reservation.status == ReservationStatusEnum.ACCEPT ||
-												reservation.status == ReservationStatusEnum.REJECT}
-											type="checkbox"
-											checked={reservation.status === ReservationStatusEnum.REJECT}
-											on:change={() =>
-												updateStatus(reservation?.id, ReservationStatusEnum.REJECT, reservation)}
-											class="w-5 h-5 form-checkbox rounded border-red-400 text-red-400"
-										/>
-										<span class="text-red-400 uppercase">{ReservationStatusEnum.REJECT}</span>
-									</label>
-								</div>
-								{#if reservation.rejected_by_user}
-									<p class="mx-2 text-gray-100 border border-red-400 mt-2 p-2 rounded">
-										{reservation.rejected_by_user ? 'Rejected by user' : ''}
-									</p>
-								{/if}
-							</td>
-
-							<td>
-								<div class="w-full flex justify-center">
-									<div
-										class="min-w-[80px] h-[50px] flex justify-center items-center rounded p-3"
-										style=" {reservation.extra_discount_checked
-											? 'background-color: #00bf2d;color:white'
-											: 'background-color:#edeff2'};"
-									>
-										{reservation.extra_discount_checked ? 'checked' : 'not checked'}
-									</div>
-								</div>
-							</td>
-							<td>
-								{#each languages as lang}
-									<Button
-										disabled={!loadedTotalPrice}
-										class="m-2"
-										on:click={() => exportContract(reservation, lang)}>export {lang}</Button
-									>
-								{/each}
-							</td>
-							<td>
-								<Button class="mx-2" on:click={() => exportFile(reservation)} disabled={loading}
-									>download</Button
-								>
-							</td>
-							<td>
-								<div class="mx-4">
-									{#if discountedPrice}
-										<p
-											class="text-start justify-center flex my-2 line-through text-xs md:text-xl
-								"
+								<td class="px-6 py-4 whitespace-nowrap text-center">
+									{#each languages as lang}
+										<Button
+											disabled={!loadedTotalPrice}
+											class="m-1 text-xs px-3 py-1"
+											color="primary"
+											on:click={() => exportContract(reservation, lang)}
 										>
-											{totalRawPrice}$
-										</p>
-									{/if}
+											Export {lang}
+										</Button>
+									{/each}
+								</td>
 
-									<p
-										class=" text-start text-md text-[#e1b168] md:text-xl font-medium justify-center flex my-2"
+								<td class="px-6 py-4 whitespace-nowrap text-center">
+									<Button
+										class="text-xs px-3 py-1"
+										on:click={() => exportFile(reservation)}
+										disabled={loading}
+										color="secondary"
 									>
-										{reservation.total_price}$
-									</p>
-								</div>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		</div>
-		<div class="mt-2">
-			{#if seatLayout}
-				<ReservedSeat data={seatLayout} {reservations} />
-			{/if}
+										Export to Excel
+									</Button>
+								</td>
+
+								<td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+									<div>
+										{#if discountedPrice}
+											<p class="line-through text-xs text-red-500">
+												{totalRawPrice}$
+											</p>
+										{/if}
+										<p class="text-green-600 font-medium">
+											{reservation.total_price}$
+										</p>
+									</div>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Reserved Seats Layout -->
+			<div class="mt-6">
+				{#if seatLayout}
+					<ReservedSeat data={seatLayout} {reservations} />
+				{/if}
+			</div>
 		</div>
 	</div>
-</div>
+{/if}
 
 <style>
-	.table_header {
-		padding: 0.75rem;
-		font-weight: 600;
-		font-weight: 600;
-		background-color: #e9ecefd2;
-		color: rgb(75 85 99 / var(--tw-text-opacity));
-		font-size: 0.875rem;
-		line-height: 1.25rem;
-
-		border-width: 1px;
-		display: table-cell;
-	}
-	td {
-		/* background-color: red; */
-		border: 2px solid #edeff2;
-		text-align: center;
-	}
-	/* td div {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
+	/* Enhanced Table Styles */
+	table {
 		width: 100%;
-		padding: 0 30px;
-	} */
+		border-collapse: collapse;
+	}
+
+	th,
+	td {
+		text-align: left;
+		padding: 0.75rem;
+	}
+
+	th {
+		background-color: #c2c7ce; /* Light gray */
+	 }
+
+	tr:nth-child(even) {
+		background-color: #f3f4f6; /* Slightly darker gray for even rows */
+	 }
+
+	tr:hover {
+		background-color: #e5e7eb; /* Hover effect */
+	}
+
+	/* Responsive adjustments */
+	@media (max-width: 768px) {
+		th,
+		td {
+			padding: 0.5rem;
+		}
+	}
+
+	/* Button Styles Override (if needed) */
+	.btn-primary {
+		background-color: #636363; /* Blue */
+		color: white;
+	}
+
+	.btn-secondary {
+		background-color: #1254d7; /* Gray */
+		color: white;
+	}
+
+	/* Adjust modal image for better responsiveness */
+	Modal img {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+	}
+
+	/* Custom Scrollbar Styles */
+	.custom-scrollbar::-webkit-scrollbar {
+		height: 8px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 4px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: #888;
+		border-radius: 4px;
+	}
+
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: #555;
+	}
+
+	/* Firefox */
+	.custom-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: #888 #f1f1f1;
+	}
+
+	/* Loading Spinner Styles */
+	.animate-spin {
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
+	}
 </style>
