@@ -1,7 +1,6 @@
 import type { CompanyType } from './companyModel';
 import type { ExhibitionModel } from './exhibitionTypeModel';
 import type { ReservationStatusEnum } from './reservationEnum';
-import { type } from './../lib/components/DateTimePicker/parse';
 
 export interface Reservation {
 	id?: number;

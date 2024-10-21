@@ -13,6 +13,7 @@
 		clearCompanyDetail
 	} from '../../../../../stores/companyInfo';
 	import { browser } from '$app/environment';
+	import Spinner from '$lib/components/Spinner.svelte';  
 
 	let src = '/notFound.gif';
 
@@ -44,7 +45,7 @@
 			});
 		});
 
-		const responses = await Promise.all([...serviceIds].map((id) => getSeat_services(id)));
+		const responses = await Promise.all([...serviceIds].map((id) => getSeat_services(id as number)));
 		responses.forEach((response) => {
 			serviceTitles[response.id] = response?.data?.map(
 				(item) => item.seat_services_languages[0].title
@@ -93,13 +94,15 @@
 		if ($seatReservation) {
 			reservedAreas = $seatReservation
 				.map((item) => {
-					if (item.reserved_areas) {
+					if (item.reserved_areas && typeof item.reserved_areas === 'string') {
 						return JSON.parse(item.reserved_areas);
 					}
 					return null;
 				})
 				.filter((area) => area !== null);
 		}
+		console.log("seatReservation" ,reservedAreas)
+		
 	});
 
 	function goBackToPreviewsPage() {
@@ -113,7 +116,7 @@
 	<div class="container px-5 py-5 mx-auto">
 		<!-- Title (BreadCrumb) -->
 
-		<div class="flex justify-start items-start mb-5">
+		<div class="flex justify-start items-start mb-5 text-gray-600 dark:text-gray-300">
 			<Breadcrumb aria-label="Solid background breadcrumb example">
 				<BreadcrumbItem>
 					<svelte:fragment slot="icon">
@@ -220,7 +223,7 @@
 
 							<tbody>
 								{#each $seatReservation as item, index}
-									<tr>
+									<tr class="text-gray-600 dark:text-gray-300">
 										<td
 											class="p-3 text-center bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 										>
@@ -242,7 +245,7 @@
 										<td
 											class="p-3 max-w-screen-md text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 										>
-											<div>{item?.comment}</div>
+											<div>{item?.comment}</div>  
 										</td>
 										<td
 											class="uppercase p-3 text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
@@ -275,11 +278,11 @@
 										<td
 											class="p-3 max-w-screen-md text-center text-gray-900 dark:text-gray-300 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
 										>
-											{#each reservedAreas as areas}
-												{#each areas as area}
+											{#if item?.reserved_areas && typeof item.reserved_areas === 'string'} 
+												{#each JSON.parse(item.reserved_areas) as area}  
 													<p>Area: {area.area}, Quantity: {area.quantity}</p>
 												{/each}
-											{/each}
+											{/if}
 										</td>
 									</tr>
 								{/each}
@@ -287,7 +290,7 @@
 						</table>
 					{:else}
 						<div class="flex justify-center items-center min-h-screen">
-							<div class="spinner" />
+							<Spinner size="h-16 w-16" color="border-gray-500" />
 						</div>
 					{/if}
 				</div>
@@ -301,22 +304,4 @@
 	</div>
 </div>
 
-<style>
-	.spinner {
-		border: 8px solid rgba(255, 255, 255, 0.3); /* Light gray */
-		border-radius: 50%;
-		border-top: 8px solid #333; /* Darker gray */
-		width: 70px;
-		height: 70px;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-</style>
+ 

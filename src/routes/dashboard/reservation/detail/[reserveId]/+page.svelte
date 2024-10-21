@@ -15,6 +15,7 @@
 	import { addNewToast } from '../../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
 	import * as XLSX from 'xlsx'; // Import SheetJS
+	import Spinner from '$lib/components/Spinner.svelte'; // Import the Spinner component
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -345,10 +346,6 @@
 
 	// Allow to update status
 	let isEditing = false;
-	function toggleEdit() {
-		isEditing = !isEditing;
-	}
-
 	let totalAreaPrice = 0;
 	let totalArea = 0;
 	let totalRawPrice = 0;
@@ -510,15 +507,14 @@
 <!-- Modal Component -->
 <Modal bind:open={openPreviewImage} autoclose={true} outsideclose={true} aria-labelledby="preview-modal-title">
 	<div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
-		 <!-- Image -->
-		<img src={selectedImageUrlForPreview} alt="Preview Image" class="rounded w-full h-full object-contain" />
+	 	<img src={selectedImageUrlForPreview} alt="Preview Image" class="rounded w-full h-full object-contain" />
 	</div>
 </Modal>
 
 <!-- Loading Spinner Component -->
 {#if loading}
 	<div class="flex justify-center items-center h-screen">
-		<div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-gray-500"></div>
+		<Spinner size="h-16 w-16" color="border-gray-500" />  
 	</div>
 {:else}
 	<!-- Content -->
@@ -528,7 +524,7 @@
 	>
 		<div class="w-full lg:w-10/12 xl:w-9/12">
 			<!-- Breadcrumb -->
-			<div class="flex justify-start items-center mb-6">
+			<div class="flex justify-start items-center mb-6 text-gray-600 dark:text-gray-300">
 				<Breadcrumb aria-label="Breadcrumb">
 					<BreadcrumbItem>
 						<svelte:fragment slot="icon">
@@ -541,7 +537,7 @@
 							</svg>
 						</svelte:fragment>
 					</BreadcrumbItem>
-					<button on:click={goBackToPreviewsPage} class="text-gray-600 hover:underline">
+					<button on:click={goBackToPreviewsPage}>
 						List of Reservations
 					</button>
 					<BreadcrumbItem>
@@ -564,59 +560,59 @@
 			<!-- Table Container -->
 			<div class="overflow-x-auto shadow-md rounded-lg custom-scrollbar">
 				<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ">
-					<thead class="bg-gray-600 dark:bg-gray-800">
-						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+					<thead>
+					 <tr  class="p-3 font-semibold uppercase bg-[#f1eff0] text-gray-600 text-sm border border-gray-200 dark:border-gray-800">
+							<th class=" ">
 								Reservation Date
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Company Name
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Avatar
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Country
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Passport Images
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								User Images
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Comment
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Company Address
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Company Phone Number
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Exhibition Type
 							</th>
 							{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-								<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+								<th class=" ">
 									Reserved Areas
 								</th>
 							{/if}
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Services
 							</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Change Status
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Extra Discount
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Contract File
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Export Excel Sheet
 							</th>
-							<th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+							<th class=" ">
 								Total Price
 							</th>
 						</tr>
@@ -712,12 +708,14 @@
 									{reservation.exhibition?.exhibition_type}
 								</td>
 
+								 
 								{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-									<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+									<div>
 										{#if reservation?.reserved_areas}
 											<div class="space-y-1">
 												{#each JSON.parse(reservation.reserved_areas) as reservedAreaData}
-													<div class="flex justify-between">
+													<div class="flex justify-between p-2 bg-gray-200 dark:bg-gray-700 rounded">
 														<span>{reservedAreaData.area} M</span>
 														<span>{reservedAreaData.quantity}</span>
 													</div>
@@ -727,8 +725,11 @@
 										<div class="mt-2 font-semibold text-gray-800 dark:text-gray-200">
 											Total: {totalAreaPrice}$
 										</div>
-									</td>
-								{/if}
+									</div>
+								</td>
+							{/if}
+							
+                              
 
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
 									{#if reservation?.services && reservation.services.length > 0}
@@ -823,14 +824,13 @@
 								</td>
 
 								<td class="px-6 py-4 whitespace-nowrap text-center">
-									<Button
-										class="text-xs px-3 py-1"
+									<button
+										class="text-xs px-3 py-1 hover:underline text-gray-600 dark:text-gray-300"
 										on:click={() => exportFile(reservation)}
 										disabled={loading}
-										color="secondary"
-									>
+									 	>
 										Export to Excel
-									</Button>
+								</button>
 								</td>
 
 								<td class="px-6 py-4 whitespace-nowrap text-center text-sm">
@@ -937,17 +937,5 @@
 		scrollbar-color: #888 #f1f1f1;
 	}
 
-	/* Loading Spinner Styles */
-	.animate-spin {
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		from {
-			transform: rotate(0deg);
-		}
-		to {
-			transform: rotate(360deg);
-		}
-	}
+	 
 </style>

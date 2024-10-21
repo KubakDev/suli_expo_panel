@@ -138,20 +138,20 @@
 <div class="max-w-screen-2xl mx-auto py-10">
   <div class="flex justify-between items-center relative">
     <!-- Date Pickers and Exhibition Filter for Filtering -->
-    <h1 class="text-color font-bold text-xl">Weekly Reservation Data</h1>
+    <h1 class="text-color font-bold text-xl text-gray-600 dark:text-gray-300">Weekly Reservation Data</h1>
     <div class="flex gap-2 items-end mb-4">
       <div>
-        <label for="start-date" class="block mb-1 text-color">Start Date</label>
+        <label for="start-date" class="block mb-1 text-color text-gray-600 dark:text-gray-300">Start Date</label>
         <input class="text-gray-900 cursor-pointer rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
 				 type="date" id="start-date" bind:value={startDate} />
       </div>
       <div>
-        <label for="end-date" class="block mb-1 text-color">End Date</label>
+        <label for="end-date" class="block mb-1 text-color text-gray-600 dark:text-gray-300">End Date</label>
         <input class="text-gray-900 cursor-pointer rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
 				 type="date" id="end-date" bind:value={endDate} />
       </div>
       <div>
-        <label for="exhibition" class="block mb-1 text-color">Exhibition</label>
+        <label for="exhibition" class="block mb-1 text-color text-gray-600 dark:text-gray-300">Exhibition</label>
         <select
           id="exhibition"
           bind:value={selectedExhibitionId}

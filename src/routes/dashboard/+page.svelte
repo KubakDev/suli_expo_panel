@@ -209,8 +209,8 @@
 				</div>
 			</div>
 		</div>
-      
-		<h1 class="text-color font-bold text-xl mx-4">Yearly Visitor Data</h1>
+									
+		<h1 class="text-color font-bold text-xl mx-4 text-gray-600 dark:text-gray-300">Yearly Visitor Data</h1>
    
 		<!-- chart js -->
 		<div class="px-4 mt-6"><BarChart {data} /></div>

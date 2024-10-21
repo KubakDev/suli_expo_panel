@@ -293,7 +293,7 @@
 
 					<tbody>
 						{#each $contactData as item, index (item.id)}
-							<tr>
+							<tr class="text-gray-600 dark:text-gray-300">
 								{#if item.contact_info_languages}
 									<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.contact_info_languages as lang}
