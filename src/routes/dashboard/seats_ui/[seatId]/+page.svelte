@@ -999,7 +999,7 @@
 		on:closeModal={() => (addSeatModal = false)}
 		{currentSeatLayoutData}
 	/>
- 
+</Modal>
 <div class="flex flex-col w-full h-full flex-1 bg-gray-100 text-gray-700">
 	<div class="w-full grid grid-cols-6 h-full gap-4 p-4">
 		<DrawingBar
