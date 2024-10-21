@@ -11,7 +11,6 @@
 	function showToast(message: string) {
 		test = [...test, message];
 	}
-	
 </script>
 
 <!-- <Button on:click={() => addNewToast()}>Show Toast 1</Button> -->
