@@ -974,7 +974,8 @@
 </script>
 
 <!-- {#if fabric} -->
- 
+ <div class="bg-gray-100 min-h-screen">
+	
 <TopBarComponent
 	data={{
 		fillColor: fillColor,
@@ -1014,7 +1015,7 @@
 			on:updateLayers={() => updateLayers()}
 		/>
 
-		<div bind:this={container} class="w-full min-h-[200px] col-span-4 relative overflow-hidden">
+		<div bind:this={container} class="w-full min-h-[200px] col-span-4 relative overflow-hidden bg-white rounded-lg shadow-md">
 			<canvas id="canvas" class="h-full w-full fabric-canvas" />
 			<div class="absolute bottom-20 right-10 w-40 flex justify-between">
 				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
@@ -1289,7 +1290,24 @@
 </div>
 
  
+ </div>
 <style lang="scss">
+	.fabric-canvas {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+  }
+
+  .bg-white {
+    background-color: white;
+  }
+
+  .rounded-lg {
+    border-radius: 0.5rem;
+  }
+
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
 	canvas {
 		border: 1px solid #89909c;
 		border-radius: 5px;
