@@ -80,7 +80,7 @@
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="border dark:border-gray-800 p-4 rounded">
 			<div class="flex justify-center py-10">
-				<h1 class="text-2xl font-bold">Update User Data</h1>
+				<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update User Data</h1>
 			</div>
 
 			<div class="grid lg:grid-cols-3 gap-4 px-4">

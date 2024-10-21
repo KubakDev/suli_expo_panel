@@ -147,9 +147,9 @@
 								const left = obj.left;
 								const top = obj.top;
 								const tempScaleX = scaleX * widthRatio;
-								const tempScaleY = scaleY * widthRatio;
+								const tempScaleY = scaleY * heightRatio;
 								const tempLeft = left * widthRatio;
-								const tempTop = top * widthRatio;
+								const tempTop = top * heightRatio;
 
 								obj.scaleX = tempScaleX;
 								obj.scaleY = tempScaleY;
@@ -974,7 +974,7 @@
 </script>
 
 <!-- {#if fabric} -->
-
+ 
 <TopBarComponent
 	data={{
 		fillColor: fillColor,
@@ -1000,7 +1000,7 @@
 		{currentSeatLayoutData}
 	/>
 </Modal>
-
+ 
 <div class="flex flex-col w-full h-full flex-1 bg-gray-100 text-gray-700">
 	<div class="w-full grid grid-cols-6 h-full">
 		<DrawingBar
@@ -1288,13 +1288,14 @@
 	</div>
 </div>
 
-<!-- {/if} -->
+ 
 <style lang="scss">
 	canvas {
 		border: 1px solid #89909c;
-		// padding: 10px;
 		border-radius: 5px;
-		margin-top: 10px;
+		margin-top: 0; /* Set margin-top to 0 */
+		height: 100%; /* Ensure canvas takes full height */
+		width: 100%; /* Ensure canvas takes full width */
 	}
 	.custom-cursor {
 		cursor: crosshair;
@@ -1315,6 +1316,7 @@
 		user-select: none;
 		fill: none;
 		stroke: currentColor;
+		height: 100%; /* Ensure seat takes full height */
 	}
 
 	.rotate-handle {
@@ -1355,6 +1357,44 @@
 		}
 		100% {
 			transform: rotate(360deg);
+		}
+	}
+
+	.topbar {
+		margin: 0; /* Remove any margin */
+		padding: 0; /* Remove any padding */
+	}
+
+	.customShape {
+		.Circle {
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+		}
+		.Rectangle {
+			height: 15px;
+			width: 30px;
+		}
+		.Ellipse {
+			height: 15px;
+			width: 30px;
+			border-radius: 50%;
+		}
+		.Line {
+			position: relative;
+			width: 25px;
+			height: 2px;
+			background-color: black;
+			rotate: 45deg;
+		}
+
+		.Triangle {
+			width: 0;
+			height: 0;
+			border-left: 10px solid transparent;
+			border-right: 10px solid transparent;
+			border-bottom: 20px solid #fff;
+			background-color: transparent !important;
 		}
 	}
 </style>

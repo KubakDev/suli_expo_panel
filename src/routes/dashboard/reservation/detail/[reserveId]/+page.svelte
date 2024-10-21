@@ -431,12 +431,13 @@
 	}
 
 	function getServices(service: string) {
-		try {
+	  try {
 			return JSON.parse(service ?? '');
 		} catch (e) {
 			return null;
 		}
 	}
+	
 
 	function exportFile(reservation: reservationType) {
 		if (!reservation) {
@@ -619,7 +620,7 @@
 					</thead>
 					<tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
 						{#each reservations as reservation}
-							<tr class="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200">
+							<tr class="bg-gray-100 dark:bg-gray-900 even:bg-gray-200 dark:even:bg-gray-800 transition-colors duration-200">
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
 									<span class="inline-block p-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-900 dark:text-gray-100 text-xs md:text-sm">
 										{#if reservation.created_at}
@@ -736,11 +737,17 @@
 										<div class="space-y-2">
 											{#each reservation.services as service}
 												<div class="p-2 border rounded bg-gray-50 dark:bg-gray-800">
-													<p><strong>Service:</strong> {getServices(service)?.serviceDetail?.title || 'N/A'}</p>
-													<p><strong>Quantity:</strong> {getServices(service)?.quantity || 'N/A'}</p>
-													<p><strong>Price:</strong> {getServices(service)?.serviceDetail?.price || 'N/A'}$</p>
-													<p><strong>Discount:</strong> {getServices(service)?.serviceDetail?.discount || 'N/A'}%</p>
-													<p><strong>Total:</strong> {getServices(service)?.totalPrice || 'N/A'}$</p>
+													<p><strong>Service Name:</strong> 
+														{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+														{getServices(service)?.serviceDetail?.languages[0]?.title}
+													{:else}
+														{getServices(service)?.serviceDetail?.title}
+													{/if}
+</p>
+													<p><strong>Quantity:</strong> {getServices(service)?.quantity || 0}</p>
+													<p><strong>Price:</strong> {getServices(service)?.serviceDetail?.price || 0}$</p>
+													<p><strong>Discount:</strong> {getServices(service)?.serviceDetail?.discount || 0}%</p>
+													<p><strong>Total:</strong> {getServices(service)?.totalPrice || 0 }$</p>
 												</div>
 											{/each}
 										</div>
@@ -874,18 +881,6 @@
 		padding: 0.75rem;
 	}
 
-	th {
-		background-color: #c2c7ce; /* Light gray */
-	 }
-
-	tr:nth-child(even) {
-		background-color: #f3f4f6; /* Slightly darker gray for even rows */
-	 }
-
-	tr:hover {
-		background-color: #e5e7eb; /* Hover effect */
-	}
-
 	/* Responsive adjustments */
 	@media (max-width: 768px) {
 		th,
@@ -894,17 +889,7 @@
 		}
 	}
 
-	/* Button Styles Override (if needed) */
-	.btn-primary {
-		background-color: #636363; /* Blue */
-		color: white;
-	}
-
-	.btn-secondary {
-		background-color: #1254d7; /* Gray */
-		color: white;
-	}
-
+	
 	/* Adjust modal image for better responsiveness */
 	Modal img {
 		max-width: 100%;

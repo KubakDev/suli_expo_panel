@@ -355,7 +355,7 @@
 		}));
 	});
 </script>
-
+ 
 <div class="p-3">
 	<button
 		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
@@ -565,7 +565,7 @@
 					<br />
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
-							<p>upload image for sheet preview</p>
+							<p class="text-gray-600 dark:text-gray-300">upload image for sheet preview</p>
 							<Fileupload
 								accept=".jpg, .jpeg, .png"
 								class=" "
@@ -574,7 +574,7 @@
 						</div>
 					</div>
 
-					<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
+					<h1 class="mt-3 text-lg font-medium text-gray-600 dark:text-gray-300">add privacy policy</h1>
 					<div class=" col-span-3">
 						<Tabs>
 							{#each languageEnumKeys as lang}

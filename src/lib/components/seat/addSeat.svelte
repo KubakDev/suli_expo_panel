@@ -170,13 +170,14 @@
 			}
 		}
 	}
-	
+ 
 	function addPrivacyPolicyLang(description: string, lang: string) {
 		privacyPolicyLang = privacyPolicyLang.filter((x) => x.language !== lang);
 		privacyPolicyLang.push({ 
-			description_seat: description,
-			price_sign: '', 
-			language: lang as LanguageEnum 
+			description, 
+			language: lang as LanguageEnum,
+			description_seat: description,  
+			price_sign: '' 
 		});
 	}
 </script>
@@ -261,7 +262,7 @@
 			</DropdownItem>
 		{/each}
 	</Dropdown>
-	<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
+	<h1 class="mt-3 text-lg font-medium text-gray-600 dark:text-gray-300">add privacy policy</h1>
 	<div class=" col-span-3">
 		<Tabs>
 			{#each languageEnumKeys as lang}

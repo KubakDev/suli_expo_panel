@@ -321,7 +321,7 @@
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell text-gray-600 dark:text-gray-300">
 								<div class="flex justify-center">
 									{item.mode_type}
 								</div>

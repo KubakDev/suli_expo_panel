@@ -93,7 +93,7 @@
 		}
 	}
 </script>
-
+ 
 <div class="p-3">
 	<button
 		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
@@ -122,7 +122,7 @@
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
-							<p>upload image for sheet preview</p>
+							<p class="text-gray-600 dark:text-gray-300">upload image for sheet preview</p>
 							<Fileupload
 								accept=".jpg, .jpeg, .png"
 								class="  "

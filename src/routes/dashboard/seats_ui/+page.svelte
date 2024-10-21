@@ -5,6 +5,7 @@
 	import type { SeatLayoutModel } from '../seats/seatLayoutStore';
 	import { goto } from '$app/navigation';
 	import { SeatsLayoutTypeEnum } from '../../../models/seatsLayoutTypeEnum';
+	import Spinner from '$lib/components/Spinner.svelte';
 	export let data: PageData;
 
 	$: ({ supabase } = data);
@@ -58,9 +59,9 @@
 		if (area) {
 			try {
 				result = JSON.parse(area);
-			} catch (e) {}
+			 } catch (e) {}
 		}
-		return result;
+		 return result;
 	}
  
    async function openSeatInfo(seatId: number) {
@@ -96,9 +97,8 @@
 
 {#if !loaded}
 <div class="loading flex justify-center items-center h-screen">
-	<div class="text-center">
-		<div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full"></div>
-		<p class="text-lg font-semibold mt-4">Loading...</p>
+	 <div class="flex justify-center items-center h-screen">
+		<Spinner size="h-16 w-16" color="border-gray-500" />  
 	</div>
 </div>
 {:else}
@@ -134,13 +134,14 @@
 	<!-- Reservation Table -->
 	<div class="w-full lg:w-10/12 my-10 px-4 border-t border-gray-300 pt-6">
 		<div class="flex w-full justify-between items-center mb-6">
-			<h1 class="text-lg font-bold text-gray-800 dark:text-gray-300">Reservation by Area</h1>
+			<h1 class="text-lg font-bold text-gray-800 dark:text-gray-300 ">Reservation by Area</h1>
 			<Button on:click={() => goto('seats_ui/reservation_by_area')} class="bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-primary-700 transition-all duration-300">
 				Add New Area
 			</Button>
 		</div>
-		<table class="min-w-full border-collapse bg-white shadow-md rounded-lg overflow-hidden">
-			<thead class="bg-gray-100">
+	 		 
+		<table class="min-w-full border-collapse bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+			<thead class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 ">
 				<tr>
 					<th class="table_header">Name</th>
 					<th class="table_header">Status</th>
@@ -149,9 +150,9 @@
 					<th class="table_header">Detail</th>
 				</tr>
 			</thead>
-			<tbody class="text-gray-700">
+			<tbody class="text-gray-600 dark:text-gray-300">
 				{#each seatsAreaFieldsType as seat}
-					<tr class="border-b hover:bg-gray-50 transition-all duration-150">
+					<tr class="border-b hover:bg-gray-50 hover:dark:bg-gray-700 transition-all duration-150">
 						<td class="p-4">{seat.name}</td>
 						<td>
 							{#if seat.is_active}
@@ -196,16 +197,7 @@
 		font-size: 1rem;
 		line-height: 1.25rem;
 	}
-
-	.loading .spinner-border {
-		border-color: #ccc;
-		border-top-color: #000;
-	}
-
-	.loading {
-		font-size: 1.5rem;
-	}
-
+  
 	/* Additional styling for smoother transitions and hover effects */
 	.hover\:bg-primary-500:hover {
 		background-color: #3b82f6;

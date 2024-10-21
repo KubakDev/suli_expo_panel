@@ -101,7 +101,6 @@
 				})
 				.filter((area) => area !== null);
 		}
-		console.log("seatReservation" ,reservedAreas)
 		
 	});
 

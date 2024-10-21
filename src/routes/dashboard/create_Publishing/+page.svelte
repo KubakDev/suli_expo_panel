@@ -223,7 +223,7 @@
 		</div>
 	{/if}
 	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold">Publishing Data</h1></div>
+		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Publishing Data</h1></div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4">
 			<div class="col-span-1">
@@ -257,9 +257,9 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-5 py-16">
+								<div class="px-5 py-16 text-gray-600 dark:text-gray-300">
 									<div class="text-center w-full pb-5">
-										<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold">
+										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -268,7 +268,7 @@
 												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
 										</h1>
-										<p>for other language navigate between tabs</p>
+										<p class="text-gray-600 dark:text-gray-300">for other language navigate between tabs</p>
 									</div>
 									<div class="pb-10">
 										<Label for="title" class="mb-2">Publishing Title</Label>

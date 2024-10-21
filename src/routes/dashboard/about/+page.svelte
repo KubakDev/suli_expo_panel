@@ -80,7 +80,7 @@
 	<!-- About Section  -->
 	<div>
 		<!-- insert new data -->
-		<InsertButton insertData={createAbout} />
+		<!-- <InsertButton insertData={createAbout} /> -->
 
 		<!-- table data -->
 		<TableComponent {calculateIndex} handleDelete="" pageName="about" data={$about} {columnTitle} />

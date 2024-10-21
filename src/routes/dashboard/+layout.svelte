@@ -40,16 +40,22 @@
 </script>
 
 <style>
-	/* Optional: Add any additional custom styles here */
+	.app {
+		min-height: 100vh; /* Ensure it takes full height */
+		margin: 0; /* Remove any margin */
+		padding: 0; /* Remove any padding */
+		display: flex;
+		flex-direction: column; /* Ensure children stack vertically */
+	}
 </style>
 
-<div class="app min-h-screen flex flex-col" style={getTheme()}>
+<div class="app" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
 		<Navbar class="dark:bg-gray-900 bg-gray-800 border-b border-gray-700 shadow-lg" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
-				<span class="self-center whitespace-nowrap text-2xl font-bold text-white">
-					SulyExpo
-				</span>
+					<span class="self-center whitespace-nowrap text-2xl font-bold text-white">
+						SulyExpo
+					</span>
 			</NavBrand>
 
 			<div class="flex items-center space-x-4 md:space-x-6">
@@ -130,7 +136,7 @@
 		</Navbar>
 	{/if}
 
-	<main class="flex-1 p-4 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+	<main class="flex-1 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
 		<slot />
 	</main>
 </div>

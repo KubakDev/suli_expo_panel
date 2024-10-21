@@ -440,7 +440,7 @@
 		isOpenEditModal = false;
 	}
 </script>
-
+ 
 <div class="p-3">
 	<button
 		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
@@ -459,7 +459,7 @@
 				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
 			/>
 		</svg>
-		Back to Seats Dashboard
+		Back to Seats Dashboard  
 	</button>
 </div>
 <Modal title="edit Area" bind:open={isOpenEditModal} class="bg-white max-w-sm mx-auto " autoclose>
@@ -666,7 +666,7 @@
 
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
-							<p>upload image for sheet preview</p>
+							<p class="text-gray-600 dark:text-gray-300">upload image for sheet preview</p>
 							<Fileupload
 								accept=".jpg, .jpeg, .png"
 								class=" dark:bg-white"
@@ -675,7 +675,7 @@
 						</div>
 					</div>
 					<div class=" col-span-3">
-						<h1 class="mt-3 text-lg font-medium">add privacy policy</h1>
+						<h1 class="mt-3 text-lg font-medium text-gray-600 dark:text-gray-300">add privacy policy</h1>
 						<Tabs>
 							{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>

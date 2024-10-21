@@ -300,7 +300,7 @@
 		<SidebarGroup ulClass="flex flex-col items-center gap-2 ">
 			<SidebarDropdownWrapper
 				label="Choose Card Type"
-				btnClass="flex gap-5 py-2 px-4 rounded border border-gray-700 w-full"
+				btnClass="flex gap-5 py-2 px-4 rounded border border-gray-700 w-full text-gray-600 dark:text-gray-300"
 			>
 				<svelte:fragment slot="icon">
 					<svg
@@ -362,7 +362,7 @@
 			{#if openLightCard}
 				<SidebarDropdownWrapper
 					label="Choose light theme"
-					btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full"
+					btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full text-gray-600 dark:text-gray-300"
 				>
 					<svelte:fragment slot="icon">
 						<svg
@@ -532,7 +532,7 @@
 			{:else}
 				<SidebarDropdownWrapper
 					label="Choose dark theme"
-					btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full"
+					btnClass="flex gap-5 py-2 px-2 rounded border border-gray-700 w-full text-gray-600 dark:text-gray-300"
 				>
 					<svelte:fragment slot="icon">
 						<svg

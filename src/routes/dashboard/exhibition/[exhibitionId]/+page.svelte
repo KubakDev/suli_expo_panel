@@ -594,7 +594,7 @@
 	{/if}
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="flex justify-center py-10">
-			<h1 class="text-2xl font-bold">Update Exhibition Data</h1>
+			<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update Exhibition Data</h1>
 		</div>
 
 		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
@@ -688,7 +688,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-10">
+								<div class="px-10 py-10 text-gray-600 dark:text-gray-300">
 									<div class="text-center w-full pb-10">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -699,7 +699,7 @@
 												{`Add data for ${langData.language} language`}
 											{/if}
 										</h1>
-										<p>for other language navigate between tabs</p>
+										<p class="text-gray-600 dark:text-gray-300">for other language navigate between tabs</p>
 									</div>
 
 									<div class="pb-10 flex gap-3 col-span-1">

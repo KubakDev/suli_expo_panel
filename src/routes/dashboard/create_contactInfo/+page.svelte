@@ -196,7 +196,7 @@
 			successfully submitted
 		</div>
 	{/if}
-	<h1 class="pt-20 text-2xl font-bold flex justify-center">Contact Information Data</h1>
+	<h1 class="pt-20 text-2xl font-bold flex justify-center text-gray-600 dark:text-gray-300">Contact Information Data</h1>
 
 	<div class="px-0 lg:px-10 py-10 m-10">
 		<Form class="form" {submitted}>
@@ -283,7 +283,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="py-5">
+								<div class="py-5 text-gray-600 dark:text-gray-300">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -294,7 +294,7 @@
 												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
 										</h1>
-										<p class="text-gray-400 text-base">for other language navigate between tabs</p>
+										<p class="text-gray-600 dark:text-gray-300 text-base">for other language navigate between tabs</p>
 									</div>
 									<div class="lg:flex items-center gap-2 lg:py-10">
 										<div class="w-full h-16 mb-8 lg:mb-0">

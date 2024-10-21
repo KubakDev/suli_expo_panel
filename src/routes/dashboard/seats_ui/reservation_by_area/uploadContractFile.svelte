@@ -82,7 +82,7 @@
 				on:click={() => (selectedLanguage = lang)}
 				class="transition duration-300 dark:hover:bg-gray-700 p-2 rounded"
 			>
-				<h1 class="text-xl text-gray-700 dark:text-gray-300 font-bold mb-3">
+				<h1 class="text-xl text-gray-600 dark:text-gray-300 font-bold mb-3">
 					{#if lang === 'ar'}
 						{`أضف البيانات إلى اللغة العربية`}
 					{:else if lang === 'ckb'}
