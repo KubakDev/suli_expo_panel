@@ -4,8 +4,7 @@
 	// @ts-ignore
 	import { fabric } from 'fabric';
 	import { ReservationStatusEnum } from '../../../../../models/reservationEnum';
-	import type { PageData } from './$types';
-
+	 
 	export let data: any;
 	export let reservations: any = [];
 	// let fabric: any = null;
@@ -89,66 +88,56 @@
 	};
 
 	async function checkIfTheSeatReserved() {
-		if (!activeSeat?.design?.objects || reservations.length === 0) return;
+		for (let object of activeSeat.design?.objects) {
+			if (object?.id == reservations[0]?.object_id) {
+				canvas.forEachObject((obj: any) => {
+					if (obj.id == object.id) {
+						obj.set({
+							objectDetail: {
+								...object.objectDetail,
+								reserve: true
+							}
+						});
 
-		// Create a map of object_id to reservation status
-		const reservationMap: Record<string, ReservationStatusEnum> = {};
-		reservations.forEach((reservation: any) => {
-			reservationMap[reservation.object_id] = reservation.status;
-		});
-
-	  
-		// Iterate through all objects and apply reservation status
-		canvas.forEachObject((obj: any) => {
-			const reservationStatus = reservationMap[obj.id];
-			if (reservationStatus !== undefined) {
-				obj.set({
-					objectDetail: {
-						...obj.objectDetail,
-						reserve: true
+						if (
+							reservations.find(
+								(reservation: any) => reservation.status == ReservationStatusEnum.ACCEPT
+							)
+						) {
+							obj.set('fill', '#ff176b');
+							obj.set('stroke', '#ff176b');
+							obj.set('strokeWidth', 3);
+						} else {
+							obj.set('fill', '#A0B0C2');
+							obj.set('stroke', '#A0B0C2');
+							obj.set('strokeWidth', 3);
+						}
+						if (obj.type == 'group') {
+							obj.forEachObject((child: any) => {
+								if (
+									reservations.find(
+										(reservation: any) => reservation.status == ReservationStatusEnum.ACCEPT
+									)
+								) {
+									child.set('fill', '#ff176b');
+									child.set('stroke', '#ff176b');
+									child.set('strokeWidth', 3);
+								} else {
+									child.set('fill', '#A0B0C2');
+									child.set('stroke', '#A0B0C2');
+									child.set('strokeWidth', 3);
+								}
+							});
+						}
+						obj.setCoords();
+						canvas.renderAll();
 					}
 				});
-
-				if (reservationStatus === ReservationStatusEnum.ACCEPT) {
-					obj.set({
-						fill: '#ff176b',
-						stroke: '#ff176b',
-						strokeWidth: 3
-					});
-					if (obj.type === 'group') {
-						obj.forEachObject((child: any) => {
-							child.set({
-								fill: '#ff176b',
-								stroke: '#ff176b',
-								strokeWidth: 3
-							});
-						});
-					}
-				} else {
-					obj.set({
-						fill: '#A0B0C2',
-						stroke: '#A0B0C2',
-						strokeWidth: 3
-					});
-					if (obj.type === 'group') {
-						obj.forEachObject((child: any) => {
-							child.set({
-								fill: '#A0B0C2',
-								stroke: '#A0B0C2',
-								strokeWidth: 3
-							});
-						});
-					}
-				}
-				obj.setCoords();
 			}
-		});
-
-		// Render once after all updates
-		canvas.renderAll();
+		}
 	}
 </script>
-
+ 
 {#if fabric}
 	<div bind:this={container} class="min-h-[200px] w-full relative overflow-hidden">
 		<canvas id="canvas" class="h-full w-full fabric-canvas" />

@@ -14,8 +14,8 @@
 	import { browser } from '$app/environment';
 	import { addNewToast } from '../../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
-	import * as XLSX from 'xlsx'; // Import SheetJS
-	import Spinner from '$lib/components/Spinner.svelte'; // Import the Spinner component
+	import * as XLSX from 'xlsx';  
+	import Spinner from '$lib/components/Spinner.svelte';  
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -27,7 +27,7 @@
 		id?: number;
 		exhibition_id?: number;
 		object_id?: number;
-		comment?: string[] | string; // Accept both string arrays and strings
+		comment?: string[] | string;  
 		services?: string[];
 		company_id?: number;
 		company?: CompanyType;
@@ -39,14 +39,14 @@
 		extra_discount_checked?: boolean;
 		rejected_by_user?: boolean;
 		total_price: number;
-		file_url?: string; // Assuming there's a file_url for downloads
+		file_url?: string;  
 	}
 	let openPreviewImage = false;
 	let selectedImageUrlForPreview = '';
 	let objectId = $page.params.reserveId;
 	let seatLayout: undefined | any[] = undefined;
 	let extraDiscountChecked = false;
-	let reservations: reservationType[] = []; // Typed reservations
+	let reservations: reservationType[] = [];  
 	let reservedSeatData: any = [];
 	let exhibitionId = 0;
 
@@ -71,7 +71,6 @@
 			.eq('object_id', objectId);
 
 		if (response.error) {
-			console.error('Failed to fetch reservations:', response.error);
 			addNewToast({
 				type: ToastTypeEnum.ERROR,
 				message: 'Failed to fetch reservations.',
@@ -228,8 +227,11 @@
 			});
 		} else {
 			if (selectedStatus === ReservationStatusEnum.REJECT) {
+
 				let activeSeat = seatLayout?.find((seat) => seat.is_active === true);
+
 				let seatAreasData = JSON.parse(activeSeat?.areas ?? '[]');
+
 				if (reservationData?.reserved_areas) {
 					let userReservedAreas = JSON.parse(reservationData.reserved_areas);
 
@@ -244,15 +246,20 @@
 						}
 					});
 				}
-				await data.supabase
-					.from('seat_layout')
-					.update({
-						areas: JSON.stringify(seatAreasData)
-					})
-					.eq('id', activeSeat.id)
-					.then(() => {
-						getReservationData();
-					});
+
+
+				try {
+					await data.supabase
+						.from('seat_layout')
+						.update({
+							areas: JSON.stringify(seatAreasData)
+						})
+						.eq('id', activeSeat?.id);
+					
+					getReservationData();
+				} catch (error) {
+					// console.error('Error updating seat layout:', error);
+				}
 			}
 
 			// Insert notifications
