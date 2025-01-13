@@ -12,7 +12,7 @@
 	let designs: SeatLayoutModel[] | undefined;
 	let seatsAreaFieldsType: SeatLayoutModel[] = [];
     let loaded: boolean = false;
-  let exhibitionTypeMap: Map<number, string> = new Map();
+    let exhibitionTypeMap: Map<number, string> = new Map();
 
 
    async function getData() {
@@ -134,56 +134,68 @@
 	<!-- Reservation Table -->
 	<div class="w-full lg:w-10/12 my-10 px-4 border-t border-gray-300 pt-6">
 		<div class="flex w-full justify-between items-center mb-6">
-			<h1 class="text-lg font-bold text-gray-800 dark:text-gray-300 ">Reservation by Area</h1>
+			<h1 class="text-lg font-bold text-gray-800 dark:text-gray-300">Reservation by Area</h1>
 			<Button on:click={() => goto('seats_ui/reservation_by_area')} class="bg-primary-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-primary-700 transition-all duration-300">
 				Add New Area
 			</Button>
 		</div>
-	 		 
-		<table class="min-w-full border-collapse bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
-			<thead class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 ">
-				<tr>
-					<th class="table_header">Name</th>
-					<th class="table_header">Status</th>
-					<th class="table_header">Area</th>
-					<th class="table_header">Exhibition Type</th>
-					<th class="table_header">Detail</th>
-				</tr>
-			</thead>
-			<tbody class="text-gray-600 dark:text-gray-300">
-				{#each seatsAreaFieldsType as seat}
-					<tr class="border-b hover:bg-gray-50 hover:dark:bg-gray-700 transition-all duration-150">
-						<td class="p-4">{seat.name}</td>
-						<td>
-							{#if seat.is_active}
-								<div class="flex items-center">
-									<div class="h-3 w-3 bg-green-500 rounded-full mx-2"></div>
-									<span>Active</span>
-								</div>
-							{:else}
-								<div class="flex items-center">
-									<div class="h-3 w-3 bg-red-500 rounded-full mx-2"></div>
-									<span>Inactive</span>
-								</div>
-							{/if}
-						</td>
-						<td>
-							{#each getAreaDetail(seat.areas) as areaDetail}
-								<div class="my-3">
-									Area: {areaDetail.area} M <span class="mx-4">Quantity: {areaDetail.quantity}</span>
-								</div>
+		 
+		<div class="max-w-screen-2xl mx-auto">
+			<div class="overflow-x-auto rounded">
+				<div class="min-w-full table-responsive">
+					<table class="min-w-full border-collapse dark:border-gray-700">
+						<thead>
+							<tr>
+								{#each ['Name', 'Status', 'Area', 'Exhibition Type', 'Detail'] as header}
+									<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+										<div class="flex justify-center items-center gap-2">
+											<span>{header}</span>
+										</div>
+									</th>
+								{/each}
+							</tr>
+						</thead>
+						<tbody class="text-gray-600 dark:text-gray-300">
+							{#each seatsAreaFieldsType as seat}
+								<tr>
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+										{seat.name}
+									</td>
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+										{#if seat.is_active}
+											<div class="flex items-center">
+												<div class="h-3 w-3 bg-green-500 rounded-full mx-2"></div>
+												<span>Active</span>
+											</div>
+										{:else}
+											<div class="flex items-center">
+												<div class="h-3 w-3 bg-red-500 rounded-full mx-2"></div>
+												<span>Inactive</span>
+											</div>
+										{/if}
+									</td>
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+										{#each getAreaDetail(seat.areas) as areaDetail}
+											<div class="my-3">
+												Area: {areaDetail.area} M <span class="mx-4">Quantity: {areaDetail.quantity}</span>
+											</div>
+										{/each}
+									</td>
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+										{seat.id && exhibitionTypeMap.get(seat.id) || 'N/A'}
+									</td>
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+										<Button on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)} class=" text-white transition-all duration-300">
+											Detail
+										</Button>
+									</td>
+								</tr>
 							{/each}
-						</td>
-						<td>{seat.id && exhibitionTypeMap.get(seat.id) || 'N/A'}</td>
-						<td>
-							<Button on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)} class=" text-white transition-all duration-300">
-								Detail
-							</Button>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 {/if}

@@ -13,6 +13,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import { ModeTypeEnum, type ColorTheme } from '../../../../models/colorTheme';
+	import { IconPlus, IconApps, IconTrash, IconGridDots } from '@tabler/icons-svelte';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -113,128 +114,70 @@
 	}
 </script>
 
-<div class="max-w-screen-2xl mx-auto py-10 px-4 bg-white dark:bg-[#121212]">
-	<!-- show data on the table -->
-
+<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
 		<button
 			on:click={() => (showModal = true)}
 			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2 p-2 rounded-sm shadow-md border"
 		>
-			<svg
-				width="20px"
-				height="20px"
-				viewBox="0 0 20 20"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-			>
-				<g id="SVGRepo_bgCarrier" stroke-width="0" />
-
-				<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-
-				<g id="SVGRepo_iconCarrier">
-					<path
-						fill="#6b6b6b"
-						fill-rule="evenodd"
-						d="M9 17a1 1 0 102 0v-6h6a1 1 0 100-2h-6V3a1 1 0 10-2 0v6H3a1 1 0 000 2h6v6z"
-					/>
-				</g>
-			</svg>
+			<IconPlus size={20} />
 		</button>
 	</div>
 
-	<!-- table data -->
 	<div class="overflow-x-auto rounded">
 		<div class="min-w-full table-responsive">
-			<table class="min-w-full border-collapse bg-white dark:bg-[#1f2937] border dark:border-gray-700">
+			<table class="min-w-full border-collapse dark:border-gray-700">
 				<thead>
 					<tr>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell w-10"
-						>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
 							<div class="flex justify-center items-center gap-2">
-								<span>No</span>
+								<span>NO</span>
 							</div>
 						</th>
-
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>Name Of Theme</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>NAME OF THEME</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>Primary Color</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>PRIMARY COLOR</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>Secondary Color</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>SECONDARY COLOR</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>overlay Primary Color</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>OVERLAY PRIMARY COLOR</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>overlay Secondary Color</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>OVERLAY SECONDARY COLOR</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>background color</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>BACKGROUND COLOR</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>overlay background color</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>OVERLAY BACKGROUND COLOR</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span>Mode Type</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex justify-center items-center gap-2">
+								<span>MODE TYPE</span>
 							</div>
 						</th>
-						<th
-							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
-						>
-							<div class="flex items-center justify-center gap-2">
-								<span
-									><svg
-										width="20px"
-										height="20px"
-										viewBox="0 0 24 24"
-										xmlns="http://www.w3.org/2000/svg"
-										fill="#65686c"
-										><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-											id="SVGRepo_tracerCarrier"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										/><g id="SVGRepo_iconCarrier"
-											><path
-												d="M9.5 2h-6A1.502 1.502 0 0 0 2 3.5v6A1.502 1.502 0 0 0 3.5 11h6A1.502 1.502 0 0 0 11 9.5v-6A1.502 1.502 0 0 0 9.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 2h-6A1.502 1.502 0 0 0 13 3.5v6a1.502 1.502 0 0 0 1.5 1.5h6A1.502 1.502 0 0 0 22 9.5v-6A1.502 1.502 0 0 0 20.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM9.5 13h-6A1.502 1.502 0 0 0 2 14.5v6A1.502 1.502 0 0 0 3.5 22h6a1.502 1.502 0 0 0 1.5-1.5v-6A1.502 1.502 0 0 0 9.5 13zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 13h-6a1.502 1.502 0 0 0-1.5 1.5v6a1.502 1.502 0 0 0 1.5 1.5h6a1.502 1.502 0 0 0 1.5-1.5v-6a1.502 1.502 0 0 0-1.5-1.5zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5z"
-											/><path fill="none" d="M0 0h24v24H0z" /></g
-										></svg
-									></span
-								> <span>Actions</span>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
+								<span>ACTIONS</span>
 							</div>
 						</th>
 					</tr>
@@ -243,126 +186,76 @@
 				<tbody>
 					{#each $theme as item, index (item.id)}
 						<tr>
-							<td class="w-3 p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
-								<div class="flex justify-center text-gray-500">{index + 1}</div>
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+								<div class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold">
+									{index + 1}
+								</div>
 							</td>
-							<td
-								class="w-44 p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell"
-							>
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
 									<p class="w-20 p-2 rounded dark:text-white font-sans">
 										{item.name}
 									</p>
 								</div>
 							</td>
-
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
-									<div
-										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.primaryColor}`};"
-									>
+									<div class="w-20 p-2 rounded text-white" style="background: {item.primaryColor};">
 										{item.primaryColor}
 									</div>
 								</div>
 							</td>
-
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
-									<div
-										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.secondaryColor}`};"
-									>
+									<div class="w-20 p-2 rounded text-white" style="background: {item.secondaryColor};">
 										{item.secondaryColor}
 									</div>
 								</div>
 							</td>
-
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
-									<div
-										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.overlayPrimaryColor}`};"
-									>
+									<div class="w-20 p-2 rounded text-white" style="background: {item.overlayPrimaryColor};">
 										{item.overlayPrimaryColor}
 									</div>
 								</div>
 							</td>
-
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
-									<div
-										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.overlaySecondaryColor}`};"
-									>
+									<div class="w-20 p-2 rounded text-white" style="background: {item.overlaySecondaryColor};">
 										{item.overlaySecondaryColor}
 									</div>
 								</div>
 							</td>
-
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
-									<div
-										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.backgroundColor}`};"
-									>
+									<div class="w-20 p-2 rounded text-white" style="background: {item.backgroundColor};">
 										{item.backgroundColor}
 									</div>
 								</div>
 							</td>
-
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-center">
-									<div
-										class="w-20 p-2 rounded text-white border-4"
-										style="background: {`${item.overlayBackgroundColor}`};"
-									>
+									<div class="w-20 p-2 rounded text-white" style="background: {item.overlayBackgroundColor};">
 										{item.overlayBackgroundColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell text-gray-600 dark:text-gray-300">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell text-gray-600 dark:text-gray-300">
 								<div class="flex justify-center">
 									{item.mode_type}
 								</div>
 							</td>
-
-							<td
-								class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
-							>
-								<div class="flex justify-between items-center">
-									<div class="flex justify-between items-center gap-4 px-2">
-										<div>
-											{#if item.active}
-												<span class="text-green-600 font-bold">Active</span>
-											{:else}
-												<span class="text-red-600">Inactive</span>
-											{/if}
-										</div>
-										<div>
-											<!-- <Toggle
-												class="rounded px-2   hover:bg-gray-100 dark:hover:bg-gray-600"
-												checked={item.active}
-												on:change={() => toggleChanged(item)}
-											/> -->
-
-											<div class="flex justify-end items-center mr-5">
-												<label class="relative inline-flex items-center cursor-pointer">
-													<input
-														on:change={() => toggleChanged(item)}
-														type="checkbox"
-														value=""
-														class="sr-only peer"
-														bind:checked={item.active}
-													/>
-													<div
-														class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"
-													/>
-												</label>
-											</div>
-										</div>
-									</div>
-
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell w-32">
+								<div class="flex justify-center items-center gap-2">
+									<label class="relative inline-flex items-center cursor-pointer">
+										<input
+											type="checkbox"
+											checked={item.active}
+											on:change={() => toggleChanged(item)}
+											class="sr-only peer"
+										/>
+										<div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600" />
+									</label>
 									<DeleteModal itemIdToDelete={item.id} {handleDelete} />
 								</div>
 							</td>
@@ -497,20 +390,9 @@
 					<button
 						on:click|preventDefault={formSubmit}
 						type="submit"
-						class="flex bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+						class="flex items-center gap-2 bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
 					>
-						<svg
-							class="mr-1 -ml-1 w-6 h-6"
-							fill="currentColor"
-							viewBox="0 0 20 20"
-							xmlns="http://www.w3.org/2000/svg"
-							><path
-								fill-rule="evenodd"
-								d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-								clip-rule="evenodd"
-							/></svg
-						>
-
+						<IconPlus size={20} />
 						Add new theme
 					</button>
 				</div>

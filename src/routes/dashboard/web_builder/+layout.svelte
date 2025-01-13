@@ -3,9 +3,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Drawer, CloseButton } from 'flowbite-svelte';
-	import { sineIn } from 'svelte/easing';
-	import { onMount } from 'svelte';
-	import { writable } from 'svelte/store';
+	import { sineIn } from 'svelte/easing'; 
 
 	export let data;
 	let hidden2 = true;
@@ -66,22 +64,22 @@
 				>
 			</div>
 			<Drawer
-				divClass="bg-gray-900 z-[100]"
+				divClass="bg-gray-100 dark:bg-gray-800 z-[100]"
 				transitionType="fly"
 				{transitionParams}
 				bind:hidden={hidden2}
 				id="sidebar2"
 			>
 				<div class="flex items-center">
-					<CloseButton on:click={() => (hidden2 = true)} class="mb-4 dark:text-white" />
+					<CloseButton on:click={() => (hidden2 = true)} class="mb-4 text-gray-700 dark:text-white" />
 				</div>
 				<Sidebar>
-					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded dark:bg-gray-900  ">
+					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded bg-gray-100 dark:bg-gray-800">
 						<SidebarGroup>
-							<h1 class="text-gray-200 text-xl font-semibold pb-3 flex justify-center">
+							<h1 class="text-gray-700 dark:text-gray-200 text-xl font-semibold pb-3 flex justify-center">
 								Page Builder
 							</h1>
-							<div class="border border-gray-400 border-opacity-60" />
+							<div class="border border-gray-300 dark:border-gray-600 border-opacity-60" />
 
 							{#each data.sideBarPage as pageData}
 								<button
@@ -89,7 +87,7 @@
 										updateActiveUrl(pageData.url + '');
 										goto(pageData.url + '');
 									}}
-									class="flex flex-col text-white py-3 hover:bg-gray-50 hover:bg-opacity-10 px-4 rounded"
+									class="flex flex-col text-gray-700 dark:text-white py-3 hover:bg-gray-200 dark:hover:bg-gray-700 hover:bg-opacity-70 px-4 rounded"
 								>
 									<div class="flex items-center gap-4 text-xl">
 										<img src={pageData.icon} alt="img" class="icon object-cover" />
@@ -105,12 +103,12 @@
 		</div>
 
 		<!-- Sidebar for desktop  -->
-		<div class="sidebar-drawer bg-gray-900 min-h-screen rounded-none border lg:block hidden">
+		<div class="sidebar-drawer bg-gray-100 dark:bg-gray-800 min-h-screen rounded-none border-r border-gray-300 dark:border-gray-600 lg:block hidden">
 			<Sidebar>
-				<SidebarWrapper divClass="bg-gray-900 min-h-screen px-4">
+				<SidebarWrapper divClass="bg-gray-100 dark:bg-gray-800 min-h-screen px-4">
 					<SidebarGroup class="flex flex-col py-5">
-						<h1 class="text-gray-200 text-xl font-semibold pb-3 text-center">Page Builder</h1>
-						<div class="border border-gray-700 border-opacity-60" />
+						<h1 class="text-gray-700 dark:text-gray-200 text-xl font-semibold pb-3 text-center">Page Builder</h1>
+						<div class="border border-gray-300 dark:border-gray-600 border-opacity-60" />
 						<!-- Sidebar content -->
 
 						{#each data.sideBarPage as pageData}
@@ -119,13 +117,17 @@
 									updateActiveUrl(pageData.url + '');
 									goto(pageData.url + '');
 								}}
-								class=" flex gap-4 items-center py-3 hover:bg-gray-50 hover:bg-opacity-10 px-2 rounded"
+								class="flex gap-4 items-center py-3 hover:bg-gray-200 dark:hover:bg-gray-700 hover:bg-opacity-70 px-2 rounded"
 							>
-								<img src={pageData.icon} alt="img" class="icon" />
+								<img 
+									src={pageData.icon} 
+									alt="img" 
+									class="icon brightness-0 dark:brightness-100 w-6 h-6" 
+								/>
 								<NavLi
-									class="cursor-pointer text-white text-lg"
+									class="cursor-pointer text-gray-700 dark:text-white text-lg"
 									active={activeUrl == pageData.url}
-									style={activeUrl == pageData.url ? 'color:E1B168' : 'color:white'}
+									style={activeUrl == pageData.url ? 'color:#E1B168' : ''}
 								>
 									{pageData.title}
 								</NavLi>
@@ -144,3 +146,16 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	/* Optional: Add specific size for icons if needed */
+	.icon {
+		width: 24px;
+		height: 24px;
+	}
+
+	/* Optional: Add specific filter for better contrast in light mode */
+	:global(.dark) .icon {
+		filter: brightness(1);
+	}
+</style>
