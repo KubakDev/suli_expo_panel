@@ -7,6 +7,7 @@
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import { exportToExcel } from '$lib/utils/exportToExcel';
 	import { Button } from 'flowbite-svelte';
+	import { IconX, IconEdit, IconLayoutGrid } from '@tabler/icons-svelte';
 
 	interface User {
 		id: number;
@@ -77,49 +78,82 @@
 	}
 	
 </script>
+ 
+<div class="max-w-screen-2xl mx-auto py-10">
+	<!-- Filter Container -->
+	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
+		<!-- Total count -->
+		<div class="shadow-none flex justify-start items-start px-4 py-2 border dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 text-sm">
+			Showing <span class="font-bold mx-2 dark:text-gray-200">{users.length}</span> Results for users
+		</div>
 
-<div class="max-w-screen-2xl mx-auto py-10 mt-5">
-	<div class="filter-container mb-6 flex flex-col sm:flex-row gap-4">
-		<input
-			type="text"
-			placeholder="Filter by FullName"
-			bind:value={filterName}
-			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900 text-gray-900"
-		/>
-		<input
-			type="text"
-			placeholder="Filter by PhoneNumber"
-			bind:value={filterPhoneNumber}
-			class="flex-grow p-2 border rounded focus:outline-none focus:ring-gray-300 dark:focus:ring-gray-900 text-gray-900"
-		/>
-		<div class="flex flex-col sm:flex-row gap-4">
-			<button
-				class="text-center font-medium focus:ring-4 focus:outline-none inline-flex items-center justify-center px-5 py-2 bg-gray-200 border border-gray-300 dark:text-gray-900 dark:bg-[#e0e1dd] dark:hover:bg-gray-300 focus:ring-gray-300 dark:focus:ring-gray-900 rounded"
-				on:click={handleFilter}>Search</button
-			>
-			<button
-				class=" text-center font-medium focus:ring-4 focus:outline-none inline-flex items-center justify-center px-5 py-2 bg-gray-200 border border-gray-300 dark:text-gray-900 dark:bg-[#e0e1dd] dark:hover:bg-gray-300 focus:ring-gray-300 dark:focus:ring-gray-900 rounded"
-				on:click={clearFilter}
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					fill="none"
-					viewBox="0 0 24 24"
-					stroke-width="1.5"
-					stroke="red"
-					class="w-6 h-6 ml-2"
+		<!-- Filters and Actions -->
+		<div class="flex flex-col lg:flex-row justify-end items-center gap-2">
+			<input
+				type="text"
+				placeholder="Filter by FullName"
+				bind:value={filterName}
+				class="w-56 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 
+				text-gray-900 dark:text-gray-100 text-sm rounded-lg 
+				focus:ring-gray-200 focus:border-gray-300 
+				dark:focus:ring-gray-600 dark:focus:border-gray-600 
+				block pl-3 p-2.5"
+			/>
+			<input
+				type="text"
+				placeholder="Filter by PhoneNumber"
+				bind:value={filterPhoneNumber}
+				class="w-56 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-600 
+				text-gray-900 dark:text-gray-100 text-sm rounded-lg 
+				focus:ring-gray-200 focus:border-gray-300 
+				dark:focus:ring-gray-600 dark:focus:border-gray-600 
+				block pl-3 p-2.5"
+			/>
+
+			<!-- Action buttons group -->
+			<div class="flex items-center gap-2">
+				<button
+					class="py-2 px-4 font-medium text-center text-base 
+					bg-gray-200 hover:bg-gray-300 text-gray-900 
+					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
+					border border-gray-300 dark:border-gray-600 
+					rounded"
+					on:click={handleFilter}>Search</button>
+
+				<!-- Updated clear filter button -->
+				<button
+					class="w-11 h-11 flex items-center justify-center 
+					bg-gray-200 hover:bg-gray-300 text-gray-900 
+					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
+					border border-gray-300 dark:border-gray-600 
+					rounded"
+					on:click={clearFilter}
+					title="Clear Filter"
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-				</svg>
-				Clear Filter
-			</button>
-			<button
-				class="text-center font-medium focus:ring-4 focus:outline-none inline-flex items-center justify-center px-5 py-2 bg-gray-200 border border-gray-300 dark:text-gray-900 dark:bg-[#e0e1dd] dark:hover:bg-gray-300 focus:ring-gray-300 dark:focus:ring-gray-900 rounded"
-				on:click={() => {
-					goto(`/dashboard/users/userProfile`);
-				}}>View User Profile</button
-			>
-			<Button on:click={handleExport}>Export</Button>
+					<IconX size={24} class="text-red-500" />
+				</button>
+
+				<button
+					class="py-2 px-4 font-medium text-center text-base 
+					bg-gray-200 hover:bg-gray-300 text-gray-900 
+					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
+					border border-gray-300 dark:border-gray-600 
+					rounded"
+					on:click={() => goto(`/dashboard/users/userProfile`)}>
+					View User Profile
+				</button>
+
+				<!-- Updated export button -->
+				<Button 
+					class="py-2 px-4 font-medium text-center text-base 
+					bg-primary-600 hover:bg-primary-700 text-white 
+					dark:bg-primary-600 dark:hover:bg-primary-700 dark:text-white 
+					border border-primary-600 dark:border-primary-600 
+					rounded focus:ring-0 focus:ring-primary-300 focus:ring-offset-0"
+					on:click={handleExport}>
+					Export
+				</Button>
+			</div>
 		</div>
 	</div>
 
@@ -127,56 +161,86 @@
 		<p class="text-red-500">No results found</p>
 	{:else}
 		<div class="overflow-x-auto">
-			<table class="min-w-full border-collapse">
+			<table class="min-w-full border border-gray-200 dark:border-gray-700">
 				<thead>
-					<tr>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border">#</th>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Full Name</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Company Name / Field Work</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Job Grade</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Phone Number</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Email</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Country / City</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Hotel Booking</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Created At</th
-						>
-						<th class="p-3 font-semibold uppercase bg-gray-200 text-gray-600 text-sm border"
-							>Action</th
-						>
+					<tr class="border border-gray-200 dark:border-gray-700">
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
+							<div class="flex justify-center items-center gap-2">
+								<span>#</span>
+							</div>
+						</th>
+						
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Full Name</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Company / Field</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Job Grade</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Phone Number</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Email</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Country / City</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Hotel Booking</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<span>Created At</span>
+							</div>
+						</th>
+
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<div class="flex items-center gap-2">
+								<IconLayoutGrid size={20} class="text-gray-500 dark:text-gray-400" />
+								<span>Actions</span>
+							</div>
+						</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each users as user, index}
-						<tr class="text-gray-600 dark:text-gray-300">
-							<td class="p-3 border dark:border-gray-800"
-								>{index + 1 + (currentPage - 1) * pageSize}</td
-							>
-							<td class="p-3 border dark:border-gray-800">{user.name}</td>
-							<td class="p-3 border dark:border-gray-800">{user.companyName} / {user.fieldWork}</td>
-							<td class="p-3 border dark:border-gray-800">{user.jobGrade}</td>
-							<td class="p-3 border dark:border-gray-800">{user.phoneNumber}</td>
-							<td class="p-3 border dark:border-gray-800">{user.email}</td>
-							<td class="p-3 border dark:border-gray-800">{user.country} / {user.city}</td>
-							<td class="p-3 border dark:border-gray-800">{user.hotelBooking}</td>
-							<td class="p-3 border dark:border-gray-800"
+						<tr class="text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{index + 1 + (currentPage - 1) * pageSize}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.name}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.companyName} / {user.fieldWork}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.jobGrade}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.phoneNumber}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.email}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.country} / {user.city}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">{user.hotelBooking}</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600"
 								>{new Date(user.created_at).toLocaleString()}</td
 							>
-							<td class="p-3 border dark:border-gray-800">
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
 								<button
 									on:click={() => {
 										goto(`/dashboard/users/${user.id}`);
@@ -215,12 +279,14 @@
 	table {
 		width: 100%;
 		border-collapse: collapse;
+		border: 1px solid #ddd;
 	}
 
 	th,
 	td {
 		padding: 8px;
 		text-align: left;
+		border: 1px solid #ddd;
 	}
 
 	@media (max-width: 768px) {
@@ -260,5 +326,14 @@
 			font-weight: bold;
 			text-align: left;
 		}
+	}
+
+	:global(.dark) table {
+		border-color: #4B5563;
+	}
+
+	:global(.dark) th,
+	:global(.dark) td {
+		border-color: #4B5563;
 	}
 </style>

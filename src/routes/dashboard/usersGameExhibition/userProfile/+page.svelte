@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TabItem, Tabs } from 'flowbite-svelte';
+	import { TabItem, Tabs, Button } from 'flowbite-svelte';
 	import { goto } from '$app/navigation';
 
 	export let data;
@@ -99,13 +99,13 @@
 	fetchUserProfile();
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 rounded">
+<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 dark:text-gray-100 rounded">
 	<div class="container mx-auto p-4 flex flex-col justify-center">
 		<Tabs>
 			<TabItem title="EN" open>
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 rounded p-4"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4"
 				>
 					<p class="text-center py-2 font-semibold">Add form data for EN language</p>
 					<div class="form-group">
@@ -142,7 +142,7 @@
 			<TabItem title="AR">
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 rounded p-4"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4"
 				>
 					<p class="text-center py-2 font-semibold">Add data for AR language</p>
 					<div class="form-group">
@@ -179,7 +179,7 @@
 			<TabItem title="CKB">
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 rounded p-4"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4"
 				>
 					<p class="text-center py-2 font-semibold">Add data for CKB language</p>
 					<div class="form-group">
@@ -229,7 +229,7 @@
 				</label>
 			</div>
 		{/each}
-		<button type="submit">Submit</button>
+		<Button type="submit">Submit</Button>
 	</div>
 </form>
 
@@ -260,11 +260,21 @@
 		padding: 0.5rem;
 		border: 1px solid #ccc;
 		border-radius: 4px;
+		background-color: white;
+		color: black;
 	}
 
-	.form-group textarea {
-		resize: vertical;
-		min-height: 100px;
+	:global(.dark) .form-group input[type='text'],
+	:global(.dark) .form-group input[type='email'],
+	:global(.dark) .form-group textarea {
+		background-color: #374151;
+		color: #e5e7eb;
+		border-color: #4B5563;
+	}
+
+	:global(.dark) .form-group input::placeholder,
+	:global(.dark) .form-group textarea::placeholder {
+		color: #9ca3af;
 	}
 
 	button {
@@ -272,14 +282,27 @@
 		padding: 0.5rem 1rem;
 		border: none;
 		border-radius: 4px;
-		background-color: #e9ecefd2;
-		color: black;
+		background-color: rgb(var(--color-primary-500));
+		color: white;
 		cursor: pointer;
 		transition: background-color 0.3s;
 	}
 
 	button:hover {
-		background-color: #d2d6dbd2;
+		background-color: rgb(var(--color-primary-600));
+	}
+
+	:global(.dark) button {
+		background-color: rgb(var(--color-primary-500));
+		color: white;
+	}
+
+	:global(.dark) button:hover {
+		background-color: rgb(var(--color-primary-600));
+	}
+
+	:global(.dark) input[type='checkbox'] {
+		border-color: #4B5563;
 	}
 
 	input[type='checkbox'].active-checkbox {
