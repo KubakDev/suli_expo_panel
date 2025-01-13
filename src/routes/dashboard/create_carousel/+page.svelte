@@ -185,7 +185,7 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2">
 				<form class="rounded-lg border dark:border-gray-600">
-					<Tabs contentClass="dark:bg-gray-900">
+					<Tabs contentClass="dark:text-white">
 						{#each carouselDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -253,7 +253,7 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg">
-				<Tabs style="underline" class="bg-secondary rounded-tl rounded-tr">
+				<Tabs style="underline" contentClass="rounded-lg dark:text-white">
 					<TabItem open title="Carousel List">
 						<div class=" w-full rounded-md p-10 flex justify-center items-start">
 							<div class="flex justify-start items-start">

@@ -100,6 +100,6 @@
 	}
 </script>
 
-<div class="border dark:border-gray-800 p-10 w-full rounded-lg">
+<div class="border dark:border-gray-700 p-10 w-full rounded-lg bg-white dark:bg-[#1f2937]">
 	<canvas bind:this={canvas} />
 </div>

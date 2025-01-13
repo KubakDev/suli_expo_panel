@@ -194,7 +194,7 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2">
 				<form class="rounded-lg border dark:border-gray-600">
-					<Tabs contentClass="dark:bg-gray-900">
+					<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg">
 						{#each serviceDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -262,7 +262,7 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+				<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg">
 					<div class="flex justify-between items-center w-full">
 						<div class=" w-1/4">
 							<TabItem open title="Service List">

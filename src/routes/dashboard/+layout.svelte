@@ -51,11 +51,11 @@
 
 <div class="app" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
-		<Navbar class="dark:bg-gray-900 bg-gray-800 border-b border-gray-700 shadow-lg" let:hidden let:toggle>
+		<Navbar class="bg-white dark:bg-[#1f2937] border-b border-gray-200 dark:border-gray-700 shadow-lg" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
-					<span class="self-center whitespace-nowrap text-2xl font-bold text-white">
-						SulyExpo
-					</span>
+				<span class="self-center whitespace-nowrap text-2xl font-bold text-gray-800 dark:text-gray-100">
+					SulyExpo
+				</span>
 			</NavBrand>
 
 			<div class="flex items-center space-x-4 md:space-x-6">
@@ -90,28 +90,30 @@
 			<NavUl
 				{hidden}
 				divClass="w-full lg:block lg:w-auto transition-all duration-300"
-				nonActiveClass="text-gray-300 hover:bg-gray-700 hover:text-white font-medium lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-500 transition-colors"
-				activeClass="text-primary-500 font-semibold bg-gray-700 lg:bg-transparent"
-				ulClass="flex flex-col	items-center p-4 mt-4 space-y-2 rounded-lg bg-gray-800 lg:flex-row lg:space-x-6 lg:mt-0 lg:text-sm lg:font-medium"
+				nonActiveClass="text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] font-medium transition-colors"
+				activeClass="text-[#E5B167] dark:text-[#E5B167] font-semibold"
+				ulClass="flex flex-col items-center p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-gray-800 lg:flex-row lg:space-x-6 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-700"
 				class="order-1"
 			>
 				{#each data.pages as page}
 					{#if page.children && page.children.length > 0}
 						<div class="relative group">
 							<button
-								class="flex items-center justify-between w-full px-3 py-2 text-gray-300 hover:text-white transition-colors"
+								class="flex items-center justify-between w-full px-3 py-2 transition-colors"
 							>
-								<span>{page.title}</span>
-								<Chevron class="ml-2 transition-transform group-hover:rotate-180" />
+								<span class="text-gray-600 dark:text-gray-600 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors">{page.title}</span>
+								<Chevron class="ml-2 transition-transform group-hover:rotate-180 text-gray-600 dark:text-gray-300" />
 							</button>
-							<Dropdown class="absolute left-0 mt-2 w-40 bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+							<Dropdown 
+								class="absolute left-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-700"
+							>
 								{#each page.children as item}
 									<DropdownItem
 										on:click={() => {
 											updateActiveUrl(item.url);
 											goto(item.url);
 										}}
-										class="px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+										class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors"
 									>
 										{item.title}
 									</DropdownItem>
@@ -126,9 +128,9 @@
 								goto(page.url + '');
 							}}
 							active={activeUrl === page.url}
-							style={activeUrl === page.url ? '' : 'color:#e9ecef'}
+							style={activeUrl === page.url ? 'color: #E5B167;' : 'color: var(--text-light); @media (prefers-color-scheme: dark) { color: var(--text-dark); }'}
 						>
-						 	{page.title}
+							{page.title}
 						</NavLi>
 					{/if}
 				{/each}
@@ -136,7 +138,7 @@
 		</Navbar>
 	{/if}
 
-	<main class="flex-1 bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+	<main class="flex-1 bg-white dark:bg-[#1f2937] transition-colors duration-300">
 		<slot />
 	</main>
 </div>

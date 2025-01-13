@@ -15,7 +15,7 @@ export interface Reservation {
 	status?: ReservationStatusEnum;
 	created_at?: Date;
 	reserved_areas?: string[];
-	total_count?: number;
+	total_count?: number; 
 }
 
 export interface ReservationStatus {

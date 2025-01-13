@@ -6,7 +6,7 @@
 	export let title: string;
 </script>
 
-<div style={`background-color:${$selectedTheme?.backgroundColor}`} class="min-h-screen py-5">
+<div class="min-h-screen py-5 bg-white dark:bg-[#1f2937]">
 	<!-- change page theme colors -->
 	<div class="flex justify-end items-center mr-5">
 		<label class="relative inline-flex items-center cursor-pointer">

@@ -4,11 +4,9 @@
 	import type { SeatItemModel } from './model';
 	import * as d3 from 'd3';
 	import { onMount } from 'svelte';
-	import { appendShapeToPlaceHolder } from './seatDesignUtils';
-	import ErrorAlert from '$lib/components/alert/CustomAlert.svelte';
+	import { appendShapeToPlaceHolder } from './seatDesignUtils'; 
 	import { alertStore } from '../../../stores/alertStore';
-	import uploadFileStore from '../../../stores/uploadFileStore';
-	import { seatItemStore } from './seatItemStore';
+	import uploadFileStore from '../../../stores/uploadFileStore'; 
 	import seatImageItemStore, { type SeatImageItemModel } from '../../../stores/seatImageItemStore';
 
 	export let placeHolder: string;
@@ -37,13 +35,7 @@
 
 	function onSelectPen() {
 		isPenSelected = !isPenSelected;
-		// if (!isPenSelected) {
-		// 	if (linePreview) {
-		// 		linePreview.remove();
-		// 		linePreview = null;
-		// 	}
-		// 	path.selectAll('circle').remove();
-		// }
+
 	}
 
 	function onShapeSelected(image: SeatImageItemModel | null = null) {
@@ -51,7 +43,6 @@
 	}
 
 	function addImages() {
-		// alertStore.addAlert('error', 'Error', 'error');
 		uploadImageModal = true;
 	}
 

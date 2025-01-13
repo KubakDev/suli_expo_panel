@@ -113,7 +113,7 @@
 	}
 </script>
 
-<div class="max-w-screen-2xl mx-auto py-10 px-4">
+<div class="max-w-screen-2xl mx-auto py-10 px-4 bg-white dark:bg-[#121212]">
 	<!-- show data on the table -->
 
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
@@ -146,11 +146,11 @@
 	<!-- table data -->
 	<div class="overflow-x-auto rounded">
 		<div class="min-w-full table-responsive">
-			<table class="min-w-full border-collapse">
+			<table class="min-w-full border-collapse bg-white dark:bg-[#1f2937] border dark:border-gray-700">
 				<thead>
 					<tr>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell w-10"
 						>
 							<div class="flex justify-center items-center gap-2">
 								<span>No</span>
@@ -158,63 +158,63 @@
 						</th>
 
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>Name Of Theme</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>Primary Color</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>Secondary Color</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>overlay Primary Color</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>overlay Secondary Color</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>background color</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>overlay background color</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span>Mode Type</span>
 							</div>
 						</th>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center justify-center gap-2">
 								<span

@@ -1,11 +1,8 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import type { string } from 'yup';
-	import type { PageData } from '../../routes/$types';
+	import { goto } from '$app/navigation'; 
 	import DeleteModal from './DeleteModal.svelte';
-	//@ts-ignore
-	import Icon from 'svelte-icons-pack/Icon.svelte';
-	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
+	// Import Tabler icons
+	import { IconGridDots, IconEdit } from '@tabler/icons-svelte';
 
 	export let calculateIndex: (index: number) => number;
 	export let handleDelete: (id: number) => Promise<void>;
@@ -24,11 +21,11 @@
 <div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 	<div class="overflow-x-auto rounded">
 		<div class="min-w-full table-responsive">
-			<table class="min-w-full border-collapse">
+			<table class="min-w-full border-collapse dark:border-gray-700">
 				<thead>
 					<tr>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10"
 						>
 							<div class="flex justify-center items-center gap-2">
 								<span>#</span>
@@ -37,7 +34,7 @@
 
 						{#each columnTitle as column}
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>{column.header}</span>
@@ -46,27 +43,11 @@
 						{/each}
 
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] text-gray-600 text-sm border border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
 						>
 							<div class="flex items-center gap-2">
-								<span
-									><svg
-										width="20px"
-										height="20px"
-										viewBox="0 0 24 24"
-										xmlns="http://www.w3.org/2000/svg"
-										fill="#65686c"
-										><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-											id="SVGRepo_tracerCarrier"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										/><g id="SVGRepo_iconCarrier"
-											><path
-												d="M9.5 2h-6A1.502 1.502 0 0 0 2 3.5v6A1.502 1.502 0 0 0 3.5 11h6A1.502 1.502 0 0 0 11 9.5v-6A1.502 1.502 0 0 0 9.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 2h-6A1.502 1.502 0 0 0 13 3.5v6a1.502 1.502 0 0 0 1.5 1.5h6A1.502 1.502 0 0 0 22 9.5v-6A1.502 1.502 0 0 0 20.5 2zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM9.5 13h-6A1.502 1.502 0 0 0 2 14.5v6A1.502 1.502 0 0 0 3.5 22h6a1.502 1.502 0 0 0 1.5-1.5v-6A1.502 1.502 0 0 0 9.5 13zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5zM20.5 13h-6a1.502 1.502 0 0 0-1.5 1.5v6a1.502 1.502 0 0 0 1.5 1.5h6a1.502 1.502 0 0 0 1.5-1.5v-6a1.502 1.502 0 0 0-1.5-1.5zm.5 7.5a.501.501 0 0 1-.5.5h-6a.501.501 0 0 1-.5-.5v-6a.501.501 0 0 1 .5-.5h6a.501.501 0 0 1 .5.5z"
-											/><path fill="none" d="M0 0h24v24H0z" /></g
-										></svg
-									></span
-								> <span>Actions</span>
+								<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
+								<span>Actions</span>
 							</div>
 						</th>
 					</tr>
@@ -75,7 +56,7 @@
 				<tbody>
 					{#each data as item, index (item.id)}
 						<tr>
-							<td class="p-3 bg-gray-10 border border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
 								<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold"
 									>{calculateIndex(index)}</span
 								>
@@ -83,7 +64,7 @@
 
 							{#each columnTitle as column}
 								<td
-									class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell"
+									class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
 								>
 									<div>
 										{#if column.type === 'image'}
@@ -134,7 +115,7 @@
 							{/each}
 
 							<td
-								class="p-3 font- bg-gray-10 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell w-32"
+								class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell w-32"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<button
@@ -144,15 +125,7 @@
 										class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
 									>
 										Edit
-										<span
-											><Icon
-												src={AiFillEdit}
-												color="green"
-												size="20"
-												className="custom-icon"
-												title="Custom icon params"
-											/></span
-										>
+										<IconEdit size={20} class="text-green-500" />
 									</button>
 
 									{#if pageName !== 'about'}

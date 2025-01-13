@@ -1,9 +1,46 @@
 @use '@fontsource/fira-mono';
 
 :root {
-	--Pending: #ffd96c;
-	--Accept: #6cd273;
+	/* Light mode variables */
+	--background-light: #ffffff;
+	--text-light: #4b5563;
+	--navbar-light: #ffffff;
+	--navbar-text-light: #1a1a1a;
+	
+	/* Dark mode variables */
+	--background-dark: #1f2937;
+	--surface-dark: #1f2937;
+	--card-dark: #1f2937;
+	--text-dark: #d1d5db;
+	--navbar-dark: #1f2937;
+	--navbar-text-dark: #e1e1e1;
+	
+	/* Primary and Secondary colors */
+	--primary: #E5B167;
+	--primary-dark: #d19c4f;
+	--primary-light: #e5b167;
+	--primary-hover: #d19c4f;
+	
+	--secondary-dark: #4f46e5;
+	--secondary-light: #6366f1;
+	
+	--text-active-light: #E5B167;
+	--text-active-dark: #E5B167;
 }
+
+/* Add dark mode overrides */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--background: var(--background-dark);
+		--surface: var(--surface-dark);
+		--text: var(--text-dark);
+		--navbar-bg: var(--navbar-dark);
+		--navbar-text: var(--navbar-text-dark);
+		--primary: var(--primary-dark);
+		--secondary: var(--secondary-dark);
+	}
+}
+
 h1,
 h2,
 h3,
@@ -25,4 +62,15 @@ h6 {
 .tox-statusbar {
 	display: none !important;
 }
+
+table {
+	border-spacing: 0;
+	border-collapse: separate;
+	background-color: var(--table-bg-light);
+	
+	&.dark {
+		background-color: var(--table-bg-dark);
+	}
+}
+ 
 

@@ -11,8 +11,6 @@
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
-	import ExhibitionType from '$lib/components/InsertExhibitionType.svelte';
-	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 
 	export let data;
@@ -173,7 +171,7 @@
 					<Fileupload
 						on:change={handleFileUpload}
 						accept=".jpg, .jpeg, .png .svg"
-						class=" dark:bg-white"
+						class="dark:bg-[#1f2937]"
 					/>
 					{#if isFormSubmitted && !promoData.thumbnail.trim()}
 						<p class="error-message">Please Upload an Image</p>
@@ -189,7 +187,7 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2">
 				<form class="rounded-lg border dark:border-gray-600">
-					<Tabs contentClass="dark:bg-gray-900">
+					<Tabs contentClass="dark:bg-[#1f2937]">
 						{#each promotionDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -258,7 +256,7 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+				<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg ">
 					<TabItem open title="Promotion List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">

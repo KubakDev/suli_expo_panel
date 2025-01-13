@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Icon from 'svelte-icons-pack/Icon.svelte';
-	import AiFillDelete from 'svelte-icons-pack/ai/AiFillDelete';
+	import { IconTrash } from '@tabler/icons-svelte';
 	import { Modal, Button } from 'flowbite-svelte';
 
 	export let itemIdToDelete: number | undefined;
@@ -24,15 +23,7 @@
 		}}
 		class="bg-red-600 p-2 rounded"
 	>
-		<span
-			><Icon
-				src={AiFillDelete}
-				color="white"
-				size="18"
-				className="custom-icon"
-				title="Custom icon params"
-			/></span
-		>
+		<IconTrash size={20} class="text-white" />
 	</button>
 
 	<Modal title="Are you sure?" bind:open {color} class="bg-white max-w-sm mx-auto " autoclose>

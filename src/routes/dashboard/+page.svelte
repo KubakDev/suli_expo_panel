@@ -37,7 +37,7 @@
 			<input
 				type="date"
 				name="date_filter"
-				class="cursor-pointer text-gray-900 rounded dark:border-gray-700 border-gray-300 dark:bg-gray-900 dark:text-white"
+				class="cursor-pointer text-gray-900 rounded dark:border-gray-700 border-gray-300 dark:bg-[#1f2937] dark:text-white"
 				bind:value={selectedDate}
 				on:change={handleDateChange}
 			/>
@@ -48,7 +48,7 @@
 			<div class="h-full mb-10">
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-4 gap-4">
 					<div
-						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-300 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
+						class="bg-[#ff6384]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#ff6384] dark:border-[#ff6384] dark:bg-[#1f2937] dark:text-white text-gray-900 font-medium group"
 					>
 						<div
 							class="flex justify-center items-center w-24 h-24 bg-[#ff6384] rounded-full transition-all duration-300 transform group-hover:rotate-12"
@@ -107,7 +107,7 @@
 						</div>
 					</div>
 					<div
-						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-300 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
+						class="bg-[#36a2eb]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#36a2eb] dark:border-[#36a2eb] dark:bg-[#1f2937] dark:text-white text-gray-900 font-medium group"
 					>
 						<div
 							class="flex justify-center items-center w-24 h-24 bg-[#36a2eb] rounded-full transition-all duration-300 transform group-hover:rotate-12"
@@ -148,7 +148,7 @@
 						</div>
 					</div>
 					<div
-						class="bg-white dark:bg-gray-900 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-gray-300 dark:border-gray-600 dark:text-white text-gray-900 font-medium group"
+						class="bg-[#ffce56]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#ffce56] dark:border-[#ffce56] dark:bg-[#1f2937] dark:text-white text-gray-900 font-medium group"
 					>
 						<div
 							class="flex justify-center items-center w-24 h-24 bg-[#ffce56] rounded-full transition-all duration-300 transform group-hover:rotate-12"

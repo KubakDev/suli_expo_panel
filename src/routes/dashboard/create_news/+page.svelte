@@ -210,7 +210,7 @@
 					<Fileupload
 						on:change={handleFileUploadThumbnail}
 						accept=".jpg, .jpeg, .png"
-						class=" dark:bg-white"
+						class="dark:bg-[#1f2937] dark:text-white"
 					/>
 
 					{#if isFormSubmitted && !newsObject.thumbnail.trim()}
@@ -226,7 +226,7 @@
 			<div class="col-span-1">
 				<Label class="space-y-2 mb-2">
 					<span>Date</span>
-					<Input type="date" bind:value={newsObject.created_at} />
+					<Input type="date" bind:value={newsObject.created_at} class="dark:bg-[#1f2937] dark:text-white" />
 				</Label>
 			</div>
 		</div>
@@ -234,7 +234,7 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
 				<form class="">
-					<Tabs contentClass="dark:bg-gray-900">
+					<Tabs contentClass="dark:bg-[#1f2937] dark:text-white">
 						{#each newsDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -315,7 +315,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-gray-900 rounded-lg ">
+				<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg ">
 					<TabItem open title="News List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">

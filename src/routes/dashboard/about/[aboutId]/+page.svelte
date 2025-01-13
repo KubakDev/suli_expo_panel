@@ -185,7 +185,7 @@
 		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 			<div class="lg:col-span-2">
 				<form class="rounded-lg border dark:border-gray-600">
-					<Tabs contentClass="dark:bg-gray-900">
+					<Tabs style="underline" contentClass="rounded-lg dark:text-white">
 						{#each aboutDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -247,7 +247,7 @@
 				</form>
 			</div>
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-gray-900">
+				<Tabs style="underline" contentClass="rounded-lg dark:text-white">
 					<TabItem open title="About List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">

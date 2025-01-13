@@ -511,7 +511,7 @@
 		}
 	}
 </script>
-
+  
 <!-- Modal Component -->
 <Modal bind:open={openPreviewImage} autoclose={true} outsideclose={true} aria-labelledby="preview-modal-title">
 	<div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
@@ -546,7 +546,7 @@
 						</svelte:fragment>
 					</BreadcrumbItem>
 					<button on:click={goBackToPreviewsPage}>
-						List of Reservations
+					 	List of Reservations
 					</button>
 					<BreadcrumbItem>
 						<svelte:fragment slot="icon">
@@ -566,303 +566,322 @@
 			</div>
 
 			<!-- Table Container -->
-			<div class="overflow-x-auto shadow-md rounded-lg custom-scrollbar">
-				<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 ">
-					<thead>
-					 <tr  class="p-3 font-semibold uppercase bg-[#f1eff0] text-gray-600 text-sm border border-gray-200 dark:border-gray-800">
-							<th class=" ">
-								Reservation Date
-							</th>
-							<th class=" ">
-								Company Name
-							</th>
-							<th class=" ">
-								Avatar
-							</th>
-							<th class=" ">
-								Country
-							</th>
-							<th class=" ">
-								Passport Images
-							</th>
-							<th class=" ">
-								User Images
-							</th>
-							<th class=" ">
-								Comment
-							</th>
-							<th class=" ">
-								Company Address
-							</th>
-							<th class=" ">
-								Company Phone Number
-							</th>
-							<th class=" ">
-								Exhibition Type
-							</th>
-							{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-								<th class=" ">
-									Reserved Areas
+			<div class="overflow-x-auto rounded">
+				<div class="min-w-full table-responsive">
+					<table class="min-w-full border border-gray-200 dark:border-gray-700">
+						<thead>
+							<tr>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Reservation Date</span>
+									</div>
 								</th>
-							{/if}
-							<th class=" ">
-								Services
-							</th>
-							<th class=" ">
-								Change Status
-							</th>
-							<th class=" ">
-								Extra Discount
-							</th>
-							<th class=" ">
-								Contract File
-							</th>
-							<th class=" ">
-								Export Excel Sheet
-							</th>
-							<th class=" ">
-								Total Price
-							</th>
-						</tr>
-					</thead>
-					<tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-						{#each reservations as reservation}
-							<tr class="bg-gray-100 dark:bg-gray-900 even:bg-gray-200 dark:even:bg-gray-800 transition-colors duration-200">
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									<span class="inline-block p-2 bg-gray-100 dark:bg-gray-800 rounded text-gray-900 dark:text-gray-100 text-xs md:text-sm">
-										{#if reservation.created_at}
-											{moment.utc(reservation.created_at).local().format('DD-MM-YYYY hh:mm A')}
-										{:else}
-											<span class="text-red-500">N/A</span>
-										{/if}
-									</span>
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{reservation.company?.company_name}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center">
-									{#if reservation.company?.logo_url}
-										<img
-											src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${reservation.company.logo_url}`}
-											alt="Company Logo"
-											class="mx-auto h-16 w-16 rounded-full object-cover"
-										/>
-									{:else}
-										<span class="text-gray-500">No Image</span>
-									{/if}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{reservation.company?.country}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center">
-									{#if reservation.company?.passport_image}
-										<div class="flex flex-wrap justify-center gap-2">
-											{#each reservation.company.passport_image as image}
-												<img
-													src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`}
-													alt="Passport Image"
-													class="h-20 w-20 object-cover rounded cursor-pointer"
-													on:click={() => {
-														openPreviewImage = true;
-														selectedImageUrlForPreview = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`;
-													}}
-												/>
-											{/each}
-										</div>
-									{:else}
-										<span class="text-gray-500">No Images</span>
-									{/if}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center">
-									{#if reservation.company?.user_image}
-										<div class="flex flex-wrap justify-center gap-2">
-											{#each reservation.company.user_image as image}
-												<img
-													src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`}
-													alt="User Image"
-													class="h-20 w-20 object-cover rounded cursor-pointer"
-													on:click={() => {
-														openPreviewImage = true;
-														selectedImageUrlForPreview = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`;
-													}}
-												/>
-											{/each}
-										</div>
-									{:else}
-										<span class="text-gray-500">No Images</span>
-									{/if}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{Array.isArray(reservation.comment)
-										? reservation.comment.join(', ')
-										: reservation.comment || 'No Comment'}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{reservation.company?.address}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{reservation.company?.phone_number}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{reservation.exhibition?.exhibition_type}
-								</td>
-
-								 
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Company Name</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Avatar</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Country</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Passport Images</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>User Images</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Comment</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Company Address</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Company Phone Number</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Exhibition Type</span>
+									</div>
+								</th>
 								{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									<div>
-										{#if reservation?.reserved_areas}
-											<div class="space-y-1">
-												{#each JSON.parse(reservation.reserved_areas) as reservedAreaData}
-													<div class="flex justify-between p-2 bg-gray-200 dark:bg-gray-700 rounded">
-														<span>{reservedAreaData.area} M</span>
-														<span>{reservedAreaData.quantity}</span>
-													</div>
-												{/each}
-											</div>
-										{/if}
-										<div class="mt-2 font-semibold text-gray-800 dark:text-gray-200">
-											Total: {totalAreaPrice}$
+									<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+										<div class="flex items-center gap-2">
+											<span>Reserved Areas</span>
 										</div>
+									</th>
+								{/if}
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Services</span>
 									</div>
-								</td>
-							{/if}
-							
-                              
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-									{#if reservation?.services && reservation.services.length > 0}
-										<div class="space-y-2">
-											{#each reservation.services as service}
-												<div class="p-2 border rounded bg-gray-50 dark:bg-gray-800">
-													<p><strong>Service Name:</strong> 
-														{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-														{getServices(service)?.serviceDetail?.languages[0]?.title}
-													{:else}
-														{getServices(service)?.serviceDetail?.title}
-													{/if}
-</p>
-													<p><strong>Quantity:</strong> {getServices(service)?.quantity || 0}</p>
-													<p><strong>Price:</strong> {getServices(service)?.serviceDetail?.price || 0}$</p>
-													<p><strong>Discount:</strong> {getServices(service)?.serviceDetail?.discount || 0}%</p>
-													<p><strong>Total:</strong> {getServices(service)?.totalPrice || 0 }$</p>
-												</div>
-											{/each}
-										</div>
-									{:else}
-										<span class="text-gray-500">No Services</span>
-									{/if}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-sm">
-									<div class="flex flex-col space-y-2">
-										<label class="text-xs text-gray-500 dark:text-gray-400">
-											Once you change the status, it cannot be altered.
-										</label>
-										<div class="flex items-center space-x-4">
-											<label class="flex items-center space-x-1">
-												<input
-													type="checkbox"
-													disabled={isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.PENDING)}
-													checked={reservation.status === ReservationStatusEnum.PENDING}
-													on:change={() => updateStatus(reservation.id, ReservationStatusEnum.PENDING, reservation)}
-													class="form-checkbox h-4 w-4 text-yellow-500 border-gray-300 rounded"
-												/>
-												<span class="text-yellow-500">Pending</span>
-											</label>
-											<label class="flex items-center space-x-1">
-												<input
-													type="checkbox"
-													disabled={
-														isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.ACCEPT) ||
-														disableCheckbox
-													}
-													checked={reservation.status === ReservationStatusEnum.ACCEPT}
-													on:change={() => updateStatus(reservation.id, ReservationStatusEnum.ACCEPT, reservation)}
-													class="form-checkbox h-4 w-4 text-green-500 border-gray-300 rounded"
-												/>
-												<span class="text-green-500">Accept</span>
-											</label>
-											<label class="flex items-center space-x-1">
-												<input
-													type="checkbox"
-													disabled={
-														isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.REJECT) ||
-														disableCheckbox
-													}
-													checked={reservation.status === ReservationStatusEnum.REJECT}
-													on:change={() => updateStatus(reservation.id, ReservationStatusEnum.REJECT, reservation)}
-													class="form-checkbox h-4 w-4 text-red-500 border-gray-300 rounded"
-												/>
-												<span class="text-red-500">Reject</span>
-											</label>
-										</div>
-										{#if reservation.rejected_by_user}
-											<p class="text-xs text-red-500 mt-1">Rejected by user</p>
-										{/if}
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Change Status</span>
 									</div>
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center">
-									<span
-										class={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-											reservation.extra_discount_checked
-												? 'bg-green-500 text-white'
-												: 'bg-gray-300 text-gray-700'
-										}`}
-									>
-										{reservation.extra_discount_checked ? 'Checked' : 'Not Checked'}
-									</span>
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center">
-									{#each languages as lang}
-										<Button
-											disabled={!loadedTotalPrice}
-											class="m-1 text-xs px-3 py-1"
-											color="primary"
-											on:click={() => exportContract(reservation, lang)}
-										>
-											Export {lang}
-										</Button>
-									{/each}
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center">
-									<button
-										class="text-xs px-3 py-1 hover:underline text-gray-600 dark:text-gray-300"
-										on:click={() => exportFile(reservation)}
-										disabled={loading}
-									 	>
-										Export to Excel
-								</button>
-								</td>
-
-								<td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-									<div>
-										{#if discountedPrice}
-											<p class="line-through text-xs text-red-500">
-												{totalRawPrice}$
-											</p>
-										{/if}
-										<p class="text-green-600 font-medium">
-											{reservation.total_price}$
-										</p>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Extra Discount</span>
 									</div>
-								</td>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Contract File</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Export Excel Sheet</span>
+									</div>
+								</th>
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<div class="flex items-center gap-2">
+										<span>Total Price</span>
+									</div>
+								</th>
 							</tr>
-						{/each}
-					</tbody>
-				</table>
+						</thead>
+						<tbody class="dark:text-gray-300">
+							{#if reservations.length > 0}
+								{#each reservations as reservation}
+									<tr class="border border-gray-200 dark:border-gray-700">
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											<div>
+												{#if reservation.created_at}
+													{moment.utc(reservation.created_at).local().format('DD-MM-YYYY hh:mm A')}
+												{:else}
+													<span class="text-red-500">N/A</span>
+												{/if}
+											</div>
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{reservation.company?.company_name}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{#if reservation.company?.logo_url}
+												<img
+													src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${reservation.company.logo_url}`}
+													alt="Company Logo"
+													class="mx-auto h-16 w-16 rounded-full object-cover"
+												/>
+											{:else}
+												<span class="text-gray-500">No Image</span>
+											{/if}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{reservation.company?.country}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{#if reservation.company?.passport_image}
+												<div class="flex flex-wrap justify-center gap-2">
+													{#each reservation.company.passport_image as image}
+														<img
+															src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`}
+															alt="Passport Image"
+															class="h-20 w-20 object-cover rounded cursor-pointer"
+															on:click={() => {
+																openPreviewImage = true;
+																selectedImageUrlForPreview = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`;
+															}}
+														/>
+													{/each}
+												</div>
+											{:else}
+												<span class="text-gray-500">No Images</span>
+											{/if}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{#if reservation.company?.user_image}
+												<div class="flex flex-wrap justify-center gap-2">
+													{#each reservation.company.user_image as image}
+														<img
+															src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`}
+															alt="User Image"
+															class="h-20 w-20 object-cover rounded cursor-pointer"
+															on:click={() => {
+																openPreviewImage = true;
+																selectedImageUrlForPreview = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`;
+															}}
+														/>
+													{/each}
+												</div>
+											{:else}
+												<span class="text-gray-500">No Images</span>
+											{/if}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{Array.isArray(reservation.comment)
+												? reservation.comment.join(', ')
+												: reservation.comment || 'No Comment'}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{reservation.company?.address}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{reservation.company?.phone_number}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{reservation.exhibition?.exhibition_type}
+										</td>
+										{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+											<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+												<div>
+													{#if reservation?.reserved_areas}
+														<div class="space-y-1">
+															{#each JSON.parse(reservation.reserved_areas) as reservedAreaData}
+																<div class="flex justify-between p-2 bg-gray-200 dark:bg-gray-700 rounded">
+																	<span>{reservedAreaData.area} M</span>
+																	<span>{reservedAreaData.quantity}</span>
+																</div>
+															{/each}
+														</div>
+													{/if}
+													<div class="mt-2 font-semibold text-gray-800 dark:text-gray-200">
+														Total: {totalAreaPrice}$
+													</div>
+												</div>
+											</td>
+										{/if}
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{#if reservation?.services && reservation.services.length > 0}
+												<div class="space-y-2">
+													{#each reservation.services as service}
+														<div class="p-2 border rounded bg-gray-50 dark:bg-gray-800">
+															<p><strong>Service Name:</strong> 
+																{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
+																{getServices(service)?.serviceDetail?.languages[0]?.title}
+															{:else}
+																{getServices(service)?.serviceDetail?.title}
+															{/if}
+														</p>
+															<p><strong>Quantity:</strong> {getServices(service)?.quantity || 0}</p>
+															<p><strong>Price:</strong> {getServices(service)?.serviceDetail?.price || 0}$</p>
+															<p><strong>Discount:</strong> {getServices(service)?.serviceDetail?.discount || 0}%</p>
+															<p><strong>Total:</strong> {getServices(service)?.totalPrice || 0 }$</p>
+														</div>
+													{/each}
+												</div>
+											{:else}
+												<span class="text-gray-500">No Services</span>
+											{/if}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											<div class="flex flex-col space-y-2">
+												<label class="text-xs text-gray-500 dark:text-gray-400">
+													Once you change the status, it cannot be altered.
+												</label>
+												<div class="flex items-center space-x-4">
+													<label class="flex items-center space-x-1">
+														<input
+															type="checkbox"
+															disabled={isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.PENDING)}
+															checked={reservation.status === ReservationStatusEnum.PENDING}
+															on:change={() => updateStatus(reservation.id, ReservationStatusEnum.PENDING, reservation)}
+															class="form-checkbox h-4 w-4 text-yellow-500 border-gray-300 rounded"
+														/>
+														<span class="text-yellow-500">Pending</span>
+													</label>
+													<label class="flex items-center space-x-1">
+														<input
+															type="checkbox"
+															disabled={
+																isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.ACCEPT) ||
+																disableCheckbox
+															}
+															checked={reservation.status === ReservationStatusEnum.ACCEPT}
+															on:change={() => updateStatus(reservation.id, ReservationStatusEnum.ACCEPT, reservation)}
+															class="form-checkbox h-4 w-4 text-green-500 border-gray-300 rounded"
+														/>
+														<span class="text-green-500">Accept</span>
+													</label>
+													<label class="flex items-center space-x-1">
+														<input
+															type="checkbox"
+															disabled={
+																isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.REJECT) ||
+																disableCheckbox
+															}
+															checked={reservation.status === ReservationStatusEnum.REJECT}
+															on:change={() => updateStatus(reservation.id, ReservationStatusEnum.REJECT, reservation)}
+															class="form-checkbox h-4 w-4 text-red-500 border-gray-300 rounded"
+														/>
+														<span class="text-red-500">Reject</span>
+													</label>
+												</div>
+												{#if reservation.rejected_by_user}
+													<p class="text-xs text-red-500 mt-1">Rejected by user</p>
+												{/if}
+											</div>
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											<span
+												class={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+													reservation.extra_discount_checked
+														? 'bg-green-500 text-white'
+														: 'bg-gray-300 text-gray-700'
+												}`}
+											>
+												{reservation.extra_discount_checked ? 'Checked' : 'Not Checked'}
+											</span>
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											{#each languages as lang}
+												<Button
+													disabled={!loadedTotalPrice}
+													class="m-1 text-xs px-3 py-1"
+													color="primary"
+													on:click={() => exportContract(reservation, lang)}
+												>
+													Export {lang}
+												</Button>
+											{/each}
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											<button
+												class="text-xs px-3 py-1 hover:underline text-gray-600 dark:text-gray-300"
+												on:click={() => exportFile(reservation)}
+												disabled={loading}
+											 	>
+												Export to Excel
+										</button>
+										</td>
+										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											<div>
+												{#if discountedPrice}
+													<p class="line-through text-xs text-red-500">
+														{totalRawPrice}$
+													</p>
+												{/if}
+												<p class="text-green-600 font-medium">
+													{reservation.total_price}$
+												</p>
+											</div>
+										</td>
+									</tr>
+								{/each}
+							{/if}
+						</tbody>
+					</table>
+				</div>
 			</div>
 
 			<!-- Reserved Seats Layout -->

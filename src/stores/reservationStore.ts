@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
-import type { Reservation, ReservationStatus } from '../models/reservationModel';
+import type { Reservation } from '../models/reservationModel';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { ascending } from 'd3';
 
 export const seatReservation = writable<Reservation[]>([]);
 export const seatReservationTotalCount = writable<number>();
