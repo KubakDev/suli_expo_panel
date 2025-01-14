@@ -13,7 +13,8 @@
 	import { goto } from '$app/navigation';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
-
+	const placeholderImage = '/images/placeholder.png';
+	
 	export let data;
 	let isFormSubmitted = false;
 	let submitted = false;
@@ -299,10 +300,11 @@
 								{#each seatServicesDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
+											img={placeholderImage}
 											cardType={CardType.Main}
 											title={langData.title}
 											short_description={langData.description}
-											thumbnail={seatServicesObject.icon}
+											thumbnail={seatServicesObject.icon || placeholderImage}
 											primaryColor="bg-primary"
 										/>
 									{/if}

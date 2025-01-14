@@ -172,19 +172,19 @@
 	{/if}
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="flex justify-center py-10">
-			<h1 class="text-2xl font-bold text-gray-600">Update Seat Service Data</h1>
+			<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update Seat Service Data</h1>
 		</div>
 
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">
-				<div class="grid lg:grid-cols-4 gap-4 px-4 border border-gray-200 rounded-lg bg-[#e9ecefd2] p-4">
+				<div class="grid lg:grid-cols-4 gap-4 px-4 p-4">
 					<div class="col-span-1">
 						<Label class="space-y-2 mb-2">
 							<Label for="thumbnail" class="mb-2">Upload Seat Service Image</Label>
 							<Fileupload
 								on:change={handleFileUpload}
 								accept=".jpg, .jpeg, .png .svg"
-								class=" dark:bg-white"
+								class="dark:bg-[#1f2937] dark:text-white"
 							/>
 							{#if isFormSubmitted && !seatServicesData.icon.trim()}
 								<p class="error-message">Please Upload an Image</p>
@@ -199,8 +199,7 @@
 								bind:value={seatServicesData.type}
 								id="type"
 								name="type"
-								size="md"
-								placeholder="Please select a valid type"
+								class="dark:bg-[#1f2937] dark:text-white"
 								disabled="true"
 							>
 								<option value={SeatServiceTypeEnum.SINGULAR}>{SeatServiceTypeEnum.SINGULAR}</option>
@@ -217,17 +216,20 @@
 								bind:value={seatServicesData.discount}
 								placeholder="Enter a number"
 								min="0"
+								class="dark:bg-[#1f2937] dark:text-white"
 							/>
 						</Label>
 					</div>
 
 					<div class="col-span-1">
 						<Label class="space-y-2 mb-2">
-							<Label for="icon" class="mb-2">Enter price</Label>
-							<Input type="number" bind:value={seatServicesData.price} placeholder="Enter a number" />
-							<p class="text-xs text-gray-500">
-								Note: <span class="text-gray-400">If it is free, it does not require a price.</span>
-							</p>
+							<Label for="icon" class="mb-2">Price</Label>
+							<Input 
+								type="number" 
+								bind:value={seatServicesData.price} 
+								placeholder="Enter a number"
+								class="dark:bg-[#1f2937] dark:text-white"
+							/>
 						</Label>
 					</div>
 					<div class="col-span-1">
@@ -248,7 +250,7 @@
 
 				<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
 					<div class="lg:col-span-2">
-						<form class="border border-gray-200 rounded-lg">
+						<form class="rounded-lg border dark:border-gray-600">
 							<Tabs style="underline" contentClass="rounded-lg">
 								{#each seatServicesDataLang as langData}
 									<TabItem
@@ -258,7 +260,7 @@
 											selectedLanguageTab = langData.language;
 										}}
 									>
-										<div class="px-10 py-16 text-gray-600 bg-[#e9ecefd2]">
+										<div class="px-10 py-16 text-gray-600">
 											<div class="text-center w-full pb-5">
 												<h1 class="text-xl font-bold">
 													{#if langData.language === 'ar'}
@@ -304,7 +306,7 @@
 							</Tabs>
 							<div class="border-t border-gray-200" />
 
-							<div class="w-full flex justify-end py-5 px-10 bg-[#e9ecefd2]">
+							<div class="w-full flex justify-end py-5 px-10">
 								<button
 									on:click|preventDefault={formSubmit}
 									type="submit"
@@ -317,10 +319,10 @@
 					</div>
 
 					<div class="lg:col-span-1">
-						<div class="border border-gray-200 rounded-lg">
-							<Tabs style="underline" contentClass="rounded-lg">
+						<div class="border rounded-lg dark:border-gray-600">
+							<Tabs style="underline" contentClass="rounded-lg dark:text-white">
 								<TabItem open title="Seat_services List">
-									<div class="w-full rounded-md flex justify-center items-start min-h-full p-4 bg-[#e9ecefd2]">
+									<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 										<div class="flex justify-start items-start">
 											{#each seatServicesDataLang as langData}
 												{#if langData.language === selectedLanguageTab}

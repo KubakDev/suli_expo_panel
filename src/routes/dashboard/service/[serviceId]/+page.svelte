@@ -169,7 +169,7 @@
 	{/if}
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="flex justify-center py-10">
-			<h1 class="text-2xl font-bold">Update Service Data</h1>
+			<h1 class="text-2xl font-bold dark:text-white">Update Service Data</h1>
 		</div>
 
 		<div class="grid lg:grid-cols-3 gap-4 px-4">
