@@ -11,6 +11,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
+	const placeholderImage = '/images/placeholder.png';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -241,10 +242,11 @@
 								{#each promoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
+									   	    img={placeholderImage}
 											cardType={CardType.Video}
 											title={langData.title}
 											short_description=""
-											thumbnail={promoObject.thumbnail}
+											thumbnail={promoObject.thumbnail || placeholderImage}
 											primaryColor="bg-primary"
 										/>
 									{/if}

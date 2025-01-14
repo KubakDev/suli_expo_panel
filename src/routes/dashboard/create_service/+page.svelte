@@ -10,7 +10,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
-
+	const placeholderImage = '/images/placeholder.png';
 	export let data;
 	let isFormSubmitted = false;
 	let submitted = false;
@@ -243,10 +243,11 @@
 										{#each serviceDataLang as langData}
 											{#if langData.language === selectedLanguageTab}
 												<ExpoCard
+													img={placeholderImage}
 													cardType={CardType.Main}
 													title={langData.title}
 													short_description={langData.short_description}
-													thumbnail={serviceObject.thumbnail}
+													thumbnail={serviceObject.thumbnail || placeholderImage}
 													primaryColor={serviceObject.primaryColor}
 													overlayPrimaryColor={serviceObject.onPrimaryColor}
 												/>

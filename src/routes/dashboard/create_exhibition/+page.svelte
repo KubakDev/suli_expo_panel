@@ -12,6 +12,7 @@
 	import { isEmpty } from 'validator';
 	import { decodeBase64 } from '$lib/utils/decodeBase64';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	const placeholderImage = '/images/placeholder.png';
 
 	export let data;
 
@@ -771,10 +772,11 @@
 									{#each exhibitionsDataLang as langData}
 										{#if langData.language === selectedLanguageTab}
 											<ExpoCard
+												img={placeholderImage}
 												cardType={CardType.Main}
 												title={langData.title}
 												short_description={langData.description}
-												thumbnail={exhibitionsObject.thumbnail}
+												thumbnail={exhibitionsObject.thumbnail || placeholderImage}
 												primaryColor="bg-primary"
 												startDate={exhibitionsObject.start_date}
 												endDate={exhibitionsObject.end_date}
@@ -792,10 +794,11 @@
 									{#each exhibitionsDataLang as langData}
 										{#if langData.language === selectedLanguageTab}
 											<ExpoCard
+												img={placeholderImage}
 												cardType={CardType.Main}
 												title={langData.title}
 												short_description=""
-												thumbnail={exhibitionsObject.image_map}
+												thumbnail={exhibitionsObject.image_map || placeholderImage}
 												primaryColor="bg-primary"
 												startDate=""
 												endDate=""
@@ -813,10 +816,11 @@
 									{#each exhibitionsDataLang as langData}
 										{#if langData.language === selectedLanguageTab}
 											<ExpoCard
+												img={placeholderImage}
 												cardType={CardType.Flat}
 												title=""
 												short_description=""
-												thumbnail={langData.brochure ?? ''}
+												thumbnail={langData.brochure || placeholderImage}
 												primaryColor="bg-primary"
 												startDate=""
 												endDate=""

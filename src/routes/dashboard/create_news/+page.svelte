@@ -8,12 +8,12 @@
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
 	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
-
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	const placeholderImage = '/images/placeholder.png';
 
 	export let data;
 
@@ -323,9 +323,10 @@
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
 											cardType={CardType.Main}
+											img={placeholderImage}
 											title={langData.title}
 											short_description={langData.short_description}
-											thumbnail={newsObject.thumbnail}
+											thumbnail={newsObject.thumbnail || placeholderImage}
 											primaryColor="bg-primary"
 											date={newsObject.created_at}
 										/>
