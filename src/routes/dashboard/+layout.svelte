@@ -92,12 +92,12 @@
 				divClass="w-full lg:block lg:w-auto transition-all duration-300"
 				nonActiveClass="text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] font-medium transition-colors"
 				activeClass="text-[#E5B167] dark:text-[#E5B167] font-semibold"
-				ulClass="flex flex-col items-center p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-gray-800 lg:flex-row lg:space-x-6 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-700"
+				ulClass="flex flex-col items-stretch p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-gray-800 lg:flex-row lg:items-center lg:space-x-6 lg:space-y-0 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-700"
 				class="order-1"
 			>
 				{#each data.pages as page}
 					{#if page.children && page.children.length > 0}
-						<div class="relative group">
+						<div class="relative group h-full flex items-center">
 							<button
 								class="flex items-center justify-between w-full px-3 py-2 transition-colors"
 							>
@@ -105,7 +105,7 @@
 								<Chevron class="ml-2 transition-transform group-hover:rotate-180 text-gray-600 dark:text-gray-300" />
 							</button>
 							<Dropdown 
-								class="absolute left-0 mt-2 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-700"
+								class="absolute left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-700"
 							>
 								{#each page.children as item}
 									<DropdownItem
@@ -113,7 +113,7 @@
 											updateActiveUrl(item.url);
 											goto(item.url);
 										}}
-										class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors"
+										class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors whitespace-normal"
 									>
 										{item.title}
 									</DropdownItem>
@@ -122,7 +122,7 @@
 						</div>
 					{:else}
 						<NavLi
-							class="px-3 py-2 rounded-md cursor-pointer"
+							class="px-3 py-2 rounded-md cursor-pointer flex items-center h-full"
 							on:click={() => {
 								updateActiveUrl(page.url + '');
 								goto(page.url + '');
