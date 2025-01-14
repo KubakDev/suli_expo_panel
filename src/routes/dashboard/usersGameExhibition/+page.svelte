@@ -83,7 +83,7 @@
 		exportToExcel(result);
 	}
 </script>
-
+ 
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- Filter Container -->
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
@@ -160,8 +160,40 @@
 		</div>
 	</div>
 
-	{#if notFound}
-		<p class="text-red-500">No results found</p>
+	{#if notFound || users.length === 0}
+		<div class="overflow-x-auto">
+			<table class="min-w-full border border-gray-200 dark:border-gray-700">
+				<thead>
+					<tr class="border border-gray-200 dark:border-gray-700">
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
+							<div class="flex justify-center items-center gap-2">
+								<span>#</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Name</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Company</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Field Work</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Job Grade</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Phone</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Email</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Country</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">City</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Referrer</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Hotel Booking</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="12" class="text-center p-4 text-gray-500 dark:text-gray-400">
+							<div class="flex flex-col items-center justify-center gap-2">
+								<p>No data found</p>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	{:else}
 		<div class="overflow-x-auto">
 			<table class="min-w-full border border-gray-200 dark:border-gray-700">
@@ -172,13 +204,17 @@
 								<span>#</span>
 							</div>
 						</th>
-						<!-- Repeat for other headers with same styling -->
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
-							<div class="flex items-center gap-2">
-								<IconLayoutGrid size={20} class="text-gray-500 dark:text-gray-400" />
-								<span>Actions</span>
-							</div>
-						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Name</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Company</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Field Work</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Job Grade</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Phone</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Email</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Country</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">City</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Referrer</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Hotel Booking</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -188,7 +224,36 @@
 							<td class="p-3 border border-gray-300 dark:border-gray-600">
 								{index + 1 + (currentPage - 1) * pageSize}
 							</td>
-							<!-- ... other cells ... -->
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.name}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.companyName}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.fieldWork}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.jobGrade}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.phoneNumber}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.email}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.country}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.city}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.referrer_name}
+							</td>
+							<td class="p-3 border border-gray-300 dark:border-gray-600">
+								{user.hotelBooking}
+							</td>
 							<td class="p-3 border border-gray-300 dark:border-gray-600">
 								<button
 									on:click={() => goto(`/dashboard/usersGameExhibition/${user.id}`)}

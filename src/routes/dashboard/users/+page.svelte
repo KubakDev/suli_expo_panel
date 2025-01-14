@@ -157,8 +157,75 @@
 		</div>
 	</div>
 
-	{#if notFound}
-		<p class="text-red-500">No results found</p>
+	{#if notFound || users.length === 0}
+		<div class="overflow-x-auto">
+			<table class="min-w-full border border-gray-200 dark:border-gray-700">
+				<thead>
+					<tr class="border border-gray-200 dark:border-gray-700">
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
+							<div class="flex justify-center items-center gap-2">
+								<span>#</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Full Name</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Company / Field</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Job Grade</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Phone Number</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Email</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Country / City</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Hotel Booking</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<span>Created At</span>
+							</div>
+						</th>
+						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
+							<div class="flex items-center gap-2">
+								<IconLayoutGrid size={20} class="text-gray-500 dark:text-gray-400" />
+								<span>Actions</span>
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="text-gray-600 dark:text-gray-300">
+						<td colspan="12" class="text-center p-4 text-gray-500 dark:text-gray-400">
+							<div class="flex flex-col items-center justify-center gap-2">
+								<p>No data found</p>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	{:else}
 		<div class="overflow-x-auto">
 			<table class="min-w-full border border-gray-200 dark:border-gray-700">
