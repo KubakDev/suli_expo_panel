@@ -77,6 +77,10 @@
 	};
 	let isAnObjectSelected = false;
 
+	// Update the canvas dimensions
+	const CANVAS_WIDTH = 1600;  // Increased width
+	const CANVAS_HEIGHT = 1200; // Increased height
+
 	// Function to update layers
 	onMount(async () => {
 		const fabricModule = import('fabric');
@@ -90,7 +94,11 @@
 
 			seatImageItemStore.getAllSeatItems();
 			const x = await getSeatServices(data.supabase);
-			canvas = new fabricResponse.fabric.Canvas('canvas', { isDrawingMode: false });
+			canvas = new fabricResponse.fabric.Canvas('canvas', {
+				backgroundColor: 'transparent',
+				width: CANVAS_WIDTH,
+				height: CANVAS_HEIGHT
+			});
 			canvas.on('path:created', (e: any) => {
 				let path = e.path;
 				path.set({ stroke: 'red' });
@@ -114,67 +122,100 @@
 						exhibitionName = data.name;
 						const design = data.design;
 
-						const width = design.width;
-						const height = design.height;
-						const aspectRatio = width / height;
-						const containerWidth = container?.offsetWidth;
-						const containerHeight = container?.offsetHeight;
-						const widthRatio = containerWidth / width;
-						const heightRatio = containerHeight / height;
-
-						const currentHeight = containerWidth / aspectRatio;
-
+						// Set canvas to the exact dimensions from the saved design
 						if (canvas) {
 							canvas.setDimensions({
-								width: containerWidth,
-								height: currentHeight
+								width: design.width,
+								height: design.height
 							});
 						}
+
 						await canvas.loadFromJSON(design, async () => {
-							canvas.width = containerWidth;
-							canvas.height = containerHeight;
+							// Ensure background image is loaded first
 							if (canvas.backgroundImage) {
-								canvas.backgroundImage.scaleX = canvas.backgroundImage.scaleX * widthRatio;
-								canvas.backgroundImage.scaleY = canvas.backgroundImage.scaleY * widthRatio;
+								// Set background image to exact canvas dimensions
+								canvas.backgroundImage.scaleToWidth(design.width);
+								canvas.backgroundImage.scaleToHeight(design.height);
+								canvas.backgroundImage.set({
+									originX: 'left',
+									originY: 'top',
+									left: 0,
+									top: 0
+								});
 							}
-							await tick(); // wait for the next update cycle
-							// get data
-							getData();
 
-							canvas.forEachObject((obj: any) => {
-								const scaleX = obj.scaleX;
-								const scaleY = obj.scaleY;
-								const left = obj.left;
-								const top = obj.top;
-								const tempScaleX = scaleX * widthRatio;
-								const tempScaleY = scaleY * heightRatio;
-								const tempLeft = left * widthRatio;
-								const tempTop = top * heightRatio;
-
-								obj.scaleX = tempScaleX;
-								obj.scaleY = tempScaleY;
-								obj.left = tempLeft;
-								obj.top = tempTop;
-
-								obj.setCoords();
-								// Ensure the object is above the background
-								obj.set('z-index', 1);
+							// Now handle all objects
+							canvas.getObjects().forEach((obj: any) => {
+								// Preserve original coordinates
+								if (obj !== canvas.backgroundImage) {
+									obj.set({
+										left: obj.left,
+										top: obj.top,
+										scaleX: obj.scaleX,
+										scaleY: obj.scaleY
+									});
+									obj.setCoords();
+								}
 							});
 
-							canvas.renderAll();
+							await tick();
+							getData();
+							canvas.requestRenderAll();
 						});
 
+						// Don't scale or center the viewport - keep original positioning
+						canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
 						canvas.renderAll();
 					});
 			} else {
-				const containerWidth = container?.offsetWidth;
-				const containerHeight = container?.offsetHeight;
+				// For new canvas creation
 				if (canvas) {
 					canvas.setDimensions({
-						width: containerWidth,
-						height: containerHeight
+						width: CANVAS_WIDTH,
+						height: CANVAS_HEIGHT
 					});
 				}
+			}
+
+			// Ensure objects maintain position relative to background when moving
+			canvas.on('object:moving', function(e) {
+				const obj = e.target;
+				// Get object boundaries
+				const objBounds = obj.getBoundingRect();
+				
+				// Keep objects within the canvas/background image boundaries
+				const maxWidth = canvas.width;
+				const maxHeight = canvas.height;
+
+				if (objBounds.left < 0) {
+					obj.set('left', 0);
+				}
+				if (objBounds.top < 0) {
+					obj.set('top', 0);
+				}
+				if (objBounds.left + objBounds.width > maxWidth) {
+					obj.set('left', maxWidth - objBounds.width);
+				}
+				if (objBounds.top + objBounds.height > maxHeight) {
+					obj.set('top', maxHeight - objBounds.height);
+				}
+
+				// Snap to grid if enabled
+				if (gridSize) {
+					obj.set({
+						left: Math.round(obj.left / gridSize) * gridSize,
+						top: Math.round(obj.top / gridSize) * gridSize
+					});
+				}
+			});
+
+			// Save the exact state when saving
+			async function saveCanvas() {
+				const json = canvas.toJSON(['id', 'objectDetail']);
+				// Ensure we save the exact dimensions and positions
+				json.width = canvas.width;
+				json.height = canvas.height;
+				return json;
 			}
 
 			// Handle object removed
@@ -530,6 +571,24 @@
 				activeObject.setCoords(); // Recalculate object boundaries and controls
 				canvas.requestRenderAll(); // Refresh canvas to reflect changes
 			});
+
+			// Create boundary rectangle
+			const boundary = new fabric.Rect({
+				width: CANVAS_WIDTH - 80, // 40px padding on each side
+				height: CANVAS_HEIGHT - 80,
+				left: 40,
+				top: 40,
+				fill: 'transparent',
+				stroke: '#333333', // Dark gray border
+				strokeWidth: 3, // Slightly thicker border
+				selectable: false,
+				evented: false,
+				name: 'boundary'
+			});
+
+			// Add boundary to canvas
+			canvas.add(boundary);
+			canvas.renderAll();
 		});
 	});
 
@@ -971,6 +1030,8 @@
 	}
 
 	$: isLoading = true;
+
+	
 </script>
 
 <!-- {#if fabric} -->
@@ -1013,12 +1074,14 @@
 			on:updateLayers={() => updateLayers()}
 		/>
 
-		<div bind:this={container} class="w-full min-h-[200px] col-span-4 relative overflow-hidden bg-white rounded-lg shadow-md">
-			<canvas id="canvas" class="h-full w-full fabric-canvas" />
-			<div class="absolute bottom-20 right-10 w-40 flex justify-between">
+		<div bind:this={container} class="w-full h-full col-span-4 relative overflow-auto bg-transparent rounded-lg shadow-md flex items-center justify-center p-4">
+			<div class="canvas-container">
+				<canvas id="canvas" class="fabric-canvas" />
+			</div>
+			<!-- <div class="absolute bottom-20 right-10 w-40 flex justify-between">
 				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
 				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
-			</div>
+			</div> -->
 		</div>
 
 		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
@@ -1286,8 +1349,8 @@
 		</div>
 	</div>
 </div>
-
  
+
 <style lang="scss">
 	.fabric-canvas {
     border: 1px solid #e2e8f0;
@@ -1303,7 +1366,7 @@
   }
 
   .shadow-md {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(190, 7, 7, 0.06);
   }
 	canvas {
 		border: 1px solid #89909c;
@@ -1411,6 +1474,25 @@
 			border-bottom: 20px solid #fff;
 			background-color: transparent !important;
 		}
+	}
+
+	.canvas-container {
+		position: relative;
+		display: flex;
+		justify-content: center;
+			align-items: center;
+		min-width: 800px;
+		min-height: 600px;
+	}
+
+	.fabric-canvas {
+		border: none; // Remove canvas border
+		background: transparent;
+	}
+
+	// Make container scrollable if canvas is larger than viewport
+	.overflow-auto {
+		max-height: 90vh;
 	}
 </style>
 
