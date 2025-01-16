@@ -2,31 +2,20 @@
 	import { onMount } from 'svelte';
 	import {
 		seatServices,
-		getSeatServices,
-		deleteSeatService
+		getSeatServices, 
 	} from '../../../stores/seatServicesStore';
 	import { goto } from '$app/navigation';
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
-
-	//@ts-ignore
-	import Icon from 'svelte-icons-pack/Icon.svelte';
-	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import type { seatServicesModel } from '../../../models/seatServicesModel';
 	// Import Tabler icons
-	import { 
-		IconPhoto, 
-		IconMenu2, 
+	import {  
 		IconGridDots,
 		IconArrowUp,
 		IconArrowDown,
-		IconEdit,
-		IconLayoutGrid,
-		IconList,
-		IconTextSize,
-		IconSettings
+		IconEdit, 
 	} from '@tabler/icons-svelte';
 
 	export let data;
@@ -122,25 +111,22 @@
 							</th>
 							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
 								<div class="flex items-center gap-2">
-									<IconPhoto size={20} class="text-gray-500" />
-									<span>Thumbnail</span>
+								 <span>Thumbnail</span>
 								</div>
 							</th>
 							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
 								<div class="flex items-center gap-2">
-									<IconTextSize size={20} class="text-gray-500" />
-									<span>Title</span>
+								 	<span>Title</span>
 								</div>
 							</th>
 							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
 								<div class="flex items-center gap-2">
-									<IconList size={20} class="text-gray-500" />
-									<span>Short description</span>
+								 	<span>Short description</span>
 								</div>
 							</th>
 							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
 								<div class="flex items-center gap-2">
-									<IconSettings size={20} class="text-gray-500" />
+									<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
 									<span>Actions</span>
 								</div>
 							</th>

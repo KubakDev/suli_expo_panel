@@ -7,7 +7,7 @@
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import { exportToExcel } from '$lib/utils/exportToExcel';
 	import { Button } from 'flowbite-svelte';
-	import { IconX, IconEdit, IconLayoutGrid } from '@tabler/icons-svelte';
+	import { IconX, IconLayoutGrid } from '@tabler/icons-svelte';
 
 	interface User {
 		id: number;
@@ -31,6 +31,7 @@
 	let filterName = '';
 	let filterPhoneNumber = '';
 	let notFound = false;
+	let totalCount = 0;
 
 	async function getUserRegistrations() {
 		const { data: result, error } = await data.supabase.rpc('get_paged_users_filter', {
@@ -48,6 +49,7 @@
 		const { page, page_limit, remainingItems, total_count, items } = result;
 
 		users = items;
+		totalCount = total_count;
 		totalPages = Math.ceil(total_count / page_limit);
 		notFound = users.length === 0;
 	}
@@ -84,7 +86,7 @@
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
 		<!-- Total count -->
 		<div class="shadow-none flex justify-start items-start px-4 py-2 border dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 text-sm">
-			Showing <span class="font-bold mx-2 dark:text-gray-200">{users.length}</span> Results for users
+			Showing <span class="font-bold mx-2 dark:text-gray-200">{totalCount}</span> User
 		</div>
 
 		<!-- Filters and Actions -->

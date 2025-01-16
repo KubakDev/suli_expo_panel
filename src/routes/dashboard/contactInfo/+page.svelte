@@ -3,9 +3,7 @@
 	import { contactData, getData, deleteData } from '../../../stores/contactStor';
 	import { goto } from '$app/navigation';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
-	import { 
-		IconMail, 
-		IconMapPin, 
+	import {  
 		IconPhone,
 		IconGridDots,
 		IconEdit
@@ -47,43 +45,37 @@
 						<tr>
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex justify-start items-center gap-2">
-									<IconMail size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>Email</span>
+									 <span>Email</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconMapPin size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>Location</span>
+								 	<span>Location</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconPhone size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>phoneNumber_relations</span>
+									 <span>phoneNumber_relations</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconPhone size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>phoneNumber_Technical</span>
+								 	<span>phoneNumber_Technical</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconPhone size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>phoneNumber_Administration</span>
+									 <span>phoneNumber_Administration</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconPhone size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>phoneNumber_marketing</span>
+									 <span>phoneNumber_marketing</span>
 								</div>
 							</th>
 

@@ -7,9 +7,6 @@
 	import { dndzone } from 'svelte-dnd-action';
 	// Import Tabler icons
 	import { 
-		IconPhoto, 
-		IconMenu2, 
-		IconTextSize,
 		IconGridDots,
 		IconArrowUp,
 		IconArrowDown,
@@ -121,22 +118,19 @@
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconPhoto size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>Thumbnail</span>
+								 <span>Thumbnail</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconMenu2 size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>Title</span>
+								 <span>Title</span>
 								</div>
 							</th>
 
 							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 								<div class="flex items-center gap-2">
-									<IconTextSize size={20} class="text-gray-600 dark:text-gray-300" />
-									<span>Short description</span>
+								 <span>Short description</span>
 								</div>
 							</th>
 
