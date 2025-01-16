@@ -77,9 +77,30 @@
 	};
 	let isAnObjectSelected = false;
 
-	// Update the canvas dimensions
-	const CANVAS_WIDTH = 1600;  // Increased width
-	const CANVAS_HEIGHT = 1200; // Increased height
+	// Update these constants to be reactive to window size
+	let CANVAS_WIDTH: number;
+	let CANVAS_HEIGHT: number;
+
+	// Add window resize handler
+	function updateCanvasDimensions() {
+		// Get the container dimensions, accounting for padding
+		const containerWidth = container?.offsetWidth - 32; // 32px for 2rem padding
+		const containerHeight = container?.offsetHeight - 32;
+		
+		if (containerWidth && containerHeight) {
+			CANVAS_WIDTH = containerWidth;
+			CANVAS_HEIGHT = containerHeight;
+			
+			// Update canvas dimensions if it exists
+			if (canvas) {
+				canvas.setDimensions({
+					width: CANVAS_WIDTH,
+					height: CANVAS_HEIGHT
+				});
+				canvas.renderAll();
+			}
+		}
+	}
 
 	// Function to update layers
 	onMount(async () => {
@@ -94,10 +115,13 @@
 
 			seatImageItemStore.getAllSeatItems();
 			const x = await getSeatServices(data.supabase);
+			updateCanvasDimensions();
+			
 			canvas = new fabricResponse.fabric.Canvas('canvas', {
 				backgroundColor: 'transparent',
 				width: CANVAS_WIDTH,
-				height: CANVAS_HEIGHT
+				height: CANVAS_HEIGHT,
+				preserveObjectStacking: true
 			});
 			canvas.on('path:created', (e: any) => {
 				let path = e.path;
@@ -405,21 +429,35 @@
 				}
 			});
 
-			canvas.on('mouse:wheel', function (opt: any) {
-				var isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-
-				// Ctrl + Scroll for Windows and other platforms, Command + Scroll for MacOS
-				if ((isMac && opt.e.metaKey) || (!isMac && opt.e.ctrlKey)) {
-					var delta = opt.e.deltaY;
-					var zoom = canvas.getZoom();
-					zoom *= Math.pow(1.1, -delta / 100);
-					if (zoom > 20) zoom = 20;
-					if (zoom < 0.01) zoom = 0.01;
-					canvas.setZoom(zoom);
+			// Improve zoom behavior
+			canvas.on('mouse:wheel', function(opt) {
+				const delta = opt.e.deltaY;
+				let zoom = canvas.getZoom();
+				
+				// Zoom with Ctrl + Mouse wheel
+				if (opt.e.ctrlKey || opt.e.metaKey) {
 					opt.e.preventDefault();
 					opt.e.stopPropagation();
+					
+					// Calculate new zoom level
+					zoom *= 0.999 ** delta;
+					zoom = Math.min(Math.max(0.1, zoom), 20); // Limit zoom range
+					
+					// Get mouse position relative to canvas
+					const pointer = canvas.getPointer(opt.e);
+					
+					// Calculate zoom point
+					const x = pointer.x;
+					const y = pointer.y;
+					
+					// Set zoom with point
+					canvas.zoomToPoint({ x, y }, zoom);
 				}
-				canvas.requestRenderAll();
+			});
+
+			// Add window resize listener
+			window.addEventListener('resize', () => {
+				updateCanvasDimensions();
 			});
 
 			canvas.on('selection:created', function (event: any) {
@@ -872,15 +910,29 @@
 
 	// Zoom In
 	function zoomIn() {
-		zoomLevel *= 1.1;
-		canvas.setZoom(zoomLevel);
+		if (!canvas) return;
+		
+		let zoom = canvas.getZoom();
+		zoom *= 1.1;
+		zoom = Math.min(zoom, 20);
+		
+		// Zoom to center
+		const center = canvas.getCenter();
+		canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
 		canvas.renderAll();
 	}
 
 	// Zoom Out
 	function zoomOut() {
-		zoomLevel /= 1.1;
-		canvas.setZoom(zoomLevel);
+		if (!canvas) return;
+		
+		let zoom = canvas.getZoom();
+		zoom /= 1.1;
+		zoom = Math.max(zoom, 0.1);
+		
+		// Zoom to center
+		const center = canvas.getCenter();
+		canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
 		canvas.renderAll();
 	}
 
@@ -1074,14 +1126,13 @@
 			on:updateLayers={() => updateLayers()}
 		/>
 
-		<div bind:this={container} class="w-full h-full col-span-4 relative overflow-auto bg-transparent rounded-lg shadow-md flex items-center justify-center p-4">
-			<div class="canvas-container">
+		<div 
+			bind:this={container} 
+			class="w-full h-full col-span-4 relative bg-transparent rounded-lg shadow-md"
+		>
+			<div class="canvas-container w-full h-full">
 				<canvas id="canvas" class="fabric-canvas" />
 			</div>
-			<!-- <div class="absolute bottom-20 right-10 w-40 flex justify-between">
-				<Button on:click={zoomIn} pill={true} outline={true} class="w-full1"><Plus /></Button>
-				<Button on:click={zoomOut} pill={true} outline={true} class="w-full1"><Minus /></Button>
-			</div> -->
 		</div>
 
 		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
@@ -1478,15 +1529,18 @@
 
 	.canvas-container {
 		position: relative;
+		width: 100% !important;
+		height: 100% !important;
+		min-height: 600px;
 		display: flex;
 		justify-content: center;
-			align-items: center;
-		min-width: 800px;
-		min-height: 600px;
+		align-items: center;
+		overflow: hidden !important;
 	}
 
 	.fabric-canvas {
-		border: none; // Remove canvas border
+		border: 1px solid #e2e8f0;
+		border-radius: 0.5rem;
 		background: transparent;
 	}
 
