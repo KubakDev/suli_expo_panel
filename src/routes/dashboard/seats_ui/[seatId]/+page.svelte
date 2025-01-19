@@ -4,8 +4,7 @@
 	import type { PageData } from '../$types';
 	import {
 		Button,
-		ButtonGroup,
-		Checkbox,
+		ButtonGroup, 
 		Input,
 		InputAddon,
 		Modal,
@@ -14,7 +13,7 @@
 		Tabs,
 		Textarea
 	} from 'flowbite-svelte';
-	import { Minus, Plus } from 'svelte-heros-v2';
+	import {  Plus } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
 	import seatImageItemStore from '../../../../stores/seatImageItemStore';
 	import { page } from '$app/stores';
@@ -27,7 +26,6 @@
 	import TopBarComponent from '$lib/components/seat/topbar.svelte';
 	import DrawingBar from '$lib/components/seat/drawingBar.svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
-	import { Property } from 'canvg';
 
 	let languageEnumKeys = Object.values(LanguageEnum);
 	let spacePressed = false;
@@ -77,574 +75,624 @@
 	};
 	let isAnObjectSelected = false;
 
-	// Update these constants to be reactive to window size
-	let CANVAS_WIDTH: number;
-	let CANVAS_HEIGHT: number;
+	// Update these constants for canvas size options
+	let CANVAS_WIDTH = 800;
+	let CANVAS_HEIGHT = 600;
+	let canvasSize = '800x600';
 
-	let canvasSizeOptions = [
-		{ label: 'Small', width: 800, height: 600 },
-		{ label: 'Medium', width: 1200, height: 800 },
-		{ label: 'Large', width: 1600, height: 900 },
-		{ label: 'Auto', width: null, height: null } // Auto will set to container size
+	const allowedSizes = [
+		{ label: '800 x 600', value: '800x600' },
+		{ label: '1024 x 768', value: '1024x768' },
+		{ label: '1280 x 720 (HD)', value: '1280x720' },
+		{ label: '1366 x 768', value: '1366x768' },
+		{ label: '1440 x 900', value: '1440x900' },
+		{ label: 'Custom', value: 'custom' }
 	];
 
-	let selectedCanvasSize = canvasSizeOptions[0]; // Default to Small
+	// Function to update canvas size
+	function updateCanvasSize() {
+		if (!canvas) return;
 
-	// Add window resize handler
-	function updateCanvasDimensions() {
-		// Get the container dimensions, accounting for padding
-		const containerWidth = container?.offsetWidth - 32; // 32px for 2rem padding
-		const containerHeight = container?.offsetHeight - 32;
+		let newWidth, newHeight;
+
+		if (canvasSize === 'custom') {
+			newWidth = CANVAS_WIDTH;
+			newHeight = CANVAS_HEIGHT;
+		} else {
+			[newWidth, newHeight] = canvasSize.split('x').map(Number);
+			CANVAS_WIDTH = newWidth;
+			CANVAS_HEIGHT = newHeight;
+		}
+
+		// Update canvas dimensions
+		canvas.setWidth(newWidth);
+		canvas.setHeight(newHeight);
 		
-		if (containerWidth && containerHeight) {
-			CANVAS_WIDTH = containerWidth;
-			CANVAS_HEIGHT = containerHeight;
-			
-			// Update canvas dimensions if it exists
+		// Update container dimensions
+		if (container) {
+			container.style.width = `${newWidth}px`;
+			container.style.height = `${newHeight}px`;
+		}
+
+		// Ensure all objects stay within bounds
+		canvas.getObjects().forEach((obj: any) => {
+			if (obj.left + obj.width * obj.scaleX > newWidth) {
+				obj.left = newWidth - obj.width * obj.scaleX;
+			}
+			if (obj.top + obj.height * obj.scaleY > newHeight) {
+				obj.top = newHeight - obj.height * obj.scaleY;
+			}
+			obj.setCoords();
+		});
+
+		// Maintain white background
+		canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
+		canvas.requestRenderAll();
+	}
+
+	// Add this function before onMount
+	function updateCanvasDimensions() {
+		if (!canvas) return;
+		
+		// Get the container dimensions
+		const containerWidth = container?.offsetWidth || CANVAS_WIDTH;
+		const containerHeight = container?.offsetHeight || CANVAS_HEIGHT;
+		
+		// Update canvas dimensions
+		canvas.setDimensions({
+			width: containerWidth,
+			height: containerHeight
+		});
+		
+		// Ensure all objects stay within bounds
+		canvas.getObjects().forEach((obj: any) => {
+			if (obj.left + obj.width * obj.scaleX > containerWidth) {
+				obj.left = containerWidth - obj.width * obj.scaleX;
+			}
+			if (obj.top + obj.height * obj.scaleY > containerHeight) {
+				obj.top = containerHeight - obj.height * obj.scaleY;
+			}
+			obj.setCoords();
+		});
+		
+		canvas.renderAll();
+	}
+
+	// Function to update layers
+	onMount(async () => {
+		const fabricModule = await import('fabric');
+		fabric = fabricModule.fabric;
+
+		// Initialize canvas with white background
+		canvas = new fabric.Canvas('canvas', {
+			backgroundColor: '#ffffff', // Changed from '#ff0000' to '#ffffff'
+			width: CANVAS_WIDTH,
+			height: CANVAS_HEIGHT,
+			preserveObjectStacking: true,
+			selection: true
+		});
+
+		// Set initial canvas properties
+		canvas.setBackgroundColor('transparent', canvas.renderAll.bind(canvas));
+		
+		// Add event listener for object added
+		canvas.on('object:added', function(e) {
+			const obj = e.target;
+			if (obj) {
+				// Ensure object is visible and properly positioned
+				obj.setCoords();
+				canvas.renderAll();
+			}
+		});
+
+		// Add event listener for window resize
+		window.addEventListener('resize', () => {
+			updateCanvasSize();
+		});
+
+		await getFavColors();
+
+		seatImageItemStore.getAllSeatItems();
+		const x = await getSeatServices(data.supabase);
+		updateCanvasDimensions();
+		
+		canvas.imageSmoothingEnabled = false;
+		canvas.msImageSmoothingEnabled = false;
+		canvas.lineWidth = Math.round(2);
+		const supabase = data.supabase;
+
+		const pageId = $page.params.seatId;
+		if (pageId !== 'create') {
+			let result = await supabase
+				.from('seat_layout')
+				.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
+				.eq('id', pageId)
+				.single()
+				.then(async (result) => {
+					const data: any = result.data;
+					currentSeatLayoutData = data;
+					exhibitionName = data.name;
+					const design = data.design;
+
+					// Set canvas to the exact dimensions from the saved design
+					if (canvas) {
+						canvas.setDimensions({
+							width: design.width,
+							height: design.height
+						});
+					}
+
+					await canvas.loadFromJSON(design, async () => {
+						// Ensure background image is loaded first
+						if (canvas.backgroundImage) {
+							// Set background image to exact canvas dimensions
+							canvas.backgroundImage.scaleToWidth(design.width);
+							canvas.backgroundImage.scaleToHeight(design.height);
+							canvas.backgroundImage.set({
+								originX: 'left',
+								originY: 'top',
+								left: 0,
+								top: 0
+							});
+						}
+
+						// Now handle all objects
+						canvas.getObjects().forEach((obj: any) => {
+							// Preserve original coordinates
+							if (obj !== canvas.backgroundImage) {
+								obj.set({
+									left: obj.left,
+									top: obj.top,
+									scaleX: obj.scaleX,
+									scaleY: obj.scaleY
+								});
+								obj.setCoords();
+							}
+						});
+
+						await tick();
+						getData();
+						canvas.requestRenderAll();
+					});
+
+					// Don't scale or center the viewport - keep original positioning
+					canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
+					canvas.renderAll();
+				});
+		} else {
+			// For new canvas creation
 			if (canvas) {
 				canvas.setDimensions({
 					width: CANVAS_WIDTH,
 					height: CANVAS_HEIGHT
 				});
-
-				
-				canvas.renderAll();
 			}
 		}
-	}
 
-	// Function to update layers
-	onMount(async () => {
-		const fabricModule = import('fabric');
-
-		fabricModule.then(async (fabricResponse) => {
-			let iconCanvas = new fabricResponse.fabric.StaticCanvas('');
-			fabric = fabricResponse.fabric;
-			iconCanvas.setWidth(50);
-			iconCanvas.setHeight(50);
-			await getFavColors();
-
-			seatImageItemStore.getAllSeatItems();
-			const x = await getSeatServices(data.supabase);
-			updateCanvasDimensions();
+		// Ensure objects maintain position relative to background when moving
+		canvas.on('object:moving', function(e) {
+			const obj = e.target;
+			// Get object boundaries
+			const objBounds = obj.getBoundingRect();
 			
-			canvas = new fabricResponse.fabric.Canvas('canvas', {
-				backgroundColor: 'transparent',
-				width: CANVAS_WIDTH,
-				height: CANVAS_HEIGHT,
-				preserveObjectStacking: true
-			});
+			// Keep objects within the canvas/background image boundaries
+			const maxWidth = canvas.width;
+			const maxHeight = canvas.height;
 
-			// Set the canvas background color to blue after the canvas is created
-			canvas.setBackgroundColor('blue', canvas.renderAll.bind(canvas));
-
-			canvas.on('path:created', (e: any) => {
-				let path = e.path;
-				path.set({ stroke: 'blue' });
-				canvas.renderAll();
-			});
-			canvas.imageSmoothingEnabled = false;
-			canvas.msImageSmoothingEnabled = false;
-			canvas.lineWidth = Math.round(2);
-			const supabase = data.supabase;
-
-			const pageId = $page.params.seatId;
-			if (pageId !== 'create') {
-				let result = await supabase
-					.from('seat_layout')
-					.select('*,exhibition(*,exhibition_languages(*)),seat_privacy_policy_lang(*)')
-					.eq('id', pageId)
-					.single()
-					.then(async (result) => {
-						const data: any = result.data;
-						currentSeatLayoutData = data;
-						exhibitionName = data.name;
-						const design = data.design;
-
-						// Set canvas to the exact dimensions from the saved design
-						if (canvas) {
-							canvas.setDimensions({
-								width: design.width,
-								height: design.height
-							});
-						}
-
-						await canvas.loadFromJSON(design, async () => {
-							// Ensure background image is loaded first
-							if (canvas.backgroundImage) {
-								// Set background image to exact canvas dimensions
-								canvas.backgroundImage.scaleToWidth(design.width);
-								canvas.backgroundImage.scaleToHeight(design.height);
-								canvas.backgroundImage.set({
-									originX: 'left',
-									originY: 'top',
-									left: 0,
-									top: 0
-								});
-							}
-
-							// Now handle all objects
-							canvas.getObjects().forEach((obj: any) => {
-								// Preserve original coordinates
-								if (obj !== canvas.backgroundImage) {
-									obj.set({
-										left: obj.left,
-										top: obj.top,
-										scaleX: obj.scaleX,
-										scaleY: obj.scaleY
-									});
-									obj.setCoords();
-								}
-							});
-
-							await tick();
-							getData();
-							canvas.requestRenderAll();
-						});
-
-						// Don't scale or center the viewport - keep original positioning
-						canvas.setViewportTransform([1, 0, 0, 1, 0, 0]);
-						canvas.renderAll();
-					});
-			} else {
-				// For new canvas creation
-				if (canvas) {
-					canvas.setDimensions({
-						width: CANVAS_WIDTH,
-						height: CANVAS_HEIGHT
-					});
-				}
+			if (objBounds.left < 0) {
+				obj.set('left', 0);
+			}
+			if (objBounds.top < 0) {
+				obj.set('top', 0);
+			}
+			if (objBounds.left + objBounds.width > maxWidth) {
+				obj.set('left', maxWidth - objBounds.width);
+			}
+			if (objBounds.top + objBounds.height > maxHeight) {
+				obj.set('top', maxHeight - objBounds.height);
 			}
 
-			// Ensure objects maintain position relative to background when moving
-			canvas.on('object:moving', function(e) {
-				const obj = e.target;
-				// Get object boundaries
-				const objBounds = obj.getBoundingRect();
-				
-				// Keep objects within the canvas/background image boundaries
-				const maxWidth = canvas.width;
-				const maxHeight = canvas.height;
-
-				if (objBounds.left < 0) {
-					obj.set('left', 0);
-				}
-				if (objBounds.top < 0) {
-					obj.set('top', 0);
-				}
-				if (objBounds.left + objBounds.width > maxWidth) {
-					obj.set('left', maxWidth - objBounds.width);
-				}
-				if (objBounds.top + objBounds.height > maxHeight) {
-					obj.set('top', maxHeight - objBounds.height);
-				}
-
-				// Snap to grid if enabled
-				if (gridSize) {
-					obj.set({
-						left: Math.round(obj.left / gridSize) * gridSize,
-						top: Math.round(obj.top / gridSize) * gridSize
-					});
-				}
-			});
-
-			// Save the exact state when saving
-			async function saveCanvas() {
-				const json = canvas.toJSON(['id', 'objectDetail']);
-				// Ensure we save the exact dimensions and positions
-				json.width = canvas.width;
-				json.height = canvas.height;
-				return json;
+			// Snap to grid if enabled
+			if (gridSize) {
+				obj.set({
+					left: Math.round(obj.left / gridSize) * gridSize,
+					top: Math.round(obj.top / gridSize) * gridSize
+				});
 			}
+		});
 
-			// Handle object removed
-			canvas.on('object:removed', () => {
-				updateLayers();
-			});
+		// Save the exact state when saving
+		async function saveCanvas() {
+			const json = canvas.toJSON(['id', 'objectDetail']);
+			// Ensure we save the exact dimensions and positions
+			json.width = canvas.width;
+			json.height = canvas.height;
+			return json;
+		}
+
+		// Handle object removed
+		canvas.on('object:removed', () => {
 			updateLayers();
-			canvas.on('object:moving', function (options: fabric.IEvent) {
-				if (options.target) {
-					// Manipulate z-index when moving objects to ensure they are displayed above the background
-					let movingObject = options.target;
-					movingObject && movingObject.set('z-index', new Date().getTime());
-					options.target.set({
-						left: Math.round(options.target.left! / gridSize) * gridSize,
-						top: Math.round(options.target.top! / gridSize) * gridSize
-					});
+		});
+		updateLayers();
+		canvas.on('object:moving', function (options: fabric.IEvent) {
+			if (options.target) {
+				// Manipulate z-index when moving objects to ensure they are displayed above the background
+				let movingObject = options.target;
+				movingObject && movingObject.set('z-index', new Date().getTime());
+				options.target.set({
+					left: Math.round(options.target.left! / gridSize) * gridSize,
+					top: Math.round(options.target.top! / gridSize) * gridSize
+				});
+			}
+		});
+		var panning = false;
+		var lastPosX: any, lastPosY: any;
+		// let spacePressed = false; // state for tracking space key
+
+		// Listen for space key down and up events on the window
+		// give space between the text that added
+		window.addEventListener('keydown', function (e) {
+			if (e.ctrlKey && e.code === 'Space') {
+				e.preventDefault();
+
+				let activeObject = canvas.getActiveObject();
+				// (i-text) it means it is an text object(, which means the user can edit its text content.)
+				if (activeObject && activeObject.type === 'i-text') {
+					// insert a space at the current cursor position
+					let cursorPosition = activeObject.selectionStart;
+					let newText = [
+						activeObject.text.slice(0, cursorPosition),
+						' ',
+						activeObject.text.slice(cursorPosition)
+					].join('');
+					activeObject.text = newText;
+					activeObject.setSelectionStart(cursorPosition + 1);
+					activeObject.setSelectionEnd(cursorPosition + 1);
+					canvas.renderAll();
 				}
-			});
-			var panning = false;
-			var lastPosX: any, lastPosY: any;
-			// let spacePressed = false; // state for tracking space key
+			}
+		});
+		window.addEventListener('keydown', function (e) {
+			if (e.key === 'Alt') {
+				e.preventDefault();
+				spacePressed = true;
+			}
+		});
 
-			// Listen for space key down and up events on the window
-			// give space between the text that added
-			window.addEventListener('keydown', function (e) {
-				if (e.ctrlKey && e.code === 'Space') {
-					e.preventDefault();
-
-					let activeObject = canvas.getActiveObject();
-					// (i-text) it means it is an text object(, which means the user can edit its text content.)
-					if (activeObject && activeObject.type === 'i-text') {
-						// insert a space at the current cursor position
-						let cursorPosition = activeObject.selectionStart;
-						let newText = [
-							activeObject.text.slice(0, cursorPosition),
-							' ',
-							activeObject.text.slice(cursorPosition)
-						].join('');
-						activeObject.text = newText;
-						activeObject.setSelectionStart(cursorPosition + 1);
-						activeObject.setSelectionEnd(cursorPosition + 1);
-						canvas.renderAll();
-					}
-				}
-			});
-			window.addEventListener('keydown', function (e) {
-				if (e.key === 'Alt') {
-					e.preventDefault();
-					spacePressed = true;
-				}
-			});
-
-			window.addEventListener('keyup', function (e) {
-				if (e.key === 'Alt') {
-					e.preventDefault();
-					spacePressed = false;
-					panning = false;
-				}
-			});
-			let liveLine: any | null = null;
-			canvas.on('mouse:down', function (options: any) {
-				let pointer = canvas.getPointer(options.e);
-
-				if (isAddingText) {
-					const text = new fabricResponse.fabric.IText('Click to edit text', {
-						left: pointer.x,
-						top: pointer.y,
-						fontSize: 20,
-						fill: 'black',
-						editable: true,
-						id: new Date().getTime() // Adding a unique ID based on the current time
-					});
-
-					canvas.add(text);
-					isAddingText = false;
-				}
-				if (isDrawing) {
-					points.push({ x: pointer.x, y: pointer.y });
-
-					liveLine = new fabricResponse.fabric.Line(
-						[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
-						{
-							stroke: 'blue',
-							strokeWidth: 1,
-							selectable: false
-						}
-					);
-					liveLine['id'] = new Date().getTime();
-					canvas.add(liveLine);
-					lines.push(liveLine);
-
-					if (
-						points.length > 2 &&
-						Math.abs(points[0].x - points[points.length - 1].x) < 50 &&
-						Math.abs(points[0].y - points[points.length - 1].y) < 50
-					) {
-						points[points.length - 1] = points[0];
-
-						// Close the shape
-						let polygon: any = new fabricResponse.fabric.Polygon(points, {
-							stroke: 'blue',
-							fill: 'transparent',
-							strokeWidth: 1,
-							selectable: true
-						});
-						polygon['id'] = new Date().getTime();
-						canvas.add(polygon);
-						canvas.renderAll(); // You might need to request a re-render of the canvas
-
-						// Reset
-						isDrawing = false;
-						points = [];
-
-						// Remove temporary lines
-						for (let line of lines) {
-							canvas.remove(line);
-						}
-						lines = [];
-						updateLayers();
-					}
-				}
-
-				if (spacePressed) {
-					panning = true;
-					lastPosX = options.e.clientX;
-					lastPosY = options.e.clientY;
-				}
-				updateLayers();
-				canvas.renderAll();
-				canvas.requestRenderAll();
-			});
-
-			canvas.on('mouse:move', function (opt: any) {
-				if (isDown || isDrawing) {
-					let pointer = canvas.getPointer(opt.e);
-					const mouseX = pointer.x;
-					const mouseY = pointer.y;
-					if (points.length === 0) return;
-					const x = points[points.length - 1].x;
-					const y = points[points.length - 1].y;
-					if (liveLine) {
-						liveLine.set({ x2: pointer.x, y2: pointer.y, x1: x, y1: y });
-						canvas.renderAll();
-					}
-				}
-
-				if (panning && spacePressed) {
-					var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
-					canvas.relativePan(delta);
-					lastPosX = opt.e.clientX;
-					lastPosY = opt.e.clientY;
-				}
-			});
-
-			canvas.on('mouse:up', function (options: any) {
-				if (isDrawing) {
-					isDown = false;
-				}
+		window.addEventListener('keyup', function (e) {
+			if (e.key === 'Alt') {
+				e.preventDefault();
+				spacePressed = false;
 				panning = false;
-				// spacePressed = false;
-			});
+			}
+		});
+		let liveLine: any | null = null;
+		canvas.on('mouse:down', function (options: any) {
+			let pointer = canvas.getPointer(options.e);
 
-			// Add an event listener to your group button
-			document.getElementById('group-button')?.addEventListener('click', () => {
-				let activeObjects = canvas.getActiveObjects();
-				if (activeObjects.length > 0) {
-					let group = new fabricResponse.fabric.Group(activeObjects, {
-						objectCaching: false
-					});
+			if (isAddingText) {
+				const text = new fabric.IText('Click to edit text', {
+					left: pointer.x,
+					top: pointer.y,
+					fontSize: 20,
+					fill: 'black',
+					editable: true,
+					id: new Date().getTime() // Adding a unique ID based on the current time
+				});
 
-					// Modify the position of each object to be relative to the group
-					group._objects.forEach((object: any) => {
-						object.set({
-							left: object.left! - group.left!,
-							top: object.top! - group.top!
-						});
-					});
+				canvas.add(text);
+				isAddingText = false;
+			}
+			if (isDrawing) {
+				points.push({ x: pointer.x, y: pointer.y });
 
-					canvas.discardActiveObject().renderAll();
-					canvas.add(group);
-					canvas.setActiveObject(group);
-					// Remove original objects from canvas
-					activeObjects.forEach((object: any) => {
-						canvas.remove(object);
+				liveLine = new fabric.Line(
+					[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
+					{
+						stroke: 'red',
+						strokeWidth: 1,
+						selectable: false
+					}
+				);
+				liveLine['id'] = new Date().getTime();
+				canvas.add(liveLine);
+				lines.push(liveLine);
+
+				if (
+					points.length > 2 &&
+					Math.abs(points[0].x - points[points.length - 1].x) < 50 &&
+					Math.abs(points[0].y - points[points.length - 1].y) < 50
+				) {
+					points[points.length - 1] = points[0];
+
+					// Close the shape
+					let polygon: any = new fabric.Polygon(points, {
+						stroke: 'red',
+						fill: 'transparent',
+						strokeWidth: 1,
+						selectable: true
 					});
-					canvas.requestRenderAll();
+					polygon['id'] = new Date().getTime();
+					canvas.add(polygon);
+					canvas.renderAll(); // You might need to request a re-render of the canvas
+
+					// Reset
+					isDrawing = false;
+					points = [];
+
+					// Remove temporary lines
+					for (let line of lines) {
+						canvas.remove(line);
+					}
+					lines = [];
+					updateLayers();
 				}
-			});
+			}
 
-			// Improve zoom behavior
-			canvas.on('mouse:wheel', function(opt) {
-				const delta = opt.e.deltaY;
-				let zoom = canvas.getZoom();
+			if (spacePressed) {
+				panning = true;
+				lastPosX = options.e.clientX;
+				lastPosY = options.e.clientY;
+			}
+			updateLayers();
+			canvas.renderAll();
+			canvas.requestRenderAll();
+		});
+
+		canvas.on('mouse:move', function (opt: any) {
+			if (isDown || isDrawing) {
+				let pointer = canvas.getPointer(opt.e);
+				const mouseX = pointer.x;
+				const mouseY = pointer.y;
+				if (points.length === 0) return;
+				const x = points[points.length - 1].x;
+				const y = points[points.length - 1].y;
+				if (liveLine) {
+					liveLine.set({ x2: pointer.x, y2: pointer.y, x1: x, y1: y });
+					canvas.renderAll();
+				}
+			}
+
+			if (panning && spacePressed) {
+				var delta = new fabric.Point(opt.e.clientX - lastPosX, opt.e.clientY - lastPosY);
+				canvas.relativePan(delta);
+				lastPosX = opt.e.clientX;
+				lastPosY = opt.e.clientY;
+			}
+		});
+
+		canvas.on('mouse:up', function (options: any) {
+			if (isDrawing) {
+				isDown = false;
+			}
+			panning = false;
+			// spacePressed = false;
+		});
+
+		// Add an event listener to your group button
+		document.getElementById('group-button')?.addEventListener('click', () => {
+			let activeObjects = canvas.getActiveObjects();
+			if (activeObjects.length > 0) {
+				let group = new fabric.Group(activeObjects, {
+					objectCaching: false
+				});
+
+				// Modify the position of each object to be relative to the group
+				group._objects.forEach((object: any) => {
+					object.set({
+						left: object.left! - group.left!,
+						top: object.top! - group.top!
+					});
+				});
+
+				canvas.discardActiveObject().renderAll();
+				canvas.add(group);
+				canvas.setActiveObject(group);
+				// Remove original objects from canvas
+				activeObjects.forEach((object: any) => {
+					canvas.remove(object);
+				});
+				canvas.requestRenderAll();
+			}
+		});
+
+		// Improve zoom behavior
+		canvas.on('mouse:wheel', function(opt) {
+			const delta = opt.e.deltaY;
+			let zoom = canvas.getZoom();
+			
+			// Zoom with Ctrl + Mouse wheel
+			if (opt.e.ctrlKey || opt.e.metaKey) {
+				opt.e.preventDefault();
+				opt.e.stopPropagation();
 				
-				// Zoom with Ctrl + Mouse wheel
-				if (opt.e.ctrlKey || opt.e.metaKey) {
-					opt.e.preventDefault();
-					opt.e.stopPropagation();
-					
-					// Calculate new zoom level
-					zoom *= 0.999 ** delta;
-					zoom = Math.min(Math.max(0.1, zoom), 20); // Limit zoom range
-					
-					// Get mouse position relative to canvas
-					const pointer = canvas.getPointer(opt.e);
-					
-					// Calculate zoom point
-					const x = pointer.x;
-					const y = pointer.y;
-					
-					// Set zoom with point
-					canvas.zoomToPoint({ x, y }, zoom);
-				}
-			});
+				// Calculate new zoom level
+				zoom *= 0.999 ** delta;
+				zoom = Math.min(Math.max(0.1, zoom), 20); // Limit zoom range
+				
+				// Get mouse position relative to canvas
+				const pointer = canvas.getPointer(opt.e);
+				
+				// Calculate zoom point
+				const x = pointer.x;
+				const y = pointer.y;
+				
+				// Set zoom with point
+				canvas.zoomToPoint({ x, y }, zoom);
+			}
+		});
 
-			// Add window resize listener
-			window.addEventListener('resize', () => {
-				updateCanvasDimensions();
-			});
+		canvas.on('selection:created', function (event: any) {
+			if (!event.selected?.[0]) return;
+			setSelectedObjectValue(event.selected[0]);
+		});
 
-			canvas.on('selection:created', function (event: any) {
-				objectDetail = {
-					selectable: false,
-					services: [],
-					price: 0
-				};
-				radius = 0;
+		canvas.on('selection:updated', function (event: any) {
+			if (!event.selected?.[0]) return;
+			setSelectedObjectValue(event.selected[0]);
+		});
 
-				canvas.forEachObject((obj: any) => {
-					if (obj.id === event.selected[0].id) {
-						if (obj.objectDetail) {
-							objectDetail = obj.objectDetail;
-							objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
-						}
-						setSelectedObjectValue(obj);
-					}
-				});
-			});
-
-			canvas.on('selection:updated', function (event: any) {
-				objectDetail = {
-					selectable: false,
-					services: [],
-					price: 0
-				};
-				radius = 0;
-				canvas.forEachObject((obj: any) => {
-					if (obj.id === event.selected[0].id) {
-						if (obj.objectDetail) {
-							objectDetail = obj.objectDetail;
-							objectDetailDescription = obj.objectDetail?.descriptionLanguages ?? [];
-						}
-						setSelectedObjectValue(obj);
-					}
-				});
-			});
-
-			canvas.on('selection:cleablue', function (event: any) {
-				clearAllInput();
-				radius = null;
-			});
-			recordCanvasState();
-			canvas.on('object:modified', function (event: any) {
-				// var modifiedObject = event.target;
-				// onObjectModified(modifiedObject);
+		canvas.on('selection:cleared', function (event: any) {
+			clearAllInput();
+			radius = null;
+		});
+		recordCanvasState();
+		canvas.on('object:modified', function (event: any) {
+			const obj = event.target;
+			if (obj) {
 				recordCanvasState();
-			});
+				updateLayers();
+			}
+		});
 
-			window.addEventListener('keydown', function (e) {
-				const selectedObject = canvas.getActiveObject();
-				if (e.ctrlKey && e.key === 'Delete') {
-					removeSelectedObject();
-				}
-			});
+		window.addEventListener('keydown', function (e) {
+			const selectedObject = canvas.getActiveObject();
+			if (e.ctrlKey && e.key === 'Delete') {
+				removeSelectedObject();
+			}
+		});
 
-			// window.addEventListener('keydown', (e) => {
-			// 	if (e.ctrlKey && e.code === 'KeyZ') {
-			// 		undoSelectedObject();
-			// 	} else if (e.ctrlKey && e.code === 'KeyY') {
-			// 		blueoSelectedObject();
-			// 	}
-			// });
+		// window.addEventListener('keydown', (e) => {
+		// 	if (e.ctrlKey && e.code === 'KeyZ') {
+		// 		undoSelectedObject();
+		// 	} else if (e.ctrlKey && e.code === 'KeyY') {
+		// 		redoSelectedObject();
+		// 	}
+		// });
 
-			//function for copy
-			// Function for copying, including custom properties
-			window.addEventListener('keydown', (e) => {
-				if (e.ctrlKey && e.code === 'KeyC') {
-					const activeObject = canvas.getActiveObject();
-					if (activeObject && activeObject.objectDetail) {
-						// Use the extend method to ensure all properties are copied
-						activeObject.clone((cloned: any) => {
-							copiedObject = fabric.util.object.extend(cloned, {
-								objectDetail: JSON.parse(JSON.stringify(activeObject.objectDetail))
-							});
+		//function for copy
+		// Function for copying, including custom properties
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyC') {
+				const activeObject = canvas.getActiveObject();
+				if (activeObject && activeObject.objectDetail) {
+					// Use the extend method to ensure all properties are copied
+					activeObject.clone((cloned: any) => {
+						copiedObject = fabric.util.object.extend(cloned, {
+							objectDetail: JSON.parse(JSON.stringify(activeObject.objectDetail))
 						});
-					}
+					});
 				}
-			});
+			}
+		});
 
-			//function for paste
-			window.addEventListener('keydown', (e) => {
-				if (e.ctrlKey && e.code === 'KeyV') {
-					if (copiedObject) {
-						copiedObject.clone((clonedObj: any) => {
-							canvas.discardActiveObject(); // Deselect current object
-							clonedObj.set({
-								left: clonedObj.left + 10,
-								top: clonedObj.top + 10,
-								evented: true,
-								objectDetail: JSON.parse(JSON.stringify(copiedObject.objectDetail))
-							});
+		//function for paste
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyV') {
+				if (copiedObject) {
+					copiedObject.clone((clonedObj: any) => {
+						canvas.discardActiveObject(); // Deselect current object
+						clonedObj.set({
+							left: clonedObj.left + 10,
+							top: clonedObj.top + 10,
+							evented: true,
+							objectDetail: JSON.parse(JSON.stringify(copiedObject.objectDetail))
+						});
 
-							if (clonedObj.type === 'activeSelection') {
-								clonedObj.canvas = canvas;
-								clonedObj.forEachObject((obj) => {
-									const uniqueId =
-										new Date().getTime().toString() + Math.floor(Math.random() * 10000).toString();
-									obj.set('id', uniqueId); // unique numeric ID for each object
-									canvas.add(obj);
-								});
-								clonedObj.setCoords();
-							} else {
+						if (clonedObj.type === 'activeSelection') {
+							clonedObj.canvas = canvas;
+							clonedObj.forEachObject((obj) => {
 								const uniqueId =
 									new Date().getTime().toString() + Math.floor(Math.random() * 10000).toString();
-								clonedObj.set('id', uniqueId); // unique numeric ID for single object
-								canvas.add(clonedObj);
-							}
+								obj.set('id', uniqueId); // unique numeric ID for each object
+								canvas.add(obj);
+							});
+							clonedObj.setCoords();
+						} else {
+							const uniqueId =
+								new Date().getTime().toString() + Math.floor(Math.random() * 10000).toString();
+							clonedObj.set('id', uniqueId); // unique numeric ID for single object
+							canvas.add(clonedObj);
+						}
 
-							canvas.setActiveObject(clonedObj);
+						canvas.setActiveObject(clonedObj);
 
-							// update layer
-							updateLayers();
-							canvas.requestRenderAll();
-						});
-					}
+						// update layer
+						updateLayers();
+						canvas.requestRenderAll();
+					});
 				}
-			});
-
-			//functio to handle arrow keys
-			// Function to handle arrow keys for moving objects
-			window.addEventListener('keydown', (e) => {
-				const activeObject = canvas.getActiveObject();
-				if (!activeObject) return; // Exit if no object is selected
-
-				const moveStep = 10; // Adjust this value to change the movement increment
-
-				// Determine the direction and apply the movement
-				switch (e.key) {
-					case 'ArrowLeft':
-						activeObject.set('left', activeObject.left - moveStep);
-						e.preventDefault(); // Prevent the default action (scroll / move caret)
-						break;
-					case 'ArrowRight':
-						activeObject.set('left', activeObject.left + moveStep);
-						e.preventDefault();
-						break;
-					case 'ArrowUp':
-						activeObject.set('top', activeObject.top - moveStep);
-						e.preventDefault();
-						break;
-					case 'ArrowDown':
-						activeObject.set('top', activeObject.top + moveStep);
-						e.preventDefault();
-						break;
-				}
-
-				activeObject.setCoords(); // Recalculate object boundaries and controls
-				canvas.requestRenderAll(); // Refresh canvas to reflect changes
-			});
-
-			// Create boundary rectangle
-			const boundary = new fabric.Rect({
-				width: CANVAS_WIDTH - 80, // 40px padding on each side
-				height: CANVAS_HEIGHT - 80,
-				left: 40,
-				top: 40,
-				fill: 'transparent',
-				stroke: '#333333', // Dark gray border
-				strokeWidth: 3, // Slightly thicker border
-				selectable: false,
-				evented: false,
-				name: 'boundary'
-			});
-
-			// Add boundary to canvas
-			canvas.add(boundary);
-			canvas.renderAll();
-
-			await loadObjects(); // Load objects after canvas is ready
+			}
 		});
+
+		//functio to handle arrow keys
+		// Function to handle arrow keys for moving objects
+		window.addEventListener('keydown', (e) => {
+			const activeObject = canvas.getActiveObject();
+			if (!activeObject) return; // Exit if no object is selected
+
+			const moveStep = 10; // Adjust this value to change the movement increment
+
+			// Determine the direction and apply the movement
+			switch (e.key) {
+				case 'ArrowLeft':
+					activeObject.set('left', activeObject.left - moveStep);
+					e.preventDefault(); // Prevent the default action (scroll / move caret)
+					break;
+				case 'ArrowRight':
+					activeObject.set('left', activeObject.left + moveStep);
+					e.preventDefault();
+					break;
+				case 'ArrowUp':
+					activeObject.set('top', activeObject.top - moveStep);
+					e.preventDefault();
+					break;
+				case 'ArrowDown':
+					activeObject.set('top', activeObject.top + moveStep);
+					e.preventDefault();
+					break;
+			}
+
+			activeObject.setCoords(); // Recalculate object boundaries and controls
+			canvas.requestRenderAll(); // Refresh canvas to reflect changes
+		});
+
+		// Create boundary rectangle
+		const boundary = new fabric.Rect({
+			width: CANVAS_WIDTH - 80, // 40px padding on each side
+			height: CANVAS_HEIGHT - 80,
+			left: 40,
+			top: 40,
+			fill: 'transparent',
+			stroke: 'transparent', // Changed from '#333333' to 'transparent'
+			strokeWidth: 0, // Changed from 3 to 0
+			selectable: false,
+			evented: false,
+			name: 'boundary'
+		});
+
+		// Add boundary to canvas
+		canvas.add(boundary);
+		canvas.renderAll();
+
+		// Update layers when objects are added/removed/modified
+		canvas.on('object:added', updateLayers);
+		canvas.on('object:removed', updateLayers);
+		canvas.on('object:modified', updateLayers);
+
+		// Handle selection
+		canvas.on('selection:created', function(event: any) {
+			const obj = event.target;
+			if (obj) {
+				objectDetail = obj.objectDetail || {
+					selectable: false,
+					services: [],
+					price: 0
+				};
+				isAnObjectSelected = true;
+				selectedObjectId = obj.id;
+			}
+		});
+
+		canvas.on('selection:cleared', function() {
+			isAnObjectSelected = false;
+			selectedObjectId = 0;
+			clearAllInput();
+		});
+
+		// Initialize layers
+		updateLayers();
 	});
 
 	function getData() {
@@ -672,7 +720,7 @@
 		});
 	}
 
-	function blueoSelectedObject() {
+	function redoSelectedObject() {
 		if (currentHistoryIndex >= history.length - 1) return; // No future state
 		currentHistoryIndex++;
 		canvas.loadFromJSON(history[currentHistoryIndex], () => {
@@ -816,6 +864,21 @@
 		itemWidth = selectedObject.width;
 		itemHeight = selectedObject.height;
 		isAnObjectSelected = true;
+		
+		// Initialize objectDetail from the selected object if it exists
+		if (selectedObject.objectDetail) {
+			objectDetail = { ...selectedObject.objectDetail };
+		} else {
+			// Set default objectDetail if none exists
+			objectDetail = {
+				selectable: false,
+				services: [],
+				price: 0,
+				descriptionLanguages: []
+			};
+			// Initialize the objectDetail on the selected object
+			selectedObject.set('objectDetail', objectDetail);
+		}
 	}
 
 	async function openAddSeatModal() {
@@ -965,7 +1028,7 @@
 		isAddingText = false;
 		canvas.isDrawingMode = !canvas.isDrawingMode;
 		canvas.freeDrawingBrush.width = 5;
-		canvas.freeDrawingBrush.color = 'blue';
+		canvas.freeDrawingBrush.color = 'red';
 	}
 
 	function onDrawLine() {
@@ -989,12 +1052,16 @@
 	}
 	function addPropertiesToShape() {
 		let selectedObject = canvas.getActiveObject();
-		selectedObject.set({
-			objectDetail: {
-				selectable: !objectDetail.selectable
-			}
-		});
+		if (!selectedObject) return;
+
+		// Toggle the selectable property
 		objectDetail.selectable = !objectDetail.selectable;
+		
+		// Update the object's objectDetail
+		selectedObject.set({
+			objectDetail: { ...objectDetail }  // Create a new object to ensure reactivity
+		});
+		
 		canvas.requestRenderAll();
 	}
 	function addServiceToActiveObject(service: seatServicesModel) {
@@ -1100,36 +1167,108 @@
 
 	$: isLoading = true;
 
-	function updateCanvasSize() {
-		if (selectedCanvasSize.width && selectedCanvasSize.height) {
-			canvas.setDimensions({
-				width: selectedCanvasSize.width,
-				height: selectedCanvasSize.height
-			});
-		} else {
-			updateCanvasDimensions(); // Call existing function to set to container size
+	// Custom width/height change handlers
+	function handleCustomWidthChange(event: any) {
+		CANVAS_WIDTH = parseInt(event.target.value) || 800;
+		updateCanvasSize();
+	}
+
+	function handleCustomHeightChange(event: any) {
+		CANVAS_HEIGHT = parseInt(event.target.value) || 600;
+		updateCanvasSize();
+	}
+
+	function addShape(type: string) {
+		if (!canvas) return;
+
+		const center = canvas.getCenter();
+		
+		// Common properties for all shapes
+		const commonProps = {
+			left: center.left,
+			top: center.top,
+			fill: fillColor || '#000000',
+			stroke: strokeColor || '#000000',
+			strokeWidth: parseInt(strokeWidth!) || 2,
+			originX: 'center',
+			originY: 'center',
+			selectable: true,
+			hasControls: true,
+			hasBorders: true,
+			id: new Date().getTime(),
+			name: type,
+			objectDetail: {
+				selectable: false,
+				services: [],
+				price: 0,
+				descriptionLanguages: []
+			}
+		};
+
+		let shape;
+		switch (type) {
+			case 'rectangle':
+				shape = new fabric.Rect({
+					...commonProps,
+					width: 100,
+					height: 100,
+					rx: radius || 0,
+					ry: radius || 0
+				});
+				break;
+			case 'circle':
+				shape = new fabric.Circle({
+					...commonProps,
+					radius: 50
+				});
+				break;
+			case 'triangle':
+				shape = new fabric.Triangle({
+					...commonProps,
+					width: 100,
+					height: 100
+				});
+				break;
+		}
+
+		if (shape) {
+			canvas.add(shape);
+			canvas.setActiveObject(shape);
+			canvas.centerObject(shape);
+			updateLayers(); // Update layers after adding shape
+			canvas.requestRenderAll();
 		}
 	}
 
-	// Function to load objects onto the canvas
-	async function loadObjects() {
-		const objectsData = await getObjectsData(); // Fetch your objects data
-
-		objectsData.forEach((objData) => {
-			const obj = new fabric.Rect({ // Example for a rectangle
-				left: objData.left,
-				top: objData.top,
-				fill: objData.fill,
-				width: objData.width,
-				height: objData.height,
-				selectable: true,
-				id: objData.id // Ensure each object has a unique ID
-			});
-
-			canvas.add(obj); // Add the object to the canvas
+	// Add this helper function to update object properties
+	function updateObjectProperties(obj: any) {
+		if (!obj) return;
+		
+		obj.set({
+			fill: fillColor,
+			stroke: strokeColor,
+			strokeWidth: parseInt(strokeWidth!) || 2,
+			rx: radius || 0,
+			ry: radius || 0
 		});
 
-		canvas.renderAll(); // Render the canvas to show the objects
+		if (itemWidth && itemHeight) {
+			obj.set({
+				width: parseInt(itemWidth),
+				height: parseInt(itemHeight)
+			});
+		}
+
+		canvas.requestRenderAll();
+	}
+
+	// Add function to handle layer selection
+	function selectLayer(id: number) {
+		const obj = canvas.getObjects().find((o: any) => o.id === id);
+		if (obj) {
+			canvas.setActiveObject(obj);
+			canvas.requestRenderAll();
+		}
 	}
 </script>
 
@@ -1160,6 +1299,7 @@
 		{currentSeatLayoutData}
 	/>
 </Modal>
+
 <div class="flex flex-col w-full h-full flex-1 bg-gray-100 text-gray-700">
 	<div class="w-full grid grid-cols-6 h-full gap-4 p-4">
 		<DrawingBar
@@ -1169,32 +1309,59 @@
 				objects: objects,
 				selectedObjectId: selectedObjectId,
 				fabric: fabric
-			}}z
+			}}
 			on:updateLayers={() => updateLayers()}
 		/>
 
-		
 		<div 
 			bind:this={container} 
 			class="w-full h-full col-span-4 relative"
 		>
-		<div class="dropdown-container">
-			<select bind:value={selectedCanvasSize} on:change={updateCanvasSize}>
-				{#each canvasSizeOptions as option}
-					<option value={option}>{option.label}</option>
-				{/each}
-			</select>
-		</div>
-		
-		 
+			<div class="flex gap-4 mb-4">
+				<ButtonGroup class="w-full" size="sm">
+					<InputAddon>Canvas Size</InputAddon>
+					<select 
+						bind:value={canvasSize} 
+						on:change={updateCanvasSize} 
+						class="form-select"
+					>
+						{#each allowedSizes as size}
+							<option value={size.value}>{size.label}</option>
+						{/each}
+					</select>
+				</ButtonGroup>
 
+				{#if canvasSize === 'custom'}
+					<ButtonGroup class="w-full" size="sm">
+						<InputAddon>Width</InputAddon>
+						<Input
+							type="number"
+							bind:value={CANVAS_WIDTH}
+							on:input={handleCustomWidthChange}
+							placeholder="Width"
+							min="400"
+							max="3840"
+						/>
+					</ButtonGroup>
+					<ButtonGroup class="w-full" size="sm">
+						<InputAddon>Height</InputAddon>
+						<Input
+							type="number"
+							bind:value={CANVAS_HEIGHT}
+							on:input={handleCustomHeightChange}
+							placeholder="Height"
+							min="400"
+							max="2160"
+						/>
+					</ButtonGroup>
+				{/if}
+			</div>
 
-		 <div class="canvas-container w-full h-full">
-				<canvas id="canvas" class="fabric-canvas" />
+			<div class="canvas-container">
+				<canvas id="canvas" />
 			</div>
 		</div>
 
-		
 		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
@@ -1338,8 +1505,7 @@
 					/></ButtonGroup
 				>
 			</div>
-			
-			 <div class="border-t-2 border-gray-200 my-5" />
+			<div class="border-t-2 border-gray-200 my-5" />
 			{#if objectDetail.selectable}
 				<div class="w-full">
 					<ButtonGroup class="w-full mb-2" size="sm">
@@ -1459,26 +1625,11 @@
 				</div>
 			{/if}
 		</div>
-
-
-
 	</div>
 </div>
  
-
+ 
 <style lang="scss">
-	// Remove all existing background styles, borders, and shadows
-	body, html {
-		background: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.flex {
-		background: none;
-		box-shadow: none;
-	}
-
 	.canvas-container {
 		position: relative;
 		width: 100% !important;
@@ -1488,25 +1639,37 @@
 		justify-content: center;
 		align-items: center;
 		overflow: hidden !important;
-		background: none;
-		box-shadow: none;
 	}
 
-  #canvas {
-		background-color: blue;
-		width: 100%;
+	canvas {
+		margin: 0;
 		height: 100%;
+		width: 100%;
+		border: 1px solid gray;
 	}
 
-	.dropdown-container {
-		margin: 10px;
+	// Make container scrollable if canvas is larger than viewport
+	.overflow-auto {
+		max-height: 90vh;
 	}
 
-	.fabric-canvas {
-    border: none; /* Ensure there's no border */
-    background-color: blue; /* Set the canvas background to blue */
-}
+	.layers-panel {
+		margin-top: 1rem;
+	}
 
+	.layer-item {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.5rem;
+		cursor: pointer;
+		border: 1px solid #ddd;
+		margin-bottom: 0.25rem;
+	}
+
+	.layer-item.selected {
+		background-color: #e2e8f0;
+	}
 </style>
 
-
+ 
