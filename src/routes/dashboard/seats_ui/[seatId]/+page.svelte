@@ -11,7 +11,8 @@
 		Spinner,
 		TabItem,
 		Tabs,
-		Textarea
+		Textarea,
+		Select
 	} from 'flowbite-svelte';
 	import {  Plus } from 'svelte-heros-v2';
 	import type { SeatImageItemModel } from '../../../../stores/seatImageItemStore';
@@ -80,13 +81,14 @@
 	let CANVAS_HEIGHT = 600;
 	let canvasSize = '800x600';
 
+
 	const allowedSizes = [
-		{ label: '800 x 600', value: '800x600' },
-		{ label: '1024 x 768', value: '1024x768' },
-		{ label: '1280 x 720 (HD)', value: '1280x720' },
-		{ label: '1366 x 768', value: '1366x768' },
-		{ label: '1440 x 900', value: '1440x900' },
-		{ label: 'Custom', value: 'custom' }
+		{ value: '800x600', name: '800 x 600' },
+		{ value: '1024x768', name: '1024 x 768' },
+		{ value: '1280x720', name: '1280 x 720' },
+		{ value: '1366x768', name: '1366 x 768' },
+		{ value: '1440x900', name: '1440 x 900' },
+		{ value: 'custom', name: 'Custom' }
 	];
 
 	// Function to update canvas size
@@ -165,11 +167,16 @@
 
 		// Initialize canvas with white background
 		canvas = new fabric.Canvas('canvas', {
-			backgroundColor: '#ffffff', // Changed from '#ff0000' to '#ffffff'
+			backgroundColor: 'transparent',
 			width: CANVAS_WIDTH,
 			height: CANVAS_HEIGHT,
+			allowTouchScrolling: true,
+			selection: true,
 			preserveObjectStacking: true,
-			selection: true
+			// Disable zoom
+			allowZoom: false,
+			zoomOnScroll: false,
+			zoomOnPinch: false
 		});
 
 		// Set initial canvas properties
@@ -214,12 +221,26 @@
 					exhibitionName = data.name;
 					const design = data.design;
 
-					// Set canvas to the exact dimensions from the saved design
-					if (canvas) {
-						canvas.setDimensions({
-							width: design.width,
-							height: design.height
-						});
+					// Set the canvas size from the design data
+					if (design?.width && design?.height) {
+						const sizeString = `${design.width}x${design.height}`;
+						// Check if this size exists in allowedSizes
+						const existingSize = allowedSizes.find(size => size.value === sizeString);
+						if (existingSize) {
+							canvasSize = existingSize.value;
+						} else {
+							// If size doesn't exist in allowedSizes, add it
+							allowedSizes.push({ value: sizeString, name: `${design.width} x ${design.height}` });
+							canvasSize = sizeString;
+						}
+						
+						// Update canvas dimensions
+						if (canvas) {
+							canvas.setDimensions({
+								width: design.width,
+								height: design.height
+							});
+						}
 					}
 
 					await canvas.loadFromJSON(design, async () => {
@@ -498,30 +519,30 @@
 		});
 
 		// Improve zoom behavior
-		canvas.on('mouse:wheel', function(opt) {
-			const delta = opt.e.deltaY;
-			let zoom = canvas.getZoom();
-			
-			// Zoom with Ctrl + Mouse wheel
-			if (opt.e.ctrlKey || opt.e.metaKey) {
-				opt.e.preventDefault();
-				opt.e.stopPropagation();
-				
-				// Calculate new zoom level
-				zoom *= 0.999 ** delta;
-				zoom = Math.min(Math.max(0.1, zoom), 20); // Limit zoom range
-				
-				// Get mouse position relative to canvas
-				const pointer = canvas.getPointer(opt.e);
-				
-				// Calculate zoom point
-				const x = pointer.x;
-				const y = pointer.y;
-				
-				// Set zoom with point
-				canvas.zoomToPoint({ x, y }, zoom);
-			}
-		});
+		// canvas.on('mouse:wheel', function(opt) {
+		// 	const delta = opt.e.deltaY;
+		// 	let zoom = canvas.getZoom();
+		// 	
+		// 	// Zoom with Ctrl + Mouse wheel
+		// 	if (opt.e.ctrlKey || opt.e.metaKey) {
+		// 		opt.e.preventDefault();
+		// 		opt.e.stopPropagation();
+		// 		
+		// 		// Calculate new zoom level
+		// 		zoom *= 0.999 ** delta;
+		// 		zoom = Math.min(Math.max(0.1, zoom), 20); // Limit zoom range
+		// 		
+		// 		// Get mouse position relative to canvas
+		// 		const pointer = canvas.getPointer(opt.e);
+		// 		
+		// 		// Calculate zoom point
+		// 		const x = pointer.x;
+		// 		const y = pointer.y;
+		// 		
+		// 		// Set zoom with point
+		// 		canvas.zoomToPoint({ x, y }, zoom);
+		// 	}
+		// });
 
 		canvas.on('selection:created', function (event: any) {
 			if (!event.selected?.[0]) return;
@@ -693,6 +714,27 @@
 
 		// Initialize layers
 		updateLayers();
+
+		// Remove or comment out zoom-related functions
+		// function zoomIn() { ... }
+		// function zoomOut() { ... }
+
+		// If you have any keyboard shortcuts for zooming, remove those too
+		window.addEventListener('keydown', function (e) {
+			// Remove any Ctrl + '+' or Ctrl + '-' handlers
+			if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-')) {
+				e.preventDefault();
+				return false;
+			}
+		});
+
+		// Prevent browser default zoom
+		window.addEventListener('wheel', function (e) {
+			if (e.ctrlKey || e.metaKey) {
+				e.preventDefault();
+				return false;
+			}
+		}, { passive: false });
 	});
 
 	function getData() {
@@ -984,36 +1026,6 @@
 				canvas.requestRenderAll();
 			} catch (e) {}
 		}
-	}
-
-	let zoomLevel = 1;
-
-	// Zoom In
-	function zoomIn() {
-		if (!canvas) return;
-		
-		let zoom = canvas.getZoom();
-		zoom *= 1.1;
-		zoom = Math.min(zoom, 20);
-		
-		// Zoom to center
-		const center = canvas.getCenter();
-		canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
-		canvas.renderAll();
-	}
-
-	// Zoom Out
-	function zoomOut() {
-		if (!canvas) return;
-		
-		let zoom = canvas.getZoom();
-		zoom /= 1.1;
-		zoom = Math.max(zoom, 0.1);
-		
-		// Zoom to center
-		const center = canvas.getCenter();
-		canvas.zoomToPoint(new fabric.Point(center.left, center.top), zoom);
-		canvas.renderAll();
 	}
 
 	// Function to enable text adding mode
@@ -1320,15 +1332,13 @@
 			<div class="flex gap-4 mb-4">
 				<ButtonGroup class="w-full" size="sm">
 					<InputAddon>Canvas Size</InputAddon>
-					<select 
-						bind:value={canvasSize} 
-						on:change={updateCanvasSize} 
-						class="form-select"
-					>
-						{#each allowedSizes as size}
-							<option value={size.value}>{size.label}</option>
-						{/each}
-					</select>
+					<Select
+						class=" w-32 rounded"
+						bind:value={canvasSize}
+						on:change={updateCanvasSize}
+						items={allowedSizes}
+						placeholder="Select canvas size"
+					/>
 				</ButtonGroup>
 
 				{#if canvasSize === 'custom'}
@@ -1362,7 +1372,7 @@
 			</div>
 		</div>
 
-		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
+		<div class="p-4 overflow-y-auto pb-10 bg-gray-50 rounded" style="max-height: calc(100vh - 50px);">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
 					<Button on:click={addPropertiesToShape} class="w-full" outline>

@@ -136,7 +136,7 @@
 	}
 </script>
 
-<div class="flex flex-col p-5 bg-gray-100 text-gray-700">
+<div class="flex flex-col p-5 bg-gray-50 text-gray-700 rounded"  style="max-height: calc(100vh - 50px);">
 	<div class="grid grid-cols-4 gap-2 rounded-md my-6">
 		<Button on:click={() => addImages()} class="w-16 h-16 seat-design rounded cursor-pointer ">
 			<Plus class="w-full h-full " />
@@ -201,7 +201,7 @@
 	</Modal>
 	<div class="mt-4">
 		<div class=" text-xl my-4">Layers</div>
-		<ul id="layers" style="height: 30vh " class="overflow-y-auto">
+		<ul id="layers" style="height: 60vh " class="overflow-y-auto">
 			{#if data && data.objects.length > 0}
 				{#each data.objects as object}
 					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
