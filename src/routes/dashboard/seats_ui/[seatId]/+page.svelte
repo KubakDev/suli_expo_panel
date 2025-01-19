@@ -81,6 +81,15 @@
 	let CANVAS_WIDTH: number;
 	let CANVAS_HEIGHT: number;
 
+	let canvasSizeOptions = [
+		{ label: 'Small', width: 800, height: 600 },
+		{ label: 'Medium', width: 1200, height: 800 },
+		{ label: 'Large', width: 1600, height: 900 },
+		{ label: 'Auto', width: null, height: null } // Auto will set to container size
+	];
+
+	let selectedCanvasSize = canvasSizeOptions[0]; // Default to Small
+
 	// Add window resize handler
 	function updateCanvasDimensions() {
 		// Get the container dimensions, accounting for padding
@@ -97,6 +106,8 @@
 					width: CANVAS_WIDTH,
 					height: CANVAS_HEIGHT
 				});
+
+				
 				canvas.renderAll();
 			}
 		}
@@ -123,9 +134,13 @@
 				height: CANVAS_HEIGHT,
 				preserveObjectStacking: true
 			});
+
+			// Set the canvas background color to blue after the canvas is created
+			canvas.setBackgroundColor('blue', canvas.renderAll.bind(canvas));
+
 			canvas.on('path:created', (e: any) => {
 				let path = e.path;
-				path.set({ stroke: 'red' });
+				path.set({ stroke: 'blue' });
 				canvas.renderAll();
 			});
 			canvas.imageSmoothingEnabled = false;
@@ -322,7 +337,7 @@
 					liveLine = new fabricResponse.fabric.Line(
 						[points[points.length - 1].x, points[points.length - 1].y, pointer.x, pointer.y],
 						{
-							stroke: 'red',
+							stroke: 'blue',
 							strokeWidth: 1,
 							selectable: false
 						}
@@ -340,7 +355,7 @@
 
 						// Close the shape
 						let polygon: any = new fabricResponse.fabric.Polygon(points, {
-							stroke: 'red',
+							stroke: 'blue',
 							fill: 'transparent',
 							strokeWidth: 1,
 							selectable: true
@@ -497,7 +512,7 @@
 				});
 			});
 
-			canvas.on('selection:cleared', function (event: any) {
+			canvas.on('selection:cleablue', function (event: any) {
 				clearAllInput();
 				radius = null;
 			});
@@ -519,7 +534,7 @@
 			// 	if (e.ctrlKey && e.code === 'KeyZ') {
 			// 		undoSelectedObject();
 			// 	} else if (e.ctrlKey && e.code === 'KeyY') {
-			// 		redoSelectedObject();
+			// 		blueoSelectedObject();
 			// 	}
 			// });
 
@@ -627,6 +642,8 @@
 			// Add boundary to canvas
 			canvas.add(boundary);
 			canvas.renderAll();
+
+			await loadObjects(); // Load objects after canvas is ready
 		});
 	});
 
@@ -655,7 +672,7 @@
 		});
 	}
 
-	function redoSelectedObject() {
+	function blueoSelectedObject() {
 		if (currentHistoryIndex >= history.length - 1) return; // No future state
 		currentHistoryIndex++;
 		canvas.loadFromJSON(history[currentHistoryIndex], () => {
@@ -948,7 +965,7 @@
 		isAddingText = false;
 		canvas.isDrawingMode = !canvas.isDrawingMode;
 		canvas.freeDrawingBrush.width = 5;
-		canvas.freeDrawingBrush.color = 'red';
+		canvas.freeDrawingBrush.color = 'blue';
 	}
 
 	function onDrawLine() {
@@ -1083,7 +1100,37 @@
 
 	$: isLoading = true;
 
-	
+	function updateCanvasSize() {
+		if (selectedCanvasSize.width && selectedCanvasSize.height) {
+			canvas.setDimensions({
+				width: selectedCanvasSize.width,
+				height: selectedCanvasSize.height
+			});
+		} else {
+			updateCanvasDimensions(); // Call existing function to set to container size
+		}
+	}
+
+	// Function to load objects onto the canvas
+	async function loadObjects() {
+		const objectsData = await getObjectsData(); // Fetch your objects data
+
+		objectsData.forEach((objData) => {
+			const obj = new fabric.Rect({ // Example for a rectangle
+				left: objData.left,
+				top: objData.top,
+				fill: objData.fill,
+				width: objData.width,
+				height: objData.height,
+				selectable: true,
+				id: objData.id // Ensure each object has a unique ID
+			});
+
+			canvas.add(obj); // Add the object to the canvas
+		});
+
+		canvas.renderAll(); // Render the canvas to show the objects
+	}
 </script>
 
 <!-- {#if fabric} -->
@@ -1122,19 +1169,32 @@
 				objects: objects,
 				selectedObjectId: selectedObjectId,
 				fabric: fabric
-			}}
+			}}z
 			on:updateLayers={() => updateLayers()}
 		/>
 
+		
 		<div 
 			bind:this={container} 
-			class="w-full h-full col-span-4 relative bg-transparent rounded-lg shadow-md"
+			class="w-full h-full col-span-4 relative"
 		>
-			<div class="canvas-container w-full h-full">
+		<div class="dropdown-container">
+			<select bind:value={selectedCanvasSize} on:change={updateCanvasSize}>
+				{#each canvasSizeOptions as option}
+					<option value={option}>{option.label}</option>
+				{/each}
+			</select>
+		</div>
+		
+		 
+
+
+		 <div class="canvas-container w-full h-full">
 				<canvas id="canvas" class="fabric-canvas" />
 			</div>
 		</div>
 
+		
 		<div class="p-4 overflow-y-auto pb-10" style="max-height: calc(100vh - 50px);">
 			{#if canvas && isAnObjectSelected}
 				<div class="pb-4 w-full">
@@ -1278,7 +1338,8 @@
 					/></ButtonGroup
 				>
 			</div>
-			<div class="border-t-2 border-gray-200 my-5" />
+			
+			 <div class="border-t-2 border-gray-200 my-5" />
 			{#if objectDetail.selectable}
 				<div class="w-full">
 					<ButtonGroup class="w-full mb-2" size="sm">
@@ -1398,133 +1459,24 @@
 				</div>
 			{/if}
 		</div>
+
+
+
 	</div>
 </div>
  
 
 <style lang="scss">
-	.fabric-canvas {
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-  }
-
-  .bg-white {
-    background-color: white;
-  }
-
-  .rounded-lg {
-    border-radius: 0.5rem;
-  }
-
-  .shadow-md {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(190, 7, 7, 0.06);
-  }
-	canvas {
-		border: 1px solid #89909c;
-		border-radius: 5px;
-		margin-top: 0; /* Set margin-top to 0 */
-		height: 100%; /* Ensure canvas takes full height */
-		width: 100%; /* Ensure canvas takes full width */
-	}
-	.custom-cursor {
-		cursor: crosshair;
-	}
-	.h-screen {
-		height: 100vh;
-	}
-	.cursor-move {
-		cursor: move;
+	// Remove all existing background styles, borders, and shadows
+	body, html {
+		background: none;
+		margin: 0;
+		padding: 0;
 	}
 
-	.circle {
-		fill: none;
-		stroke: currentColor;
-		stroke-width: 2;
-	}
-	.seat {
-		user-select: none;
-		fill: none;
-		stroke: currentColor;
-		height: 100%; /* Ensure seat takes full height */
-	}
-
-	.rotate-handle {
-		left: -24px;
-		top: -24px;
-		cursor: grab;
-		color: red;
-	}
-	div::-webkit-scrollbar {
-		width: 0.5em; /* Adjust as needed */
-	}
-
-	/* Style the scrollbar thumb (optional) */
-	div::-webkit-scrollbar-thumb {
-		background-color: transparent; /* Hide the scrollbar thumb */
-	}
-
-	//spinner
-	.spinner-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		height: 100%;
-	}
-
-	.loader {
-		border: 5px solid #f3f3f3;
-		border-top: 5px solid #000000;
-		border-radius: 50%;
-		width: 50px;
-		height: 50px;
-		animation: spin 2s linear infinite;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-
-	.topbar {
-		margin: 0; /* Remove any margin */
-		padding: 0; /* Remove any padding */
-	}
-
-	.customShape {
-		.Circle {
-			width: 20px;
-			height: 20px;
-			border-radius: 50%;
-		}
-		.Rectangle {
-			height: 15px;
-			width: 30px;
-		}
-		.Ellipse {
-			height: 15px;
-			width: 30px;
-			border-radius: 50%;
-		}
-		.Line {
-			position: relative;
-			width: 25px;
-			height: 2px;
-			background-color: black;
-			rotate: 45deg;
-		}
-
-		.Triangle {
-			width: 0;
-			height: 0;
-			border-left: 10px solid transparent;
-			border-right: 10px solid transparent;
-			border-bottom: 20px solid #fff;
-			background-color: transparent !important;
-		}
+	.flex {
+		background: none;
+		box-shadow: none;
 	}
 
 	.canvas-container {
@@ -1536,18 +1488,25 @@
 		justify-content: center;
 		align-items: center;
 		overflow: hidden !important;
+		background: none;
+		box-shadow: none;
+	}
+
+  #canvas {
+		background-color: blue;
+		width: 100%;
+		height: 100%;
+	}
+
+	.dropdown-container {
+		margin: 10px;
 	}
 
 	.fabric-canvas {
-		border: 1px solid #e2e8f0;
-		border-radius: 0.5rem;
-		background: transparent;
-	}
+    border: none; /* Ensure there's no border */
+    background-color: blue; /* Set the canvas background to blue */
+}
 
-	// Make container scrollable if canvas is larger than viewport
-	.overflow-auto {
-		max-height: 90vh;
-	}
 </style>
 
- 
+
