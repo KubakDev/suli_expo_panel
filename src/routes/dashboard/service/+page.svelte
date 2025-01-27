@@ -5,6 +5,7 @@
 	import { flip } from 'svelte/animate';
 	import { dndzone } from 'svelte-dnd-action';
 	import DeleteModal from '$lib/components/DeleteModal.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 	// Import Tabler icon
 	import {  
 		IconGridDots,
@@ -18,11 +19,14 @@
 	export let data;
 	let items: ServiceModel[] = [];
 	let flag = false;
+	let loaded = false;
 
 	async function fetchData() {
+		loaded = false;
 		await getData(data.supabase);
 		items = $service;
 		flag = false;
+		loaded = true;
 	}
 	onMount(fetchData);
 
@@ -86,6 +90,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- insert new data -->
 	<InsertButton insertData={createService} />
@@ -225,6 +234,7 @@
 		</div>
 	</div>
 </div>
+{/if}
 
 <style>
 	tbody {

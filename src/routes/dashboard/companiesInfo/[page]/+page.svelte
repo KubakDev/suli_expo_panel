@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import { page } from '$app/stores';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	export let data;
 	let searchQuery: string = '';
 	let searchField: string | null = null;
@@ -15,7 +15,8 @@
 	const pageSize: number = 12;
 	let totalPages: number = 1;
 	let totalItems: number;
-
+	let loaded = false;
+	
 	onMount(() => {
 		currentPage = +$page.params.page;
 		fetchCompanyData();
@@ -28,6 +29,7 @@
 	}
 
 	async function fetchCompanyData() {
+		loaded = false;   
 		const result = await getCompanyData(
 			data.supabase,
 			searchField,
@@ -38,9 +40,8 @@
 
 		totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
+		loaded = true;   
 	}
-
-	onMount(fetchCompanyData);
 
 	//create checkboxes
 	const options = ['company name', 'company phoneNumber', 'company email'];
@@ -133,6 +134,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex justify-between gap-5">
 		<!-- total count -->
@@ -143,20 +149,7 @@
 		</div>
 		<!-- clear All filters  -->
 		<div class="flex gap-2">
-			<div class="">
-				<button
-					class="w-11 h-11 flex items-center justify-center 
-					bg-gray-200 hover:bg-gray-300 text-gray-900 
-					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
-					border border-gray-300 dark:border-gray-600 
-					rounded"
-					on:click={clearAllFilters}
-					title="Clear All Filters"
-				>
-					<IconX size={24} class="text-red-500" />
-				</button>
-			</div>
-
+			
 			<!-- filtering by company -->
 			<div class="w-44">
 				<Button
@@ -216,6 +209,22 @@
 					{/each}
 				</Dropdown>
 			</div>
+
+<div class="">
+				<button
+					class="w-11 h-11 flex items-center justify-center 
+					bg-gray-200 hover:bg-gray-300 text-gray-900 
+					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
+					border border-gray-300 dark:border-gray-600 
+					rounded"
+					on:click={clearAllFilters}
+					title="Clear All Filters"
+				>
+					<IconX size={24} class="text-red-500" />
+				</button>
+			</div>
+
+
 		</div>
 	</div>
 
@@ -332,3 +341,4 @@
 		</div>
 	</div>
 </div>
+{/if}

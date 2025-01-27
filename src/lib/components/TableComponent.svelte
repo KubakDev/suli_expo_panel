@@ -109,6 +109,30 @@
 											{#each item[column.name] as lang}
 												<div>{lang.description.slice(0, 70)}</div>
 											{/each}
+										{:else if column.type === 'email'}
+											{#each item[column.name] as lang}
+												<div>{lang.email}</div>
+											{/each}
+										{:else if column.type === 'location'}
+											{#each item[column.name] as lang}
+												<div>{lang.location}</div>
+											{/each}
+										{:else if column.type === 'phoneNumber_relations'}
+											{#each item[column.name] as lang}
+												<div>{lang.phoneNumber_relations}</div>
+											{/each}
+										{:else if column.type === 'phoneNumber_Technical'}
+											{#each item[column.name] as lang}
+												<div>{lang.phoneNumber_Technical}</div>
+											{/each}
+										{:else if column.type === 'phoneNumber_Administration'}
+											{#each item[column.name] as lang}
+												<div>{lang.phoneNumber_Administration}</div>
+											{/each}
+										{:else if column.type === 'phoneNumber_marketing'}
+											{#each item[column.name] as lang}
+												<div>{lang.phoneNumber_marketing}</div>
+											{/each}
 										{/if}
 									</div>
 								</td>

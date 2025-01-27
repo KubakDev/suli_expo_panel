@@ -14,16 +14,20 @@
 	} from '@tabler/icons-svelte'; 
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import type { ExhibitionsModel } from '../../../models/exhibitionModel';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
 	let items: ExhibitionsModel[] = [];
 	let flag = false;
+	let loaded = false;
 
 	async function fetchData() {
+		loaded = false;
 		await getData(data.supabase);
 		items = $exhibitions;
 
 		flag = false;
+		loaded = true;
 	}
 	onMount(fetchData);
 
@@ -34,13 +38,16 @@
 	// delete data
 	async function handleDelete(exhibitionId: number) {
 		try {
+			loaded = false;
 			await data.supabase
 				.from('exhibition')
 				.update({ deleted_status: 'delete' })
 				.eq('id', exhibitionId);
 
 			await fetchData();
-		} catch (error) {}
+		} catch (error) {
+			loaded = true;
+		}
 	}
 
 	const flipDurationMs = 300;
@@ -51,6 +58,7 @@
 	}
 
 	async function handleDndFinalize(e: CustomEvent) {
+		loaded = false;
 		items = e.detail.items;
 		flag = true;
 		items.forEach((item: any, index: number) => {
@@ -58,8 +66,8 @@
 		});
 
 		await updatePositions();
-		await fetchData(); // Fetch data again after updating positions
-		flag = false; // Set flag to false after data is fetched
+		await fetchData();
+		flag = false;
 	}
 
 	let supabase = data.supabase;
@@ -78,6 +86,7 @@
 	}
 
 	async function swapItems(indexA: number, indexB: number) {
+		loaded = false;
 		const tempItem = items[indexA];
 		items[indexA] = items[indexB];
 		items[indexB] = tempItem;
@@ -87,11 +96,15 @@
 		});
 
 		await updatePositions();
-		await fetchData(); // Fetch data again after updating positions
-		flag = false; // Set flag to false after data is fetched
+		await fetchData();
+		flag = false;
 	}
 </script>
-
+	{#if !loaded}
+				<div class="flex justify-center items-center h-screen">
+					<Spinner size="h-16 w-16" color="border-gray-500" />
+				</div>
+				{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- insert new data -->
 	<InsertButton insertData={createExhibition} />
@@ -101,6 +114,7 @@
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">
+			
 				<table class="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
 					<thead>
 						<tr>
@@ -218,6 +232,7 @@
 	</div>
 </div>
 
+	{/if}
 <style>
 	tbody {
 		cursor: grab;

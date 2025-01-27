@@ -8,7 +8,7 @@
 	import { exportToExcel } from '$lib/utils/exportToExcel';
 	import { Button } from 'flowbite-svelte';
 	import { IconX, IconEdit, IconLayoutGrid } from '@tabler/icons-svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	interface User {
 		id: number;
 		created_at: string;
@@ -25,6 +25,8 @@
 	}
 
 	export let data;
+	let loaded = false;
+	let isLoading = false;
 	let currentPage = 1;
 	const pageSize = 10;
 	let totalPages = 1;
@@ -35,6 +37,7 @@
 	let totalCount = 0;
 
 	async function getUserRegistrations() {
+		isLoading = true;
 		const { data: result, error } = await data.supabase.rpc(
 			'get_paged_users_game_exhibition_filter',
 			{
@@ -47,6 +50,7 @@
 
 		if (error) {
 			console.error(error);
+			isLoading = false;
 			return;
 		}
 
@@ -56,6 +60,8 @@
 		totalCount = total_count;
 		totalPages = Math.ceil(total_count / page_limit);
 		notFound = users.length === 0;
+		isLoading = false;
+		loaded = true;
 	}
 
 	onMount(getUserRegistrations);
@@ -86,6 +92,11 @@
 	}
 </script>
  
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- Filter Container -->
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
@@ -282,6 +293,7 @@
 
 	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
+{/if}
 
 <style>
 	.filter-container input {

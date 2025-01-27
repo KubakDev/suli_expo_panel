@@ -5,12 +5,15 @@
 	import { goto } from '$app/navigation';
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import TableComponent from '$lib/components/TableComponent.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
-
+	let loaded = false;
 	async function fetchData() {
+		loaded = false;
 		await getData(data.supabase);
 		await getDataStaff(data.supabase);
+		loaded = true;
 	}
 
 	onMount(fetchData);
@@ -76,6 +79,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10 px-4 lg:px-0">
 	<!-- About Section  -->
 	<div>
@@ -101,3 +109,4 @@
 		/>
 	</div>
 </div>
+{/if}

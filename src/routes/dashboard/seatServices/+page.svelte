@@ -17,15 +17,19 @@
 		IconArrowDown,
 		IconEdit, 
 	} from '@tabler/icons-svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
 	let items: seatServicesModel[] = [];
 	let flag = false;
+	let loaded = false;
 
 	async function fetchData() {
+		loaded = false;
 		await getSeatServices(data.supabase);
 		items = $seatServices;
 		flag = false;
+		loaded = true;
 	}
 
 	onMount(fetchData);
@@ -92,6 +96,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- insert new data -->
 	<InsertButton insertData={createSeatServices} />
@@ -201,6 +210,7 @@
 		</div>
 	</div>
 </div>
+{/if}
 
 <style>
 	tbody {

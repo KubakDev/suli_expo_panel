@@ -5,6 +5,7 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import TableComponent from '$lib/components/TableComponent.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
 	let currentPage = 1;
@@ -12,10 +13,11 @@
 	let searchQuery = '';
 	let galleryData = [];
 	let totalPages = 1;
-
+	let isLoading = false;
 	//
 
 	async function fetchData() {
+		isLoading = true;
 		let result = await getData(data.supabase, currentPage, pageSize, searchQuery);
 
 		galleryData = result.data;
@@ -25,6 +27,7 @@
 		// Recalculate the total number of pages
 		const totalItems = result.count;
 		totalPages = Math.ceil(totalItems / pageSize);
+		isLoading = false;
 		//
 	}
 
@@ -81,6 +84,11 @@
 	];
 </script>
 
+{#if isLoading}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- insert new data -->
 	<InsertButton insertData={createGallery} />
@@ -97,3 +105,4 @@
 	<!-- Add pagination -->
 	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
+{/if}

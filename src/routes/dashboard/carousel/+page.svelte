@@ -5,19 +5,23 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import TableComponent from '$lib/components/TableComponent.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
 	let currentPage = 1;
 	const pageSize = 8;
 	let totalPages = 1;
+	let loaded = false;
 
 	async function fetchData() {
+		loaded = false;
 		let result = await getData(data.supabase, currentPage, pageSize);
 
 		// Recalculate the total number of pages
 		const totalItems = result.count || 0;
 		totalPages = Math.ceil(totalItems / pageSize);
 		//
+		loaded = true;
 	}
 
 	onMount(fetchData);
@@ -66,12 +70,17 @@
 		}
 	];
 </script>
-
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<!-- insert new data -->
 	<InsertButton insertData={createCarousel} />
 
 	<!-- table data -->
+
 	<TableComponent
 		{calculateIndex}
 		{handleDelete}
@@ -79,7 +88,8 @@
 		data={$carousel}
 		{columnTitle}
 	/>
-
+	
 	<!-- Add pagination -->
 	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
+{/if}

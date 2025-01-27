@@ -14,8 +14,10 @@
 	import { isEmpty } from 'validator';
 	import { ModeTypeEnum, type ColorTheme } from '../../../../models/colorTheme';
 	import { IconPlus, IconApps, IconTrash, IconGridDots } from '@tabler/icons-svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
+ 
 	export let data;
+	let isLoading = false;
 	let isFormSubmitted = false;
 	let showModal = false;
 	let submitted = false;
@@ -35,9 +37,11 @@
 	};
 
 	async function fetchData() {
+		isLoading = true;
 		let result = await getData(data.supabase);
 
 		colorData = result;
+		isLoading = false;
 	}
 
 	onMount(fetchData);
@@ -114,6 +118,11 @@
 	}
 </script>
 
+{#if isLoading}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
 		<button
@@ -400,7 +409,7 @@
 		</Modal>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

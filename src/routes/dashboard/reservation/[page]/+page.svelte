@@ -19,7 +19,7 @@
 	import { page } from '$app/stores';
 	import { exportToExcel } from '$lib/utils/exportToExcel';
 	import { IconGridDots, IconX, IconLayoutGrid } from '@tabler/icons-svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	export let data;
 	let p_company_name: string | undefined;
 	let p_phone_number: string | undefined;
@@ -34,7 +34,8 @@
 	let selectedStatus: ReservationStatusEnum | undefined;
 	let selectedEdited: boolean | undefined = undefined;
 	let selectedExhibition: number | undefined = undefined;
-
+	let loaded = false;
+	
 	//pagination number with url
 	onMount(() => {
 		currentPage = +$page.params.page;
@@ -124,6 +125,7 @@
 
 	const fetchData = async () => {
 		try {
+			loaded = false;
 			exhibitionData = await getDataExhibition(data.supabase);
 
 			let uniqueTypes = exhibitionData.filter((item, index, array) => {
@@ -132,7 +134,10 @@
 					.some((prevItem) => prevItem.exhibition_type === item.exhibition_type);
 			});
 			exhibitionData = uniqueTypes;
-		} catch (error) {}
+			loaded = true;
+		} catch (error) {
+			loaded = true;
+		}
 	};
 
 	onMount(fetchData);
@@ -255,6 +260,11 @@ async function handleExport(selectedExhibitionId: number) {
 
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10">
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
 		<!-- total count -->
@@ -527,13 +537,13 @@ async function handleExport(selectedExhibitionId: number) {
 									>
 										<div>
 											{#if reservation?.comments?.[0]}
-												{reservation.comments[0]}
+												 {reservation.comments[0]}
 											{/if}
 										</div>
 										<div>
-											{#if reservation.comments}
+											{#if reservation.comments && !reservation.comments.length}
 												{#each reservation.comments as comment}
-													<div><li>{comment}</li></div>
+													 <div><li>{comment}</li></div>
 												{/each}
 											{/if}
 										</div>
@@ -586,3 +596,4 @@ async function handleExport(selectedExhibitionId: number) {
 		</div>
 	</div>
 </div>
+{/if}
