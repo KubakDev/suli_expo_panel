@@ -1333,11 +1333,12 @@
 				<ButtonGroup class="w-full" size="sm">
 					<InputAddon>Canvas Size</InputAddon>
 					<Select
-						class=" w-32 rounded"
+						class="w-32 rounded"
 						bind:value={canvasSize}
 						on:change={updateCanvasSize}
 						items={allowedSizes}
 						placeholder="Select canvas size"
+						disabled={$page.params.seatId !== 'create'}
 					/>
 				</ButtonGroup>
 
@@ -1351,6 +1352,7 @@
 							placeholder="Width"
 							min="400"
 							max="3840"
+							disabled={$page.params.seatId !== 'create'}
 						/>
 					</ButtonGroup>
 					<ButtonGroup class="w-full" size="sm">
@@ -1362,6 +1364,7 @@
 							placeholder="Height"
 							min="400"
 							max="2160"
+							disabled={$page.params.seatId !== 'create'}
 						/>
 					</ButtonGroup>
 				{/if}
@@ -1488,7 +1491,6 @@
 							? 'dark:bg-white border-1 dark:border-gray-400 dark:text-gray-700'
 							: 'bg-white border-1 dark:border-gray-400 text-gray-700'}
 						type="number"
-						size="sm"
 						disabled={itemWidth === null || itemWidth === undefined}
 						bind:value={itemHeight}
 						on:input={updateItemHeight}

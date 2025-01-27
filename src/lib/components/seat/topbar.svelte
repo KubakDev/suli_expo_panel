@@ -219,7 +219,7 @@
 			{/each}
 		</div>
 
-		<Button
+		<!-- <Button
 			class="w-12 h-full border-none rounded-none flex justify-center items-center px-2 hover:bg-[#111111]  cursor-pointer"
 			size="lg"
 			color={data?.canvas && data?.canvas?.isDrawingMode ? 'primary' : 'none'}
@@ -236,8 +236,8 @@
 				class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 				placement="bottom">draw a shape</Tooltip
 			>
-		</Button>
-		<Button
+		</Button> -->
+		<!-- <Button
 			class="hover:bg-[#111111]  w-12 h-full border-none rounded-none flex justify-center items-center px-2 cursor-pointer"
 			size="lg"
 			color={data?.isDrawing ? 'primary' : 'none'}
@@ -254,7 +254,7 @@
 				class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 				placement="bottom">draw auto organize shape</Tooltip
 			>
-		</Button>
+		</Button> -->
 		<!-- add text  -->
 		<Button
 			id="group-button"
@@ -273,7 +273,7 @@
 			class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 			placement="bottom">Add Text</Tooltip
 		>
-		<div class="mx-2 flex justify-center items-center customShape">
+		<!-- <div class="mx-2 flex justify-center items-center customShape">
 			<div
 				class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-[#111111] cursor-pointer"
 				on:click={selectImageForBackground}
@@ -287,9 +287,9 @@
 				class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 				placement="bottom">Add background Image</Tooltip
 			>
-		</div>
+		</div> -->
 
-		<div
+		<!-- <div
 			class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-[#111111] cursor-pointer"
 			on:click={toggleBackgroundImage}
 		>
@@ -308,16 +308,16 @@
 					/>
 				</g></svg
 			>
-		</div>
-		<Tooltip
+		</div> -->
+		<!-- <Tooltip
 			arrow={true}
 			type="custom"
 			defaultClass=""
 			class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 			placement="bottom">toggle background image</Tooltip
-		>
+		> -->
 
-		<div
+		<!-- <div
 			class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-[#111111] cursor-pointer"
 			on:click={groupObjects}
 		>
@@ -352,16 +352,16 @@
 					</g>
 				</g></svg
 			>
-		</div>
-		<Tooltip
+		</div> -->
+		<!-- <Tooltip
 			arrow={true}
 			type="custom"
 			defaultClass=""
 			class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 			placement="bottom">Group Layers</Tooltip
-		>
+		> -->
 
-		<div
+		<!-- <div
 			class="h-full w-12 flex justify-center items-center px-2 rounded-sm hover:bg-[#111111] cursor-pointer"
 			on:click={unGroupObjects}
 		>
@@ -387,7 +387,7 @@
 			defaultClass=""
 			class="z-50 p-2 text-sm  bg-[#111111] text-[#fff]"
 			placement="bottom">Ungroup layers</Tooltip
-		>
+		> -->
 	</div>
 
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
