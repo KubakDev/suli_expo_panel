@@ -895,58 +895,7 @@
 {/if}
 
 <style>
-	/* Enhanced Table Styles */
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	th,
-	td {
-		text-align: left;
-		padding: 0.75rem;
-	}
-
-	/* Responsive adjustments */
-	@media (max-width: 768px) {
-		th,
-		td {
-			padding: 0.5rem;
-		}
-	}
-
-	
-	/* Adjust modal image for better responsiveness */
-	Modal img {
-		max-width: 100%;
-		max-height: 100%;
-		object-fit: contain;
-	}
-
-	/* Custom Scrollbar Styles */
-	.custom-scrollbar::-webkit-scrollbar {
-		height: 8px;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-track {
-		background: #f1f1f1;
-		border-radius: 4px;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-thumb {
-		background: #888;
-		border-radius: 4px;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: #555;
-	}
-
-	/* Firefox */
-	.custom-scrollbar {
-		scrollbar-width: thin;
-		scrollbar-color: #888 #f1f1f1;
-	}
+ 
 
 	 
 </style>
