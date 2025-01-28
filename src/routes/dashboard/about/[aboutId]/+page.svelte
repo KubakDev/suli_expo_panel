@@ -10,7 +10,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 
@@ -31,7 +31,7 @@
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let isFormSubmitted = false;
-
+	let loaded = false;
 	let aboutDataLang: AboutModelLang[] = [];
 	let aboutData: AboutModel = {
 		id: 0,
@@ -42,6 +42,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getAboutData() {
+		loaded = false;
 		await data.supabase
 			.from('about')
 			.select('*,about_languages(*)')
@@ -71,6 +72,7 @@
 				}
 				aboutDataLang = [...aboutDataLang];
 				aboutData = { ...aboutData };
+				loaded = true;
 			});
 	}
 
@@ -158,7 +160,11 @@
 		}
 	}
 </script>
-
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -282,6 +288,7 @@
 		</div>
 	</div>
 </div>
+{/if}
 
 <style>
 	.error-message {

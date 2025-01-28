@@ -11,7 +11,7 @@
 	import { CardType, ExpoCard } from 'kubak-svelte-component';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
@@ -19,7 +19,7 @@
 	let showToast = false;
 	let prevThumbnail: string = '';
 	let isFormSubmitted = false;
-
+	let loaded = false;
 	let staffDataLang: StaffModelLang[] = [];
 	let staffData: StaffModel = {
 		id: 0,
@@ -29,6 +29,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getStaffData() {
+		loaded = false;
 		await data.supabase
 			.from('staff')
 			.select('*,staff_languages(*)')
@@ -58,6 +59,7 @@
 				staffDataLang = [...staffDataLang];
 				staffData = { ...staffData };
 			});
+			loaded = true;
 	}
 
 	onMount(async () => {
@@ -144,7 +146,11 @@
 		}
 	}
 </script>
-
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -267,7 +273,7 @@
 		</div>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

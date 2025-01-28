@@ -15,8 +15,10 @@
 	} from '../../../../models/carouselModel';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
+	let loaded = false;
 	let fileName: string;
 	let imageFile: File | undefined;
 	let submitted = false;
@@ -36,6 +38,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getCarouselData() {
+		loaded = false;
 		await data.supabase
 			.from('carousel')
 			.select('*,carousel_languages(*)')
@@ -71,6 +74,7 @@
 				}
 				carouselDataLang = [...carouselDataLang];
 				carouselData = { ...carouselData };
+				loaded = true;
 			});
 	}
 
@@ -159,6 +163,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -306,7 +315,7 @@
 		</div>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

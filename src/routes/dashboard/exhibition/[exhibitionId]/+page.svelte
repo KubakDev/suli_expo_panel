@@ -18,7 +18,9 @@
 	import { isEmpty } from 'validator';
 	import type { PDFModel } from '../../../../models/pdfModel';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
+	import Spinner from '$lib/components/Spinner.svelte';
 
+	let loaded = false;
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let sliderImagesFile_sponsor: File[] = [];
@@ -82,6 +84,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getExhibitionData() {
+		loaded = false;
 		await data.supabase
 			.from('exhibition')
 			.select('*,exhibition_languages(*)')
@@ -144,6 +147,7 @@
 				carouselImages = getImagesObject(exhibitionsData);
 				getImagesObject_sponsor();
 			});
+			loaded = true;
 	}
 
 	onMount(async () => {
@@ -586,6 +590,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -1001,7 +1010,7 @@
 		</div>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

@@ -9,10 +9,12 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
 	let submitted = false;
 	let showToast = false;
+	let loaded = false;
 
 	interface ErrorMessages {
 		email?: string;
@@ -39,6 +41,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getcontactData() {
+		loaded = false;
 		await data.supabase
 			.from('contact_info')
 			.select('*,contact_info_languages(*)')
@@ -76,6 +79,7 @@
 				}
 				contactDataLang = [...contactDataLang];
 				contactData = { ...contactData };
+				loaded = true;
 			});
 	}
 
@@ -165,6 +169,11 @@
 	}
 </script>
 
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);" class="max-w-screen-xl mx-auto">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -379,7 +388,7 @@
 		</Form>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

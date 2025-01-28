@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { Input, Label, Select } from 'flowbite-svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	interface User {
 		id: number;
 		created_at: string;
@@ -20,6 +20,7 @@
 
 	const id = $page.params.userId;
 	export let data;
+	let loaded = false;
 	let user: User = {
 		id: 0,
 		created_at: '',
@@ -35,6 +36,7 @@
 	};
 
 	onMount(async () => {
+		loaded = false;
 		const { data: result, error } = await data.supabase.rpc('get_user_data_by_id', {
 			userid: id
 		});
@@ -45,6 +47,7 @@
 		}
 
 		user = result;
+		loaded = true;
 	});
 
 	async function formSubmit() {
@@ -75,7 +78,11 @@
 		}
 	}
 </script>
-
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	<div class="max-w-screen-2xl mx-auto py-10">
 		<div class="border dark:border-gray-800 p-4 rounded">
@@ -184,3 +191,4 @@
 		</div>
 	</div>
 </div>
+{/if}

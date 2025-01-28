@@ -12,7 +12,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	export let data;
 	let fileName: string;
 	let imageFile: File | undefined;
@@ -26,10 +26,13 @@
 		thumbnail: ''
 	};
 
+	let loaded = false;
+
 	const id = $page.params.promotionId;
 
 	//**** get data from db and put it into the fields ****//
 	async function getPromoData() {
+		loaded = false;
 		await data.supabase
 			.from('promo')
 			.select('*,promo_languages(*)')
@@ -60,6 +63,7 @@
 				promotionDataLang = [...promotionDataLang];
 				promoData = { ...promoData };
 			});
+			loaded = true;
 	}
 
 	onMount(async () => {
@@ -152,7 +156,11 @@
 		}
 	}
 </script>
-
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -281,7 +289,7 @@
 		</div>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

@@ -17,8 +17,9 @@
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
+	import Spinner from '$lib/components/Spinner.svelte';
 
-	
+	let loaded = false;
 	export let data;
 	let sliderImagesFile: File[] = [];
 	let fileName: string;
@@ -50,6 +51,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getNewsData() {
+		loaded = false;
 		await data.supabase
 			.from('news')
 			.select('*,news_languages(*)')
@@ -88,6 +90,7 @@
 				newsData = { ...newsData };
 				carouselImages = getImagesObject(newsData);
 			});
+			loaded = true;
 	}
 
 	onMount(async () => {
@@ -239,6 +242,11 @@
 	}
 </script>
  
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -361,7 +369,7 @@
 			</div>
 
 			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-[#1f2937] rounded-lg">
+				<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg">
 					<TabItem open title="News List">
 						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
 							<div class="flex justify-start items-start">
@@ -397,7 +405,7 @@
 		</div>
 	</div>
 </div>
-
+{/if}
 <style>
 	.error-message {
 		color: red;

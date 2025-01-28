@@ -13,7 +13,7 @@
 	import { goto } from '$app/navigation';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import QuillEditor from '$lib/components/editor/QuillEditor.svelte';
-
+	import Spinner from '$lib/components/Spinner.svelte';
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
@@ -32,7 +32,7 @@
 		imgurl: string;
 		name: File;
 	};
-
+	let loaded = false;
 	let carouselImages: CarouselImage[] | undefined = undefined;
 
 	let submitted = false;
@@ -53,6 +53,7 @@
 
 	//**** get data from db and put it into the fields ****//
 	async function getDataGallery() {
+		loaded = false;
 		await data.supabase
 			.from('gallery')
 			.select('*,gallery_languages(*)')
@@ -93,6 +94,7 @@
 				galleryData = { ...galleryData };
 				carouselImages = getImagesObject(galleryData);
 			});
+			loaded = true;
 	}
 
 	onMount(async () => {
@@ -240,7 +242,11 @@
 		fileName = name;
 	}
 </script>
-
+{#if !loaded}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div style="min-height: calc(100vh - 160px);">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
@@ -396,6 +402,7 @@
 		</div>
 	</div>
 </div>
+{/if}
 
 <style>
 	.error-message {

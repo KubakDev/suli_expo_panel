@@ -87,14 +87,7 @@
 			const reservedSeat = reservations.find(
 				(seat: any) => String(seat.object_id) === objId
 			);
-
-			console.log('Processing object:', {
-				objId,
-				reservedSeat,
-				status: reservedSeat?.status,
-				isAccepted: reservedSeat?.status === ReservationStatusEnum.ACCEPT
-			});
-
+  
 			// Apply status colors directly to the object
 			if (reservedSeat) {
 				if (reservedSeat.status === ReservationStatusEnum.ACCEPT) {
@@ -131,14 +124,7 @@
 	};
 
 	const renderRect = (group: any, obj: any) => {
-		// Debug log for each seat being rendered
-		console.log('Rendering seat:', {
-			seatId: obj.id,
-			reservation: reservations.find(r => String(r.object_id) === String(obj.id)),
-			fill: obj.fill,
-			stroke: obj.stroke
-		});
-
+	  
 		const x = obj.left || 0;
 		const y = obj.top || 0;
 		const width = obj.width * (obj.scaleX || 1);
@@ -225,14 +211,7 @@
 			const childReservation = reservations.find(
 				(seat: any) => String(seat.object_id) === childId
 			);
-
-			console.log('Processing group child:', {
-				childId,
-				childReservation,
-				status: childReservation?.status,
-				isAccepted: childReservation?.status === ReservationStatusEnum.ACCEPT
-			});
-
+ 
 			if (childReservation) {
 				if (childReservation.status === ReservationStatusEnum.ACCEPT) {
 					childObj.fill = '#ff176b';
