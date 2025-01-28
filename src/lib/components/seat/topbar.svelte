@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { Button, Tooltip } from 'flowbite-svelte';
 	import { SeatCustomShapes } from '../../../models/seatUi';
-	import { ChatBubbleBottomCenter, Pencil, Photo } from 'svelte-heros-v2';
-	import { fabric } from 'fabric';
+	import { ChatBubbleBottomCenter } from 'svelte-heros-v2';
+  import { fabric } from 'fabric';
 	import { EditingMode } from '../../../models/editingModeModel';
 	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
-
+	import { 	IconArrowBack,
+		IconBookmarkPlus,
+	} from '@tabler/icons-svelte';
+	
 	class MyGroup extends fabric.Group {
 		groupId: number;
 
@@ -27,9 +30,9 @@
 		EditingMode?: EditingMode;
 		container?: HTMLElement;
 	};
-	let customShapes = (Object.keys(SeatCustomShapes) as Array<keyof typeof SeatCustomShapes>).map(
-		(key) => SeatCustomShapes[key]
-	);
+	let customShapes = (Object.keys(SeatCustomShapes) as Array<keyof typeof SeatCustomShapes>)
+		.filter(key => key !== SeatCustomShapes.Line) // Remove Line from shapes
+		.map(key => SeatCustomShapes[key]);
 
 	function createCustomShape(shape?: SeatCustomShapes) {
 		if (shape === undefined) return;
@@ -64,16 +67,6 @@
 				});
 				break;
 
-			case SeatCustomShapes.Line:
-				customShape = new fabric.Line([50, 100, 200, 200], {
-					fill: data?.fillColor,
-					stroke: data?.strokeColor ?? 'black',
-					strokeWidth: 5,
-					left: 0,
-					top: 0
-				});
-				break;
-
 			case SeatCustomShapes.Triangle:
 				customShape = new fabric.Triangle({
 					width: 100,
@@ -84,9 +77,11 @@
 				});
 				break;
 		}
-		customShape.id = new Date().getTime();
-		data?.canvas?.add(customShape);
-		dispatch('updateLayers');
+		if (customShape) {
+			customShape.id = new Date().getTime();
+			data?.canvas?.add(customShape);
+			dispatch('updateLayers');
+		}
 	}
 
 	function selectImageForBackground() {
@@ -183,20 +178,8 @@
 	<button
 		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
 		on:click={() => goto('/dashboard/seats_ui')}
-		><svg
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="1.5"
-			stroke="currentColor"
-			class="w-4 h-4"
-		>
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-			/>
-		</svg>
+		> 
+		<IconArrowBack />
 		Back to Seats Dashboard
 	</button>
 
@@ -393,42 +376,7 @@
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div class="p-2">
 	  <Button on:click={() => dispatch('openAddSeatModal')}>
-				<svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-					><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-						id="SVGRepo_tracerCarrier"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/><g id="SVGRepo_iconCarrier">
-						<path
-							d="M16 8.98987V20.3499C16 21.7999 14.96 22.4099 13.69 21.7099L9.76001 19.5199C9.34001 19.2899 8.65999 19.2899 8.23999 19.5199L4.31 21.7099C3.04 22.4099 2 21.7999 2 20.3499V8.98987C2 7.27987 3.39999 5.87988 5.10999 5.87988H12.89C14.6 5.87988 16 7.27987 16 8.98987Z"
-							stroke="white"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<path
-							d="M22 5.10999V16.47C22 17.92 20.96 18.53 19.69 17.83L16 15.77V8.98999C16 7.27999 14.6 5.88 12.89 5.88H8V5.10999C8 3.39999 9.39999 2 11.11 2H18.89C20.6 2 22 3.39999 22 5.10999Z"
-							stroke="white"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<path
-							d="M7 12H11"
-							stroke="white"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-						<path
-							d="M9 14V10"
-							stroke="white"
-							stroke-width="1.5"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</g></svg
-				>
+				<IconBookmarkPlus />
 				Save Seat
 			</Button>
 		  

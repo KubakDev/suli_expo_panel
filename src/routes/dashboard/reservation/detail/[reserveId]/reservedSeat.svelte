@@ -342,5 +342,4 @@
 			max-width: 100vw;
 		}
 	}
-	
 </style>
