@@ -114,6 +114,9 @@
 				case 'triangle':
 					renderTriangle(mainGroup, obj);
 					break;
+				case 'circle':
+					renderCircle(mainGroup, obj);
+					break;
 				case 'image':
 					renderImage(mainGroup, obj);
 					break;
@@ -197,6 +200,43 @@
 			.attr('transform', obj.angle ? `rotate(${obj.angle}, ${x + width/2}, ${y + height/2})` : null);
 	};
 
+	const renderCircle = (group: any, obj: any) => {
+		const x = obj.left || 0;
+		const y = obj.top || 0;
+		const radius = (obj.radius || 0) * (obj.scaleX || 1); // Scale radius if needed
+
+		const circleGroup = group.append('g')
+			.attr('class', 'seat-container');
+
+		circleGroup.append('circle')
+			.attr('class', 'seat')
+			.attr('cx', x + radius) // Center x-coordinate
+			.attr('cy', y + radius) // Center y-coordinate
+			.attr('r', radius)
+			.attr('fill', obj.fill || 'transparent')
+			.attr('stroke', obj.stroke || '#000')
+			.attr('stroke-width', obj.strokeWidth || 1)
+			.attr('id', obj.id);
+
+		// Add status text if seat is reserved
+		const reservedSeat = reservations.find(
+			(reservation: any) => String(reservation.object_id) === String(obj.id)
+		);
+
+		if (reservedSeat) {
+			const statusText = reservedSeat.status === ReservationStatusEnum.ACCEPT ? 'Reserved' : 'Pending';
+			circleGroup.append('text')
+				.attr('x', x + radius)
+				.attr('y', y + radius)
+				.attr('text-anchor', 'middle')
+				.attr('dominant-baseline', 'middle')
+				.attr('fill', '#ffffff')
+				.attr('font-size', '12px')
+				.attr('font-weight', 'bold')
+				.text(statusText);
+		}
+	};
+
 	const renderGroup = (group: any, obj: any) => {
 		const groupElement = group.append('g')
 			.attr('class', 'seat-group')
@@ -233,6 +273,9 @@
 					break;
 				case 'triangle':
 					renderTriangle(groupElement, childObj);
+					break;
+				case 'circle':
+					renderCircle(groupElement, childObj);
 					break;
 				default:
 					console.warn(`Unsupported child object type in group: ${childObj.type}`);
