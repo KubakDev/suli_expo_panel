@@ -35,12 +35,27 @@
 		const containerWidth = container?.offsetWidth;
 		const aspectRatio = width / height;
 
+		// Calculate the maximum width and height to fit in the container
+		let targetWidth = containerWidth;
+		let targetHeight = containerWidth / aspectRatio;
+
+		// If the height gets too large, constrain it
+		const maxHeight = window.innerHeight * 0.8; // 80% of viewport height
+		if (targetHeight > maxHeight) {
+			targetHeight = maxHeight;
+			targetWidth = targetHeight * aspectRatio;
+		}
+
 		if (container) {
-			container.style.height = `${containerWidth / aspectRatio}px`;
+			container.style.width = `${targetWidth}px`;
+			container.style.height = `${targetHeight}px`;
+			container.style.margin = '0 auto'; // Center the container
 		}
 
 		if (svg) {
 			svg.attr('viewBox', `0 0 ${width} ${height}`)
+				.attr('width', targetWidth)
+				.attr('height', targetHeight)
 				.attr('preserveAspectRatio', 'xMidYMid meet');
 		}
 	};
@@ -51,17 +66,19 @@
 			return;
 		}
 
-		// Set up SVG
+		const width = activeSeat?.design?.width;
+		const height = activeSeat?.design?.height;
+
+		// Clear previous content
+		d3.select('#seating-chart').selectAll('*').remove();
+		
+		// Set up SVG with responsive dimensions
 		svg = d3.select('#seating-chart')
 			.attr('width', '100%')
-			.attr('height', '100%');
+			.attr('height', '100%')
+			.attr('viewBox', `0 0 ${width} ${height}`)
+			.attr('preserveAspectRatio', 'xMidYMid meet');
 
-		adjustViewBox();
-
-		// Clear previous elements
-		svg.selectAll('*').remove();
-
-		// Create main group
 		const mainGroup = svg.append('g');
 
 		// Process and render objects
@@ -261,14 +278,46 @@
 	};
 </script>
 
-<div bind:this={container} class="min-h-[200px] w-full relative overflow-hidden border border-gray-300">
-	<svg id="seating-chart" />
+<div class="seating-container">
+	<!-- SVG container with aspect ratio preservation -->
+	<div class="svg-wrapper w-full relative overflow-hidden border border-gray-300 rounded">
+		<div class="svg-aspect-ratio" style="padding-top: {(activeSeat?.design?.height / activeSeat?.design?.width) * 100}%">
+			<svg id="seating-chart" class="svg-content" />
+		</div>
+	</div>
 </div>
 
 <style>
-	#seating-chart {
+	.seating-container {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.svg-wrapper {
+		position: relative;
+		width: 100%;
+	}
+
+	.svg-aspect-ratio {
+		position: relative;
+		width: 100%;
+	}
+
+	.svg-content {
+		position: absolute;
+		top: 0;
+		left: 0;
 		width: 100%;
 		height: 100%;
 		background-color: #f0f0f0;
+	}
+
+	/* Make sure SVG scales properly on mobile */
+	@media (max-width: 768px) {
+		.svg-wrapper {
+			margin: 0 auto;
+			max-width: 100vw;
+		}
 	}
 </style>
