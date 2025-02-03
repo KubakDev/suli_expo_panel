@@ -735,6 +735,18 @@
 				return false;
 			}
 		}, { passive: false });
+
+		// Add initial canvas state to history after loading
+		if ($page.params.seatId !== 'create') {
+			// For existing layouts, record initial state after loading
+			canvas.loadFromJSON(currentSeatLayoutData.design, () => {
+				recordCanvasState();
+				canvas.renderAll();
+			});
+		} else {
+			// For new layouts, record empty canvas state
+			recordCanvasState();
+		}
 	});
 
 	function getData() {
@@ -744,29 +756,42 @@
 	}
 
 	let copiedObject: any = null;
-	let history: any = [];
-	let currentHistoryIndex = 0;
+	let history: any[] = [];
+	let currentHistoryIndex = -1; // Changed to start at -1
 
 	function recordCanvasState() {
 		// remove future states if we are in the middle of the history
-		history = history.slice(0, currentHistoryIndex + 1);
-		history.push(canvas.toJSON());
+		if (currentHistoryIndex < history.length - 1) {
+			history = history.slice(0, currentHistoryIndex + 1);
+		}
+		
+		// Save the current canvas state
+		const canvasState = JSON.stringify(canvas.toJSON(['id', 'objectDetail']));
+		history.push(canvasState);
 		currentHistoryIndex++;
 	}
 
 	function undoSelectedObject() {
-		if (currentHistoryIndex === 0) return; // no previous state
+		if (currentHistoryIndex <= 0) return; // Changed condition
+		
 		currentHistoryIndex--;
-		canvas.loadFromJSON(history[currentHistoryIndex], () => {
+		const previousState = JSON.parse(history[currentHistoryIndex]);
+		
+		canvas.loadFromJSON(previousState, () => {
 			canvas.renderAll();
+			updateLayers();
 		});
 	}
 
 	function redoSelectedObject() {
-		if (currentHistoryIndex >= history.length - 1) return; // No future state
+		if (currentHistoryIndex >= history.length - 1) return;
+		
 		currentHistoryIndex++;
-		canvas.loadFromJSON(history[currentHistoryIndex], () => {
+		const nextState = JSON.parse(history[currentHistoryIndex]);
+		
+		canvas.loadFromJSON(nextState, () => {
 			canvas.renderAll();
+			updateLayers();
 		});
 	}
 
@@ -822,6 +847,7 @@
 	$: {
 		images = $seatImageItemStore;
 	}
+	
 	const adjustCanvasSize = () => {
 		if (canvas) {
 			canvas.setDimensions({
@@ -1618,12 +1644,6 @@
 				</div>
 			{/if}
 		</div>
-
-
-
-
-
-
 		
 	</div>
 </div>
