@@ -271,6 +271,9 @@
 							}
 						});
 
+						// Record initial state after loading
+						recordInitialState();
+						
 						await tick();
 						getData();
 						canvas.requestRenderAll();
@@ -288,6 +291,7 @@
 					height: CANVAS_HEIGHT
 				});
 			}
+			recordInitialState();
 		}
 
 		// Ensure objects maintain position relative to background when moving
@@ -758,6 +762,17 @@
 	let copiedObject: any = null;
 	let history: any[] = [];
 	let currentHistoryIndex = -1; // Changed to start at -1
+	let initialObjects: any[] = []; // Store initial objects
+
+	function recordInitialState() {
+		// Record the initial objects when loading the design
+		initialObjects = canvas.getObjects().map(obj => ({
+			id: obj.id,
+			type: obj.type
+		}));
+		// Record initial canvas state
+		recordCanvasState();
+	}
 
 	function recordCanvasState() {
 		// remove future states if we are in the middle of the history
@@ -772,12 +787,19 @@
 	}
 
 	function undoSelectedObject() {
-		if (currentHistoryIndex <= 0) return; // Changed condition
+		if (currentHistoryIndex <= 0) return;
 		
 		currentHistoryIndex--;
 		const previousState = JSON.parse(history[currentHistoryIndex]);
 		
 		canvas.loadFromJSON(previousState, () => {
+			// Ensure initial objects remain visible
+			canvas.getObjects().forEach((obj: any) => {
+				const isInitialObject = initialObjects.some(initial => initial.id === obj.id);
+				if (isInitialObject) {
+					obj.visible = true;
+				}
+			});
 			canvas.renderAll();
 			updateLayers();
 		});
@@ -1025,12 +1047,19 @@
 			try {
 				if (activeObject && activeObject.type === 'activeSelection') {
 					activeObject.forEachObject(function (obj) {
-						canvas.remove(obj);
+						const isInitialObject = initialObjects.some(initial => initial.id === obj.id);
+						if (!isInitialObject) {
+							canvas.remove(obj);
+						}
 					});
-				} else if (activeObject) {
-					canvas.remove(activeObject);
+				} else {
+					const isInitialObject = initialObjects.some(initial => initial.id === activeObject.id);
+					if (!isInitialObject) {
+						canvas.remove(activeObject);
+					}
 				}
 				canvas.requestRenderAll();
+				recordCanvasState(); // Record state after removal
 			} catch (e) {}
 		}
 	}
