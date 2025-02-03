@@ -7,7 +7,8 @@
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
 	import { alertStore } from '../../../stores/alertStore';
 	import uploadFileStore from '../../../stores/uploadFileStore';
-	import { Trash, XMark } from 'svelte-heros-v2';
+	import { XMark } from 'svelte-heros-v2';
+	import { IconKey } from '@tabler/icons-svelte'; 
 
 	export let data: {
 		canvas?: fabric.Canvas;
@@ -201,7 +202,7 @@
 	</Modal>
 	<div class="mt-4">
 		<div class=" text-xl my-4">Layers</div>
-		<ul id="layers" style="height: 60vh " class="overflow-y-auto">
+		<ul id="layers" style="height: 40vh " class="overflow-y-auto">
 			{#if data && data.objects.length > 0}
 				{#each data.objects as object}
 					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
@@ -261,6 +262,37 @@
 			{/if}
 		</ul>
 	</div>
+
+    <div class="mt-4">
+        <div class="shortcuts-panel bg-white p-4 border border-t-2 border-t-primary-700">
+            <h3 class="text-gray-700 font-medium mb-3 flex items-center gap-2">
+				<IconKey class="w-4 h-4" />
+                Keyboard Shortcuts
+            </h3>
+            <div class="space-y-2">
+                <div class="shortcut-item">
+                    <kbd>Ctrl + C</kbd>
+                    <span>Copy</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + V</kbd>
+                    <span>Paste</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + Del</kbd>
+                    <span>Delete</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>↑↓←→</kbd>
+                    <span>Move object</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + Space</kbd>
+                    <span>Add space in text</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style lang="scss">
@@ -294,4 +326,37 @@
 		border-bottom: 20px solid black;
 		background-color: transparent !important;
 	}
+
+
+	.shortcuts-panel {
+        background-color: #ffffff;
+    }
+
+    .shortcut-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.25rem 0;
+        color: #4b5563;
+        font-size: 0.875rem;
+
+        kbd {
+             padding: 0.25rem 0.5rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            color: #374151;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        span {
+            color: #6b7280;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .shortcuts-panel {
+            width: 100%;
+        }
+    }
 </style>

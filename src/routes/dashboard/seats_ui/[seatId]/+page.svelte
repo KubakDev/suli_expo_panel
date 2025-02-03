@@ -574,13 +574,13 @@
 			}
 		});
 
-		// window.addEventListener('keydown', (e) => {
-		// 	if (e.ctrlKey && e.code === 'KeyZ') {
-		// 		undoSelectedObject();
-		// 	} else if (e.ctrlKey && e.code === 'KeyY') {
-		// 		redoSelectedObject();
-		// 	}
-		// });
+		window.addEventListener('keydown', (e) => {
+			if (e.ctrlKey && e.code === 'KeyZ') {
+				undoSelectedObject();
+			} else if (e.ctrlKey && e.code === 'KeyY') {
+				redoSelectedObject();
+			}
+		});
 
 		//function for copy
 		// Function for copying, including custom properties
@@ -1349,7 +1349,7 @@
 						/>
 					</ButtonGroup>
 				{/if}
-			</div>
+              </div>
 
 			<div class="canvas-container">
 				<canvas id="canvas" />
@@ -1618,6 +1618,13 @@
 				</div>
 			{/if}
 		</div>
+
+
+
+
+
+
+		
 	</div>
 </div>
  
