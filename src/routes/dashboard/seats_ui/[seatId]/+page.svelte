@@ -605,8 +605,8 @@
 					copiedObject.clone((clonedObj: any) => {
 						canvas.discardActiveObject(); // Deselect current object
 						clonedObj.set({
-							left: clonedObj.left + 10,
-							top: clonedObj.top + 10,
+							left: clonedObj.left,
+							top: clonedObj.top,
 							evented: true,
 							objectDetail: JSON.parse(JSON.stringify(copiedObject.objectDetail))
 						});
