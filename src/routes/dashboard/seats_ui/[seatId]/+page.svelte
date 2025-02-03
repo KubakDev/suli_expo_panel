@@ -643,7 +643,7 @@
 			const activeObject = canvas.getActiveObject();
 			if (!activeObject) return; // Exit if no object is selected
 
-			const moveStep = 10; // Adjust this value to change the movement increment
+			const moveStep = 1; // Adjust this value to change the movement increment
 
 			// Determine the direction and apply the movement
 			switch (e.key) {
@@ -849,25 +849,6 @@
 		canvas.requestRenderAll();
 	}
 
-	function handleKeydown(event: any, selectedObject: any) {
-		let movingPixel = 1;
-		if (event.shiftKey) movingPixel = 10;
-		switch (event.code) {
-			case 'ArrowUp':
-				selectedObject.top -= movingPixel;
-				break;
-			case 'ArrowDown':
-				selectedObject.top += movingPixel;
-				break;
-			case 'ArrowLeft':
-				selectedObject.left -= movingPixel;
-				break;
-			case 'ArrowRight':
-				selectedObject.left += movingPixel;
-				break;
-		}
-		canvas.renderAll(); // Render changes
-	}
 
 	function clearAllInput() {
 		strokeWidth = null;
