@@ -135,6 +135,28 @@
 			data?.canvas?.requestRenderAll();
 		}
 	}
+
+	function bringToFront(objectId: number) {
+		if (data && data.canvas) {
+			const object = data.canvas.getObjects().find((obj: any) => obj.id === objectId);
+			if (object) {
+				object.bringToFront();
+				data.canvas.requestRenderAll();
+				dispatch('updateLayers');
+			}
+		}
+	}
+
+	function sendToBack(objectId: number) {
+		if (data && data.canvas) {
+			const object = data.canvas.getObjects().find((obj: any) => obj.id === objectId);
+			if (object) {
+				object.sendToBack();
+				data.canvas.requestRenderAll();
+				dispatch('updateLayers');
+			}
+		}
+	}
 </script>
 
 <div class="flex flex-col p-5 bg-gray-50 text-gray-700 rounded"  style="max-height: calc(100vh - 50px);">
@@ -201,20 +223,18 @@
 		{/if}
 	</Modal>
 	<div class="mt-4">
-		<div class=" text-xl my-4">Layers</div>
-		<ul id="layers" style="height: 40vh " class="overflow-y-auto">
+		<div class="text-xl my-4">Layers</div>
+		<ul id="layers" style="height: 40vh" class="overflow-y-auto">
 			{#if data && data.objects.length > 0}
 				{#each data.objects as object}
-					<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<li
 						data-id={object.id}
-						class=" layer mb-2 p-1 rounded-md shadow-sm cursor-pointer flex justify-start items-center {object.isGroup
+						class="layer mb-2 p-1 rounded-md shadow-sm cursor-pointer flex justify-start items-center {object.isGroup
 							? 'bg-blue-50'
 							: 'bg-gray-50'}
-                           {data.selectedObjectId == object.id
-							? 'bg-primary-700  '
-							: 'hover:bg-gray-100'}  "
+						   {data.selectedObjectId == object.id
+							? 'bg-primary-700'
+							: 'hover:bg-gray-100'}"
 						on:click={() => {
 							if (data && data.canvas) {
 								data.canvas.forEachObject(function (eachObject) {
@@ -226,13 +246,12 @@
 							}
 						}}
 					>
-						<!-- svelte-ignore a11y-no-static-element-interactions -->
 						<div class="flex justify-between w-full items-center">
 							<div class="flex justify-center items-center">
 								{#if object.icon}
 									<img src={object.icon} alt="Object icon" class="object-icon w-8 h-8" />
 								{:else}
-									<div class={`${object.type} w-8 h-8 bg-black`} style="" />
+									<div class={`${object.type} w-8 h-8 bg-black`} />
 								{/if}
 								<div class="w-2 h-full" />
 								<span>{object.type}</span>
@@ -249,12 +268,33 @@
 									</ul>
 								{/if}
 							</div>
-							<!-- svelte-ignore a11y-no-static-element-interactions -->
-							<div
-								class="text-end px-3 hover:bg-gray-200 w-10 h-8 rounded flex justify-center items-center"
-								on:click={removeSelectedObject}
-							>
-								<XMark size="20" />
+							<div class="flex items-center gap-1">
+								<!-- Layer controls -->
+								<button
+									class="p-1 hover:bg-gray-200 rounded"
+									title="Bring to front"
+									on:click|stopPropagation={() => bringToFront(object.id)}
+								>
+									<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+										<path d="M9 18L15 12L9 6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									</svg>
+								</button>
+								<button
+									class="p-1 hover:bg-gray-200 rounded"
+									title="Send to back"
+									on:click|stopPropagation={() => sendToBack(object.id)}
+								>
+									<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+										<path d="M15 6L9 12L15 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+									</svg>
+								</button>
+								<!-- Delete button -->
+								<div
+									class="text-end px-3 hover:bg-gray-200 w-10 h-8 rounded flex justify-center items-center"
+									on:click|stopPropagation={removeSelectedObject}
+								>
+									<XMark size="20" />
+								</div>
 							</div>
 						</div>
 					</li>
@@ -263,7 +303,7 @@
 		</ul>
 	</div>
 
-    <div class="mt-4">
+    <div class="my-4">
         <div class="shortcuts-panel bg-white p-4 border border-t-2 border-t-primary-700">
             <h3 class="text-gray-700 font-medium mb-3 flex items-center gap-2">
 				<IconKey class="w-4 h-4" />
@@ -290,6 +330,14 @@
                     <kbd>Ctrl + Space</kbd>
                     <span>Add space in text</span>
                 </div>
+				<div class="shortcut-item">	
+					<kbd>Ctrl + Z</kbd>
+					<span>Undo</span>
+				</div>
+				<div class="shortcut-item">	
+					<kbd>Ctrl + Y</kbd>
+					<span>Redo</span>
+				</div>
             </div>
         </div>
     </div>
@@ -357,6 +405,18 @@
     @media (max-width: 640px) {
         .shortcuts-panel {
             width: 100%;
+        }
+    }
+
+    button {
+        transition: background-color 0.2s;
+        
+        &:hover {
+            background-color: theme('colors.gray.200');
+        }
+        
+        &:active {
+            background-color: theme('colors.gray.300');
         }
     }
 </style>
