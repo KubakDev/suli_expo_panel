@@ -45,6 +45,21 @@
 		hotelBooking: false
 	};
 
+	let showFields: any = {
+		name: true,
+		companyName: true,
+		fieldWork: true,
+		jobGrade: true,
+		phoneNumber: true,
+		email: true,
+		country: true,
+		city: true,
+		hotelBooking: true
+	};
+
+	// Modal/dialog settings
+	let fieldSettingsOpen = false;
+
 	const fetchUserProfile = async () => {
 		const { data: userProfileData, error } = await data.supabase
 			.from('userProfile')
@@ -63,6 +78,14 @@
 			Object.keys(includeFields).forEach((key) => {
 				includeFields[key] = userProfile[key] === 'true';
 			});
+
+			// Parse show fields from DB if they exist
+			if (userProfile.showFields) {
+				const parsedShowFields = JSON.parse(userProfile.showFields);
+				Object.keys(showFields).forEach((key) => {
+					showFields[key] = parsedShowFields[key] === true;
+				});
+			}
 		}
 	};
 
@@ -76,6 +99,7 @@
 		dataToSubmit.title = JSON.stringify(userProfile.title);
 		dataToSubmit.emailSubject = JSON.stringify(userProfile.emailSubject);
 		dataToSubmit.emailDescription = JSON.stringify(userProfile.emailDescription);
+		dataToSubmit.showFields = JSON.stringify(showFields);
 
 		let response;
 		if (userProfile.id) {
@@ -90,9 +114,12 @@
 		if (response.error) {
 			console.error('Error submitting data:', response.error);
 		} else {
-			alert('Data submitted successfully!');
 			goto(`/dashboard/users`);
 		}
+	};
+
+	const openFieldSettings = () => {
+		fieldSettingsOpen = true;
 	};
 
 	fetchUserProfile();
@@ -213,24 +240,59 @@
 				</form>
 			</TabItem>
 		</Tabs>
-		<p class="text-center font-semibold my-3">Required fields to user profiles</p>
-		{#each Object.keys(includeFields) as key}
-			<div class="form-group mx-4">
-				<label>
-					<input
-						class:active-checkbox={includeFields[key]}
-						class="mr-3"
-						type="checkbox"
-						checked={includeFields[key]}
-						on:change={(e) => (includeFields[key] = e.target?.checked)}
-					/>
-					{key.charAt(0).toUpperCase() + key.slice(1)}
-				</label>
-			</div>
-		{/each}
-		<Button type="submit">Submit</Button>
+		
+		<div class="flex justify-center my-4">
+			<Button class="bg-[rgb(var(--color-primary-500))] hover:bg-[rgb(var(--color-primary-600))]" on:click={openFieldSettings}>Configure Field Settings</Button>
+		</div>
+		
+		<Button type="submit" class="self-end bg-[rgb(var(--color-primary-500))] hover:bg-[rgb(var(--color-primary-600))]">Submit</Button>
 	</div>
 </form>
+
+<!-- Field Settings Modal -->
+<Modal title="Field Settings" bind:open={fieldSettingsOpen} size="lg">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+		<div class="p-4 border dark:border-gray-700 rounded">
+			<h3 class="text-lg font-bold mb-3">Required Fields</h3>
+			{#each Object.keys(includeFields) as key}
+				<div class="form-group mx-2 mb-2">
+					<label class="flex items-center">
+						<input
+							class:active-checkbox={includeFields[key]}
+							class="mr-3"
+							type="checkbox"
+							bind:checked={includeFields[key]}
+						/>
+						<span>{key.charAt(0).toUpperCase() + key.slice(1)} is Required</span>
+					</label>
+				</div>
+			{/each}
+		</div>
+		
+		<div class="p-4 border dark:border-gray-700 rounded">
+			<h3 class="text-lg font-bold mb-3">Show/Hide Fields</h3>
+			{#each Object.keys(showFields) as key}
+				<div class="form-group mx-2 mb-2">
+					<label class="flex items-center">
+						<input
+							class:active-checkbox={showFields[key]}
+							class="mr-3"
+							type="checkbox"
+							bind:checked={showFields[key]}
+						/>
+						<span>Show {key.charAt(0).toUpperCase() + key.slice(1)}</span>
+					</label>
+				</div>
+			{/each}
+		</div>
+	</div>
+	
+	<svelte:fragment slot="footer">
+		<div class="flex justify-end w-full">
+			<Button class="bg-[rgb(var(--color-primary-500))] hover:bg-[rgb(var(--color-primary-600))]" on:click={() => fieldSettingsOpen = false}>Save Settings</Button>
+		</div>
+	</svelte:fragment>
+</Modal>
 
 <style>
 	form {
