@@ -57,8 +57,8 @@
 		hotelBooking: true
 	};
 
-	// Modal/dialog settings
-	let fieldSettingsOpen = false;
+	// Show/hide field settings section
+	let showFieldSettings = false;
 
 	// Function to handle show/hide toggle
 	const handleShowToggle = (key: string, value: boolean) => {
@@ -133,20 +133,20 @@
 		}
 	};
 
-	const openFieldSettings = () => {
-		fieldSettingsOpen = true;
+	const toggleFieldSettings = () => {
+		showFieldSettings = !showFieldSettings;
 	};
 
 	fetchUserProfile();
 </script>
  
-<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 dark:text-gray-100 rounded">
+<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 dark:text-gray-100 rounded w-full max-w-5xl mx-auto">
 	<div class="container mx-auto p-4 flex flex-col justify-center">
-		<Tabs>
+		<Tabs class="w-full">
 			<TabItem title="EN" open>
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4 w-full"
 				>
 					<p class="text-center py-2 font-semibold">Add form data for EN language</p>
 					<div class="form-group">
@@ -183,7 +183,7 @@
 			<TabItem title="AR">
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4 w-full"
 				>
 					<p class="text-center py-2 font-semibold">Add data for AR language</p>
 					<div class="form-group">
@@ -220,7 +220,7 @@
 			<TabItem title="CKB">
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4 w-full"
 				>
 					<p class="text-center py-2 font-semibold">Add data for CKB language</p>
 					<div class="form-group">
@@ -256,97 +256,89 @@
 			</TabItem>
 		</Tabs>
 		
-		<div class="flex justify-center my-4">
-			<Button class="bg-[rgb(var(--color-primary-500))] hover:bg-[rgb(var(--color-primary-600))]" on:click={openFieldSettings}>Configure Field Settings</Button>
+		<div class="my-6 w-full">
+			<h2 class="text-xl font-bold text-center">Field Settings</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
+				<div class="p-6 border dark:border-gray-700 rounded shadow-sm">
+					<h3 class="text-lg font-bold mb-3">Show/Hide Fields</h3>
+					<p class="text-sm text-gray-500 mb-3">Hiding a field will also make it non-required</p>
+					{#each Object.keys(showFields) as key}
+						<div class="form-group mx-2 mb-3">
+							<label class="flex items-center">
+								<input
+									class:active-checkbox={showFields[key]}
+									class="mr-3"
+									type="checkbox"
+									checked={showFields[key]}
+									on:change={(e) => handleShowToggle(key, e.target instanceof HTMLInputElement ? e.target.checked : false)}
+								/>
+								<span>Show {key.charAt(0).toUpperCase() + key.slice(1)}</span>
+							</label>
+						</div>
+					{/each}
+				</div>
+		
+				<div class="p-6 border dark:border-gray-700 rounded shadow-sm">
+					<h3 class="text-lg font-bold mb-3">Required Fields</h3>
+					<p class="text-sm text-gray-500 mb-3">Note: You can only make visible fields required</p>
+					{#each Object.keys(includeFields) as key}
+						<div class="form-group mx-2 mb-3">
+							<label class="flex items-center" class:opacity-50={!showFields[key]}>
+								<input
+									class:active-checkbox={includeFields[key]}
+									class="mr-3"
+									type="checkbox"
+									disabled={!showFields[key]}
+									bind:checked={includeFields[key]}
+								/>
+								<span>{key.charAt(0).toUpperCase() + key.slice(1)} is Required</span>
+								{#if !showFields[key]}
+									<span class="ml-2 text-xs text-gray-500">(Field Hidden)</span>
+								{/if}
+							</label>
+						</div>
+					{/each}
+				</div>
+			</div>
 		</div>
 		
-		<Button type="submit" class="self-end bg-[rgb(var(--color-primary-500))] hover:bg-[rgb(var(--color-primary-600))]">Submit</Button>
+		<div class="flex justify-end w-full">
+			<Button type="submit" class="px-8 py-2 text-md">Submit</Button>
+		</div>
 	</div>
 </form>
-
-<!-- Field Settings Modal -->
-<Modal title="Field Settings" bind:open={fieldSettingsOpen} size="lg">
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-		
-		<div class="p-4 border dark:border-gray-700 rounded">
-			<h3 class="text-lg font-bold mb-3">Show/Hide Fields</h3>
-			<p class="text-sm text-gray-500 mb-3">Hiding a field will also make it non-required</p>
-			{#each Object.keys(showFields) as key}
-				<div class="form-group mx-2 mb-2">
-					<label class="flex items-center">
-						<input
-							class:active-checkbox={showFields[key]}
-							class="mr-3"
-							type="checkbox"
-							checked={showFields[key]}
-							on:change={(e) => handleShowToggle(key, e.target && 'checked' in e.target ? e.target.checked : false)}
-						/>
-						<span>Show {key.charAt(0).toUpperCase() + key.slice(1)}</span>
-					</label>
-				</div>
-			{/each}
-		</div>
-
-		<div class="p-4 border dark:border-gray-700 rounded">
-			<h3 class="text-lg font-bold mb-3">Required Fields</h3>
-			<p class="text-sm text-gray-500 mb-3">Note: You can only make visible fields required</p>
-			{#each Object.keys(includeFields) as key}
-				<div class="form-group mx-2 mb-2">
-					<label class="flex items-center" class:opacity-50={!showFields[key]}>
-						<input
-							class:active-checkbox={includeFields[key]}
-							class="mr-3"
-							type="checkbox"
-							disabled={!showFields[key]}
-							bind:checked={includeFields[key]}
-						/>
-						<span>{key.charAt(0).toUpperCase() + key.slice(1)} is Required</span>
-						{#if !showFields[key]}
-							<span class="ml-2 text-xs text-gray-500">(Field Hidden)</span>
-						{/if}
-					</label>
-				</div>
-			{/each}
-		</div>
-		
-	</div>
-	
-	<svelte:fragment slot="footer">
-		<div class="flex justify-end w-full">
-			<Button class="bg-[rgb(var(--color-primary-500))] hover:bg-[rgb(var(--color-primary-600))]" on:click={() => fieldSettingsOpen = false}>Save Settings</Button>
-		</div>
-	</svelte:fragment>
-</Modal>
 
 <style>
 	form {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		max-width: 600px;
-		margin: 10px auto;
-		padding: 1rem;
+		margin: 20px auto;
+		padding: 1.5rem;
 	}
 
 	.form-group {
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
+		width: 100%;
 	}
 
 	.form-group label {
 		margin-bottom: 0.5rem;
+		font-weight: 500;
 	}
 
 	.form-group input[type='text'],
 	.form-group input[type='email'],
 	.form-group textarea {
 		width: 100%;
-		padding: 0.5rem;
+		padding: 0.75rem;
 		border: 1px solid #ccc;
 		border-radius: 4px;
 		background-color: white;
 		color: black;
+		font-size: 1rem;
 	}
 
 	:global(.dark) .form-group input[type='text'],
@@ -371,6 +363,7 @@
 		color: white;
 		cursor: pointer;
 		transition: background-color 0.3s;
+		font-weight: 600;
 	}
 
 	button:hover {
@@ -417,9 +410,9 @@
 		border-radius: 0.25em;
 	}
 
-	@media (max-width: 600px) {
+	@media (max-width: 768px) {
 		form {
-			padding: 0.5rem;
+			padding: 1rem;
 		}
 
 		.form-group {
