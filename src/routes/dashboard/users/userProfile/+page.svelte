@@ -60,6 +60,16 @@
 	// Modal/dialog settings
 	let fieldSettingsOpen = false;
 
+	// Function to handle show/hide toggle
+	const handleShowToggle = (key: string, value: boolean) => {
+		showFields[key] = value;
+		
+		// If field is hidden, it cannot be required
+		if (!value) {
+			includeFields[key] = false;
+		}
+	};
+
 	const fetchUserProfile = async () => {
 		const { data: userProfileData, error } = await data.supabase
 			.from('userProfile')
@@ -84,6 +94,11 @@
 				const parsedShowFields = JSON.parse(userProfile.showFields);
 				Object.keys(showFields).forEach((key) => {
 					showFields[key] = parsedShowFields[key] === true;
+					
+					// Ensure required is only true if field is shown
+					if (!showFields[key]) {
+						includeFields[key] = false;
+					}
 				});
 			}
 		}
@@ -252,25 +267,10 @@
 <!-- Field Settings Modal -->
 <Modal title="Field Settings" bind:open={fieldSettingsOpen} size="lg">
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-		<div class="p-4 border dark:border-gray-700 rounded">
-			<h3 class="text-lg font-bold mb-3">Required Fields</h3>
-			{#each Object.keys(includeFields) as key}
-				<div class="form-group mx-2 mb-2">
-					<label class="flex items-center">
-						<input
-							class:active-checkbox={includeFields[key]}
-							class="mr-3"
-							type="checkbox"
-							bind:checked={includeFields[key]}
-						/>
-						<span>{key.charAt(0).toUpperCase() + key.slice(1)} is Required</span>
-					</label>
-				</div>
-			{/each}
-		</div>
 		
 		<div class="p-4 border dark:border-gray-700 rounded">
 			<h3 class="text-lg font-bold mb-3">Show/Hide Fields</h3>
+			<p class="text-sm text-gray-500 mb-3">Hiding a field will also make it non-required</p>
 			{#each Object.keys(showFields) as key}
 				<div class="form-group mx-2 mb-2">
 					<label class="flex items-center">
@@ -278,13 +278,37 @@
 							class:active-checkbox={showFields[key]}
 							class="mr-3"
 							type="checkbox"
-							bind:checked={showFields[key]}
+							checked={showFields[key]}
+							on:change={(e) => handleShowToggle(key, e.target && 'checked' in e.target ? e.target.checked : false)}
 						/>
 						<span>Show {key.charAt(0).toUpperCase() + key.slice(1)}</span>
 					</label>
 				</div>
 			{/each}
 		</div>
+
+		<div class="p-4 border dark:border-gray-700 rounded">
+			<h3 class="text-lg font-bold mb-3">Required Fields</h3>
+			<p class="text-sm text-gray-500 mb-3">Note: You can only make visible fields required</p>
+			{#each Object.keys(includeFields) as key}
+				<div class="form-group mx-2 mb-2">
+					<label class="flex items-center" class:opacity-50={!showFields[key]}>
+						<input
+							class:active-checkbox={includeFields[key]}
+							class="mr-3"
+							type="checkbox"
+							disabled={!showFields[key]}
+							bind:checked={includeFields[key]}
+						/>
+						<span>{key.charAt(0).toUpperCase() + key.slice(1)} is Required</span>
+						{#if !showFields[key]}
+							<span class="ml-2 text-xs text-gray-500">(Field Hidden)</span>
+						{/if}
+					</label>
+				</div>
+			{/each}
+		</div>
+		
 	</div>
 	
 	<svelte:fragment slot="footer">
