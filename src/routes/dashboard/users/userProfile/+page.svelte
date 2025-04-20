@@ -301,9 +301,9 @@
 				</div>
 			</div>
 		</div>
-		
-		<div class="flex justify-end w-full">
-			<Button type="submit" class="px-8 py-2 text-md">Submit</Button>
+		<div class="border-t border-gray-200 dark:border-gray-700" />
+		<div class="flex justify-end w-full mt-5">
+			<Button type="submit" class="px-8 text-md">Submit</Button>
 		</div>
 	</div>
 </form>

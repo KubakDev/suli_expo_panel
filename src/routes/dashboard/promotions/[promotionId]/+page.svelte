@@ -249,8 +249,7 @@
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 dark:border-gray-700 mx-10" />
-
+					<div class="border-t border-gray-200 dark:border-gray-700" />
 					<!-- button for submitForm -->
 					<div class="w-full flex justify-end py-5 px-10">
 						<button

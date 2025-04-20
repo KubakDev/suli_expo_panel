@@ -110,30 +110,30 @@
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 		<div class="overflow-x-auto rounded">
 			<div class="min-w-full table-responsive">
-				<table class="min-w-full border-collapse">
+				<table class="min-w-full border-collapse border border-gray-200 dark:border-gray-700">
 					<thead>
 						<tr>
-							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
 								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
-							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
 								<div class="flex items-center gap-2">
 								 <span>Thumbnail</span>
 								</div>
 							</th>
-							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
 								<div class="flex items-center gap-2">
 								 	<span>Title</span>
 								</div>
 							</th>
-							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
 								<div class="flex items-center gap-2">
 								 	<span>Short description</span>
 								</div>
 							</th>
-							<th class="p-3 font-semibold uppercase bg-[#1f2937] text-gray-200 border border-gray-600">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">
 								<div class="flex items-center gap-2">
 									<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
 									<span>Actions</span>
@@ -149,7 +149,7 @@
 					>
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
-								<td class="p-3 border border-gray-600 bg-[#1f2937]">
+								<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex justify-center gap-2">
 										<button on:click={() => swapItems(index, index - 1)} disabled={index === 0}>
 											<IconArrowUp size={20} class="text-gray-400" />
@@ -160,7 +160,7 @@
 									</div>
 								</td>
 
-								<td class="p-3 border border-gray-600 bg-[#1f2937]">
+								<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex justify-center">
 										<img
 											class="w-20 h-20 object-cover rounded"
@@ -172,14 +172,14 @@
 									</div>
 								</td>
 								{#if item.seat_services_languages}
-									<td class="p-3 border border-gray-600 bg-[#1f2937] text-gray-300">
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 										{#each item.seat_services_languages as lang}
 											<div>
 												{lang.title?.slice(0, 50)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 border border-gray-600 bg-[#1f2937] text-gray-300">
+									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 										{#each item.seat_services_languages as lang}
 											<div>
 												{lang.description?.slice(0, 40)}
@@ -187,7 +187,7 @@
 										{/each}
 									</td>
 								{/if}
-								<td class="p-3 border border-gray-600 bg-[#1f2937] text-gray-300 w-32">
+								<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell w-32">
 									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {

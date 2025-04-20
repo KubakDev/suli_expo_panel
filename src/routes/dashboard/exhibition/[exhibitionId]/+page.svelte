@@ -916,7 +916,9 @@
 				</div>
 
 				<!-- button for submitForm -->
-				<div class="w-full flex justify-end pb-5 px-10">
+				<div class="border-t border-gray-200 dark:border-gray-700 mt-2" />
+
+				<div class="w-full flex justify-end py-5 px-10">
 					<button
 						on:click|preventDefault={formSubmit}
 						type="submit"

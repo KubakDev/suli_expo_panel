@@ -91,7 +91,7 @@
 {:else}
 <div style="min-height: calc(100vh - 160px);">
 	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="border dark:border-gray-800 p-4 rounded">
+		<div class="border dark:border-gray-700 p-4 rounded border">
 			<div class="flex justify-center py-10">
 				<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update User Data</h1>
 			</div>

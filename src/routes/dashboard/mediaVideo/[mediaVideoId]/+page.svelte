@@ -296,6 +296,7 @@
 					<div class="border mb-2 dark:border-gray-800 mx-10" />
 
 					<!-- button for submitForm -->
+					<div class="border-t border-gray-200 dark:border-gray-700" />
 					<div class="w-full flex justify-end py-5 px-10">
 						<button
 							on:click|preventDefault={formSubmit}

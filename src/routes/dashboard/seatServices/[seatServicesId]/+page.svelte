@@ -311,14 +311,14 @@
 									</TabItem>
 								{/each}
 							</Tabs>
-							<div class="border-t border-gray-200" />
+							<div class="border-t border-gray-200 dark:border-gray-700" />
 
 							<div class="w-full flex justify-end py-5 px-10">
 								<button
 									on:click|preventDefault={formSubmit}
 									type="submit"
-									class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2 items-center"
-								>
+							       class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+				                   >
 									Update
 								</button>
 							</div>

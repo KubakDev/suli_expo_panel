@@ -229,7 +229,10 @@
 				</label>
 			</div>
 		{/each}
-		<Button type="submit">Submit</Button>
+		<div class="border-t border-gray-200 dark:border-gray-700" />
+		<div class="flex justify-end w-full mt-5">
+			<Button type="submit">Submit</Button>
+		</div>
 	</div>
 </form>
 

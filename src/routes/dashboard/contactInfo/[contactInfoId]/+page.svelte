@@ -183,7 +183,7 @@
 
 	<div class="px-5 lg:px-20 py-10 m-10">
 		<Form class="form" {submitted}>
-			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-600">Contact Information Data</h1>
+			<h1 class="text-2xl font-bold py-2 flex justify-center text-gray-600 dark:text-gray-300">Contact Information Data</h1>
 
 			<div class="grid grid-cols-3 gap-x-2 gap-y-8 pt-10">
 				<div class="w-full h-16 mb-8 lg:mb-0">
@@ -257,7 +257,7 @@
 				</div>
 			</div>
 
-			<div class="grid gap-4 md:grid-cols-3 mt-8 rounded-lg border">
+			<div class="grid gap-4 md:grid-cols-3 mt-8 rounded-lg border dark:border-gray-700">
 				<div class="col-span-3">
 					<Tabs contentClass="px-4 dark:text-white">
 						{#each contactDataLang as langData}
@@ -268,7 +268,7 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-5 py-16 text-gray-600">
+								<div class="px-5 py-16 text-gray-600 dark:text-gray-300">
 									<div class="text-center w-full pb-5">
 										<h1 class="text-xl font-bold">
 											{#if langData.language === 'ar'}
@@ -371,7 +371,7 @@
 						{/each}
 					</Tabs>
 
-					<div class="mb-2 mx-10" />
+					<div class="border-t border-gray-200 dark:border-gray-700" />
 
 					<!-- button for submitForm -->
 					<div class="w-full flex justify-end py-5 px-10">
