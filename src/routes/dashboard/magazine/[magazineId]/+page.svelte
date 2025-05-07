@@ -169,25 +169,30 @@
 			const isLongDescriptionEmpty = isEmpty(longDescription);
 
 			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
-				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
-					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
 				}
 			}
 		}
 
-		if (!isEmpty(magazineData.thumbnail) && magazineData.images.length > 0) {
+		if (!isEmpty(magazineData.thumbnail) && (magazineData.images.length > 0 || sliderImagesFile.length > 0 || existingImages.length > 0)) {
 			isValidMagazineObject = true;
 		}
 
 		if (hasDataForLanguage && isValidMagazineObject) {
 			submitted = true;
 			showToast = true;
+			
+			// Store initial values
+			const initialImages = [...magazineData.images];
+			const initialPDFs = [...magazineData.pdf_files];
+			
+			// Don't clear the arrays, just initialize them
 			magazineData.pdf_files = [];
 			magazineData.images = [];
+			
 			if (imageFile) {
 				if (magazineData.thumbnail) {
 					await data.supabase.storage.from('image').remove([magazineData.thumbnail]);
@@ -207,38 +212,50 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`magazine/${randomText}`, image!);
-					//
 
 					if (responseMultiple.data?.path) {
 						magazineData.images.push(responseMultiple.data?.path);
 					}
 				}
 			}
+			
+			// Add existing images from the UI
 			for (let image of existingImages) {
 				magazineData.images.push(image);
 			}
-			// Convert magazine.images to a valid array string format
-			const imagesArray = magazineData.images.map((image) => `"${image}"`);
-			magazineData.images = `{${imagesArray.join(',')}}`;
-
-			// ***insert pdf *****//
+			
+			// If no new images were added and no existing images in UI, keep the original images
+			if (magazineData.images.length === 0 && initialImages.length > 0) {
+				magazineData.images = initialImages;
+			}
+			
 			if (sliderPDFFile.length > 0) {
 				for (let PDFfile of sliderPDFFile) {
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
 						.upload(`pdfFiles/${randomText}`, PDFfile!);
-					//
 
 					if (responseMultiple.data?.path) {
 						magazineData.pdf_files.push(responseMultiple.data.path);
 					}
 				}
 			}
+			
+			// Add existing PDFs from the UI
 			for (let pdf of existingPDFfiles) {
 				magazineData.pdf_files.push(pdf);
 			}
-			// Convert magazine.images to a valid array string format
+			
+			// If no new PDFs were added and no existing PDFs in UI, keep the original PDFs
+			if (magazineData.pdf_files.length === 0 && initialPDFs.length > 0) {
+				magazineData.pdf_files = initialPDFs;
+			}
+			
+			// Convert arrays to valid string format
+			const imagesArray = magazineData.images.map((image) => `"${image}"`);
+			magazineData.images = `{${imagesArray.join(',')}}`;
+
 			const pdfArray = magazineData.pdf_files.map((file) => `"${file}"`);
 			magazineData.pdf_files = `{${pdfArray.join(',')}}`;
 
@@ -256,13 +273,11 @@
 
 	//update images
 	function imageChanges(e: any) {
-		//
 		let result: any = [];
 		let customImages: any = [];
 		e.detail.forEach((image: any) => {
 			if (image.imgSource === ImgSourceEnum.remote) {
 				result.push(image.imgurl);
-				//
 				const newImage = { ...image };
 				newImage.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image.imgurl}`;
 				customImages.push(newImage);
@@ -272,26 +287,17 @@
 		});
 		carouselImages = customImages;
 		existingImages = result;
-		//
 	}
 
 	//update pdf file
 	function pdfChanges(e: any) {
-		//
-		let result: any = [];
-		let customImages: any = [];
+		let result: string[] = [];
 		e.detail.forEach((files: any) => {
 			if (files.imgSource === ImgSourceEnum.PdfRemote) {
 				result.push(files.imgurl);
-				const newFile = { ...files };
-				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
-				// customImages.push(newFile);
-			} else {
-				// customImages.push(files);
 			}
 		});
 		existingPDFfiles = result;
-		//
 	}
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
