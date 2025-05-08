@@ -18,7 +18,8 @@
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
-	import { getImagesObject, convertToCarouselImages, type CarouselImage } from '$lib/utils/carouselImageUtils';
+
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -29,8 +30,7 @@
 		attribution: string;
 		id: number;
 		imgurl: string;
-		name: string;
-		imgSource?: ImgSourceEnum;
+		name: File;
 	};
 	let loaded = false;
 	let carouselImages: CarouselImage[] | undefined = undefined;
@@ -115,13 +115,15 @@
 
 	//get image
 	function getImage() {
-		if (!galleryData.images) return [];
-		const imagesArray = Array.isArray(galleryData.images) ? galleryData.images : [galleryData.images];
-		return imagesArray.map((image, i) => ({
-			id: i,
-			imgurl: image,
-			imgSource: ImgSourceEnum.remote
-		}));
+		let result = galleryData.images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: image,
+				imgSource: ImgSourceEnum.remote
+			};
+		});
+		//
+		return result;
 	}
 
 	//**Handle submit**//

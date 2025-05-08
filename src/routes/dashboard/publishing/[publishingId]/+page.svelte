@@ -19,7 +19,7 @@
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
-	import { getImagesObject, convertToCarouselImages, type CarouselImage } from '$lib/utils/carouselImageUtils';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let data;
@@ -30,7 +30,12 @@
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let pdfFiles: File[] = [];
- 
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
 
 	let carouselImages: CarouselImage[] | undefined = undefined;
 	let loaded = false;
@@ -129,24 +134,28 @@
 
 	//get image
 	function getImage() {
-		if (!publishingData.images) return [];
-		const imagesArray = Array.isArray(publishingData.images) ? publishingData.images : [publishingData.images];
-		return imagesArray.map((image, i) => ({
-			id: i,
-			imgurl: image,
-			imgSource: ImgSourceEnum.remote
-		}));
+		let result = publishingData.images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: image,
+				imgSource: ImgSourceEnum.remote
+			};
+		});
+		//
+		return result;
 	}
 
 	//get pdf File
 	function getPdfFile() {
-		if (!publishingData.pdf_files) return [];
-		const pdfArray = Array.isArray(publishingData.pdf_files) ? publishingData.pdf_files : [publishingData.pdf_files];
-		return pdfArray.map((file, i) => ({
-			id: i,
-			imgurl: file,
-			imgSource: ImgSourceEnum.PdfRemote
-		}));
+		let result = publishingData.pdf_files.map((file, i) => {
+			return {
+				id: i,
+				imgurl: file,
+				imgSource: ImgSourceEnum.PdfRemote
+			};
+		});
+		//
+		return result;
 	}
 
 	//**Handle submit**//
@@ -165,8 +174,10 @@
 			const isLongDescriptionEmpty = isEmpty(longDescription);
 
 			if (!isTitleEmpty || !isShortDescriptionEmpty || !isLongDescriptionEmpty) {
+				// At least one field is not empty
 				hasDataForLanguage = true;
 				if (isTitleEmpty || isShortDescriptionEmpty || isLongDescriptionEmpty) {
+					// At least one field is empty for this language
 					hasDataForLanguage = false;
 					break;
 				}
@@ -180,14 +191,8 @@
 		if (hasDataForLanguage && isValidPublishingObject) {
 			submitted = true;
 			showToast = true;
-			
-			// Store initial values
-			const initialImages = [...publishingData.images];
-			
-			// Don't clear the arrays, just initialize them
 			publishingData.pdf_files = [];
 			publishingData.images = [];
-			
 			if (imageFile) {
 				if (publishingData.thumbnail) {
 					await data.supabase.storage.from('image').remove([publishingData.thumbnail]);
@@ -207,46 +212,38 @@
 					const responseMultiple = await data.supabase.storage
 						.from('image')
 						.upload(`publishing/${randomText}`, image!);
+					//
 
 					if (responseMultiple.data?.path) {
 						publishingData.images.push(responseMultiple.data?.path);
 					}
 				}
 			}
-			
-			// Add existing images from the UI
 			for (let image of existingImages) {
 				publishingData.images.push(image);
 			}
-			
-			// If no new images were added and no existing images in UI, keep the original images
-			if (publishingData.images.length === 0 && initialImages.length > 0) {
-				publishingData.images = initialImages;
-			}
-			
-			// For PDF files, only add what's in the current existingPDFfiles and new uploads
+			// Convert publishing.images to a valid array string format
+			const imagesArray = publishingData.images.map((image) => `"${image}"`);
+			publishingData.images = `{${imagesArray.join(',')}}`;
+
+			// ***insert pdf *****//
 			if (sliderPDFFile.length > 0) {
 				for (let PDFfile of sliderPDFFile) {
 					const randomText = getRandomTextNumber();
 					const responseMultiple = await data.supabase.storage
 						.from('PDF')
 						.upload(`pdfFiles/${randomText}`, PDFfile!);
+					//
 
 					if (responseMultiple.data?.path) {
 						publishingData.pdf_files.push(responseMultiple.data.path);
 					}
 				}
 			}
-			
-			// Add existing PDFs from the UI
 			for (let pdf of existingPDFfiles) {
 				publishingData.pdf_files.push(pdf);
 			}
-			
-			// Convert arrays to valid string format
-			const imagesArray = publishingData.images.map((image) => `"${image}"`);
-			publishingData.images = `{${imagesArray.join(',')}}`;
-
+			// Convert publishing.images to a valid array string format
 			const pdfArray = publishingData.pdf_files.map((file) => `"${file}"`);
 			publishingData.pdf_files = `{${pdfArray.join(',')}}`;
 

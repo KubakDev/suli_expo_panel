@@ -18,10 +18,10 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload'; 
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { getImagesObject, convertToCarouselImages, type CarouselImage } from '$lib/utils/carouselImageUtils';
-	  
+	
 	
 	let loaded = false;
 	export let data;
@@ -32,8 +32,13 @@
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let pdfFiles: File[] = [];
+	type CarouselImage = {
+		attribution: string;
+		id: number;
+		imgurl: string;
+		name: File;
+	};
 
- 
 	let carouselImages: CarouselImage[] | undefined = undefined;
 
 	let submitted = false;
@@ -96,7 +101,7 @@
 				}
 				magazineDataLang = [...magazineDataLang];
 				magazineData = { ...magazineData };
-				carouselImages = convertToCarouselImages(getImagesObject(magazineData));
+				carouselImages = getImagesObject(magazineData);
 			});
 			loaded = true;
 	}
@@ -124,24 +129,28 @@
 
 	//get image
 	function getImage() {
-		if (!magazineData.images) return [];
-		const imagesArray = Array.isArray(magazineData.images) ? magazineData.images : [magazineData.images];
-		return imagesArray.map((image, i) => ({
-			id: i,
-			imgurl: image,
-			imgSource: ImgSourceEnum.remote
-		}));
+		let result = magazineData.images.map((image, i) => {
+			return {
+				id: i,
+				imgurl: image,
+				imgSource: ImgSourceEnum.remote
+			};
+		});
+		//
+		return result;
 	}
 
 	//get pdf File
 	function getPdfFile() {
-		if (!magazineData.pdf_files) return [];
-		const pdfArray = Array.isArray(magazineData.pdf_files) ? magazineData.pdf_files : [magazineData.pdf_files];
-		return pdfArray.map((file, i) => ({
-			id: i,
-			imgurl: file,
-			imgSource: ImgSourceEnum.PdfRemote
-		}));
+		let result = magazineData.pdf_files.map((file, i) => {
+			return {
+				id: i,
+				imgurl: file,
+				imgSource: ImgSourceEnum.PdfRemote
+			};
+		});
+		//
+		return result;
 	}
 
 	//**Handle submit**//
@@ -178,7 +187,7 @@
 			
 			// Store initial values
 			const initialImages = [...magazineData.images];
-			// Don't store initial PDFs as we want to allow removal
+			const initialPDFs = [...magazineData.pdf_files];
 			
 			// Don't clear the arrays, just initialize them
 			magazineData.pdf_files = [];
@@ -220,8 +229,6 @@
 				magazineData.images = initialImages;
 			}
 			
-			// For PDF files, only add what's in the current existingPDFfiles and new uploads
-			// No fallback to original PDFs - if it's empty, it stays empty
 			if (sliderPDFFile.length > 0) {
 				for (let PDFfile of sliderPDFFile) {
 					const randomText = getRandomTextNumber();
@@ -240,8 +247,10 @@
 				magazineData.pdf_files.push(pdf);
 			}
 			
-			// PDF array can be empty - no need to restore original PDFs
-			console.log("Final PDF files:", magazineData.pdf_files);
+			// If no new PDFs were added and no existing PDFs in UI, keep the original PDFs
+			if (magazineData.pdf_files.length === 0 && initialPDFs.length > 0) {
+				magazineData.pdf_files = initialPDFs;
+			}
 			
 			// Convert arrays to valid string format
 			const imagesArray = magazineData.images.map((image) => `"${image}"`);
@@ -289,8 +298,6 @@
 			}
 		});
 		existingPDFfiles = result;
-		// Log the current PDFs after change
-		console.log("PDF files after change:", existingPDFfiles);
 	}
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;
