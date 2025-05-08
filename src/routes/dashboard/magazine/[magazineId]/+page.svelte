@@ -18,10 +18,10 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
-	import { getImagesObject } from '$lib/utils/updateCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload'; 
 	import Spinner from '$lib/components/Spinner.svelte';
-	
+	import { getImagesObject } from '../UpdateCarouselImage';
+	  
 	
 	let loaded = false;
 	export let data;
@@ -58,6 +58,14 @@
 	const id = $page.params.magazineId;
 	let images: ImagesModel[] = [];
 	let pdf_files: PDFModel[] = [];
+
+	function convertToCarouselImages(images: any[] | undefined): CarouselImage[] | undefined {
+		if (!images) return undefined;
+		return images.map(img => ({
+			...img,
+			name: new File([], img.name || 'image')
+		}));
+	}
 
 	//**** get data from db and put it into the fields ****//
 	async function getMagazineData() {
@@ -101,7 +109,7 @@
 				}
 				magazineDataLang = [...magazineDataLang];
 				magazineData = { ...magazineData };
-				carouselImages = getImagesObject(magazineData);
+				carouselImages = convertToCarouselImages(getImagesObject(magazineData));
 			});
 			loaded = true;
 	}
