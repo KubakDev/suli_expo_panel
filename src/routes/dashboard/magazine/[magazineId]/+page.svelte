@@ -187,7 +187,7 @@
 			
 			// Store initial values
 			const initialImages = [...magazineData.images];
-			const initialPDFs = [...magazineData.pdf_files];
+			// Don't store initial PDFs as we want to allow removal
 			
 			// Don't clear the arrays, just initialize them
 			magazineData.pdf_files = [];
@@ -229,6 +229,8 @@
 				magazineData.images = initialImages;
 			}
 			
+			// For PDF files, only add what's in the current existingPDFfiles and new uploads
+			// No fallback to original PDFs - if it's empty, it stays empty
 			if (sliderPDFFile.length > 0) {
 				for (let PDFfile of sliderPDFFile) {
 					const randomText = getRandomTextNumber();
@@ -247,10 +249,8 @@
 				magazineData.pdf_files.push(pdf);
 			}
 			
-			// If no new PDFs were added and no existing PDFs in UI, keep the original PDFs
-			if (magazineData.pdf_files.length === 0 && initialPDFs.length > 0) {
-				magazineData.pdf_files = initialPDFs;
-			}
+			// PDF array can be empty - no need to restore original PDFs
+			console.log("Final PDF files:", magazineData.pdf_files);
 			
 			// Convert arrays to valid string format
 			const imagesArray = magazineData.images.map((image) => `"${image}"`);
@@ -298,6 +298,8 @@
 			}
 		});
 		existingPDFfiles = result;
+		// Log the current PDFs after change
+		console.log("PDF files after change:", existingPDFfiles);
 	}
 	function handleSelectChange(event: any) {
 		const selectedValue = event.target.value;

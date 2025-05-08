@@ -12,9 +12,10 @@
 	let uploadCount = 0;
 
 	afterUpdate(() => {
-		if (pdfFiles.length === 0) {
-			pdfFiles = data.pdfFiles ?? [];
-		}
+		// Remove this automatic restoration of PDF files which prevents complete removal
+		// if (pdfFiles.length === 0) {
+		// 	pdfFiles = data.pdfFiles ?? [];
+		// }
 	});
 	const dispatch = createEventDispatcher();
 	let imageFiles: File[] = [];
@@ -68,10 +69,13 @@
 
 		pdfFiles = updatedImages;
 		imageFiles = updatedImageFiles;
+		
+		// Always dispatch events after deletion to ensure parent component is updated
+		runEvent();
 	}
 
 	$: {
-		if (pdfFiles.length > 0) {
+		if (pdfFiles.length >= 0) {  // Changed from > 0 to >= 0 to run event even when array is empty
 			runEvent();
 		}
 	}
