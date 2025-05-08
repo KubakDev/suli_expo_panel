@@ -20,7 +20,7 @@
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload'; 
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { getImagesObject } from '../UpdateCarouselImage';
+	import { getImagesObject, convertToCarouselImages, type CarouselImage } from '$lib/utils/carouselImageUtils';
 	  
 	
 	let loaded = false;
@@ -32,13 +32,8 @@
 	let existingPDFfiles: string[] = [];
 	let imageFile: File | undefined;
 	let pdfFiles: File[] = [];
-	type CarouselImage = {
-		attribution: string;
-		id: number;
-		imgurl: string;
-		name: File;
-	};
 
+ 
 	let carouselImages: CarouselImage[] | undefined = undefined;
 
 	let submitted = false;
@@ -58,14 +53,6 @@
 	const id = $page.params.magazineId;
 	let images: ImagesModel[] = [];
 	let pdf_files: PDFModel[] = [];
-
-	function convertToCarouselImages(images: any[] | undefined): CarouselImage[] | undefined {
-		if (!images) return undefined;
-		return images.map(img => ({
-			...img,
-			name: new File([], img.name || 'image')
-		}));
-	}
 
 	//**** get data from db and put it into the fields ****//
 	async function getMagazineData() {
@@ -137,28 +124,24 @@
 
 	//get image
 	function getImage() {
-		let result = magazineData.images.map((image, i) => {
-			return {
-				id: i,
-				imgurl: image,
-				imgSource: ImgSourceEnum.remote
-			};
-		});
-		//
-		return result;
+		if (!magazineData.images) return [];
+		const imagesArray = Array.isArray(magazineData.images) ? magazineData.images : [magazineData.images];
+		return imagesArray.map((image, i) => ({
+			id: i,
+			imgurl: image,
+			imgSource: ImgSourceEnum.remote
+		}));
 	}
 
 	//get pdf File
 	function getPdfFile() {
-		let result = magazineData.pdf_files.map((file, i) => {
-			return {
-				id: i,
-				imgurl: file,
-				imgSource: ImgSourceEnum.PdfRemote
-			};
-		});
-		//
-		return result;
+		if (!magazineData.pdf_files) return [];
+		const pdfArray = Array.isArray(magazineData.pdf_files) ? magazineData.pdf_files : [magazineData.pdf_files];
+		return pdfArray.map((file, i) => ({
+			id: i,
+			imgurl: file,
+			imgSource: ImgSourceEnum.PdfRemote
+		}));
 	}
 
 	//**Handle submit**//
