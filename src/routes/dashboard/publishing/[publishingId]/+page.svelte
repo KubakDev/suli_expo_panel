@@ -21,7 +21,7 @@
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { IconDeviceFloppy, IconX } from '@tabler/icons-svelte';
 
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -328,6 +328,15 @@
 
 	function setImageFile(file: File) {
 		imageFile = file;
+		
+		// Create an immediate preview URL
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				publishingData.thumbnail = e.target?.result as string;
+			};
+			reader.readAsDataURL(file);
+		}
 	}
 	function setFileName(name: string) {
 		fileName = name;
@@ -355,12 +364,30 @@
 				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Publishing Thumbnail</span>
-						<Fileupload
-							on:change={(event) =>
-								handleFileUpload(event, publishingData, setImageFile, setFileName, 'publishing')}
-							accept=".jpg, .jpeg, .png"
-							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-						/>
+						<div class="relative">
+							{#if publishingData.thumbnail}
+								<div class="absolute right-2 top-2 z-10">
+									<button 
+										type="button" 
+										class="bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+										on:click={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											publishingData.thumbnail = '';
+											imageFile = undefined;
+										}}
+									>
+										<IconX size={16} />
+									</button>
+								</div>
+							{/if}
+							<Fileupload
+								on:change={(event) =>
+									handleFileUpload(event, publishingData, setImageFile, setFileName, 'publishing')}
+								accept=".jpg, .jpeg, .png"
+								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							/>
+						</div>
 						{#if isFormSubmitted && !publishingData.thumbnail.trim()}
 							<p class="error-message mt-2">Please upload a thumbnail image</p>
 						{/if}

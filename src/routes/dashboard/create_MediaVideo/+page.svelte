@@ -16,7 +16,8 @@
 	import { getDataExhibition } from '../../../stores/exhibitionTypeStore';
 	import { onMount } from 'svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
-	import { IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { IconDeviceFloppy, IconX } from '@tabler/icons-svelte';
+	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 
 	export let data;
 	let isFormSubmitted = false;
@@ -158,6 +159,15 @@
 
 	function setImageFile(file: File) {
 		imageFile = file;
+		
+		// Create an immediate preview URL
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				videoObjectData.thumbnail = e.target?.result as string;
+			};
+			reader.readAsDataURL(file);
+		}
 	}
 	function setFileName(name: string) {
 		fileName = name;
@@ -181,12 +191,30 @@
 				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Video Thumbnail</span>
-						<Fileupload
-							on:change={(event) => 
-								handleFileUpload(event, videoObjectData, setImageFile, setFileName, 'videoObjectData')}
-							accept=".jpg, .jpeg, .png"
-							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-						/>
+						<div class="relative">
+							{#if videoObjectData.thumbnail}
+								<div class="absolute right-2 top-2 z-10">
+									<button 
+										type="button" 
+										class="bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+										on:click={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											videoObjectData.thumbnail = '';
+											imageFile = undefined;
+										}}
+									>
+										<IconX size={16} />
+									</button>
+								</div>
+							{/if}
+							<Fileupload
+								on:change={(event) => 
+									handleFileUpload(event, videoObjectData, setImageFile, setFileName, 'videoObjectData')}
+								accept=".jpg, .jpeg, .png"
+								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							/>
+						</div>
 					</Label>
 				</div>
 			</div>
