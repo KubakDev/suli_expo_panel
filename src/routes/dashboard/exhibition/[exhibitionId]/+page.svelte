@@ -21,6 +21,15 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { IconEye, IconX, IconDeviceFloppy, IconChevronDown } from '@tabler/icons-svelte';
 
+	// Define ExhibitionData type
+	type ExhibitionData = {
+		images: string[];
+		[key: string]: any;
+	};
+
+	// Use an existing image as placeholder
+	const placeholderImage = '/images/easel.png';
+
 	let loaded = false;
 	export let data;
 	let sliderImagesFile: File[] = [];
@@ -48,7 +57,8 @@
 		attribution: string;
 		id: number;
 		imgurl: string;
-		name: File;
+		name: string;
+		imgSource?: ImgSourceEnum;
 	};
 	let carouselImages: CarouselImage[] | undefined = undefined;
 	let carouselImages_sponsor: CarouselImage[] | undefined = undefined;
@@ -95,7 +105,7 @@
 		pdf_files: string;
 		contract_file: string;
 		brochure: string;
-		language: string;
+		language: LanguageEnum;
 		storyOpen?: boolean;
 		descriptionOpen?: boolean;
 	}
@@ -164,7 +174,13 @@
 				}
 				exhibitionDataLang = [...exhibitionDataLang];
 				exhibitionsData = { ...exhibitionsData };
-				carouselImages = getImagesObject(exhibitionsData);
+				
+				// Convert to proper type for getImagesObject
+				const exhibitionDataForImages: ExhibitionData = {
+					...exhibitionsData,
+					images: Array.isArray(exhibitionsData.images) ? exhibitionsData.images : []
+				};
+				carouselImages = getImagesObject(exhibitionDataForImages);
 				carouselImages_sponsor = getImagesObject_sponsor();
 			});
 			loaded = true;
@@ -172,6 +188,10 @@
 
 	onMount(async () => {
 		await getExhibitionData();
+		// Ensure all language types are proper enums
+		exhibitionDataLang.forEach(lang => {
+			lang.language = getLanguageEnum(lang.language);
+		});
 		carouselImages_sponsor = getImagesObject_sponsor();
 	});
 
@@ -361,25 +381,31 @@
 	} //**dropzone-sponsor**//
 	//get image
 	function getImage() {
-		let result = exhibitionsData.images.map((image, i) => {
+		if (!exhibitionsData.images || !Array.isArray(exhibitionsData.images)) {
+			return [];
+		}
+		
+		let result = exhibitionsData.images.map((image: string, i: number) => {
 			return {
 				id: i,
 				imgurl: image,
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		//
 		return result;
 	}
 	function getImage_sponsor() {
-		let result = exhibitionsData.sponsor_images.map((image, i) => {
+		if (!exhibitionsData.sponsor_images || !Array.isArray(exhibitionsData.sponsor_images)) {
+			return [];
+		}
+		
+		let result = exhibitionsData.sponsor_images.map((image: string, i: number) => {
 			return {
 				id: i,
 				imgurl: image,
 				imgSource: ImgSourceEnum.remote
 			};
 		});
-		//
 		return result;
 	}
 
@@ -388,7 +414,7 @@
 			return undefined;
 		}
 		
-		const carouselImages_sponsor = exhibitionsData.sponsor_images.map((image, i) => {
+		const carouselImages_sponsor: CarouselImage[] = exhibitionsData.sponsor_images.map((image, i) => {
 			return {
 				id: i,
 				imgurl: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${image}`,
@@ -403,6 +429,14 @@
 			return carouselImages_sponsor;
 		}
 		return undefined;
+	}
+
+	// Convert string language to enum if needed
+	function getLanguageEnum(lang: string): LanguageEnum {
+		if (Object.values(LanguageEnum).includes(lang as LanguageEnum)) {
+			return lang as LanguageEnum;
+		}
+		return LanguageEnum.EN; // Default fallback
 	}
 
 	//**Handle submit**//
@@ -601,7 +635,13 @@
 
 			// ***insert pdf *****//
 
-			updateData(exhibitionsData, exhibitionDataLang, data.supabase);
+			// Ensure all exhibition language data has the correct language enum type
+			const exhibitionDataLangForUpdate = exhibitionDataLang.map(lang => ({
+				...lang,
+				language: getLanguageEnum(lang.language)
+			}));
+
+			updateData(exhibitionsData, exhibitionDataLangForUpdate, data.supabase);
 
 			setTimeout(() => {
 				showToast = false;
@@ -805,7 +845,7 @@
 									open={langData.language == selectedLanguageTab}
 									title={langData.language}
 									on:click={() => {
-										selectedLanguageTab = langData.language;
+										selectedLanguageTab = getLanguageEnum(langData.language);
 									}}
 								>
 									<div class="p-6 text-gray-700 dark:text-gray-200">
@@ -816,7 +856,7 @@
 												{:else if langData.language === 'ckb'}
 													{`زیاد کردنی داتا بە زمانی کوردی`}
 												{:else}
-													{`${langData.language} Language Content`}
+												{`English Language Content`}
 												{/if}
 											</h2>
 											<p class="text-gray-500 dark:text-gray-400 text-sm">Navigate between tabs to edit other languages</p>
@@ -1083,7 +1123,6 @@
 								</TabItem>
 							{/each}
 						</Tabs>
-						<div class="border mb-2 dark:border-gray-800 mx-10" />
 					</form>
 
 					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
@@ -1190,17 +1229,25 @@
 								{#each exhibitionDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<div class="flex flex-col items-center">
-											<ExpoCard
-												cardType={CardType.Flat}
-												title={langData.title ? `${langData.title} Brochure` : "Exhibition Brochure"}
-												short_description=""
-												thumbnail={brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local
-													? langData.brochure
-													: (langData.brochure ? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${langData.brochure}` : exhibitionsData.thumbnail)}
-												primaryColor="bg-primary"
-												startDate={exhibitionsData.start_date}
-												endDate={exhibitionsData.end_date}
-											/>
+											{#if langData.brochure}
+												<ExpoCard
+													cardType={CardType.Flat}
+													title={langData.title ? `${langData.title} Brochure` : "Exhibition Brochure"}
+													short_description=""
+													thumbnail={brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local
+														? langData.brochure
+														: (langData.brochure ? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${langData.brochure}` : exhibitionsData.thumbnail)}
+													primaryColor="bg-primary"
+													startDate={exhibitionsData.start_date}
+													endDate={exhibitionsData.end_date}
+												/>
+											{:else}
+												<div class="flex flex-col items-center justify-center text-center p-4">
+													<img src={placeholderImage} alt="No brochure" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+													<p class="text-gray-500 dark:text-gray-400 mb-1">No brochure available for {langData.language}</p>
+													<p class="text-xs text-gray-400 dark:text-gray-500">Upload a brochure image for this language</p>
+												</div>
+											{/if}
 										</div>
 									{/if}
 								{/each}
@@ -1211,7 +1258,15 @@
 							<div class="p-4">
 								{#each exhibitionDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
-										<DetailPage imagesCarousel={carouselImages} long_description="" />
+										{#if carouselImages && carouselImages.length > 0}
+											<DetailPage imagesCarousel={carouselImages} long_description="" />
+										{:else}
+											<div class="flex flex-col items-center justify-center text-center p-4">
+												<img src={placeholderImage} alt="No gallery images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+												<p class="text-gray-500 dark:text-gray-400 mb-1">No gallery images available</p>
+												<p class="text-xs text-gray-400 dark:text-gray-500">Upload exhibition images to see them here</p>
+											</div>
+										{/if}
 									{/if}
 								{/each}
 							</div>
@@ -1227,8 +1282,9 @@
 												<DetailPage imagesCarousel={carouselImages_sponsor} long_description="" />
 											{:else}
 												<div class="flex flex-col items-center justify-center text-center p-4">
-													<p class="text-gray-500 dark:text-gray-400 mb-2">No sponsor images available</p>
-													<img src={exhibitionsData.thumbnail} alt="Default exhibition" class="w-48 h-auto rounded-lg opacity-50" />
+													<img src={placeholderImage} alt="No sponsor images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+													<p class="text-gray-500 dark:text-gray-400 mb-1">No sponsor images available</p>
+													<p class="text-xs text-gray-400 dark:text-gray-500">Upload sponsor images to see them here</p>
 												</div>
 											{/if}
 										</div>

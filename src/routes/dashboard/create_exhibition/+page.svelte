@@ -3,7 +3,7 @@
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/exhibitionStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
-	import type { ExhibitionsModel, ExhibitionsModelLang } from '../../../models/exhibitionModel';
+	import type { ExhibitionsModel } from '../../../models/exhibitionModel';
 	import { getRandomTextNumber } from '$lib/utils/generateRandomNumber';
 	import { CardType, ExpoCard, DetailPage } from 'kubak-svelte-component';
 	import { goto } from '$app/navigation';
@@ -12,6 +12,7 @@
 	import { isEmpty } from 'validator';
 	import { decodeBase64 } from '$lib/utils/decodeBase64';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { IconEye, IconX, IconDeviceFloppy, IconChevronDown } from '@tabler/icons-svelte';
 	const placeholderImage = '/images/placeholder.png';
 
 	export let data;
@@ -20,6 +21,23 @@
 		fileName: string;
 		file: File;
 		lang: LanguageEnum;
+	}
+
+	// Extended ExhibitionsModelLang interface
+	interface ExhibitionsModelLang {
+		story: string;
+		video_youtube_link: string;
+		title: string;
+		pdf_files: string;
+		contract_file: string;
+		description: string;
+		location: string;
+		location_title: string;
+		brochure: string;
+		map_title: string;
+		language: LanguageEnum;
+		storyOpen?: boolean;
+		descriptionOpen?: boolean;
 	}
 
 	let isFormSubmitted = false;
@@ -81,7 +99,9 @@
 			location_title: '',
 			brochure: '',
 			map_title: '',
-			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum]
+			language: LanguageEnum[languageEnumKeys[i] as keyof typeof LanguageEnum],
+			storyOpen: false,
+			descriptionOpen: false
 		});
 	}
 	//**dropzone**//
@@ -218,9 +238,10 @@
 				.upload(`exhibition/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
-						if (Array.isArray(exhibitionsObject.images)) {
-							exhibitionsObject.images.push(response.data.path);
+						if (!Array.isArray(exhibitionsObject.images)) {
+							exhibitionsObject.images = [];
 						}
+						exhibitionsObject.images.push(response.data.path);
 					}
 				});
 		}
@@ -232,6 +253,9 @@
 				.upload(`exhibition/${randomText}`, image!)
 				.then((response) => {
 					if (response.data) {
+						if (!Array.isArray(exhibitionsObject.sponsor_images)) {
+							exhibitionsObject.sponsor_images = [];
+						}
 						exhibitionsObject.sponsor_images.push(response.data.path);
 					}
 				});
@@ -427,424 +451,537 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	{#if showToast}
-		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-			New data has been inserted successfully
+		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
+			<span class="font-medium">New exhibition has been created successfully!</span>
 		</div>
 	{/if}
-	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Exhibition Data</h1></div>
+	<div class="max-w-screen-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+		<div class="mb-10 text-center">
+			<h1 class="text-3xl font-bold text-gray-800 dark:text-white">Create Exhibition</h1>
+			<p class="mt-2 text-gray-600 dark:text-gray-400">Enter exhibition details and upload media files</p>
+		</div>
 
-		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
-			<div class="col-span-4">
-				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Exhibition Image</Label>
-					<Fileupload
-						on:change={handleFileUploadThumbnail}
-						accept=".jpg, .jpeg, .png"
-						class=" dark:bg-white"
-					/>
-					{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
-						<p class="error-message text-sm font-normal">Please Upload an Image</p>
-					{/if}
-				</Label>
+		<div class="grid lg:grid-cols-12 gap-6 mb-8">
+			<div class="lg:col-span-6">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+					<Label class="block mb-4">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Image</span>
+						<div class="relative">
+							{#if exhibitionsObject.thumbnail}
+								<div class="absolute right-2 top-2 z-10">
+									<button 
+										type="button" 
+										class="bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+										on:click={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											exhibitionsObject.thumbnail = '';
+											imageFile = undefined;
+										}}
+									>
+										<IconX size={16} />
+									</button>
+								</div>
+							{/if}
+							<Fileupload
+								on:change={handleFileUploadThumbnail}
+								accept=".jpg, .jpeg, .png"
+								class="dark:bg-white"
+							/>
+						</div>
+						{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
+							<p class="error-message mt-2">Please upload an image</p>
+						{/if}
+					</Label>
+				</div>
 			</div>
-
-			<div class="col-span-4">
-				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail_map" class="mb-2">Upload Image Map</Label>
-					<Fileupload
-						on:change={handleFileUploadMap}
-						accept=".jpg, .jpeg, .png"
-						class=" dark:bg-white"
-						lang={selectedLanguageTab}
-					/>
-				</Label>
-			</div>
-
-			<div class="col-span-2">
-				<Label class="space-y-2 mb-2">
-					<span>Start Date</span>
-					<Input type="date" bind:value={exhibitionsObject.start_date} />
-				</Label>
-			</div>
-			<div class="col-span-2">
-				<Label class="space-y-2 mb-2">
-					<span>End Date</span>
-					<Input type="date" bind:value={exhibitionsObject.end_date} />
-				</Label>
+			<div class="lg:col-span-6">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+					<Label class="block mb-4">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Map Image</span>
+						<div class="relative">
+							{#if exhibitionsObject.image_map}
+								<div class="absolute right-2 top-2 z-10">
+									<button 
+										type="button" 
+										class="bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+										on:click={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											exhibitionsObject.image_map = '';
+											imageFile_map = undefined;
+										}}
+									>
+										<IconX size={16} />
+									</button>
+								</div>
+							{/if}
+							<Fileupload
+								on:change={handleFileUploadMap}
+								accept=".jpg, .jpeg, .png .svg"
+								class="dark:bg-white"
+								lang={selectedLanguageTab}
+							/>
+						</div>
+					</Label>
+				</div>
 			</div>
 		</div>
 
-		<div class="grid lg:grid-cols-12 gap-4 px-4 py-2">
-			<div class="col-span-4">
-				<Label for="default-input" class="block mb-2">Exhibition Type</Label>
-				<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" />
-				{#if isFormSubmitted && !exhibitionsObject.exhibition_type.trim()}
-					<p class="error-message text-sm font-normal">Please enter an exhibition type</p>
-				{/if}
-			</div>
-
-			<div class="col-span-2">
-				<Label class="space-y-2 mb-2">
-					<span>Country No</span>
-					<Input
-						type="number"
-						bind:value={exhibitionsObject.country_number}
-						placeholder="Enter a number"
-					/>
-					{#if isFormSubmitted && !exhibitionsObject.country_number}
-						<p class="error-message text-sm font-normal">Required</p>
-					{/if}
-				</Label>
-			</div>
-			<div class="col-span-2">
-				<Label class="space-y-2 mb-2">
-					<span>Company No</span>
-					<Input
-						type="number"
-						bind:value={exhibitionsObject.company_number}
-						placeholder="Enter a number"
-					/>
-					{#if isFormSubmitted && !exhibitionsObject.company_number}
-						<p class="error-message text-sm font-normal">Required</p>
-					{/if}
-				</Label>
+		<!-- Date section combined in a single row -->
+		<div class="grid lg:grid-cols-12 gap-6 mb-8">
+			<div class="lg:col-span-12">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+					<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+						<div class="md:col-span-1">
+							<Label class="block mb-2">
+								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
+								<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" class="w-full" />
+								{#if isFormSubmitted && !exhibitionsObject.exhibition_type.trim()}
+									<p class="error-message mt-2">Please enter an exhibition type</p>
+								{/if}
+							</Label>
+						</div>
+						<div class="md:col-span-1">
+							<Label class="block mb-2">
+								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Start Date</span>
+								<Input type="date" bind:value={exhibitionsObject.start_date} class="w-full" />
+							</Label>
+						</div>
+						<div class="md:col-span-1">
+							<Label class="block mb-2">
+								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">End Date</span>
+								<Input type="date" bind:value={exhibitionsObject.end_date} class="w-full" />
+							</Label>
+						</div>
+						<div class="md:col-span-1">
+							<Label class="block mb-2">
+								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Country / Company</span>
+								<div class="grid grid-cols-2 gap-2">
+									<Input
+										type="number"
+										bind:value={exhibitionsObject.country_number}
+										placeholder="Country #"
+										min="0"
+										class="w-full"
+									/>
+									<Input
+										type="number"
+										bind:value={exhibitionsObject.company_number}
+										placeholder="Company #"
+										min="0"
+										class="w-full"
+									/>
+								</div>
+								{#if isFormSubmitted && (!exhibitionsObject.country_number || !exhibitionsObject.company_number)}
+									<p class="error-message mt-2">Both fields required</p>
+								{/if}
+							</Label>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
-				<form>
-					<Tabs contentClass="px-4 dark:text-white">
-						{#each exhibitionsDataLang as langData}
-							<TabItem
-								open={langData.language == selectedLanguageTab}
-								title={langData.language}
-								on:click={() => {
-									selectedLanguageTab = langData.language;
-								}}
+		<div class="grid lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+					<form>
+						<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+							{#each exhibitionsDataLang as langData}
+								<TabItem
+									open={langData.language == selectedLanguageTab}
+									title={langData.language}
+									on:click={() => {
+										selectedLanguageTab = langData.language;
+									}}
+								>
+									<div class="p-6 text-gray-700 dark:text-gray-200">
+										<div class="text-center mb-8">
+											<h2 class="text-xl font-semibold mb-2">
+												{#if langData.language === 'ar'}
+													{`أضف البيانات إلى اللغة العربية`}
+												{:else if langData.language === 'ckb'}
+													{`زیاد کردنی داتا بە زمانی کوردی`}
+												{:else}
+													{`English Language Content`}
+												{/if}
+											</h2>
+											<p class="text-gray-500 dark:text-gray-400 text-sm">Navigate between tabs to edit other languages</p>
+										</div>
+
+										<!-- PDF and Brochure Files -->
+										<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+												<Label class="block">
+													<div class="flex items-center justify-between mb-2">
+														<span class="font-medium text-gray-700 dark:text-gray-300">PDF File</span>
+														{#if langData.pdf_files}
+															<div class="flex space-x-2">
+																<button
+																	on:click={() => decodeBase64(langData?.pdf_files ?? '')}
+																	class="cursor-pointer text-xs inline-flex items-center gap-1 px-3 py-1 bg-primary hover:bg-primary-dark rounded-full text-white transition-colors duration-200"
+																	>
+																	<IconEye size={16} />
+																	View PDF
+																</button>
+															</div>
+														{/if}
+													</div>
+													<Fileupload
+														on:change={handleFileUpload_pdf}
+														accept=".pdf"
+														class="dark:bg-white"
+													/>
+													{#if isFormSubmitted && !langData?.pdf_files?.trim()}
+														<p class="error-message mt-2">Please upload PDF file</p>
+													{/if}
+												</Label>
+											</div>
+
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+												<Label class="block">
+													<div class="flex items-center justify-between mb-2">
+														<span class="font-medium text-gray-700 dark:text-gray-300">Brochure</span>
+													</div>
+													<Fileupload
+														on:change={handleFileUpload_brochure}
+														accept=".svg, .png, .jpg, .jpeg"
+														class="dark:bg-white"
+													/>
+													{#if isFormSubmitted && !langData?.brochure?.trim()}
+														<p class="error-message mt-2">Please upload brochure file</p>
+													{/if}
+												</Label>
+											</div>
+
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+												<Label class="block">
+													<div class="flex items-center justify-between mb-2">
+														<span class="font-medium text-gray-700 dark:text-gray-300">Contract PDF</span>
+													</div>
+													<Fileupload
+														on:change={handleFileUpload_pdf_contract}
+														accept=".pdf"
+														class="dark:bg-white"
+													/>
+												</Label>
+											</div>
+										</div>
+
+										<!-- Video and Map Section -->
+										<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+												<Label class="block">
+													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">YouTube Video Link</span>
+													<Input
+														type="text"
+														bind:value={langData.video_youtube_link}
+														placeholder="Enter YouTube link"
+														class="w-full"
+													/>
+													{#if isFormSubmitted && !langData.video_youtube_link.trim()}
+														<p class="error-message mt-2">Please enter a YouTube link</p>
+													{/if}
+												</Label>
+											</div>
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+												<Label class="block">
+													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Map Title</span>
+													<Input
+														type="text"
+														bind:value={langData.map_title}
+														placeholder="Enter map title"
+														class="w-full"
+													/>
+													{#if isFormSubmitted && !langData.map_title.trim()}
+														<p class="error-message mt-2">Please enter map title</p>
+													{/if}
+												</Label>
+											</div>
+										</div>
+
+										<!-- Location Section -->
+										<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+												<Label class="block">
+													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location Title</span>
+													<Input
+														type="text"
+														bind:value={langData.location_title}
+														placeholder="Enter location title"
+														class="w-full"
+													/>
+													{#if isFormSubmitted && !langData.location_title.trim()}
+														<p class="error-message mt-2">Please enter a location title</p>
+													{/if}
+												</Label>
+											</div>
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg md:col-span-2">
+												<Label class="block">
+													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location Address</span>
+													<Input
+														type="text"
+														bind:value={langData.location}
+														placeholder="Enter full address"
+														class="w-full"
+													/>
+													{#if isFormSubmitted && !langData.location.trim()}
+														<p class="error-message mt-2">Please enter a location</p>
+													{/if}
+												</Label>
+											</div>
+										</div>
+
+										<!-- Title Section -->
+										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+											<Label class="block">
+												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Exhibition Title</span>
+												<Input
+													type="text"
+													placeholder="Enter title"
+													bind:value={langData.title}
+													id="title"
+													name="title"
+													class="w-full"
+												/>
+												{#if isFormSubmitted && !langData.title.trim()}
+													<p class="error-message mt-2">Please enter a title</p>
+												{/if}
+											</Label>
+										</div>
+										
+										<!-- Accordion Sections for Story and Description -->
+										<div class="space-y-6 mb-10">
+											<!-- Story Accordion -->
+											<div class="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+												<button class="w-full flex justify-between items-center p-5 text-left" 
+													on:click={(e) => {
+														e.preventDefault();
+														langData.storyOpen = !langData.storyOpen;
+													}}>
+													<span class="font-medium text-gray-700 dark:text-gray-300">Story</span>
+													<IconChevronDown size={20} class="transform transition-transform duration-200 {langData.storyOpen ? 'rotate-180' : ''}" />
+												</button>
+												{#if langData.storyOpen}
+													<div class="p-6 pt-2 border-t border-gray-200 dark:border-gray-700">
+														<Textarea
+															placeholder="Enter a story"
+															rows="4"
+															bind:value={langData.story}
+															id="story"
+															name="story"
+															class="w-full"
+														/>
+														{#if isFormSubmitted && !langData.story.trim()}
+															<p class="error-message mt-2">Please enter a story</p>
+														{/if}
+													</div>
+												{/if}
+											</div>
+											
+											<!-- Description Accordion -->
+											<div class="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+												<button class="w-full flex justify-between items-center p-5 text-left" 
+													on:click={(e) => {
+														e.preventDefault();
+														langData.descriptionOpen = !langData.descriptionOpen;
+													}}>
+													<span class="font-medium text-gray-700 dark:text-gray-300">Description</span>
+													<IconChevronDown size={20} class="transform transition-transform duration-200 {langData.descriptionOpen ? 'rotate-180' : ''}" />
+												</button>
+												{#if langData.descriptionOpen}
+													<div class="p-6 pt-2 border-t border-gray-200 dark:border-gray-700">
+														<Textarea
+															placeholder="Enter a description"
+															rows="4"
+															bind:value={langData.description}
+															id="description"
+															name="description"
+															class="w-full"
+														/>
+														{#if isFormSubmitted && !langData.description.trim()}
+															<p class="error-message mt-2">Please enter a description</p>
+														{/if}
+													</div>
+												{/if}
+											</div>
+										</div>
+									</div>
+								</TabItem>
+							{/each}
+						</Tabs>
+						<div class="border mb-2 dark:border-gray-800 mx-10" />
+					</form>
+
+					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
+						<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+							<Label class="block">
+								<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Sponsor Title</span>
+								<Input
+									type="text"
+									bind:value={exhibitionsObject.sponsor_title}
+									placeholder="Enter a title for sponsor"
+									class="w-full"
+								/>
+								{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
+									<p class="error-message mt-2">Please enter a sponsor title</p>
+								{/if}
+							</Label>
+						</div>
+						
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+							<!-- Exhibition Images -->
+							<div>
+								<Label class="block mb-4">
+									<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Exhibition Images</span>
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+										<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+										{#if isFormSubmitted && sliderImagesFile.length === 0}
+											<p class="error-message mt-2">
+												Please upload at least one image for the exhibition
+											</p>
+										{/if}
+									</div>
+								</Label>
+							</div>
+
+							<!-- Sponsor Images -->
+							<div>
+								<Label class="block mb-4">
+									<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Sponsor Images</span>
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+										<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
+										{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
+											<p class="error-message mt-2">
+												Please upload at least one image for the sponsor
+											</p>
+										{/if}
+									</div>
+								</Label>
+							</div>
+						</div>
+
+						<!-- Create Button -->
+						<div class="flex justify-end my-8">
+							<button
+								on:click|preventDefault={formSubmit}
+								type="submit"
+								class="bg-primary hover:bg-primary-dark text-white font-medium py-2.5 px-6 rounded-md shadow-sm transition-colors duration-200 flex items-center gap-2"
 							>
-								<div class="px-5 py-10 text-gray-600 dark:text-gray-300">
-									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
-											{#if langData.language === 'ar'}
-												{`أضف البيانات إلى اللغة العربية`}
-											{:else if langData.language === 'ckb'}
-												{`زیاد کردنی داتا بە زمانی کوردی`}
-											{:else}
-												Add data for <span class="uppercase">{`${langData.language}`}</span> language
-											{/if}
-										</h1>
-										<p class="text-gray-600 dark:text-gray-300">for other language navigate between tabs</p>
-									</div>
-									<div class="pb-5 flex flex-col lg:flex-row gap-4 col-span-1">
-										<Label class="lg:w-1/3 space-y-2 mb-2">
-											<span>Upload pdf file </span>
-
-											<Fileupload
-												on:change={handleFileUpload_pdf}
-												accept=".pdf"
-												class=" dark:bg-white"
-												placeholder="Upload"
-											/>
-
-											{#if isFormSubmitted && !langData?.pdf_files?.trim()}
-												<p class="error-message text-sm font-normal">Please Upload an pdf file</p>
-											{/if}
-
-											<div>
-												<button
-													on:click={() => decodeBase64(langData?.pdf_files ?? '')}
-													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
-													>Click here to view the PDF</button
-												>
-											</div>
-										</Label>
-
-										<Label class="lg:w-1/3 space-y-2 mb-2">
-											<span>Upload brochure image</span>
-
-											<Fileupload
-												on:change={handleFileUpload_brochure}
-												accept=".svg, .png, .jpg, .jpeg"
-												class=" dark:bg-white"
-												placeholder="Upload"
-											/>
-
-											{#if isFormSubmitted && !langData?.brochure?.trim()}
-												<p class="error-message text-sm font-normal">
-													Please Upload brochure image
-												</p>
-											{/if}
-										</Label>
-
-										<Label class="lg:w-1/3 space-y-2 mb-2">
-											<span>Upload pdf contract </span>
-
-											<Fileupload
-												on:change={handleFileUpload_pdf_contract}
-												accept=".pdf"
-												class="dark:bg-white"
-												placeholder="Upload"
-											/>
-
-											<div>
-												<button
-													on:click={() => decodeBase64(langData?.contract_file ?? '')}
-													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
-													>Click here to view the PDF</button
-												>
-											</div>
-										</Label>
-									</div>
-
-									<div class="pb-0 flex gap-3 col-span-1">
-										<Label class="w-2/4 space-y-2 mb-2">
-											<Label for="title" class="mb-2">Link for youtube video</Label>
-											<Input
-												type="text"
-												bind:value={langData.video_youtube_link}
-												placeholder="Enter a link"
-											/>
-											{#if isFormSubmitted && !langData.video_youtube_link}
-												<p class="error-message text-sm font-normal">
-													Please enter a link for youtube video
-												</p>
-											{/if}
-										</Label>
-
-										<Label class="w-2/4 space-y-2 mb-2">
-											<Label for="title" class="mb-2">Map Title</Label>
-											<Input
-												type="text"
-												placeholder="Enter map title"
-												bind:value={langData.map_title}
-												id="title"
-												name="title"
-											/>
-											{#if isFormSubmitted && !langData.map_title}
-												<p class="error-message text-sm font-normal">Please enter map title</p>
-											{/if}
-
-											<div>
-												<button
-													on:click={() => decodeBase64(langData?.pdf_files ?? '')}
-													class="cursor-pointer text-xs hover:text-red-700 text-gray-600"
-													>Click here to view the PDF</button
-												>
-											</div>
-										</Label>
-									</div>
-
-									<div class="pb-5 flex gap-3 col-span-1">
-										<Label class="w-2/3 space-y-2 mb-2">
-											<span>Location</span>
-											<Input
-												type="text"
-												bind:value={langData.location}
-												placeholder="Enter location"
-											/>
-											{#if isFormSubmitted && !langData.location}
-												<p class="error-message text-sm font-normal">Please enter a location</p>
-											{/if}
-										</Label>
-										<Label class="w-1/3 space-y-2 mb-2">
-											<span>Title for location</span>
-											<Input
-												type="text"
-												bind:value={langData.location_title}
-												placeholder="Enter location title"
-											/>
-											{#if isFormSubmitted && !langData.location_title}
-												<p class="error-message text-sm font-normal">
-													Please enter a location_title
-												</p>
-											{/if}
-										</Label>
-									</div>
-
-									<div class="pb-5">
-										<Label for="title" class="mb-2">Exhibition Title</Label>
-										<Input
-											type="text"
-											placeholder="Exhibition title"
-											bind:value={langData.title}
-											id="title"
-											name="title"
-										/>
-										{#if isFormSubmitted && !langData.title.trim()}
-											<p class="error-message text-sm font-normal">Please enter a title</p>
-										{/if}
-									</div>
-									<div class="pb-5">
-										<Label for="story" class="mb-2">Exhibition Story</Label>
-										<Textarea
-											placeholder="Enter story"
-											rows="3"
-											bind:value={langData.story}
-											id="story"
-											name="story"
-										/>
-										{#if isFormSubmitted && !langData.story.trim()}
-											<p class="error-message text-sm font-normal">Please enter a story</p>
-										{/if}
-									</div>
-
-									<div class="pb-5">
-										<Label for="textarea-id" class="mb-2">Short description</Label>
-										<Textarea
-											placeholder="Enter short description"
-											rows="4"
-											bind:value={langData.description}
-											id="short_description"
-											name="short_description"
-										/>
-										{#if isFormSubmitted && !langData.description.trim()}
-											<p class="error-message text-sm font-normal">Please enter a description</p>
-										{/if}
-									</div>
-								</div>
-							</TabItem>
-						{/each}
-					</Tabs>
-
-					<div class="border mb-2 dark:border-gray-700 mx-10" />
-				</form>
-
-				<div class="px-8 pt-5">
-					<Label for="textarea-id" class="mb-2">Sponsor title</Label>
-					<Input
-						type="text"
-						bind:value={exhibitionsObject.sponsor_title}
-						placeholder="sponsor title"
-					/>
-					{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
-						<p class="error-message text-sm font-normal">Please enter a title for sponsor</p>
-					{/if}
-				</div>
-				<div class="grid lg:grid-cols-2 pt-5">
-					<!-- upload exhibition image -->
-					<Label class="space-y-2 mb-2 ">
-						<Label for="image" class="mb-2 px-8">Upload Image Files</Label>
-						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-						{#if isFormSubmitted && sliderImagesFile.length === 0}
-							<p class="error-message text-sm font-normal px-8">
-								Please upload at least one image for the slider
-							</p>
-						{/if}
-					</Label>
-
-					<!-- upload sponsor image -->
-					<Label class="space-y-2 mb-2">
-						<Label for="image" class=" px-8">Upload Sponsor Images</Label>
-						<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
-						{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
-							<p class="error-message text-sm font-normal px-8">
-								Please upload at least one image for the sponsor
-							</p>
-						{/if}
-					</Label>
-					<!-- upload sponsor image -->
-				</div>
-
-				<div class="py-2" />
-
-				<!-- submit Form -->
-				<div class="w-full flex justify-end pb-5 px-10">
-					<button
-						on:click|preventDefault={formSubmit}
-						type="submit"
-						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-					>
-						Add
-					</button>
+								<IconDeviceFloppy size={20} />
+								Create Exhibition
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
-
-			<div>
-				<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-					<Tabs style="underline" contentClass="rounded-lg dark:text-white">
-						<TabItem open title="Exhibition Image">
-							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-								<div class="flex justify-start items-start">
-									{#each exhibitionsDataLang as langData}
-										{#if langData.language === selectedLanguageTab}
-											<ExpoCard
-												img={placeholderImage}
-												cardType={CardType.Main}
-												title={langData.title}
-												short_description={langData.description}
-												thumbnail={exhibitionsObject.thumbnail || placeholderImage}
-												primaryColor="bg-primary"
-												startDate={exhibitionsObject.start_date}
-												endDate={exhibitionsObject.end_date}
-											/>
-										{/if}
-									{/each}
-								</div>
-
-								<div />
+			<div class="lg:col-span-1">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
+						<TabItem open title="Preview">
+							<div class="rounded-md flex justify-center items-start p-4">
+								{#each exhibitionsDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Main}
+											title={langData.title}
+											short_description={langData.description}
+											thumbnail={exhibitionsObject.thumbnail || placeholderImage}
+											primaryColor="bg-primary"
+											startDate={exhibitionsObject.start_date}
+											endDate={exhibitionsObject.end_date}
+										/>
+									{/if}
+								{/each}
 							</div>
 						</TabItem>
-						<TabItem open title="Map">
-							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-								<div class="flex justify-start items-start">
-									{#each exhibitionsDataLang as langData}
-										{#if langData.language === selectedLanguageTab}
-											<ExpoCard
-												img={placeholderImage}
-												cardType={CardType.Main}
-												title={langData.title}
-												short_description=""
-												thumbnail={exhibitionsObject.image_map || placeholderImage}
-												primaryColor="bg-primary"
-												startDate=""
-												endDate=""
-											/>
-										{/if}
-									{/each}
-								</div>
 
-								<div />
+						<TabItem title="Map">
+							<div class="rounded-md flex justify-center items-start p-4">
+								{#each exhibitionsDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<ExpoCard
+											cardType={CardType.Flat}
+											title={langData.map_title}
+											short_description=""
+											thumbnail={exhibitionsObject.image_map || placeholderImage}
+											primaryColor="bg-primary"
+											startDate={exhibitionsObject.start_date}
+											endDate={exhibitionsObject.end_date}
+										/>
+									{/if}
+								{/each}
 							</div>
 						</TabItem>
-						<TabItem open title="Brochure">
-							<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-								<div class="flex justify-start items-start">
-									{#each exhibitionsDataLang as langData}
-										{#if langData.language === selectedLanguageTab}
-											<ExpoCard
-												img={placeholderImage}
-												cardType={CardType.Flat}
-												title=""
-												short_description=""
-												thumbnail={langData.brochure || placeholderImage}
-												primaryColor="bg-primary"
-												startDate=""
-												endDate=""
-											/>
-										{/if}
-									{/each}
-								</div>
 
-								<div />
+						<TabItem title="Brochure">
+							<div class="rounded-md flex justify-center items-start p-4">
+								{#each exhibitionsDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<div class="flex flex-col items-center">
+											{#if langData.brochure}
+												<ExpoCard
+													cardType={CardType.Flat}
+													title={langData.title ? `${langData.title} Brochure` : "Exhibition Brochure"}
+													short_description=""
+													thumbnail={langData.brochure}
+													primaryColor="bg-primary"
+													startDate={exhibitionsObject.start_date}
+													endDate={exhibitionsObject.end_date}
+												/>
+											{:else}
+												<div class="flex flex-col items-center justify-center text-center p-4">
+													<img src={placeholderImage} alt="No brochure" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+													<p class="text-gray-500 dark:text-gray-400 mb-1">No brochure available</p>
+													<p class="text-xs text-gray-400 dark:text-gray-500">Upload a brochure image for {langData.language} language</p>
+												</div>
+											{/if}
+										</div>
+									{/if}
+								{/each}
 							</div>
 						</TabItem>
-						<TabItem title="Detail">
-							{#each exhibitionsDataLang as langData}
-								{#if langData.language === selectedLanguageTab}
-									<DetailPage cardType={CardType.Flat} imagesCarousel={carouselImages} />
-								{/if}
-							{/each}
+
+						<TabItem title="Gallery">
+							<div class="p-4">
+								{#each exhibitionsDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										{#if carouselImages && carouselImages.length > 0}
+											<DetailPage imagesCarousel={carouselImages} long_description="" />
+										{:else}
+											<div class="flex flex-col items-center justify-center text-center p-4">
+												<img src={placeholderImage} alt="No gallery images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+												<p class="text-gray-500 dark:text-gray-400 mb-1">No gallery images available</p>
+												<p class="text-xs text-gray-400 dark:text-gray-500">Upload exhibition images to see them here</p>
+											</div>
+										{/if}
+									{/if}
+								{/each}
+							</div>
 						</TabItem>
+						
 						<TabItem title="Sponsors">
-							{#each exhibitionsDataLang as langData}
-								{#if langData.language === selectedLanguageTab}
-									<DetailPage cardType={CardType.Flat} imagesCarousel={carouselImages_sponsor} />
-								{/if}
-							{/each}
+							<div class="p-4">
+								{#each exhibitionsDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<div class="flex flex-col items-center">
+											<h3 class="text-lg font-semibold mb-3">{exhibitionsObject.sponsor_title || "Sponsors"}</h3>
+											{#if carouselImages_sponsor && carouselImages_sponsor.length > 0}
+												<DetailPage imagesCarousel={carouselImages_sponsor} long_description="" />
+											{:else}
+												<div class="flex flex-col items-center justify-center text-center p-4">
+													<img src={placeholderImage} alt="No sponsor images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+													<p class="text-gray-500 dark:text-gray-400 mb-1">No sponsor images available</p>
+													<p class="text-xs text-gray-400 dark:text-gray-500">Upload sponsor images to see them here</p>
+												</div>
+											{/if}
+										</div>
+									{/if}
+								{/each}
+							</div>
 						</TabItem>
 					</Tabs>
 				</div>
@@ -855,6 +992,25 @@
 
 <style>
 	.error-message {
-		color: red;
+		color: #ef4444;
+		font-size: 0.875rem;
+		margin-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	
+	.error-message::before {
+		content: '!';
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1rem;
+		height: 1rem;
+		background-color: #ef4444;
+		color: white;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		font-weight: bold;
 	}
 </style>
