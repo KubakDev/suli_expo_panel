@@ -273,6 +273,7 @@
 			if (updatedBrochure) {
 				updatedBrochure.brochure = reader.result as string;
 				brochureSourceMap[selectedLanguageTab] = ImgSourceEnum.local;
+				console.log('Brochure updated:', updatedBrochure.brochure);
 			}
 
 			const randomText = getRandomTextNumber();
@@ -404,6 +405,11 @@
 		if (hasDataForLanguage && isValidExhibitionObject) {
 			showToast = true;
 
+			// Store initial values for restoration if needed
+			const initialImages = [...exhibitionsData.images];
+			const initialSponsorImages = [...exhibitionsData.sponsor_images];
+
+			// Don't clear the arrays, just initialize them for new values
 			exhibitionsData.images = [];
 			exhibitionsData.sponsor_images = [];
 
@@ -479,12 +485,13 @@
 					);
 					if (brochureFileData) {
 						if (lang.brochure) {
-							await data.supabase.storage.from('image').remove([lang.pdf_files]);
+							await data.supabase.storage.from('image').remove([lang.brochure]);
 						}
 						const response = await data.supabase.storage
 							.from('image')
 							.upload(`exhibition/${brochureFileData.fileName}`, brochureFileData.file!);
 						lang.brochure = response.data?.path || '';
+						console.log('Saved brochure path:', lang.brochure);
 					}
 				}
 			} else {
@@ -494,44 +501,60 @@
 			}
 
 			// ***insert  images *****//
+			if (sliderImagesFile.length > 0) {
+				for (let image of sliderImagesFile) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('image')
+						.upload(`exhibition/${randomText}`, image!);
+					//
 
-			for (let image of sliderImagesFile) {
-				const randomText = getRandomTextNumber();
-				const responseMultiple = await data.supabase.storage
-					.from('image')
-					.upload(`exhibition/${randomText}`, image!);
-				//
-
-				if (responseMultiple.data?.path) {
-					exhibitionsData.images.push(responseMultiple.data?.path);
+					if (responseMultiple.data?.path) {
+						exhibitionsData.images.push(responseMultiple.data?.path);
+					}
 				}
 			}
 
+			// Add existing images from the UI
 			for (let image of existingImages) {
 				exhibitionsData.images.push(image);
 			}
+			
+			// If no new images were added and no existing images in UI, keep the original images
+			if (exhibitionsData.images.length === 0 && initialImages.length > 0) {
+				exhibitionsData.images = initialImages;
+			}
+			
 			// Convert exhibition.images to a valid array string format
 			const imagesArray = exhibitionsData.images.map((image) => `"${image}"`);
 			exhibitionsData.images = `{${imagesArray.join(',')}}`;
 
 			// ***insert sponsor images *****//
+			if (sliderImagesFile_sponsor.length > 0) {
+				for (let image of sliderImagesFile_sponsor) {
+					const randomText = getRandomTextNumber();
+					const responseMultiple = await data.supabase.storage
+						.from('image')
+						.upload(`exhibition/${randomText}`, image!);
+					//
 
-			for (let image of sliderImagesFile_sponsor) {
-				const randomText = getRandomTextNumber();
-				const responseMultiple = await data.supabase.storage
-					.from('image')
-					.upload(`exhibition/${randomText}`, image!);
-				//
-
-				if (responseMultiple.data?.path) {
-					exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
+					if (responseMultiple.data?.path) {
+						exhibitionsData.sponsor_images.push(responseMultiple.data?.path);
+					}
 				}
 			}
 
+			// Add existing sponsor images from the UI
 			for (let image of existingImages_sponsor) {
 				exhibitionsData.sponsor_images.push(image);
 			}
-			// Convert exhibition.images to a valid array string format
+			
+			// If no new sponsor images were added and no existing sponsor images in UI, keep the original sponsor images
+			if (exhibitionsData.sponsor_images.length === 0 && initialSponsorImages.length > 0) {
+				exhibitionsData.sponsor_images = initialSponsorImages;
+			}
+			
+			// Convert exhibition.sponsor_images to a valid array string format
 			const imagesArray_sponsor = exhibitionsData.sponsor_images.map((image) => `"${image}"`);
 			exhibitionsData.sponsor_images = `{${imagesArray_sponsor.join(',')}}`;
 
@@ -975,13 +998,11 @@
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
 											cardType={CardType.Flat}
-											title=""
+											title={langData.title ? `${langData.title} Brochure` : "Exhibition Brochure"}
 											short_description=""
 											thumbnail={brochureSourceMap[selectedLanguageTab] === ImgSourceEnum.local
 												? langData.brochure
-												: `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${
-														langData.brochure
-												  }`}
+												: (langData.brochure ? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${langData.brochure}` : exhibitionsData.thumbnail)}
 											primaryColor="bg-primary"
 											startDate=""
 											endDate=""
@@ -989,7 +1010,6 @@
 									{/if}
 								{/each}
 							</div>
-							<div />
 						</div>
 					</TabItem>
 
