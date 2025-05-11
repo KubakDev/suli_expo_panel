@@ -170,7 +170,7 @@
 					</span>
 
 					<span class="border">
-						{image.imgSource === ImgSourceEnum.PdfLocal ? `${image.fileName}` : 'pdf'}
+						PDF File
 					</span>
 				</button>
 			</div>

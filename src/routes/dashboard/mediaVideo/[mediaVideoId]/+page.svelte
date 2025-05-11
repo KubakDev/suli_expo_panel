@@ -14,6 +14,7 @@
 	import UpdateExhibitionType from '$lib/components/UpdateExhibitionType.svelte';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { IconDeviceFloppy } from '@tabler/icons-svelte';
 
 	let loaded = false;
 	export let data;
@@ -182,59 +183,73 @@
 		fileName = name;
 	}
 </script>
+
 {#if !loaded}
 <div class="flex justify-center items-center h-screen">
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div style="min-height: calc(100vh - 160px);">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	{#if showToast}
-		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-			The Update Was Successfully!
+		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
+			<span class="font-medium">Video updated successfully!</span>
 		</div>
 	{/if}
-	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="flex justify-center py-10">
-			<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update Video Data</h1>
+	
+	<div class="max-w-screen-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+		<div class="mb-10 text-center">
+			<h1 class="text-3xl font-bold text-gray-800 dark:text-white">Update Video</h1>
+			<p class="mt-2 text-gray-600 dark:text-gray-400">Edit video content, thumbnail and external links</p>
 		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4">
-			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
-					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(event, mediaVideoData, setImageFile, setFileName, 'videoObjectData')}
-						accept=".jpg, .jpeg, .png"
-						class="dark:bg-white"
-					/>
-				</Label>
+		<div class="grid lg:grid-cols-12 gap-6 mb-8">
+			<div class="lg:col-span-4">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<Label class="block">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Video Thumbnail</span>
+						<Fileupload
+							on:change={(event) =>
+								handleFileUpload(event, mediaVideoData, setImageFile, setFileName, 'videoObjectData')}
+							accept=".jpg, .jpeg, .png"
+							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+						/>
+					</Label>
+				</div>
 			</div>
-			<div class="col-span-1">
-				<UpdateExhibitionType {handleSelectChange} pageData={mediaVideoData} {data} />
+			
+			<div class="lg:col-span-4">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<Label class="block">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
+						<UpdateExhibitionType {handleSelectChange} pageData={mediaVideoData} {data} />
+					</Label>
+				</div>
 			</div>
 
-			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Link Video</label>
-					<Input
-						type="text"
-						placeholder="Enter title"
-						bind:value={mediaVideoData.link}
-						id="link"
-						name="link"
-					/>
-					{#if isFormSubmitted && !mediaVideoData.link}
-						<p class="error-message">Please Enter a link of video</p>
-					{/if}
-				</Label>
+			<div class="lg:col-span-4">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<Label class="block">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Video Link</span>
+						<Input
+							type="text"
+							placeholder="Enter YouTube or other video link"
+							bind:value={mediaVideoData.link}
+							id="link"
+							name="link"
+							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+						/>
+						{#if isFormSubmitted && !mediaVideoData.link}
+							<p class="error-message mt-2">Please enter a video link</p>
+						{/if}
+					</Label>
+				</div>
 			</div>
 		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
-				<form>
-					<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg">
+		<div class="grid lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+					<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
 						{#each mediaVideoDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -243,110 +258,148 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-10 py-16 text-gray-600 dark:text-gray-300">
-									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
+								<div class="p-6 text-gray-700 dark:text-gray-200">
+									<div class="text-center mb-8">
+										<h2 class="text-xl font-semibold mb-2">
 											{#if langData.language === 'ar'}
-												{`أضف البيانات إلى اللغة العربية`}
+												{`عدل البيانات باللغة العربية`}
 											{:else if langData.language === 'ckb'}
-												{`زیاد کردنی داتا بە زمانی کوردی`}
+												{`گۆڕینی داتا بە زمانی کوردی`}
 											{:else}
-												{`Add data for ${langData.language} language`}
+												Edit data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
-										</h1>
-										<p class="text-gray-600 dark:text-gray-300">for other language navigate between tabs</p>
+										</h2>
+										<p class="text-gray-500 dark:text-gray-400 text-sm">Navigate between tabs to edit other languages</p>
 									</div>
-									<div class="pb-10">
-										<Label for="first_name" class="mb-2">Video Title</Label>
 
-										<Input
-											type="text"
-											placeholder="Enter title"
-											bind:value={langData.title}
-											id="title"
-											name="title"
-										/>
-										{#if !langData.title.trim()}
-											<p class="error-message">Please enter a title</p>
-										{/if}
+									<!-- Title Section -->
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<Label class="block">
+											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Video Title</span>
+											<Input
+												type="text"
+												placeholder="Enter title"
+												bind:value={langData.title}
+												id="title"
+												name="title"
+												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+											/>
+											{#if isFormSubmitted && !langData.title.trim()}
+												<p class="error-message mt-2">Please enter a title</p>
+											{/if}
+										</Label>
 									</div>
-									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
-										<Textarea
-											placeholder="Enter short description"
-											rows="4"
-											bind:value={langData.short_description}
-											id="short_description"
-											name="short_description"
-										/>
-										{#if !langData.short_description.trim()}
-											<p class="error-message">Please enter a short description</p>
-										{/if}
+									
+									<!-- Short Description -->
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<Label class="block">
+											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Short Description</span>
+											<Textarea
+												placeholder="Enter short description"
+												rows="4"
+												bind:value={langData.short_description}
+												id="short_description"
+												name="short_description"
+												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+											/>
+											{#if isFormSubmitted && !langData.short_description.trim()}
+												<p class="error-message mt-2">Please enter a short description</p>
+											{/if}
+										</Label>
 									</div>
-									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">long description</Label>
-										<div class="pt-4 w-full" style="height: 400px;">
-											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
+
+									<!-- Long Description -->
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg pb-12">
+										<div class="mb-12">
+											<Label for="textarea-id" class="mb-2">Video details</Label>
+											<div class="pt-4 w-full" style="height: 400px;">
+												<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
+											</div>
+											{#if isFormSubmitted && !langData.long_description.trim()}
+												<p class="error-message mt-2">Please enter video details</p>
+											{/if}
 										</div>
 									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
-					<div class="border mb-2 dark:border-gray-800 mx-10" />
 
-					<!-- button for submitForm -->
-					<div class="border-t border-gray-200 dark:border-gray-700" />
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Update
-						</button>
+					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
+						<!-- Submit Button -->
+						<div class="flex justify-end my-6">
+							<button
+								on:click|preventDefault={formSubmit}
+								type="submit"
+								class="bg-primary hover:bg-primary-dark text-white font-medium py-2.5 px-6 rounded-md shadow-sm transition-colors duration-200 flex items-center gap-2"
+							>
+								<IconDeviceFloppy size={20} />
+								Update Video
+							</button>
+						</div>
 					</div>
-				</form>
+				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="dark:bg-[#1f2937] dark:text-white rounded-lg">
-					<TabItem open title="Video List">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
+			
+			<div class="lg:col-span-1">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
+						<TabItem open title="Preview">
+							<div class="rounded-md flex justify-center items-start p-4">
 								{#each mediaVideoDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
 											cardType={CardType.Video}
 											title={langData.title}
 											short_description={langData.short_description}
-											thumbnail={mediaVideoData.thumbnail}
+											thumbnail={mediaVideoData.thumbnail || '/src/lib/images/placeholder.png'}
 											primaryColor="bg-primary"
 										/>
 									{/if}
 								{/each}
 							</div>
-
-							<div />
-						</div>
-					</TabItem>
-					<TabItem title="Video Detail">
-						{#each mediaVideoDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<DetailPage
-									bind:imagesCarousel={carouselImages}
-									long_description={langData.long_description}
-								/>
-							{/if}
-						{/each}
-					</TabItem>
-				</Tabs>
+						</TabItem>
+						<TabItem title="Details">
+							<div class="p-4">
+								{#each mediaVideoDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										<DetailPage
+											imagesCarousel={carouselImages}
+											long_description={langData.long_description}
+										/>
+									{/if}
+								{/each}
+							</div>
+						</TabItem>
+					</Tabs>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 {/if}
+
 <style>
 	.error-message {
-		color: red;
+		color: #ef4444;
+		font-size: 0.875rem;
+		margin-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	
+	.error-message::before {
+		content: '!';
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1rem;
+		height: 1rem;
+		background-color: #ef4444;
+		color: white;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		font-weight: bold;
 	}
 </style>

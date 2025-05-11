@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Fileupload, Textarea } from 'flowbite-svelte';
+	import { Label, Input, Fileupload, Textarea, ButtonGroup, InputAddon } from 'flowbite-svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
 	import { insertData } from '../../../stores/magazineStore';
 	import { LanguageEnum } from '../../../models/languageEnum';
@@ -13,18 +13,18 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
-	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
+	import { handleFileUpload } from '$lib/utils/handleFileUpload';
+	import { IconDeviceFloppy } from '@tabler/icons-svelte';
 
 	export let data;
-	let isFormSubmitted = false;
+
 	let submitted = false;
 	let showToast = false;
 	let fileName: string;
 	let imageFile: File | undefined;
 	let sliderImagesFile: File[] = [];
 	let pdfFiles: File[] = [];
-
 	type CarouselImage = {
 		attribution: string;
 		id: number;
@@ -33,7 +33,9 @@
 	};
 
 	let carouselImages: CarouselImage[] | undefined = undefined;
+
 	let selectedLanguageTab = LanguageEnum.EN;
+	let isFormSubmitted = false;
 
 	let magazineDataLang: MagazineModelLang[] = [];
 
@@ -67,12 +69,11 @@
 	} //**dropzone**//
 
 	//**pdf files**//
-
 	function getAllPDFFile(e: { detail: File[] }) {
 		pdfFiles = e.detail;
 	}
-
 	//**pdf files**//
+
 	async function formSubmit() {
 		let hasDataForLanguage = false;
 		let isValidMagazineObject = false;
@@ -114,7 +115,6 @@
 		magazineObject.thumbnail = response.data?.path || '';
 
 		// Upload PDF files
-
 		if (pdfFiles.length > 0) {
 			for (let pdf of pdfFiles) {
 				const randomText = getRandomTextNumber();
@@ -123,7 +123,7 @@
 					.upload(`pdfFiles/${randomText}`, pdf!)
 					.then((response) => {
 						if (response.data) {
-							if (Array.isArray(magazineObject.images)) {
+							if (Array.isArray(magazineObject.pdf_files)) {
 								magazineObject.pdf_files.push(response.data.path);
 							}
 						}
@@ -148,7 +148,6 @@
 		}
 
 		// Convert magazineObject.images and magazineObject.pdf_files to valid array string format
-
 		let imagesArray: string[] = [];
 
 		if (Array.isArray(magazineObject.images)) {
@@ -198,7 +197,8 @@
 	}
 
 	function handleSelectChange(event: Event) {
-		const selectedValue = (event.target as HTMLSelectElement).value;
+		const selectElement = event.target as HTMLSelectElement;
+		const selectedValue = selectElement.value;
 
 		if (selectedValue === 'Select Type') {
 			delete magazineObject.exhibition_id;
@@ -213,6 +213,7 @@
 			carouselImages = undefined;
 		}
 	}
+	
 	function setImageFile(file: File) {
 		imageFile = file;
 	}
@@ -221,39 +222,50 @@
 	}
 </script>
 
-<div style="min-height: calc(100vh - 160px);">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	{#if showToast}
-		<div class="bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-			New data has been inserted successfully
+		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
+			<span class="font-medium">Magazine created successfully!</span>
 		</div>
 	{/if}
-	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="flex justify-center py-10"><h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Magazine Data</h1></div>
+	<div class="max-w-screen-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+		<div class="mb-10 text-center">
+			<h1 class="text-3xl font-bold text-gray-800 dark:text-white">Create Magazine</h1>
+			<p class="mt-2 text-gray-600 dark:text-gray-400">Add magazine content with images and PDF files</p>
+		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4">
-			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Magazine Image</Label>
-					<Fileupload
-						on:change={(event) =>
-							handleFileUpload(event, magazineObject, setImageFile, setFileName, 'magazine')}
-						accept=".jpg, .jpeg, .png"
-						class="dark:bg-white"
-					/>
-					{#if isFormSubmitted && !magazineObject.thumbnail.trim()}
-						<p class="error-message">Please Upload an Image</p>
-					{/if}
-				</Label>
+		<div class="grid lg:grid-cols-12 gap-6 mb-8">
+			<div class="lg:col-span-4">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<Label class="block">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Magazine Thumbnail</span>
+						<Fileupload
+							on:change={(event) =>
+								handleFileUpload(event, magazineObject, setImageFile, setFileName, 'magazine')}
+							accept=".jpg, .jpeg, .png"
+							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+						/>
+						{#if isFormSubmitted && !magazineObject.thumbnail.trim()}
+							<p class="error-message mt-2">Please upload a thumbnail image</p>
+						{/if}
+					</Label>
+				</div>
 			</div>
-			<div class="col-span-1">
-				<InsertExhibitionType {handleSelectChange} {data} />
+
+			<div class="lg:col-span-4">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<Label class="block">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
+						<InsertExhibitionType {handleSelectChange} {data} />
+					</Label>
+				</div>
 			</div>
 		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2 rounded-lg border dark:border-gray-600">
-				<form class="">
-					<Tabs contentClass="dark:text-white">
+		<div class="grid lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+					<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
 						{#each magazineDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -262,9 +274,9 @@
 									selectedLanguageTab = langData.language;
 								}}
 							>
-								<div class="px-5 py-16  ">
-									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
+								<div class="p-6 text-gray-700 dark:text-gray-200">
+									<div class="text-center mb-8">
+										<h2 class="text-xl font-semibold mb-2">
 											{#if langData.language === 'ar'}
 												{`أضف البيانات إلى اللغة العربية`}
 											{:else if langData.language === 'ckb'}
@@ -272,40 +284,56 @@
 											{:else}
 												Add data for <span class="uppercase">{`${langData.language}`}</span> language
 											{/if}
-										</h1>
-										<p class="text-gray-600 dark:text-gray-300">for other language navigate between tabs</p>
-									</div>
-									<div class="pb-10">
-										<Label for="title" class="mb-2">Magazine Title</Label>
-										<Input
-											type="text"
-											placeholder="Enter title"
-											bind:value={langData.title}
-											id="title"
-											name="title"
-										/>
-										{#if isFormSubmitted && !langData.title.trim()}
-											<p class="error-message">Please enter a title</p>
-										{/if}
-									</div>
-									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">short description</Label>
-										<Textarea
-											placeholder="Enter short description"
-											rows="4"
-											bind:value={langData.short_description}
-											id="short_description"
-											name="short_description"
-										/>
-										{#if isFormSubmitted && !langData.short_description.trim()}
-											<p class="error-message">Please enter a short description</p>
-										{/if}
+										</h2>
+										<p class="text-gray-500 dark:text-gray-400 text-sm">Navigate between tabs to add other languages</p>
 									</div>
 
-									<div class="mb-8">
-										<Label for="textarea-id" class="mb-2">Magazine detail</Label>
-										<div class="w-full" style="height: 400px;">
-											<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
+									<!-- Title Section -->
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<Label class="block">
+											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Magazine Title</span>
+											<Input
+												type="text"
+												placeholder="Enter title"
+												bind:value={langData.title}
+												id="title"
+												name="title"
+												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+											/>
+											{#if isFormSubmitted && !langData.title.trim()}
+												<p class="error-message mt-2">Please enter a title</p>
+											{/if}
+										</Label>
+									</div>
+									
+									<!-- Short Description -->
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<Label class="block">
+											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Short Description</span>
+											<Textarea
+												placeholder="Enter short description"
+												rows="4"
+												bind:value={langData.short_description}
+												id="short_description"
+												name="short_description"
+												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+											/>
+											{#if isFormSubmitted && !langData.short_description.trim()}
+												<p class="error-message mt-2">Please enter a short description</p>
+											{/if}
+										</Label>
+									</div>
+
+									<!-- Magazine Content -->
+									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg pb-12">
+										<div class="mb-12">
+											<Label for="textarea-id" class="mb-2">Magazine detail</Label>
+											<div class="w-full" style="height: 400px;">
+												<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
+											</div>
+											{#if isFormSubmitted && !langData.long_description.trim()}
+												<p class="error-message mt-2">Please enter magazine details</p>
+											{/if}
 										</div>
 									</div>
 								</div>
@@ -313,68 +341,74 @@
 						{/each}
 					</Tabs>
 
-					<div class="border mb-2 dark:border-gray-800 mx-10" />
-				</form>
+					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
+						<div class="grid lg:grid-cols-2 gap-6">
+							<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+								<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Magazine Images</span>
+								<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
+								{#if isFormSubmitted && sliderImagesFile.length === 0}
+									<p class="error-message mt-2">Please upload at least one image for the magazine</p>
+								{/if}
+							</div>
 
-				<!-- upload Magazine image -->
-				<div class="grid lg:grid-cols-2 pt-5">
-					<Label class="space-y-2 mb-2">
-						<Label for="image" class="mb-2 px-8">Upload Magazine Image</Label>
-						<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
-						{#if isFormSubmitted && sliderImagesFile.length === 0}
-							<p class="error-message px-8">Please upload at least one image for the slider</p>
-						{/if}
-					</Label>
-					<!-- upload pdf file -->
-					<Label class="space-y-2 mb-2">
-						<Label for="image" class="mb-2 px-8">Upload PDF Files</Label>
-						<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
-					</Label>
-				</div>
+							<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+								<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">PDF Files</span>
+								<PDFUploadComponent on:imageFilesChanges={getAllPDFFile} />
+							</div>
+						</div>
 
-				<!-- submit Form -->
-				<div class="w-full flex justify-end py-5 px-10">
-					<button
-						on:click|preventDefault={formSubmit}
-						type="submit"
-						class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-					>
-						Add
-					</button>
+						<!-- Submit Button -->
+						<div class="flex justify-end my-6">
+							<button
+								on:click|preventDefault={formSubmit}
+								type="submit"
+								class="bg-primary hover:bg-primary-dark text-white font-medium py-2.5 px-6 rounded-md shadow-sm transition-colors duration-200 flex items-center gap-2"
+							>
+								<IconDeviceFloppy size={20} />
+								Create Magazine
+							</button>
+						</div>
+					</div>
 				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="rounded-lg dark:text-white">
-					<TabItem open title="Magazine List">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
+			
+			<div class="lg:col-span-1">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
+						<TabItem open title="Preview">
+							<div class="rounded-md flex justify-center items-start p-4">
 								{#each magazineDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
 											cardType={CardType.Main}
 											title={langData.title}
 											short_description={langData.short_description}
-											thumbnail={magazineObject.thumbnail}
+											thumbnail={magazineObject.thumbnail || '/src/lib/images/placeholder.png'}
 											primaryColor="bg-primary"
 										/>
 									{/if}
 								{/each}
 							</div>
-
-							<div />
-						</div>
-					</TabItem>
-					<TabItem title="Magazine Detail">
-						{#each magazineDataLang as langData}
-							{#if langData.language === selectedLanguageTab}
-								<DetailPage
-									imagesCarousel={carouselImages}
-									long_description={langData.long_description}
-								/>
-							{/if}
-						{/each}
-					</TabItem>
-				</Tabs>
+						</TabItem>
+						<TabItem title="Magazine">
+							<div class="p-4">
+								{#each magazineDataLang as langData}
+									{#if langData.language === selectedLanguageTab}
+										{#if carouselImages && carouselImages.length > 0}
+											<DetailPage imagesCarousel={carouselImages} long_description={langData.long_description} />
+										{:else}
+											<div class="flex flex-col items-center justify-center text-center p-4">
+												<img src="/src/lib/images/placeholder.png" alt="No images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+												<p class="text-gray-500 dark:text-gray-400 mb-1">No magazine images available</p>
+												<p class="text-xs text-gray-400 dark:text-gray-500">Upload images to see them here</p>
+											</div>
+										{/if}
+									{/if}
+								{/each}
+							</div>
+						</TabItem>
+					</Tabs>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -382,6 +416,25 @@
 
 <style>
 	.error-message {
-		color: red;
+		color: #ef4444;
+		font-size: 0.875rem;
+		margin-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	
+	.error-message::before {
+		content: '!';
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1rem;
+		height: 1rem;
+		background-color: #ef4444;
+		color: white;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		font-weight: bold;
 	}
 </style>

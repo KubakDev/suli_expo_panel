@@ -374,15 +374,18 @@
 											</Label>
 										</div>
 
+									
 										<!-- News Content -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
-											<Label class="block">
-												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">News Content</span>
-												<div class="w-full rounded overflow-hidden">
-													<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
+											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg pb-12">
+												<div class="mb-12">
+													<Label for="textarea-id" class="mb-2">News Content</Label>
+													<div class="w-full" style="height: 400px;">
+														<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
+                                            </div>
 												</div>
-											</Label>
-										</div>
+											  </div>
+		
+
 									</div>
 								</TabItem>
 							{/each}
