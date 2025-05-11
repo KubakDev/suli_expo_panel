@@ -28,11 +28,10 @@
 </script>
 
 <Label class="space-y-2 mb-2">
-	<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
 	<ButtonGroup class="w-full">
 		<select
-			class="dark:text-gray-900 border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0"
-			id="type"
+		class="border border-gray-300 rounded-l-md w-full focus:ring-0 focus:rounded-l-md focus:border-gray-300 focus:ring-offset-0 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+		   id="type"
 			name="type"
 			on:change={handleSelectChange}
 		>

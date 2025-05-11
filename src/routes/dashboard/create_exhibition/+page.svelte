@@ -488,7 +488,7 @@
 							<Fileupload
 								on:change={handleFileUploadThumbnail}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-white"
+								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
@@ -521,7 +521,7 @@
 							<Fileupload
 								on:change={handleFileUploadMap}
 								accept=".jpg, .jpeg, .png .svg"
-								class="dark:bg-white"
+								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 								lang={selectedLanguageTab}
 							/>
 						</div>
@@ -633,7 +633,7 @@
 													<Fileupload
 														on:change={handleFileUpload_pdf}
 														accept=".pdf"
-														class="dark:bg-white"
+														class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 													/>
 													{#if isFormSubmitted && !langData?.pdf_files?.trim()}
 														<p class="error-message mt-2">Please upload PDF file</p>
@@ -649,7 +649,7 @@
 													<Fileupload
 														on:change={handleFileUpload_brochure}
 														accept=".svg, .png, .jpg, .jpeg"
-														class="dark:bg-white"
+														class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 													/>
 													{#if isFormSubmitted && !langData?.brochure?.trim()}
 														<p class="error-message mt-2">Please upload brochure file</p>
@@ -665,7 +665,7 @@
 													<Fileupload
 														on:change={handleFileUpload_pdf_contract}
 														accept=".pdf"
-														class="dark:bg-white"
+														class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
 													/>
 												</Label>
 											</div>
