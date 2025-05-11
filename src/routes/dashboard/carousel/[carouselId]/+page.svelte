@@ -16,6 +16,8 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { IconX } from '@tabler/icons-svelte';
+	import { IconDeviceFloppy } from '@tabler/icons-svelte';
 
 	export let data;
 	let loaded = false;
@@ -168,132 +170,178 @@
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div style="min-height: calc(100vh - 160px);">
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
 	{#if showToast}
-		<div class="z-40 bg-green-500 text-white text-center py-2 fixed bottom-0 left-0 right-0">
-			The Update Was Successfully!
+		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
+			<span class="font-medium">Carousel updated successfully!</span>
 		</div>
 	{/if}
-	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="flex justify-center py-10">
-			<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update Carousel Data</h1>
+	<div class="max-w-screen-2xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+		<div class="mb-10 text-center">
+			<h1 class="text-3xl font-bold text-gray-800 dark:text-white">Update Carousel</h1>
+			<p class="mt-2 text-gray-600 dark:text-gray-400">Edit carousel details and update media</p>
 		</div>
 
-		<div class="grid lg:grid-cols-3 gap-4 px-4">
-			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<Label for="thumbnail" class="mb-2">Upload Video Image</Label>
-					<Fileupload
-						on:change={handleFileUpload}
-						accept=".jpg, .jpeg, .png .svg"
-						class=" dark:bg-white"
-					/>
-					{#if isFormSubmitted && !carouselData.image.trim()}
-						<p class="error-message">Please Upload an Image</p>
-					{/if}
-				</Label>
-			</div>
-			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<label for="exhibition_type" class="block font-normal">Exhibition Type</label>
-					<Select
-						bind:value={carouselData.type}
-						id="type"
-						name="type"
-						size="md"
-						placeholder="Please select a valid type"
-					>
-						<option value="Internal">Internal</option>
-						<option value="External">External</option>
-					</Select>
-				</Label>
-			</div>
-
-			<div class="col-span-1">
-				<Label class="space-y-2 mb-2">
-					<Label for="first_name" class="mb-2">Enter a link</Label>
-					<Input bind:value={carouselData.link} />
-					{#if isFormSubmitted && !carouselData.link}
-						<p class="error-message">Please Enter a link for video</p>
-					{/if}
-				</Label>
-			</div>
-		</div>
-
-		<div class="grid lg:grid-cols-3 gap-4 px-4 pt-5">
-			<div class="lg:col-span-2">
-				<form class="rounded-lg border dark:border-gray-600">
-					<Tabs style="underline" contentClass="rounded-lg dark:text-white">
-						{#each carouselDataLang as langData}
-							<TabItem
-								open={langData.language == selectedLanguageTab}
-								title={langData.language}
-								on:click={() => {
-									selectedLanguageTab = langData.language;
-								}}
-							>
-								<div class="px-10 py-10 text-gray-600 dark:text-gray-300">
-									<div class="text-center w-full pb-5">
-										<h1 class="text-xl font-bold">
-											{#if langData.language === 'ar'}
-												{`أضف البيانات إلى اللغة العربية`}
-											{:else if langData.language === 'ckb'}
-												{`زیاد کردنی داتا بە زمانی کوردی`}
-											{:else}
-												{`Add data for ${langData.language} language`}
-											{/if}
-										</h1>
-										<p class="text-gray-600 dark:text-gray-300">for other language navigate between tabs</p>
-									</div>
-									<div class="pb-10">
-										<Label for="title" class="mb-2">Carousel Title</Label>
-										<Input
-											type="text"
-											placeholder="Enter title"
-											bind:value={langData.title}
-											id="title"
-											name="title"
-										/>
-										{#if !langData.title.trim()}
-											<p class="error-message">Please enter a title</p>
-										{/if}
-									</div>
-									<div class="pb-10">
-										<Label for="textarea-id" class="mb-2">Subtitle</Label>
-										<Textarea
-											placeholder="Enter short description"
-											rows="4"
-											bind:value={langData.subtitle}
-											id="subtitle"
-											name="subtitle"
-										/>
-										{#if !langData.subtitle.trim()}
-											<p class="error-message">Please enter a subtitle</p>
-										{/if}
-									</div>
+		<div class="grid lg:grid-cols-12 gap-6 mb-8">
+			<div class="lg:col-span-6">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<Label class="block mb-4">
+						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Carousel Image</span>
+						<div class="relative">
+							{#if carouselData.image}
+								<div class="absolute right-2 top-2 z-10">
+									<button 
+										type="button" 
+										class="bg-red-600 text-white rounded-full p-1 hover:bg-red-700 transition-colors"
+										on:click={(e) => {
+											e.preventDefault();
+											e.stopPropagation();
+											carouselData.image = '';
+											imageFile = undefined;
+										}}
+									>
+										<IconX size={16} />
+									</button>
 								</div>
-							</TabItem>
-						{/each}
-					</Tabs>
-					<div class="border-t border-gray-200 dark:border-gray-700" />
-
-					<!-- button for submitForm -->
-					<div class="w-full flex justify-end py-5 px-10">
-						<button
-							on:click|preventDefault={formSubmit}
-							type="submit"
-							class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
-						>
-							Update
-						</button>
-					</div>
-				</form>
+							{/if}
+							<Fileupload
+								on:change={handleFileUpload}
+								accept=".jpg, .jpeg, .png, .svg"
+								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							/>
+						</div>
+						{#if isFormSubmitted && !carouselData.image.trim()}
+							<p class="error-message mt-2">Please upload an image</p>
+						{/if}
+					</Label>
+				</div>
 			</div>
-			<div class="lg:col-span-1 border rounded-lg dark:border-gray-600">
-				<Tabs style="underline" contentClass="rounded-lg dark:text-white">
-					<TabItem open title="Carousel List">
-						<div class="w-full rounded-md flex justify-center items-start min-h-full p-4">
-							<div class="flex justify-start items-start">
+			
+			<div class="lg:col-span-6">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+						<div>
+							<Label class="block mb-4">
+								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Type</span>
+								<Select
+									bind:value={carouselData.type}
+									id="type"
+									name="type"
+									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								>
+									<option value="Internal">Internal</option>
+									<option value="External">External</option>
+								</Select>
+							</Label>
+						</div>
+						
+						<div>
+							<Label class="block mb-4">
+								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Link</span>
+								<Input 
+									type="text"
+									bind:value={carouselData.link}
+									placeholder="Enter link" 
+									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								/>
+								{#if isFormSubmitted && !carouselData.link}
+									<p class="error-message mt-2">Please enter a link</p>
+								{/if}
+							</Label>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="grid lg:grid-cols-3 gap-6">
+			<div class="lg:col-span-2">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+					<form>
+						<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+							{#each carouselDataLang as langData}
+								<TabItem
+									open={langData.language == selectedLanguageTab}
+									title={langData.language}
+									on:click={() => {
+										selectedLanguageTab = langData.language;
+									}}
+								>
+									<div class="p-6 text-gray-700 dark:text-gray-200">
+										<div class="text-center mb-8">
+											<h2 class="text-xl font-semibold mb-2">
+												{#if langData.language === 'ar'}
+													{`أضف البيانات إلى اللغة العربية`}
+												{:else if langData.language === 'ckb'}
+													{`زیاد کردنی داتا بە زمانی کوردی`}
+												{:else}
+													{`English Language Content`}
+												{/if}
+											</h2>
+											<p class="text-gray-500 dark:text-gray-400 text-sm">Navigate between tabs to edit other languages</p>
+										</div>
+
+										<!-- Title Section -->
+										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+											<Label class="block">
+												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Carousel Title</span>
+												<Input
+													type="text"
+													placeholder="Enter title"
+													bind:value={langData.title}
+													id="title"
+													name="title"
+													class="w-full"
+												/>
+												{#if !langData.title.trim()}
+													<p class="error-message mt-2">Please enter a title</p>
+												{/if}
+											</Label>
+										</div>
+										
+										<!-- Subtitle -->
+										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+											<Label class="block">
+												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Subtitle</span>
+												<Textarea
+													placeholder="Enter subtitle"
+													rows="4"
+													bind:value={langData.subtitle}
+													id="subtitle"
+													name="subtitle"
+													class="w-full"
+												/>
+												{#if !langData.subtitle.trim()}
+													<p class="error-message mt-2">Please enter a subtitle</p>
+												{/if}
+											</Label>
+										</div>
+									</div>
+								</TabItem>
+							{/each}
+						</Tabs>
+					</form>
+
+					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
+						<!-- Submit Button -->
+						<div class="flex justify-end my-6">
+							<button
+								on:click|preventDefault={formSubmit}
+								type="submit"
+								class="bg-primary hover:bg-primary-dark text-white font-medium py-2.5 px-6 rounded-md shadow-sm transition-colors duration-200 flex items-center gap-2"
+							>
+								<IconDeviceFloppy size={20} />
+								Update Carousel
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="lg:col-span-1">
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
+						<TabItem open title="Preview">
+							<div class="rounded-md flex justify-center items-start p-4">
 								{#each carouselDataLang as langData}
 									{#if langData.language === selectedLanguageTab}
 										<ExpoCard
@@ -306,18 +354,36 @@
 									{/if}
 								{/each}
 							</div>
-
-							<div />
-						</div>
-					</TabItem>
-				</Tabs>
+						</TabItem>
+					</Tabs>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
 {/if}
+
 <style>
 	.error-message {
-		color: red;
+		color: #ef4444;
+		font-size: 0.875rem;
+		margin-top: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+	
+	.error-message::before {
+		content: '!';
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1rem;
+		height: 1rem;
+		background-color: #ef4444;
+		color: white;
+		border-radius: 9999px;
+		font-size: 0.75rem;
+		font-weight: bold;
 	}
 </style>
