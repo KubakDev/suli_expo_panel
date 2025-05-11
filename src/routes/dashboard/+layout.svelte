@@ -63,7 +63,7 @@
 				<form action="/?/signout" method="POST">
 					<button
 						type="submit"
-						class="flex items-center px-3 py-2 text-gray-300 dark:hover:text-white transition-colors duration-200"
+						class="flex items-center px-3 py-2 text-gray-500 dark:hover:text-white transition-colors duration-200"
 					>
 						<span class="inline-flex items-center gap-2">
 							Logout
