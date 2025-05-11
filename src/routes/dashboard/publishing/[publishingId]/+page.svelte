@@ -184,15 +184,23 @@
 			}
 		}
 
-		if (!isEmpty(publishingData.thumbnail) && publishingData.images.length > 0) {
+		// PDF is not required, only thumbnail and images are required
+		if (!isEmpty(publishingData.thumbnail) && (publishingData.images.length > 0 || sliderImagesFile.length > 0 || existingImages.length > 0)) {
 			isValidPublishingObject = true;
 		}
 
 		if (hasDataForLanguage && isValidPublishingObject) {
 			submitted = true;
 			showToast = true;
+			
+			// Store initial values
+			const initialImages = [...publishingData.images];
+			const initialPDFs = [...publishingData.pdf_files];
+			
+			// Don't clear the arrays, just initialize them
 			publishingData.pdf_files = [];
 			publishingData.images = [];
+			
 			if (imageFile) {
 				if (publishingData.thumbnail) {
 					await data.supabase.storage.from('image').remove([publishingData.thumbnail]);
@@ -219,9 +227,17 @@
 					}
 				}
 			}
+			
+			// Add existing images from the UI
 			for (let image of existingImages) {
 				publishingData.images.push(image);
 			}
+			
+			// If no new images were added and no existing images in UI, keep the original images
+			if (publishingData.images.length === 0 && initialImages.length > 0) {
+				publishingData.images = initialImages;
+			}
+			
 			// Convert publishing.images to a valid array string format
 			const imagesArray = publishingData.images.map((image) => `"${image}"`);
 			publishingData.images = `{${imagesArray.join(',')}}`;
@@ -240,10 +256,15 @@
 					}
 				}
 			}
+			
+			// Add existing PDFs from the UI
 			for (let pdf of existingPDFfiles) {
 				publishingData.pdf_files.push(pdf);
 			}
-			// Convert publishing.images to a valid array string format
+			
+			// We don't restore initial PDFs if user removed them all
+			
+			// Convert publishing.pdf_files to a valid array string format
 			const pdfArray = publishingData.pdf_files.map((file) => `"${file}"`);
 			publishingData.pdf_files = `{${pdfArray.join(',')}}`;
 
@@ -282,21 +303,19 @@
 
 	//update pdf file
 	function pdfChanges(e: any) {
-		//
-		let result: any = [];
-		let customImages: any = [];
-		e.detail.forEach((files: any) => {
-			if (files.imgSource === ImgSourceEnum.PdfRemote) {
-				result.push(files.imgurl);
-				const newFile = { ...files };
-				newFile.imgurl = `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL_PDF}/${files.imgurl}`;
-				// customImages.push(newFile);
-			} else {
-				// customImages.push(files);
-			}
-		});
+		let result: string[] = [];
+		
+		// Clear existing PDFs if the detail array is empty
+		if (!e.detail || e.detail.length === 0) {
+			result = [];
+		} else {
+			e.detail.forEach((files: any) => {
+				if (files.imgSource === ImgSourceEnum.PdfRemote) {
+					result.push(files.imgurl);
+				}
+			});
+		}
 		existingPDFfiles = result;
-		//
 	}
 
 	function handleSelectChange(event: Event) {

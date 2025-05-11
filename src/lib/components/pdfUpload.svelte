@@ -11,9 +11,11 @@
 	let pdfFiles: PDFModel[] = data.pdfFiles ?? [];
 	let isUploading = false;
 	let uploadCount = 0;
+	let manuallyCleared = false;  // Flag to track if PDFs were manually cleared
 
 	afterUpdate(() => {
-		if (pdfFiles.length === 0) {
+		// Only restore PDFs from data if they haven't been manually deleted
+		if (pdfFiles.length === 0 && !manuallyCleared && data.pdfFiles && data.pdfFiles.length > 0) {
 			pdfFiles = data.pdfFiles ?? [];
 		}
 	});
@@ -55,24 +57,42 @@
 	}
 
 	function deleteImage(index: number) {
+		
+		// Store the PDFs before deletion
+		const pdfToDelete = pdfFiles[index];
+		
+		// Filter out the PDF at the specified index
 		const updatedImages = pdfFiles.filter((_, i) => i !== index);
-		const updatedImageFiles = imageFiles.filter((_, i) => i !== index);
-
-		// Check if the image at the specified index is a PDF file
-		if (
-			pdfFiles[index].imgSource === ImgSourceEnum.PdfLocal ||
-			pdfFiles[index].imgSource === ImgSourceEnum.PdfRemote
-		) {
-			// Remove the corresponding PDF file from the imageFiles array
-			updatedImageFiles.splice(index, 1);
+		
+		// If it's a local PDF file, also update the imageFiles array
+		let updatedImageFiles = [...imageFiles];
+		if (pdfToDelete.imgSource === ImgSourceEnum.PdfLocal) {
+			updatedImageFiles = imageFiles.filter((_, i) => {
+				// Find the corresponding index in imageFiles
+				const localFileIndex = pdfFiles.findIndex(
+					pdf => pdf.imgSource === ImgSourceEnum.PdfLocal && 
+					pdf.fileName === imageFiles[i].name
+				);
+				return localFileIndex !== index;
+			});
 		}
-
+		
+		// Update the state
 		pdfFiles = updatedImages;
 		imageFiles = updatedImageFiles;
+		
+		// Mark as manually cleared if all PDFs are now removed
+		if (updatedImages.length === 0) {
+			manuallyCleared = true;
+		}
+		
+		// Force event dispatch immediately after deletion
+		setTimeout(() => runEvent(), 0);
+		
 	}
 
 	$: {
-		if (pdfFiles.length > 0) {
+		if (pdfFiles || imageFiles) {
 			runEvent();
 		}
 	}
@@ -83,7 +103,7 @@
 	}
 
 	// decode pdf_file
-	function decodeBase64(pdf_file: File) {
+	function decodeBase64(pdf_file: string) {
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(
@@ -92,7 +112,7 @@
 		}
 	}
 
-	function openPdfFile(pdf_file: File) {
+	function openPdfFile(pdf_file: string) {
 		const newWindow = window.open();
 		if (newWindow !== null) {
 			newWindow.document.write(

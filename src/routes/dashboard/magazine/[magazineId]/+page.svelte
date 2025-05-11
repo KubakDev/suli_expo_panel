@@ -177,6 +177,7 @@
 			}
 		}
 
+		// PDF is not required, only thumbnail and images are required
 		if (!isEmpty(magazineData.thumbnail) && (magazineData.images.length > 0 || sliderImagesFile.length > 0 || existingImages.length > 0)) {
 			isValidMagazineObject = true;
 		}
@@ -247,10 +248,6 @@
 				magazineData.pdf_files.push(pdf);
 			}
 			
-			// If no new PDFs were added and no existing PDFs in UI, keep the original PDFs
-			if (magazineData.pdf_files.length === 0 && initialPDFs.length > 0) {
-				magazineData.pdf_files = initialPDFs;
-			}
 			
 			// Convert arrays to valid string format
 			const imagesArray = magazineData.images.map((image) => `"${image}"`);
@@ -292,11 +289,16 @@
 	//update pdf file
 	function pdfChanges(e: any) {
 		let result: string[] = [];
-		e.detail.forEach((files: any) => {
-			if (files.imgSource === ImgSourceEnum.PdfRemote) {
-				result.push(files.imgurl);
-			}
-		});
+		// Clear existing PDFs if the detail array is empty
+		if (!e.detail || e.detail.length === 0) {
+			result = [];
+		} else {
+			e.detail.forEach((files: any) => {
+				if (files.imgSource === ImgSourceEnum.PdfRemote) {
+					result.push(files.imgurl);
+				}
+			});
+		}
 		existingPDFfiles = result;
 	}
 	function handleSelectChange(event: any) {
