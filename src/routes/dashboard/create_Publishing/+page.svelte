@@ -326,10 +326,7 @@
 											<div class="w-full" style="height: 400px;">
 												<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
 											</div>
-											{#if isFormSubmitted && !langData.long_description.trim()}
-												<p class="error-message mt-2">Please enter publishing details</p>
-											{/if}
-										</div>
+									 	 	</div>
 									</div>
 								</div>
 							</TabItem>
