@@ -13,7 +13,7 @@
 	import { decodeBase64 } from '$lib/utils/decodeBase64';
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 	import { IconEye, IconX, IconDeviceFloppy, IconChevronDown } from '@tabler/icons-svelte';
-	const placeholderImage = '/images/placeholder.png';
+	const placeholderImage = '/src/lib/images/placeholder.png';
 
 	export let data;
 

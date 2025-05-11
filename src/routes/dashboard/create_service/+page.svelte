@@ -12,7 +12,7 @@
 	import InsertExhibitionType from '$lib/components/InsertExhibitionType.svelte';
 	import { IconX, IconDeviceFloppy } from '@tabler/icons-svelte';
 	
-	const placeholderImage = '/images/placeholder.png';
+	const placeholderImage = '/src/lib/images/placeholder.png';
 	export let data;
 	let isFormSubmitted = false;
 	let submitted = false;

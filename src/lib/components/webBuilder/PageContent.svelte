@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ExpoCard } from 'kubak-svelte-component';
 	import { selectedTheme, pageTheme } from '../../../stores/pageStore';
-	const placeholderImage = '/images/placeholder.png';  
+	const placeholderImage = '/src/lib/images/placeholder.png';  
 
 	export let toggleMode: () => void;
 	export let title: string;

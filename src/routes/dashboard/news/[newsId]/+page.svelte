@@ -446,7 +446,7 @@
 											/>
 										{:else}
 											<div class="flex flex-col items-center justify-center text-center p-4">
-												<img src="/images/placeholder.png" alt="No gallery images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
+												<img src="/src/lib/images/placeholder.png" alt="No gallery images" class="w-48 h-auto rounded-lg opacity-50 mb-3" />
 												<p class="text-gray-500 dark:text-gray-400 mb-1">No gallery images available</p>
 												<p class="text-xs text-gray-400 dark:text-gray-500">Upload images to see them here</p>
 											</div>

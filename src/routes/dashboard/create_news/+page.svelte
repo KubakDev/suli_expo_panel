@@ -16,7 +16,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { IconEye, IconX, IconDeviceFloppy } from '@tabler/icons-svelte';
 	
-	const placeholderImage = '/images/placeholder.png';
+	const placeholderImage = '/src/lib/images/placeholder.png';
 
 	export let data;
 

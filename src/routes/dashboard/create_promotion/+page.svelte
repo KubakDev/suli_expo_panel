@@ -13,7 +13,7 @@
 	import { IconX, IconDeviceFloppy } from '@tabler/icons-svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	
-	const placeholderImage = '/images/placeholder.png';
+	const placeholderImage = '/src/lib/images/placeholder.png';
 
 	export let data;
 	let isFormSubmitted = false;
