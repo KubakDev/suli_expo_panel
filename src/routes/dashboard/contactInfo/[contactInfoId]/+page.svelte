@@ -11,6 +11,7 @@
 	import { goto } from '$app/navigation';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 	let submitted = false;
@@ -175,7 +176,7 @@
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">Contact information updated successfully!</span>
@@ -188,7 +189,7 @@
 		</div>
 
 		<Form class="form" {submitted}>
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 mb-8">
+			<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 mb-8">
 				<h2 class="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">Social Media Links</h2>
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 					<div>
@@ -200,7 +201,7 @@
 								bind:value={contactData.facebook_link}
 								id="facebook_link"
 								name="facebook_link"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 							{#if !contactData.facebook_link.trim() && errorMessages['facebook_link']}
 								<p class="error-message mt-2">{errorMessages['facebook_link']}</p>
@@ -217,7 +218,7 @@
 								bind:value={contactData.instagram_link}
 								id="instagram_link"
 								name="instagram_link"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 							{#if !contactData.instagram_link.trim() && errorMessages['instagram_link']}
 								<p class="error-message mt-2">{errorMessages['instagram_link']}</p>
@@ -234,7 +235,7 @@
 								bind:value={contactData.linkedin_link}
 								id="linkedin_link"
 								name="linkedin_link"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 							{#if !contactData.linkedin_link.trim() && errorMessages['linkedin_link']}
 								<p class="error-message mt-2">{errorMessages['linkedin_link']}</p>
@@ -251,7 +252,7 @@
 								bind:value={contactData.youtube_link}
 								id="youtube_link"
 								name="youtube_link"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 							{#if !contactData.youtube_link.trim() && errorMessages['youtube_link']}
 								<p class="error-message mt-2">{errorMessages['youtube_link']}</p>
@@ -268,7 +269,7 @@
 								bind:value={contactData.twitter_link}
 								id="twitter_link"
 								name="twitter_link"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 							{#if !contactData.twitter_link.trim() && errorMessages['twitter_link']}
 								<p class="error-message mt-2">{errorMessages['twitter_link']}</p>
@@ -278,8 +279,8 @@
 				</div>
 			</div>
 
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-				<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+			<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+				<Tabs contentClass="dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]" style="pill" class="p-4">
 					{#each contactDataLang as langData}
 						<TabItem
 							open={langData.language == selectedLanguageTab}
@@ -303,7 +304,7 @@
 								</div>
 
 								<!-- Phone Numbers Section -->
-								<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+								<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 									<h3 class="font-medium text-gray-700 dark:text-gray-300 mb-4">Department Phone Numbers</h3>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 										<div>
@@ -315,7 +316,7 @@
 													bind:value={langData.phoneNumber_relations}
 													id="phoneNumber_relations"
 													name="phoneNumber_relations"
-													class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+													class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 												/>
 												{#if !langData.phoneNumber_relations.trim()}
 													<p class="error-message mt-2">Please enter a phone number for relations</p>
@@ -331,7 +332,7 @@
 													bind:value={langData.phoneNumber_Administration}
 													id="phoneNumber_Administration"
 													name="phoneNumber_Administration"
-													class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+													class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 												/>
 												{#if !langData.phoneNumber_Administration.trim()}
 													<p class="error-message mt-2">Please enter a phone number for administration</p>
@@ -349,7 +350,7 @@
 													bind:value={langData.phoneNumber_Technical}
 													id="phoneNumber_Technical"
 													name="phoneNumber_Technical"
-													class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+													class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 												/>
 												{#if !langData.phoneNumber_Technical.trim()}
 													<p class="error-message mt-2">Please enter a phone number for technical</p>
@@ -365,7 +366,7 @@
 													bind:value={langData.phoneNumber_marketing}
 													id="phoneNumber_marketing"
 													name="phoneNumber_marketing"
-													class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+													class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 												/>
 												{#if !langData.phoneNumber_marketing.trim()}
 													<p class="error-message mt-2">Please enter a phone number for marketing</p>
@@ -376,7 +377,7 @@
 								</div>
 
 								<!-- Email Section -->
-								<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+								<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 									<Label class="block">
 										<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Contact Email</span>
 										<Input
@@ -385,7 +386,7 @@
 											placeholder="Enter email address"
 											bind:value={langData.email}
 											name="email"
-											class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+											class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 										/>
 										{#if !langData.email.trim()}
 											<p class="error-message mt-2">Please enter an email</p>
@@ -397,7 +398,7 @@
 								</div>
 
 								<!-- Location Section -->
-								<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+								<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 									<Label class="block">
 										<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location</span>
 										<Textarea
@@ -406,7 +407,7 @@
 											bind:value={langData.location}
 											id="location"
 											name="location"
-											class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+											class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 										/>
 										{#if !langData.location.trim()}
 											<p class="error-message mt-2">Please enter a location</p>
