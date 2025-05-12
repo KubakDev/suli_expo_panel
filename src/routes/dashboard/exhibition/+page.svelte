@@ -113,7 +113,7 @@
 	<!-- table data -->
 
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
-		<div class="overflow-x-auto rounded">
+		<div class="overflow-x-auto rounded-lg">
 			<div class="min-w-full table-responsive">
 			
 				<table class="min-w-full border-collapse border border-gray-200 dark:border-gray-800">

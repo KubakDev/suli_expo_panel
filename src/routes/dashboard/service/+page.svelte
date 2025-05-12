@@ -96,7 +96,7 @@
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div class="max-w-screen-2xl mx-auto py-10">
+<div class="max-w-screen-2xl mx-auto py-10 bg-white dark:bg-[#222831]">
 	<!-- insert new data -->
 	<InsertButton insertData={createService} />
 
@@ -161,12 +161,12 @@
 					>
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }} class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
-								<td class="p-3 bg-gray-50 dark:bg-[#2c333d] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+								<td class="p-3 bg-gray-50 dark:bg-[#323a45] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold"
 										>{index + 1}</span
 									>
 								</td>
-								<td class="p-3 bg-gray-50 dark:bg-[#2c333d] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+								<td class="p-3 bg-gray-50 dark:bg-[#323a45] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold">
 										<button on:click={() => swapItems(index, index - 1)} disabled={index === 0}>
 											<IconArrowUp size={20} class="text-gray-600 dark:text-gray-300" />
@@ -179,7 +179,7 @@
 										</button>
 									</span>
 								</td>
-								<td class="p-3 bg-gray-50 dark:bg-[#2c333d] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+								<td class="p-3 bg-gray-50 dark:bg-[#323a45] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
 											class="w-20 h-20 object-cover rounded-md shadow-sm"
@@ -192,7 +192,7 @@
 								</td>
 								{#if item.service_languages}
 									<td
-										class="p-3 bg-gray-50 dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
+										class="p-3 bg-gray-50 dark:bg-[#323a45] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 									>
 										{#each item.service_languages as lang}
 											<div>
@@ -201,7 +201,7 @@
 										{/each}
 									</td>
 									<td
-										class="p-3 bg-gray-50 dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
+										class="p-3 bg-gray-50 dark:bg-[#323a45] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 									>
 										{#each item.service_languages as lang}
 											<div>
@@ -211,7 +211,7 @@
 									</td>
 								{/if}
 								<td
-									class="p-3 bg-gray-50 dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32"
+									class="p-3 bg-gray-50 dark:bg-[#323a45] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32"
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button
