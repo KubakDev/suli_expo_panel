@@ -57,7 +57,7 @@
 				<tbody>
 					{#each data as item, index (item.id)}
 						<tr class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
-							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold"
 									>{calculateIndex(index)}</span
 								>
@@ -65,7 +65,7 @@
 
 							{#each columnTitle as column}
 								<td
-									class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
+									class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div>
 										{#if column.type === 'image'}
@@ -140,7 +140,7 @@
 							{/each}
 
 							<td
-								class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32"
+								class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<button

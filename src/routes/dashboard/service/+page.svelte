@@ -15,6 +15,7 @@
 	} from '@tabler/icons-svelte';
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import type { ServiceModel } from '../../../models/serviceModel';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 	let items: ServiceModel[] = [];
@@ -101,49 +102,49 @@
 
 	<!-- table data -->
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
-		<div class="overflow-x-auto rounded">
+		<div class="overflow-x-auto rounded-lg shadow-lg">
 			<div class="min-w-full table-responsive">
-				<table class="min-w-full border-collapse dark:border-gray-700">
+				<table class="min-w-full border-collapse">
 					<thead>
 						<tr>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>sort</span>
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
-								<div class="flex items-center gap-2">
+								<div class="flex justify-center items-center gap-2">
 									<span>Thumbnail</span>
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
-								<div class="flex items-center gap-2">
+								<div class="flex justify-center items-center gap-2">
 									<span>Title</span>
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
-								<div class="flex items-center gap-2">
+								<div class="flex justify-center items-center gap-2">
 									<span>Short description</span>
 								</div>
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
@@ -159,29 +160,29 @@
 						on:finalize={handleDndFinalize}
 					>
 						{#each items as item, index (item.id)}
-							<tr animate:flip={{ duration: flipDurationMs }}>
-								<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+							<tr animate:flip={{ duration: flipDurationMs }} class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
+								<td class="p-3 bg-gray-50 dark:bg-[#2c333d] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold"
 										>{index + 1}</span
 									>
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+								<td class="p-3 bg-gray-50 dark:bg-[#2c333d] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold">
 										<button on:click={() => swapItems(index, index - 1)} disabled={index === 0}>
-											<IconArrowUp size={20} class="text-gray-400" />
+											<IconArrowUp size={20} class="text-gray-600 dark:text-gray-300" />
 										</button>
 										<button
 											on:click={() => swapItems(index, index + 1)}
 											disabled={index === items.length - 1}
 										>
-											<IconArrowDown size={20} class="text-gray-400" />
+											<IconArrowDown size={20} class="text-gray-600 dark:text-gray-300" />
 										</button>
 									</span>
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+								<td class="p-3 bg-gray-50 dark:bg-[#2c333d] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
-											class="w-20 h-20 object-cover rounded"
+											class="w-20 h-20 object-cover rounded-md shadow-sm"
 											src={item.thumbnail
 												? `${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${item.thumbnail}`
 												: 'https://images.hindustantimes.com/img/2022/08/07/1600x900/cat_1659882617172_1659882628989_1659882628989.jpg'}
@@ -191,7 +192,7 @@
 								</td>
 								{#if item.service_languages}
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+										class="p-3 bg-gray-50 dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 									>
 										{#each item.service_languages as lang}
 											<div>
@@ -200,7 +201,7 @@
 										{/each}
 									</td>
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+										class="p-3 bg-gray-50 dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 									>
 										{#each item.service_languages as lang}
 											<div>
@@ -210,14 +211,14 @@
 									</td>
 								{/if}
 								<td
-									class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell w-32"
+									class="p-3 bg-gray-50 dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32"
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button
 											on:click={() => {
 												goto(`/dashboard/service/${item.id}`);
 											}}
-											class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
+											class="text-gray-400 p-1 border border-gray-500 dark:border-gray-600 rounded flex gap-2 hover:bg-gray-200 dark:hover:bg-[#2c3440] transition-colors"
 										>
 											Edit
 											<IconEdit size={20} class="text-green-500" />
@@ -243,18 +244,20 @@
 
 	/* Apply styles for dragging state */
 	tr[data-dnd-dragging] {
-		background-color: #ce1111;
+		background-color: rgba(206, 206, 206, 0.3);
+		border: 1px dashed #959595;
 	}
 
 	tr.dnd-placeholder {
-		background-color: #f0f0f0;
+		background-color: #f7f7f7;
+		border: 1px dashed #ccc;
 	}
 
 	tbody {
-		width: 50%;
-		padding: 0.3em;
-		border: 1px solid black;
-		overflow: scroll;
-		height: 120px;
+		width: 100%;
+		padding: 0;
+		border: none;
+		overflow: hidden;
+		height: auto;
 	}
 </style>
