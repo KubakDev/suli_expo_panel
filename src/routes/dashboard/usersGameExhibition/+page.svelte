@@ -7,8 +7,10 @@
 	import AiFillEdit from 'svelte-icons-pack/ai/AiFillEdit';
 	import { exportToExcel } from '$lib/utils/exportToExcel';
 	import { Button } from 'flowbite-svelte';
-	import { IconX, IconEdit, IconLayoutGrid } from '@tabler/icons-svelte';
+	import { IconX, IconEdit, IconLayoutGrid, IconFilterCancel } from '@tabler/icons-svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
+	
 	interface User {
 		id: number;
 		created_at: string;
@@ -147,7 +149,7 @@
 					on:click={clearFilter}
 					title="Clear Filter"
 				>
-					<IconX size={24} class="text-red-500" />
+					<IconFilterCancel size={24} class="text-red-500" />
 				</button>
 
 				<button
@@ -173,123 +175,128 @@
 		</div>
 	</div>
 
-	{#if notFound || users.length === 0}
-		<div class="overflow-x-auto">
-			<table class="min-w-full border border-gray-200 dark:border-gray-700">
-				<thead>
-					<tr class="border border-gray-200 dark:border-gray-700">
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
-							<div class="flex justify-center items-center gap-2">
-								<span>#</span>
-							</div>
-						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Name</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Company</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Field Work</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Job Grade</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Phone</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Email</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Country</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">City</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Referrer</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Hotel Booking</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td colspan="12" class="text-center p-4 text-gray-500 dark:text-gray-400">
-							<div class="flex flex-col items-center justify-center gap-2">
-								<p>No data found</p>
-							</div>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	{:else}
-		<div class="overflow-x-auto">
-			<table class="min-w-full border border-gray-200 dark:border-gray-700">
-				<thead>
-					<tr class="border border-gray-200 dark:border-gray-700">
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
-							<div class="flex justify-center items-center gap-2">
-								<span>#</span>
-							</div>
-						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Name</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Company</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Field Work</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Job Grade</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Phone</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Email</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Country</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">City</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Referrer</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Hotel Booking</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-transparent text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700">Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each users as user, index}
-						<tr class="text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-							<!-- Table cells with updated styling -->
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{index + 1 + (currentPage - 1) * pageSize}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.name}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.companyName}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.fieldWork}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.jobGrade}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.phoneNumber}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.email}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.country}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.city}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.referrer_name}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								{user.hotelBooking}
-							</td>
-							<td class="p-3 border border-gray-300 dark:border-gray-600">
-								<button
-									on:click={() => goto(`/dashboard/usersGameExhibition/${user.id}`)}
-									class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
-								>
-									Edit
-									<span>
-										<Icon
-											src={AiFillEdit}
-											color="green"
-											size="20"
-											className="custom-icon"
-											title="Custom icon params"
-										/>
-									</span>
-								</button>
+	<div class="overflow-x-auto rounded-lg shadow-lg">
+		<div class="min-w-full table-responsive">
+			{#if notFound || users.length === 0}
+				<table class="min-w-full border-collapse">
+					<thead>
+						<tr>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10">
+								<div class="flex justify-center items-center gap-2">
+									<span>#</span>
+								</div>
+							</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Name</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Company</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Field Work</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Job Grade</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Phone</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Email</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Country</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">City</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Referrer</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Hotel Booking</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">
+								<div class="flex items-center gap-2">
+									<IconLayoutGrid size={20} class="text-gray-500 dark:text-gray-400" />
+									<span>Actions</span>
+								</div>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td colspan="12" class="text-center p-4 text-gray-500 dark:text-gray-400">
+								<div class="flex flex-col items-center justify-center gap-2">
+									<p>No data found</p>
+								</div>
 							</td>
 						</tr>
-					{/each}
-				</tbody>
-			</table>
+					</tbody>
+				</table>
+			{:else}
+				<table class="min-w-full border-collapse">
+					<thead>
+						<tr>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10">
+								<div class="flex justify-center items-center gap-2">
+									<span>#</span>
+								</div>
+							</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Name</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Company</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Field Work</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Job Grade</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Phone</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Email</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Country</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">City</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Referrer</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">Hotel Booking</th>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800">
+								<div class="flex items-center gap-2">
+									<IconLayoutGrid size={20} class="text-gray-500 dark:text-gray-400" />
+									<span>Actions</span>
+								</div>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each users as user, index}
+							<tr class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold"
+										>{index + 1 + (currentPage - 1) * pageSize}</span
+									>
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.name}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.companyName}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.fieldWork}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.jobGrade}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.phoneNumber}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.email}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.country}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.city}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.referrer_name}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									{user.hotelBooking}
+								</td>
+								<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+									<div class="flex justify-center items-center">
+										<button
+											on:click={() => goto(`/dashboard/usersGameExhibition/${user.id}`)}
+											class="text-gray-400 p-1 border border-gray-500 dark:border-gray-600 rounded flex gap-2 hover:bg-gray-200 dark:hover:bg-[#2c3440] transition-colors"
+										>
+											Edit
+											<IconEdit size={20} class="text-green-500" />
+										</button>
+									</div>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
 		</div>
-	{/if}
+	</div>
 
 	<Pagination {currentPage} {totalPages} {goToPage} />
 </div>
@@ -300,17 +307,6 @@
 		padding: 8px;
 		border: 1px solid #ddd;
 		border-radius: 4px;
-	}
-
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	th,
-	td {
-		padding: 8px;
-		text-align: left;
 	}
 
 	@media (max-width: 768px) {
