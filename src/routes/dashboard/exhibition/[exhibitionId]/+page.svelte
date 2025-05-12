@@ -20,6 +20,7 @@
 	import { getImagesObject } from '$lib/utils/updateCarouselImages';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { IconEye, IconX, IconDeviceFloppy, IconChevronDown } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	// Define ExhibitionData type
 	type ExhibitionData = {
@@ -699,7 +700,7 @@
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[#222831]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">Update Successful!</span>
@@ -713,7 +714,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Image</span>
 						<div class="relative">
@@ -736,7 +737,7 @@
 							<Fileupload
 								on:change={handleFileUploadThumbnail}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !exhibitionsData.thumbnail.trim()}
@@ -746,7 +747,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Map Image</span>
 						<div class="relative">
@@ -769,7 +770,7 @@
 							<Fileupload
 								on:change={handleFileUploadMap}
 								accept=".jpg, .jpeg, .png .svg"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 								lang={selectedLanguageTab}
 							/>
 						</div>
@@ -781,12 +782,12 @@
 		<!-- Date section combined in a single row -->
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-12">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
 					<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 						<div class="md:col-span-1">
 							<Label class="block mb-2">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
-								<Input bind:value={exhibitionsData.exhibition_type} placeholder="Enter Exhibition Type" class="w-full" />
+								<Input bind:value={exhibitionsData.exhibition_type} placeholder="Enter Exhibition Type" class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white" />
 								{#if isFormSubmitted && !exhibitionsData.exhibition_type.trim()}
 									<p class="error-message mt-2">Please enter an exhibition type</p>
 								{/if}
@@ -795,13 +796,13 @@
 						<div class="md:col-span-1">
 							<Label class="block mb-2">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Start Date</span>
-								<Input type="date" bind:value={exhibitionsData.start_date} class="w-full" />
+								<Input type="date" bind:value={exhibitionsData.start_date} class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white" />
 							</Label>
 						</div>
 						<div class="md:col-span-1">
 							<Label class="block mb-2">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">End Date</span>
-								<Input type="date" bind:value={exhibitionsData.end_date} class="w-full" />
+								<Input type="date" bind:value={exhibitionsData.end_date} class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white" />
 							</Label>
 						</div>
 						<div class="md:col-span-1">
@@ -813,14 +814,14 @@
 										bind:value={exhibitionsData.country_number}
 										placeholder="Country #"
 										min="0"
-										class="w-full"
+										class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 									/>
 									<Input
 										type="number"
 										bind:value={exhibitionsData.company_number}
 										placeholder="Company #"
 										min="0"
-										class="w-full"
+										class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 									/>
 								</div>
 								{#if isFormSubmitted && (!exhibitionsData.country_number || !exhibitionsData.company_number)}
@@ -837,9 +838,9 @@
 		<!-- comment  -->
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
 					<form>
-						<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+						<Tabs contentClass="dark:text-white bg-white dark:bg-[#2c333d]" style="pill" class="p-4">
 							{#each exhibitionDataLang as langData}
 								<TabItem
 									open={langData.language == selectedLanguageTab}
@@ -864,7 +865,7 @@
 
 										<!-- PDF and Brochure Files -->
 										<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 												<Label class="block">
 													<div class="flex items-center justify-between mb-2">
 														<span class="font-medium text-gray-700 dark:text-gray-300">PDF File</span>
@@ -899,7 +900,7 @@
 													<Fileupload
 														on:change={handleFileUpload_pdf}
 														accept=".pdf"
-														class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+														class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 													/>
 													{#if isFormSubmitted && isEmpty(langData.pdf_files) && !exhibitionDataLang.some(l => !isEmpty(l.pdf_files))}
 														<p class="error-message mt-2">Please upload PDF file</p>
@@ -907,7 +908,7 @@
 												</Label>
 											</div>
 
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 												<Label class="block">
 													<div class="flex items-center justify-between mb-2">
 														<span class="font-medium text-gray-700 dark:text-gray-300">Brochure</span>
@@ -932,7 +933,7 @@
 													<Fileupload
 														on:change={handleFileUpload_brochure}
 														accept=".svg, .png, .jpg, .jpeg"
-														class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+														class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 													/>
 													{#if isFormSubmitted && isEmpty(langData.brochure) && !exhibitionDataLang.some(l => !isEmpty(l.brochure))}
 														<p class="error-message mt-2">Please upload brochure file</p>
@@ -940,7 +941,7 @@
 												</Label>
 											</div>
 
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 												<Label class="block">
 													<div class="flex items-center justify-between mb-2">
 														<span class="font-medium text-gray-700 dark:text-gray-300">Contract PDF</span>
@@ -975,7 +976,7 @@
 													<Fileupload
 														on:change={handleFileUpload_pdf_contract}
 														accept=".pdf"
-														class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+														class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
 													/>
 												</Label>
 											</div>
@@ -983,28 +984,28 @@
 
 										<!-- Video and Map Section -->
 										<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">YouTube Video Link</span>
 													<Input
 														type="text"
 														bind:value={langData.video_youtube_link}
 														placeholder="Enter YouTube link"
-														class="w-full"
+														class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 													/>
 													{#if isFormSubmitted && !langData.video_youtube_link.trim()}
 														<p class="error-message mt-2">Please enter a YouTube link</p>
 													{/if}
 												</Label>
 											</div>
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Map Title</span>
 													<Input
 														type="text"
 														bind:value={langData.map_title}
 														placeholder="Enter map title"
-														class="w-full"
+														class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 													/>
 													{#if isFormSubmitted && !langData.map_title.trim()}
 														<p class="error-message mt-2">Please enter map title</p>
@@ -1015,28 +1016,28 @@
 
 										<!-- Location Section -->
 										<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location Title</span>
 													<Input
 														type="text"
 														bind:value={langData.location_title}
 														placeholder="Enter location title"
-														class="w-full"
+														class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 													/>
 													{#if isFormSubmitted && !langData.location_title.trim()}
 														<p class="error-message mt-2">Please enter a location title</p>
 													{/if}
 												</Label>
 											</div>
-											<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg md:col-span-2">
+											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg md:col-span-2">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location Address</span>
 													<Input
 														type="text"
 														bind:value={langData.location}
 														placeholder="Enter full address"
-														class="w-full"
+														class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 													/>
 													{#if isFormSubmitted && !langData.location.trim()}
 														<p class="error-message mt-2">Please enter a location</p>
@@ -1046,7 +1047,7 @@
 										</div>
 
 										<!-- Title Section -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Exhibition Title</span>
 												<Input
@@ -1055,7 +1056,7 @@
 													bind:value={langData.title}
 													id="title"
 													name="title"
-													class="w-full"
+													class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 												/>
 												{#if isFormSubmitted && !langData.title.trim()}
 													<p class="error-message mt-2">Please enter a title</p>
@@ -1066,7 +1067,7 @@
 										<!-- Accordion Sections for Story and Description -->
 										<div class="space-y-6 mb-10">
 											<!-- Story Accordion -->
-											<div class="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+											<div class="bg-gray-50 dark:bg-[#323a45] rounded-lg border border-gray-200 dark:border-gray-800">
 												<button class="w-full flex justify-between items-center p-5 text-left" 
 													on:click={(e) => {
 														e.preventDefault();
@@ -1076,14 +1077,14 @@
 													<IconChevronDown size={20} class="transform transition-transform duration-200 {langData.storyOpen ? 'rotate-180' : ''}" />
 												</button>
 												{#if langData.storyOpen}
-													<div class="p-6 pt-2 border-t border-gray-200 dark:border-gray-700">
+													<div class="p-6 pt-2 border-t border-gray-200 dark:border-gray-800">
 														<Textarea
 															placeholder="Enter a story"
 															rows="4"
 															bind:value={langData.story}
 															id="story"
 															name="story"
-															class="w-full"
+															class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 														/>
 														{#if isFormSubmitted && !langData.story.trim()}
 															<p class="error-message mt-2">Please enter a story</p>
@@ -1093,7 +1094,7 @@
 											</div>
 											
 											<!-- Description Accordion -->
-											<div class="bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+											<div class="bg-gray-50 dark:bg-[#323a45] rounded-lg border border-gray-200 dark:border-gray-800">
 												<button class="w-full flex justify-between items-center p-5 text-left" 
 													on:click={(e) => {
 														e.preventDefault();
@@ -1103,14 +1104,14 @@
 													<IconChevronDown size={20} class="transform transition-transform duration-200 {langData.descriptionOpen ? 'rotate-180' : ''}" />
 												</button>
 												{#if langData.descriptionOpen}
-													<div class="p-6 pt-2 border-t border-gray-200 dark:border-gray-700">
+													<div class="p-6 pt-2 border-t border-gray-200 dark:border-gray-800">
 														<Textarea
 															placeholder="Enter a description"
 															rows="4"
 															bind:value={langData.description}
 															id="description"
 															name="description"
-															class="w-full"
+															class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 														/>
 														{#if isFormSubmitted && !langData.description.trim()}
 															<p class="error-message mt-2">Please enter a description</p>
@@ -1125,15 +1126,15 @@
 						</Tabs>
 					</form>
 
-					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
-						<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+					<div class="border-t dark:border-gray-800 mt-2 pt-6 px-6">
+						<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
 							<Label class="block">
 								<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Sponsor Title</span>
 								<Input
 									type="text"
 									bind:value={exhibitionsData.sponsor_title}
 									placeholder="Enter a title for sponsor"
-									class="w-full"
+									class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
 								/>
 								{#if isFormSubmitted && !exhibitionsData.sponsor_title.trim()}
 									<p class="error-message mt-2">Please enter a sponsor title</p>
@@ -1146,7 +1147,7 @@
 							<div>
 								<Label class="block mb-4">
 									<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Exhibition Images</span>
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+									<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 										<FileUploadComponent
 											on:imageChanges={imageChanges}
 											on:imageFilesChanges={getAllImageFile}
@@ -1160,7 +1161,7 @@
 							<div>
 								<Label class="block mb-4">
 									<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Sponsor Images</span>
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg">
+									<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
 										<FileUploadComponent
 											on:imageChanges={imageChanges_sponsor}
 											on:imageFilesChanges={getAllImageFile_sponsor}
@@ -1186,7 +1187,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-800 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">
