@@ -15,6 +15,7 @@
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { IconEye, IconX, IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 	
 	const placeholderImage = '/src/lib/images/placeholder.png';
 
@@ -198,7 +199,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">New data has been inserted successfully!</span>
@@ -212,7 +213,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">News Image</span>
 						<div class="relative">
@@ -235,7 +236,7 @@
 							<Fileupload
 								on:change={handleFileUploadThumbnail}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !newsObject.thumbnail.trim()}
@@ -245,7 +246,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
 							<Label class="block mb-4">
@@ -256,7 +257,7 @@
 						<div>
 							<Label class="block mb-4">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Publication Date</span>
-								<Input type="date" bind:value={newsObject.created_at} class="dark:bg-gray-700 dark:text-white dark:border-gray-600" />
+								<Input type="date" bind:value={newsObject.created_at} class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] dark:text-white dark:border-gray-600" />
 							</Label>
 						</div>
 					</div>
@@ -266,9 +267,9 @@
 
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
 					<form>
-						<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+						<Tabs contentClass="dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]" style="pill" class="p-4">
 							{#each newsDataLang as langData}
 								<TabItem
 									open={langData.language == selectedLanguageTab}
@@ -292,7 +293,7 @@
 										</div>
 
 										<!-- Title Section -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">News Title</span>
 												<Input
@@ -310,7 +311,7 @@
 										</div>
 										
 										<!-- Short Description -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Short Description</span>
 												<Textarea
@@ -327,7 +328,7 @@
 											</Label>
 										</div>
 
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg pb-12">
+										<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg pb-12">
 										<!-- News Content -->
 										<div class="mb-12">
 											<Label for="textarea-id" class="mb-2">News detail</Label>
@@ -343,7 +344,7 @@
 					</form>
 
 					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
-						<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+						<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 							<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">News Gallery Images</span>
 							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 							{#if isFormSubmitted && sliderImagesFile.length === 0}
@@ -366,7 +367,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">
