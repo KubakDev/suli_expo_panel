@@ -15,6 +15,7 @@
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { IconDeviceFloppy, IconX } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	let loaded = false;
 	export let data;
@@ -198,7 +199,7 @@
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">Video updated successfully!</span>
@@ -213,7 +214,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-4">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Video Thumbnail</span>
 						<div class="relative">
@@ -237,7 +238,7 @@
 								on:change={(event) =>
 									handleFileUpload(event, mediaVideoData, setImageFile, setFileName, 'videoObjectData')}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 					</Label>
@@ -245,7 +246,7 @@
 			</div>
 			
 			<div class="lg:col-span-4">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
 						<UpdateExhibitionType {handleSelectChange} pageData={mediaVideoData} {data} />
@@ -254,7 +255,7 @@
 			</div>
 
 			<div class="lg:col-span-4">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Video Link</span>
 						<Input
@@ -263,7 +264,7 @@
 							bind:value={mediaVideoData.link}
 							id="link"
 							name="link"
-							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 						/>
 						{#if isFormSubmitted && !mediaVideoData.link}
 							<p class="error-message mt-2">Please enter a video link</p>
@@ -275,8 +276,8 @@
 
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-					<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+					<Tabs contentClass="dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]" style="pill" class="p-4">
 						{#each mediaVideoDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -300,7 +301,7 @@
 									</div>
 
 									<!-- Title Section -->
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 										<Label class="block">
 											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Video Title</span>
 											<Input
@@ -309,7 +310,7 @@
 												bind:value={langData.title}
 												id="title"
 												name="title"
-												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+												class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 											/>
 											{#if isFormSubmitted && !langData.title.trim()}
 												<p class="error-message mt-2">Please enter a title</p>
@@ -318,7 +319,7 @@
 									</div>
 									
 									<!-- Short Description -->
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 										<Label class="block">
 											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Short Description</span>
 											<Textarea
@@ -327,7 +328,7 @@
 												bind:value={langData.short_description}
 												id="short_description"
 												name="short_description"
-												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+												class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 											/>
 											{#if isFormSubmitted && !langData.short_description.trim()}
 												<p class="error-message mt-2">Please enter a short description</p>
@@ -336,7 +337,7 @@
 									</div>
 
 									<!-- Long Description -->
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg pb-12">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg pb-12">
 										<div class="mb-12">
 											<Label for="textarea-id" class="mb-2">Video details</Label>
 											<div class="pt-4 w-full" style="height: 400px;">
@@ -369,7 +370,7 @@
 			</div>
 			
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">

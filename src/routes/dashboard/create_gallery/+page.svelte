@@ -15,6 +15,7 @@
 	import { createCarouselImages } from '$lib/utils/createCarouselImages';
 	import { handleFileUpload } from '$lib/utils/handleFileUpload';
 	import { IconDeviceFloppy, IconX } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 
@@ -195,7 +196,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">Gallery created successfully!</span>
@@ -209,7 +210,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-4">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Gallery Thumbnail</span>
 						<div class="relative">
@@ -233,7 +234,7 @@
 								on:change={(event) =>
 									handleFileUpload(event, galleryObject, setImageFile, setFileName, 'gallery')}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !galleryObject.thumbnail.trim()}
@@ -244,7 +245,7 @@
 			</div>
 
 			<div class="lg:col-span-4">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
 					<Label class="block">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
 						<InsertExhibitionType {handleSelectChange} {data} />
@@ -255,8 +256,8 @@
 
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-					<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+					<Tabs contentClass="dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]" style="pill" class="p-4">
 						{#each galleryDataLang as langData}
 							<TabItem
 								open={langData.language == selectedLanguageTab}
@@ -280,7 +281,7 @@
 									</div>
 
 									<!-- Title Section -->
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 										<Label class="block">
 											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Gallery Title</span>
 											<Input
@@ -289,7 +290,7 @@
 												bind:value={langData.title}
 												id="title"
 												name="title"
-												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+												class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 											/>
 											{#if isFormSubmitted && !langData.title.trim()}
 												<p class="error-message mt-2">Please enter a title</p>
@@ -298,7 +299,7 @@
 									</div>
 									
 									<!-- Short Description -->
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 										<Label class="block">
 											<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Short Description</span>
 											<Textarea
@@ -307,7 +308,7 @@
 												bind:value={langData.short_description}
 												id="short_description"
 												name="short_description"
-												class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+												class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 											/>
 											{#if isFormSubmitted && !langData.short_description.trim()}
 												<p class="error-message mt-2">Please enter a short description</p>
@@ -315,25 +316,25 @@
 										</Label>
 									</div>
 
-											
 									<!-- Gallery Content -->
-									<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg pb-12">
-										<!-- Gallery Content -->
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg pb-12">
 										<div class="mb-12">
 											<Label for="textarea-id" class="mb-2">Gallery detail</Label>
 											<div class="w-full" style="height: 400px;">
 												<QuillEditor placeholder="Write details..." {langData} {isFormSubmitted} />
-									      </div>
+											</div>
+											{#if isFormSubmitted && !langData.long_description.trim()}
+												<p class="error-message mt-2">Please enter gallery details</p>
+											{/if}
 										</div>
-									  </div>
-
+									</div>
 								</div>
 							</TabItem>
 						{/each}
 					</Tabs>
 
 					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
-						<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+						<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 							<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Gallery Images</span>
 							<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 							{#if isFormSubmitted && sliderImagesFile.length === 0}
@@ -357,7 +358,7 @@
 			</div>
 			
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">

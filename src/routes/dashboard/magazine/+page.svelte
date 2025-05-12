@@ -6,6 +6,7 @@
 	import InsertButton from '$lib/components/InsertButton.svelte';
 	import TableComponent from '$lib/components/TableComponent.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 	let currentPage = 1;
@@ -81,7 +82,7 @@
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div class="max-w-screen-2xl mx-auto py-10">
+<div class="max-w-screen-2xl mx-auto py-10 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] min-h-screen p-4">
 	<!-- insert new data -->
 	<InsertButton insertData={createMagazine} />
 
