@@ -14,6 +14,7 @@
 	//@ts-ignore
 	import { isEmpty } from 'validator';
 	import { IconX, IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 	
 	const placeholderImage = '/src/lib/images/placeholder.png';
 	
@@ -137,7 +138,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[#222831]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">Seat service has been created successfully!</span>
@@ -151,7 +152,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-4">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800 h-full">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Service Icon</span>
 						<div class="relative">
@@ -174,7 +175,7 @@
 							<Fileupload
 								on:change={handleFileUpload}
 								accept=".jpg, .jpeg, .png, .svg"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !seatServicesObject?.icon?.trim()}
@@ -188,7 +189,7 @@
 							bind:value={seatServicesObject.type}
 							id="type"
 							name="type"
-							class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+							class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 							disabled="true"
 						>
 							<option value={SeatServiceTypeEnum.SINGULAR}>{SeatServiceTypeEnum.SINGULAR}</option>
@@ -199,7 +200,7 @@
 			</div>
 			
 			<div class="lg:col-span-8">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800 h-full">
 					<div class="grid grid-cols-3 gap-4">
 						<div>
 							<Label class="block">
@@ -209,7 +210,7 @@
 									bind:value={seatServicesObject.price}
 									placeholder="Enter price"
 									min="0"
-									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+									class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 								/>
 							</Label>
 						</div>
@@ -222,7 +223,7 @@
 									bind:value={seatServicesObject.quantity}
 									placeholder="Enter quantity"
 									min="0"
-									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+									class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 								/>
 								{#if isFormSubmitted && !seatServicesObject.quantity}
 									<p class="error-message mt-2">Please enter quantity</p>
@@ -238,7 +239,7 @@
 									bind:value={seatServicesObject.discount}
 									placeholder="Enter discount"
 									min="0"
-									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+									class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 								/>
 							</Label>
 						</div>
@@ -254,9 +255,9 @@
 		
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
 					<form>
-						<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+						<Tabs contentClass="dark:text-white bg-white dark:bg-[#2c333d]" style="pill" class="p-4">
 							{#each seatServicesDataLang as langData}
 								<TabItem
 									open={langData.language == selectedLanguageTab}
@@ -280,16 +281,16 @@
 										</div>
 
 										<!-- Title Section -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Service Title</span>
 												<Input
 													type="text"
 													placeholder="Enter title"
 													bind:value={langData.title}
-													id="title"
-													name="title"
-													class="w-full"
+													id={`title-${langData.language}`}
+													name={`title-${langData.language}`}
+													class="w-full dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 												/>
 												{#if isFormSubmitted && !langData.title.trim()}
 													<p class="error-message mt-2">Please enter a title</p>
@@ -298,16 +299,16 @@
 										</div>
 										
 										<!-- Description -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Description</span>
 												<Textarea
 													placeholder="Enter description"
 													rows="4"
 													bind:value={langData.description}
-													id="description"
-													name="description"
-													class="w-full"
+													id={`description-${langData.language}`}
+													name={`description-${langData.language}`}
+													class="w-full dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 												/>
 												{#if isFormSubmitted && !langData.description.trim()}
 													<p class="error-message mt-2">Please enter a description</p>
@@ -320,7 +321,7 @@
 						</Tabs>
 					</form>
 
-					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
+					<div class="border-t dark:border-gray-800 mt-2 pt-6 px-6">
 						<!-- Submit Button -->
 						<div class="flex justify-end my-6">
 							<button
@@ -336,7 +337,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-800 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">
@@ -355,7 +356,7 @@
 							
 							{#if (seatServicesObject.price !== undefined && seatServicesObject.price > 0) || (seatServicesObject.quantity !== undefined && seatServicesObject.quantity > 0)}
 								<div class="p-4 mt-2">
-									<div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+									<div class="bg-gray-50 dark:bg-[#323a45] p-4 rounded-lg">
 										<div class="grid grid-cols-2 gap-4">
 											{#if seatServicesObject.price !== undefined && seatServicesObject.price > 0}
 												<div>
