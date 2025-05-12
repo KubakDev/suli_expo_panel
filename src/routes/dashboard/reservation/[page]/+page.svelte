@@ -18,8 +18,9 @@
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import { page } from '$app/stores';
 	import { exportToExcel } from '$lib/utils/exportToExcel';
-	import { IconGridDots, IconX, IconLayoutGrid } from '@tabler/icons-svelte';
+	import { IconGridDots, IconX, IconLayoutGrid, IconFilterCancel } from '@tabler/icons-svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 	export let data;
 	let p_company_name: string | undefined;
 	let p_phone_number: string | undefined;
@@ -265,7 +266,7 @@ async function handleExport(selectedExhibitionId: number) {
 	<Spinner size="h-16 w-16" color="border-gray-500" />
 </div>
 {:else}
-<div class="max-w-screen-2xl mx-auto py-10">
+<div class="max-w-screen-2xl mx-auto py-10 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] min-h-screen p-4">
 	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
 		<!-- total count -->
 		<div
@@ -388,13 +389,8 @@ async function handleExport(selectedExhibitionId: number) {
 							disabled={!isOptionSelected}
 						/>
 
-						{#if $seatReservation.length > 0}
 							<IconLayoutGrid size={24} class="text-gray-500 dark:text-gray-400" />
-						{:else}
-							<button on:click={clearFilters}>
-								 <IconX size={24} class="text-gray-500 dark:text-gray-400" />
-							</button>
-						{/if}
+						 
 					</div>
 
 					{#each options as option, index}
@@ -430,8 +426,8 @@ async function handleExport(selectedExhibitionId: number) {
 					on:click={clearAllFilters}
 					title="Clear All Filters"
 				>
-					<IconX size={24} class="text-red-500" />
-				</button>
+					<IconFilterCancel size={24} class="text-red-500" />
+				 </button>
 
 				<!-- Export button -->
 				<Button 
@@ -450,74 +446,69 @@ async function handleExport(selectedExhibitionId: number) {
 
 	<!-- table data -->
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
-		<div class="overflow-x-auto rounded">
+		<div class="overflow-x-auto rounded-lg shadow-lg">
 			<div class="min-w-full table-responsive">
-				<table class="min-w-full border border-gray-200 dark:border-gray-700">
+				<table class="min-w-full border-collapse">
 					<thead>
-						<tr class="border border-gray-200 dark:border-gray-700">
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
+						<tr>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10">
 								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 									<span>object ID</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 									<span>company name</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 									<span>comments</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 									<span>exhibition type</span>
 								</div>
 							</th>
 
-							<th class="w-14 p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
-								<div class="flex items-start gap-2">
-									<span>
-										<IconLayoutGrid size={20} class="text-gray-500 dark:text-gray-400" />
-									</span>
+							<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-800 table-cell">
+								<div class="flex items-center gap-2">
+									<IconLayoutGrid size={20} class="text-gray-600 dark:text-gray-300" />
 									<span>Actions</span>
 								</div>
 							</th>
 						</tr>
 					</thead>
 
-					<tbody class="dark:text-gray-300">
+					<tbody>
 						{#if $seatReservation.length > 0}
 							{#each $seatReservation as reservation, index}
-								<tr class="border border-gray-200 dark:border-gray-700">
-									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
-									>
-										<div class="flex justify-center">
+								<tr class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
+									<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
+										<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold">
 											{#if startingSerialNumber != null && startingSerialNumber > 0}
-												<div>{startingSerialNumber - index}</div>
+												{startingSerialNumber - index}
 											{/if}
-										</div>
+										</span>
 									</td>
-									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
-									>
+									
+									<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 										<div>
 											{reservation.object_id}
 										</div>
 									</td>
 
-									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+									<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 										<div>
 											{#if reservation.company}
 												<div><li>{reservation.company?.company_name}</li></div>
@@ -532,9 +523,7 @@ async function handleExport(selectedExhibitionId: number) {
 										</div>
 									</td>
 
-									<td
-										class="max-w-screen-sm p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
-									>
+									<td class="max-w-screen-sm p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 										<div>
 											{#if reservation?.comments?.[0]}
 												 {reservation.comments[0]}
@@ -549,7 +538,7 @@ async function handleExport(selectedExhibitionId: number) {
 										</div>
 									</td>
 
-									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+									<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 										<div>
 											{#if reservation?.exhibitions?.[0]}
 												{reservation.exhibitions[0]?.exhibition_type}
@@ -557,30 +546,28 @@ async function handleExport(selectedExhibitionId: number) {
 										</div>
 									</td>
 
-									
-									<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
-										<div class="flex gap-1 items-center">
+									<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32">
+										<div class="flex justify-center items-center gap-2">
 											{#if reservation.object_id && checkIfEdited(reservation.object_id)}
 												<div class="h-4 w-4 bg-red-600 rounded-full" />
 											{/if}
-											<div class="text-center">
-												<button
-													on:click={() => {
-														goto(`/dashboard/reservation/detail/${reservation.object_id}`);
-													}}
-													class="dark:text-gray-400 hover:underline"
-													>View
-												</button>
-											</div>
+											<button
+												on:click={() => {
+													goto(`/dashboard/reservation/detail/${reservation.object_id}`);
+												}}
+												class="text-gray-400 p-1 border border-gray-400 dark:border-gray-600 rounded flex gap-2 hover:bg-gray-200 dark:hover:bg-[#2c3440] transition-colors"
+											>
+												View
+											</button>
 										</div>
 									</td>
 								</tr>
 							{/each}
 						{:else}
-							<tr class="border border-gray-200 dark:border-gray-700">
+							<tr>
 								<td 
 									colspan="6" 
-									class="p-3 text-center bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
+									class="p-3 text-center bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800"
 								>
 									No data found
 								</td>
@@ -589,11 +576,10 @@ async function handleExport(selectedExhibitionId: number) {
 					</tbody>
 				</table>
 
-				<!-- Add pagination -->
-				<!-- <Pagination {currentPage} {totalPages} {goToPage} /> -->
-				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>
+		<!-- Pagination -->
+		<Pagination {currentPage} {totalPages} {goToPage} />
 	</div>
 </div>
 {/if}

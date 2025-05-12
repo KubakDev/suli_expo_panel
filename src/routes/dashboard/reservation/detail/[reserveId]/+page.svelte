@@ -16,6 +16,7 @@
 	import { ToastTypeEnum } from '../../../../../models/toastTypeEnum';
 	import * as XLSX from 'xlsx';  
 	import Spinner from '$lib/components/Spinner.svelte';  
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 	let loadedTotalPrice = false;
@@ -566,94 +567,94 @@
 			</div>
 
 			<!-- Table Container -->
-			<div class="overflow-x-auto rounded">
+			<div class="overflow-x-auto rounded shadow-lg">
 				<div class="min-w-full table-responsive">
 					<table class="min-w-full border border-gray-200 dark:border-gray-700">
 						<thead>
 							<tr>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[150px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[150px]">
 									<div class="flex items-center gap-2">
 										<span>Reservation Date</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[180px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[180px]">
 									<div class="flex items-center gap-2">
 										<span>Company Name</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[100px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[100px]">
 									<div class="flex items-center gap-2">
 										<span>Avatar</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[120px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[120px]">
 									<div class="flex items-center gap-2">
 										<span>Country</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[200px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[200px]">
 									<div class="flex items-center gap-2">
 										<span>Passport Images</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[200px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[200px]">
 									<div class="flex items-center gap-2">
 										<span>User Images</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[200px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[200px]">
 									<div class="flex items-center gap-2">
 										<span>Comment</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[180px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[180px]">
 									<div class="flex items-center gap-2">
 										<span>Company Address</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[150px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[150px]">
 									<div class="flex items-center gap-2">
 										<span>Company Phone Number</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex items-center gap-2">
 										<span>Exhibition Type</span>
 									</div>
 								</th>
 								{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-									<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+									<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 										<div class="flex items-center gap-2">
 											<span>Reserved Areas</span>
 										</div>
 									</th>
 								{/if}
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[350px]">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell min-w-[350px]">
 									<div class="flex items-center gap-2">
 										<span>Services</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex items-center gap-2">
 										<span>Change Status</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex items-center gap-2">
 										<span>Extra Discount</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex items-center gap-2">
 										<span>Contract File</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex items-center gap-2">
 										<span>Export Excel Sheet</span>
 									</div>
 								</th>
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
 									<div class="flex items-center gap-2">
 										<span>Total Price</span>
 									</div>
@@ -663,8 +664,8 @@
 						<tbody class="dark:text-gray-300">
 							{#if reservations.length > 0}
 								{#each reservations as reservation}
-									<tr class="border border-gray-200 dark:border-gray-700">
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+									<tr class="border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-[#2a3038]">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											<div>
 												{#if reservation.created_at}
 													{moment.utc(reservation.created_at).local().format('DD-MM-YYYY hh:mm A')}
@@ -673,10 +674,10 @@
 												{/if}
 											</div>
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{reservation.company?.company_name}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{#if reservation.company?.logo_url}
 												<img
 													src={`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_URL}/${reservation.company.logo_url}`}
@@ -687,10 +688,10 @@
 												<span class="text-gray-500">No Image</span>
 											{/if}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{reservation.company?.country}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{#if reservation.company?.passport_image}
 												<div class="flex flex-wrap justify-center gap-2">
 													{#each reservation.company.passport_image as image}
@@ -709,7 +710,7 @@
 												<span class="text-gray-500">No Images</span>
 											{/if}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{#if reservation.company?.user_image}
 												<div class="flex flex-wrap justify-center gap-2">
 													{#each reservation.company.user_image as image}
@@ -729,27 +730,27 @@
 												<span class="text-gray-500">No Images</span>
 											{/if}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{Array.isArray(reservation.comment)
 												? reservation.comment.join(', ')
 												: reservation.comment || 'No Comment'}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{reservation.company?.address}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{reservation.company?.phone_number}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{reservation.exhibition?.exhibition_type}
 										</td>
 										{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
-											<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+											<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 												<div>
 													{#if reservation?.reserved_areas}
 														<div class="space-y-1">
 															{#each JSON.parse(reservation.reserved_areas) as reservedAreaData}
-																<div class="flex justify-between p-2 bg-gray-200 dark:bg-gray-700 rounded">
+																<div class="flex justify-between p-2 bg-gray-200 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded">
 																	<span>{reservedAreaData.area} M</span>
 																	<span>{reservedAreaData.quantity}</span>
 																</div>
@@ -762,11 +763,11 @@
 												</div>
 											</td>
 										{/if}
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{#if reservation?.services && reservation.services.length > 0}
 												<div class="space-y-2">
 													{#each reservation.services as service}
-														<div class="p-2 border rounded bg-gray-50 dark:bg-gray-800">
+														<div class="p-2 border rounded bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]">
 															<p><strong>Service Name:</strong> 
 																{#if reservations[0]?.type === SeatsLayoutTypeEnum.AREAFIELDS}
 																{getServices(service)?.serviceDetail?.languages[0]?.title}
@@ -785,7 +786,7 @@
 												<span class="text-gray-500">No Services</span>
 											{/if}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											<div class="flex flex-col space-y-2">
 												<label class="text-xs text-gray-500 dark:text-gray-400">
 													Once you change the status, it cannot be altered.
@@ -833,7 +834,7 @@
 												{/if}
 											</div>
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											<span
 												class={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
 													reservation.extra_discount_checked
@@ -844,7 +845,7 @@
 												{reservation.extra_discount_checked ? 'Checked' : 'Not Checked'}
 											</span>
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											{#each languages as lang}
 												<Button
 													disabled={!loadedTotalPrice}
@@ -856,16 +857,16 @@
 												</Button>
 											{/each}
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											<button
 												class="text-xs px-3 py-1 hover:underline text-gray-600 dark:text-gray-300"
 												on:click={() => exportFile(reservation)}
 												disabled={loading}
-											 	>
+											>
 												Export to Excel
-										</button>
+											</button>
 										</td>
-										<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											<div>
 												{#if discountedPrice}
 													<p class="line-through text-xs text-red-500">
