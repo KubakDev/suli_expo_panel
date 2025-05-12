@@ -22,6 +22,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { THEME_COLORS } from '$lib/utils/themeColors';
 	export let data;
+	
 	let p_company_name: string | undefined;
 	let p_phone_number: string | undefined;
 	let p_email: string | undefined;
@@ -555,7 +556,7 @@ async function handleExport(selectedExhibitionId: number) {
 												on:click={() => {
 													goto(`/dashboard/reservation/detail/${reservation.object_id}`);
 												}}
-												class="text-gray-400 p-1 border border-gray-400 dark:border-gray-600 rounded flex gap-2 hover:bg-gray-200 dark:hover:bg-[#2c3440] transition-colors"
+												class="text-gray-400 p-1 flex gap-2 hover:bg-gray-200 dark:hover:bg-[#2c3440] transition-colors"
 											>
 												View
 											</button>

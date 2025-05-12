@@ -2,11 +2,13 @@
 	import { onMount } from 'svelte';
 	import { getCompanyData, companyInfo } from '../../../../stores/companyInfo';
 	import { Button, Dropdown } from 'flowbite-svelte';
-	import { IconTableOptions, IconFilter, IconFilterOff, IconX, IconChevronDown } from '@tabler/icons-svelte';
+	import { IconTableOptions, IconFilter, IconFilterOff, IconX, IconChevronDown, IconFilterCancel, IconLayoutGrid } from '@tabler/icons-svelte';
 	import { goto } from '$app/navigation';
 	import Pagination from '$lib/components/pagination/Pagination.svelte';
 	import { page } from '$app/stores';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
+	import { Icon } from 'flowbite-svelte-icons';
 	export let data;
 	let searchQuery: string = '';
 	let searchField: string | null = null;
@@ -151,7 +153,7 @@
 		<div class="flex gap-2">
 			
 			<!-- filtering by company -->
-			<div class="w-44">
+			<div class="w-56 flex flex-col justify-end">
 				<Button
 					class="py-2 font-medium text-center text-base 
 					bg-gray-200 hover:bg-gray-300 text-gray-900 
@@ -159,8 +161,8 @@
 					border border-gray-300 dark:border-gray-600 
 					rounded w-full focus:ring-0 focus:border-gray-300 focus:ring-offset-0"
 				>
-					Filter 
-					<IconChevronDown class="w-3 h-3 ml-2 text-gray-500 dark:text-gray-400" />
+		     	  	Company Information  
+					   <Icon name="chevron-down-solid" class="w-3 h-3 ml-2 text-gray-500 dark:text-gray-400" />
 				</Button>
 				<Dropdown class="z-40 bg-gray-200 dark:bg-gray-700 space-y-3 rounded">
 					<div class="flex items-center p-2">
@@ -178,14 +180,8 @@
 							disabled={!isOptionSelected}
 						/>
 
-						{#if $companyInfo.length > 0}
-							<IconFilter size={24} class="text-gray-500 dark:text-gray-400" />
-						{:else}
-							<button on:click={clearFilters}>
-								<IconFilterOff size={24} class="text-gray-500 dark:text-gray-400" />
-							</button>
-						{/if}
-					</div>
+						<IconLayoutGrid size={24} class="text-gray-500 dark:text-gray-400" />
+				   </div>
 
 					{#each options as option, index}
 						<div class="option px-4 pb-2 text-gray-900 dark:text-gray-100">
@@ -210,7 +206,7 @@
 				</Dropdown>
 			</div>
 
-<div class="">
+			<div class="flex items-center gap-2">
 				<button
 					class="w-11 h-11 flex items-center justify-center 
 					bg-gray-200 hover:bg-gray-300 text-gray-900 
@@ -220,7 +216,7 @@
 					on:click={clearAllFilters}
 					title="Clear All Filters"
 				>
-					<IconX size={24} class="text-red-500" />
+					<IconFilterCancel size={24} class="text-red-500" />
 				</button>
 			</div>
 
@@ -230,13 +226,13 @@
 
 	<!-- table data -->
 	<div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
-		<div class="overflow-x-auto rounded">
+		<div class="overflow-x-auto rounded shadow-lg">
 			<div class="min-w-full table-responsive">
 				<table class="min-w-full border border-gray-200 dark:border-gray-700">
 					<thead>
 						<tr class="border border-gray-200 dark:border-gray-700">
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
@@ -244,7 +240,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>company name</span>
@@ -252,14 +248,14 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>company email </span>
 								</div>
 							</th>
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
 							>
 								<div class="flex items-center gap-2">
 									<span>company phone_number</span>
@@ -267,7 +263,7 @@
 							</th>
 
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
 							>
 								<IconTableOptions class="w-5 h-5 text-gray-500 dark:text-gray-400 mx-auto" />
 							</th>
@@ -277,9 +273,9 @@
 					<tbody class="dark:text-gray-300">
 						{#if $companyInfo.length > 0}
 							{#each $companyInfo as item, index (item.id)}
-								<tr class="border border-gray-200 dark:border-gray-700">
+								<tr class="border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-[#2a3038]">
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+										class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
 									>
 										<div class="flex justify-center">
 											{#if startingSerialNumber != null && startingSerialNumber > 0}
@@ -289,7 +285,7 @@
 									</td>
 
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+										class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
 									>
 										<div>
 											{item?.company_name}
@@ -297,14 +293,14 @@
 									</td>
 
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+										class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
 									>
 										<div>
 											{item?.email}
 										</div>
 									</td>
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+										class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
 									>
 										<div>
 											{item?.phone_number}
@@ -312,7 +308,7 @@
 									</td>
 
 									<td
-										class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell text-center"
+										class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell text-center"
 									>
 										<button
 											on:click={() => {
@@ -335,10 +331,10 @@
 					</tbody>
 				</table>
 
-				<!-- Add pagination -->
-				<Pagination {currentPage} {totalPages} {goToPage} />
 			</div>
 		</div>
+		<!-- Add pagination -->
+		<Pagination {currentPage} {totalPages} {goToPage} />
 	</div>
 </div>
 {/if}
