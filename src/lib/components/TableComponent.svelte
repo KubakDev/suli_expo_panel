@@ -22,11 +22,11 @@
 <div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
 	<div class="overflow-x-auto rounded-lg shadow-lg">
 		<div class="min-w-full table-responsive">
-			<table class="min-w-full border-collapse dark:border-gray-800">
+			<table class="min-w-full border-collapse">
 				<thead>
 					<tr>
 						<th
-							class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10"
+							class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10"
 						>
 							<div class="flex justify-center items-center gap-2">
 								<span>#</span>
@@ -35,7 +35,7 @@
 
 						{#each columnTitle as column}
 							<th
-								class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell"
+								class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>{column.header}</span>
@@ -44,7 +44,7 @@
 						{/each}
 
 						<th
-							class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-800 table-cell"
+							class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center gap-2">
 								<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />

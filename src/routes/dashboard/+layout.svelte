@@ -53,7 +53,7 @@
 
 <div class="app" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
-		<Navbar class="bg-white dark:bg-[{THEME_COLORS.DARK.NAVBAR}] border-b border-gray-200 dark:border-gray-800 shadow-lg" let:hidden let:toggle>
+		<Navbar class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-b border-gray-200 dark:border-gray-800 shadow-lg" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
 				<span class="self-center whitespace-nowrap text-2xl font-bold text-gray-800 dark:text-gray-100">
 					SulyExpo
@@ -81,7 +81,7 @@
 				divClass="w-full lg:block lg:w-auto transition-all duration-300"
 				nonActiveClass="hover:text-[#E5B167] dark:hover:text-[#E5B167] font-medium transition-colors"
 				activeClass="text-[#E5B167] dark:text-[#E5B167] font-semibold"
-				ulClass="flex flex-col items-stretch p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] lg:flex-row lg:items-center lg:space-x-6 lg:space-y-0 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-800"
+				ulClass="flex flex-col items-stretch p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] lg:flex-row lg:items-center lg:space-x-6 lg:space-y-0 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-800"
 				class="order-1"
 			>
 				{#each data.pages as page}
@@ -94,7 +94,7 @@
 								<span class="transition-colors ">{page.title}</span>
 								<Chevron class="ml-2 transition-transform group-hover:rotate-180 text-gray-600 dark:text-gray-300" />
 							</button>
-							<Dropdown  class="absolute left-0 mt-2 w-64 bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-800"
+							<Dropdown  class="absolute left-0 mt-2 w-64 bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-800"
 							>
 								{#each page.children as item}
 									<DropdownItem

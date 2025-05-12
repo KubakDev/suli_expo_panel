@@ -286,7 +286,7 @@
 							<Fileupload
 								on:change={handleFileUploadThumbnail}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 					</Label>
@@ -304,7 +304,7 @@
 						<div>
 							<Label class="block mb-4">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Publication Date</span>
-								<Input type="date" bind:value={newsData.created_at} class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] dark:text-white dark:border-gray-600" />
+								<Input type="date" bind:value={newsData.created_at} class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:text-white dark:border-gray-600" />
 							</Label>
 						</div>
 					</div>

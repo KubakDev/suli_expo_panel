@@ -201,7 +201,7 @@
 							<Fileupload
 								on:change={handleFileUpload}
 								accept=".jpg, .jpeg, .png, .svg"
-								class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] dark:border-gray-600 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !promoData.thumbnail.trim()}
