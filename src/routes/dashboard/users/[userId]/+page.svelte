@@ -4,6 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { Input, Label, Select } from 'flowbite-svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
+	
 	interface User {
 		id: number;
 		created_at: string;
@@ -85,95 +87,103 @@
 {:else}
 <div style="min-height: calc(100vh - 160px);">
 	<div class="max-w-screen-2xl mx-auto py-10">
-		<div class="border dark:border-gray-700 p-4 rounded border">
+		<div class="border dark:border-gray-700 p-4 rounded-lg shadow-lg bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 			<div class="flex justify-center py-10">
 				<h1 class="text-2xl font-bold text-gray-600 dark:text-gray-300">Update User Data</h1>
 			</div>
 
 			<div class="grid lg:grid-cols-3 gap-4 px-4">
 				<div class="col-span-1">
-					<Label for="name" class="mb-2">FullName</Label>
+					<Label for="name" class="mb-2 text-gray-700 dark:text-gray-300">FullName</Label>
 					<Input
 						type="text"
 						placeholder="Enter full name"
 						id="name"
 						name="name"
 						bind:value={user.name}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="companyName" class="mb-2">Company Name</Label>
+					<Label for="companyName" class="mb-2 text-gray-700 dark:text-gray-300">Company Name</Label>
 					<Input
 						type="text"
 						placeholder="Enter company name"
 						id="companyName"
 						name="companyName"
 						bind:value={user.companyName}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="jobGrade" class="mb-2">Job Grade</Label>
+					<Label for="jobGrade" class="mb-2 text-gray-700 dark:text-gray-300">Job Grade</Label>
 					<Input
 						type="text"
 						placeholder="Enter job grade"
 						id="jobGrade"
 						name="jobGrade"
 						bind:value={user.jobGrade}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="fieldWork" class="mb-2">Field Work</Label>
+					<Label for="fieldWork" class="mb-2 text-gray-700 dark:text-gray-300">Field Work</Label>
 					<Input
 						type="text"
 						placeholder="Enter field Work"
 						id="fieldWork"
 						name="fieldWork"
 						bind:value={user.fieldWork}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="phoneNumber" class="mb-2">Phone Number</Label>
+					<Label for="phoneNumber" class="mb-2 text-gray-700 dark:text-gray-300">Phone Number</Label>
 					<Input
 						type="text"
 						placeholder="Enter phone number"
 						id="phoneNumber"
 						name="phoneNumber"
 						bind:value={user.phoneNumber}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="email" class="mb-2">Email</Label>
+					<Label for="email" class="mb-2 text-gray-700 dark:text-gray-300">Email</Label>
 					<Input
 						type="text"
 						placeholder="Enter email"
 						id="email"
 						name="email"
 						bind:value={user.email}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="country" class="mb-2">Country</Label>
+					<Label for="country" class="mb-2 text-gray-700 dark:text-gray-300">Country</Label>
 					<Input
 						type="text"
 						placeholder="Enter country"
 						id="country"
 						name="country"
 						bind:value={user.country}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="city" class="mb-2">City</Label>
+					<Label for="city" class="mb-2 text-gray-700 dark:text-gray-300">City</Label>
 					<Input
 						type="text"
 						placeholder="Enter city"
 						id="city"
 						name="city"
 						bind:value={user.city}
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
 					/>
 				</div>
 				<div class="col-span-1">
-					<Label for="hotelBooking" class="mb-2">Hotel Booking</Label>
-					<Select bind:value={user.hotelBooking}>
+					<Label for="hotelBooking" class="mb-2 text-gray-700 dark:text-gray-300">Hotel Booking</Label>
+					<Select bind:value={user.hotelBooking} class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
 						<option value="Yes">Yes</option>
 						<option value="No">No</option>
 					</Select>
@@ -183,7 +193,7 @@
 				<button
 					on:click|preventDefault={formSubmit}
 					type="submit"
-					class="bg-primary-dark hover:bg-gray-50 hover:text-primary-dark text-white font-bold py-2 px-4 border border-primary-50 rounded"
+					class="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-200 border border-primary-600"
 				>
 					Update
 				</button>

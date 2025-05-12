@@ -2,6 +2,7 @@
 	import { TabItem, Tabs } from 'flowbite-svelte';
 	import { goto } from '$app/navigation';
 	import { Modal, Button } from 'flowbite-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 	
 	export let data;
 	let userId = 1;
@@ -140,19 +141,19 @@
 	fetchUserProfile();
 </script>
  
-<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 dark:text-gray-100 rounded w-full max-w-5xl mx-auto">
+<form on:submit|preventDefault={handleSubmit} class="border dark:border-gray-700 dark:text-gray-100 rounded-lg shadow-lg bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] w-full max-w-5xl mx-auto">
 	<div class="container mx-auto p-4 flex flex-col justify-center">
-		<Tabs class="w-full">
-			<TabItem title="EN" open>
+		<Tabs contentClass="dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]" style="pill" class="p-4">
+			 <TabItem title="EN" open>
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4 w-full"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded-lg p-4 w-full bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]"
 				>
-					<p class="text-center py-2 font-semibold">Add form data for EN language</p>
+					<p class="text-center py-2 font-semibold text-gray-700 dark:text-gray-200">Add form data for EN language</p>
 					<div class="form-group">
-						<label for="title-en">Title</label>
+						<label for="title-en" class="text-gray-700 dark:text-gray-300">Title</label>
 						<input
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="title-en"
 							type="text"
 							bind:value={userProfile.title.en}
@@ -160,9 +161,9 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="email-subject-en">Email Subject</label>
+						<label for="email-subject-en" class="text-gray-700 dark:text-gray-300">Email Subject</label>
 						<input
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="email-subject-en"
 							type="text"
 							bind:value={userProfile.emailSubject.en}
@@ -170,9 +171,9 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="email-description-en">Email Description</label>
+						<label for="email-description-en" class="text-gray-700 dark:text-gray-300">Email Description</label>
 						<textarea
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="email-description-en"
 							bind:value={userProfile.emailDescription.en}
 							placeholder="Enter email description in English"
@@ -183,13 +184,13 @@
 			<TabItem title="AR">
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4 w-full"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded-lg p-4 w-full bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]"
 				>
-					<p class="text-center py-2 font-semibold">Add data for AR language</p>
+					<p class="text-center py-2 font-semibold text-gray-700 dark:text-gray-200">Add data for AR language</p>
 					<div class="form-group">
-						<label for="title-ar">Title</label>
+						<label for="title-ar" class="text-gray-700 dark:text-gray-300">Title</label>
 						<input
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="title-ar"
 							type="text"
 							bind:value={userProfile.title.ar}
@@ -197,9 +198,9 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="email-subject-ar">Email Subject</label>
+						<label for="email-subject-ar" class="text-gray-700 dark:text-gray-300">Email Subject</label>
 						<input
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="email-subject-ar"
 							type="text"
 							bind:value={userProfile.emailSubject.ar}
@@ -207,9 +208,9 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="email-description-ar">Email Description</label>
+						<label for="email-description-ar" class="text-gray-700 dark:text-gray-300">Email Description</label>
 						<textarea
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="email-description-ar"
 							bind:value={userProfile.emailDescription.ar}
 							placeholder="Enter email description in Arabic"
@@ -220,13 +221,13 @@
 			<TabItem title="CKB">
 				<form
 					on:submit|preventDefault={handleSubmit}
-					class="border dark:border-gray-700 dark:text-gray-100 rounded p-4 w-full"
+					class="border dark:border-gray-700 dark:text-gray-100 rounded-lg p-4 w-full bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]"
 				>
-					<p class="text-center py-2 font-semibold">Add data for CKB language</p>
+					<p class="text-center py-2 font-semibold text-gray-700 dark:text-gray-200">Add data for CKB language</p>
 					<div class="form-group">
-						<label for="title-ckb">Title</label>
+						<label for="title-ckb" class="text-gray-700 dark:text-gray-300">Title</label>
 						<input
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="title-ckb"
 							type="text"
 							bind:value={userProfile.title.ckb}
@@ -234,9 +235,9 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="email-subject-ckb">Email Subject</label>
+						<label for="email-subject-ckb" class="text-gray-700 dark:text-gray-300">Email Subject</label>
 						<input
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="email-subject-ckb"
 							type="text"
 							bind:value={userProfile.emailSubject.ckb}
@@ -244,9 +245,9 @@
 						/>
 					</div>
 					<div class="form-group">
-						<label for="email-description-ckb">Email Description</label>
+						<label for="email-description-ckb" class="text-gray-700 dark:text-gray-300">Email Description</label>
 						<textarea
-							class="rounded dark:text-gray-900 w-full"
+							class="rounded bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 w-full"
 							id="email-description-ckb"
 							bind:value={userProfile.emailDescription.ckb}
 							placeholder="Enter email description in Kurdish"
@@ -257,14 +258,14 @@
 		</Tabs>
 		
 		<div class="my-6 w-full">
-			<h2 class="text-xl font-bold text-center">Field Settings</h2>
+			<h2 class="text-xl font-bold text-center text-gray-700 dark:text-gray-200">Field Settings</h2>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
-				<div class="p-6 border dark:border-gray-700 rounded shadow-sm">
-					<h3 class="text-lg font-bold mb-3">Show/Hide Fields</h3>
-					<p class="text-sm text-gray-500 mb-3">Hiding a field will also make it non-required</p>
+				<div class="p-6 border dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]">
+					<h3 class="text-lg font-bold mb-3 text-gray-700 dark:text-gray-200">Show/Hide Fields</h3>
+					<p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Hiding a field will also make it non-required</p>
 					{#each Object.keys(showFields) as key}
 						<div class="form-group mx-2 mb-3">
-							<label class="flex items-center">
+							<label class="flex items-center text-gray-700 dark:text-gray-300">
 								<input
 									class:active-checkbox={showFields[key]}
 									class="mr-3"
@@ -278,12 +279,12 @@
 					{/each}
 				</div>
 		
-				<div class="p-6 border dark:border-gray-700 rounded shadow-sm">
-					<h3 class="text-lg font-bold mb-3">Required Fields</h3>
-					<p class="text-sm text-gray-500 mb-3">Note: You can only make visible fields required</p>
+				<div class="p-6 border dark:border-gray-700 rounded-lg shadow-sm bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]">
+					<h3 class="text-lg font-bold mb-3 text-gray-700 dark:text-gray-200">Required Fields</h3>
+					<p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Note: You can only make visible fields required</p>
 					{#each Object.keys(includeFields) as key}
 						<div class="form-group mx-2 mb-3">
-							<label class="flex items-center" class:opacity-50={!showFields[key]}>
+							<label class="flex items-center text-gray-700 dark:text-gray-300" class:opacity-50={!showFields[key]}>
 								<input
 									class:active-checkbox={includeFields[key]}
 									class="mr-3"
@@ -293,7 +294,7 @@
 								/>
 								<span>{key.charAt(0).toUpperCase() + key.slice(1)} is Required</span>
 								{#if !showFields[key]}
-									<span class="ml-2 text-xs text-gray-500">(Field Hidden)</span>
+									<span class="ml-2 text-xs text-gray-500 dark:text-gray-400">(Field Hidden)</span>
 								{/if}
 							</label>
 						</div>
@@ -303,7 +304,7 @@
 		</div>
 		<div class="border-t border-gray-200 dark:border-gray-700" />
 		<div class="flex justify-end w-full mt-5">
-			<Button type="submit" class="px-8 text-md">Submit</Button>
+			<Button type="submit" class="px-8 text-md bg-primary-600 hover:bg-primary-700 text-white">Submit</Button>
 		</div>
 	</div>
 </form>
@@ -336,47 +337,7 @@
 		padding: 0.75rem;
 		border: 1px solid #ccc;
 		border-radius: 4px;
-		background-color: white;
-		color: black;
 		font-size: 1rem;
-	}
-
-	:global(.dark) .form-group input[type='text'],
-	:global(.dark) .form-group input[type='email'],
-	:global(.dark) .form-group textarea {
-		background-color: #374151;
-		color: #e5e7eb;
-		border-color: #4B5563;
-	}
-
-	:global(.dark) .form-group input::placeholder,
-	:global(.dark) .form-group textarea::placeholder {
-		color: #9ca3af;
-	}
-
-	button {
-		align-self: flex-end;
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 4px;
-		background-color: rgb(var(--color-primary-500));
-		color: white;
-		cursor: pointer;
-		transition: background-color 0.3s;
-		font-weight: 600;
-	}
-
-	button:hover {
-		background-color: rgb(var(--color-primary-600));
-	}
-
-	:global(.dark) button {
-		background-color: rgb(var(--color-primary-500));
-		color: white;
-	}
-
-	:global(.dark) button:hover {
-		background-color: rgb(var(--color-primary-600));
 	}
 
 	input[type='checkbox'].active-checkbox {
