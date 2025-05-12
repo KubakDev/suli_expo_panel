@@ -1,67 +1,35 @@
 <script lang="ts">
+	import { THEME_COLORS } from '$lib/utils/themeColors';
+	import { IconChevronLeft, IconChevronRight } from '@tabler/icons-svelte';
 	export let currentPage: number;
 	export let totalPages: number;
 	export let goToPage: (page: number) => void;
 </script>
 
 <div class="flex justify-end items-center px-4 lg:px-0">
-
-	<div class="py-5 flex justify-center items-center">
+	<div class="py-5 flex justify-center items-center gap-2">
 		<button
 			on:click={() => goToPage(currentPage - 1)}
 			disabled={currentPage === 1}
-			class="border border-gray-300 bg-white dark:bg-[#e9ecefd2] hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer text-black py-2 px-4 rounded-l-md transition duration-200 ease-in-out"
+			class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#2D3748] hover:bg-gray-100 dark:hover:bg-[#3A4556] cursor-pointer text-gray-600 dark:text-gray-300 py-2 px-2 rounded-md transition duration-200 ease-in-out flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+			aria-label="Previous page"
 		>
-			<div>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 1024 1024"
-					class="icon"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="#65686c"
-				>
-					<g id="SVGRepo_bgCarrier" stroke-width="0" />
-					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-					<g id="SVGRepo_iconCarrier">
-						<path
-							d="M768 903.232l-50.432 56.768L256 512l461.568-448 50.432 56.768L364.928 512z"
-							fill="#65686c"
-						/>
-					</g>
-				</svg>
-			</div>
+			<IconChevronLeft size={18} stroke={1.5} />
 		</button>
-		<div class="flex items-center justify-center text-gray-800 dark:text-gray-200">
-			<span class="text-gray-700 mx-2 font-semibold">{currentPage} </span> of
-			<span class="text-gray-400 mx-2 font-semibold"> {totalPages}</span>
+		
+		<div class="flex items-center justify-center py-1 px-3 rounded-md bg-white dark:bg-[#2D3748] border border-gray-300 dark:border-gray-600">
+			<span class="text-gray-700 dark:text-gray-200 mx-1 font-medium">{currentPage}</span>
+			<span class="text-gray-500 dark:text-gray-400 mx-1">of</span>
+			<span class="text-gray-700 dark:text-gray-200 mx-1 font-medium">{totalPages}</span>
 		</div>
+		
 		<button
 			on:click={() => goToPage(currentPage + 1)}
-			class="border border-gray-300 bg-white dark:bg-[#e9ecefd2] hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer text-black py-2 px-4 rounded-r-md transition duration-200 ease-in-out"
-			disabled={currentPage == totalPages}
+			disabled={currentPage === totalPages || totalPages === 0}
+			class="border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#2D3748] hover:bg-gray-100 dark:hover:bg-[#3A4556] cursor-pointer text-gray-600 dark:text-gray-300 py-2 px-2 rounded-md transition duration-200 ease-in-out flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+			aria-label="Next page"
 		>
-			<div>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 1024 1024"
-					class="icon"
-					version="1.1"
-					xmlns="http://www.w3.org/2000/svg"
-					fill="#000000"
-				>
-					<g id="SVGRepo_bgCarrier" stroke-width="0" />
-					<g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-					<g id="SVGRepo_iconCarrier">
-						<path
-							d="M256 120.768L306.432 64 768 512l-461.568 448L256 903.232 659.072 512z"
-							fill="#65686c"
-						/>
-					</g>
-				</svg>
-			</div>
+			<IconChevronRight size={18} stroke={1.5} />
 		</button>
 	</div>
 </div>

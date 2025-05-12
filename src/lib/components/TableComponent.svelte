@@ -3,6 +3,7 @@
 	import DeleteModal from './DeleteModal.svelte';
 	// Import Tabler icons
 	import { IconGridDots, IconEdit } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let calculateIndex: (index: number) => number;
 	export let handleDelete: (id: number) => Promise<void>;
@@ -19,13 +20,13 @@
 </script>
 
 <div class="max-w-screen-2xl mx-auto px-4 lg:px-0">
-	<div class="overflow-x-auto rounded">
+	<div class="overflow-x-auto rounded-lg shadow-lg">
 		<div class="min-w-full table-responsive">
-			<table class="min-w-full border-collapse dark:border-gray-700">
+			<table class="min-w-full border-collapse dark:border-gray-800">
 				<thead>
 					<tr>
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10"
+							class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10"
 						>
 							<div class="flex justify-center items-center gap-2">
 								<span>#</span>
@@ -34,7 +35,7 @@
 
 						{#each columnTitle as column}
 							<th
-								class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+								class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<span>{column.header}</span>
@@ -43,7 +44,7 @@
 						{/each}
 
 						<th
-							class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell"
+							class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-800 table-cell"
 						>
 							<div class="flex items-center gap-2">
 								<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
@@ -55,8 +56,8 @@
 
 				<tbody>
 					{#each data as item, index (item.id)}
-						<tr>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+						<tr class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<span class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold"
 									>{calculateIndex(index)}</span
 								>
@@ -64,7 +65,7 @@
 
 							{#each columnTitle as column}
 								<td
-									class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
+									class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell"
 								>
 									<div>
 										{#if column.type === 'image'}
@@ -139,14 +140,14 @@
 							{/each}
 
 							<td
-								class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell w-32"
+								class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32"
 							>
 								<div class="flex justify-center items-center gap-2">
 									<button
 										on:click={() => {
 											goto(`/dashboard/${pageName}/${item.id}`);
 										}}
-										class="text-gray-400 p-1 border border-gray-400 rounded flex gap-2"
+										class="text-gray-400 p-1 border border-gray-500 dark:border-gray-600 rounded flex gap-2 hover:bg-gray-200 dark:hover:bg-[#2c3440] transition-colors"
 									>
 										Edit
 										<IconEdit size={20} class="text-green-500" />

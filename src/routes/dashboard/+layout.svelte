@@ -16,6 +16,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import Button from '$lib/components/Button.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
+	import { IconLogout } from '@tabler/icons-svelte';
 
 	export let data: PageData;
 	let activeUrl: string;
@@ -51,7 +53,7 @@
 
 <div class="app" style={getTheme()}>
 	{#if !$page.url.pathname.startsWith('/dashboard/seats_ui')}
-		<Navbar class="bg-white dark:bg-[#1f2937] border-b border-gray-200 dark:border-gray-700 shadow-lg" let:hidden let:toggle>
+		<Navbar class="bg-white dark:bg-[{THEME_COLORS.DARK.NAVBAR}] border-b border-gray-200 dark:border-gray-800 shadow-lg" let:hidden let:toggle>
 			<NavBrand href="/dashboard">
 				<span class="self-center whitespace-nowrap text-2xl font-bold text-gray-800 dark:text-gray-100">
 					SulyExpo
@@ -67,20 +69,7 @@
 					>
 						<span class="inline-flex items-center gap-2">
 							Logout
-							<svg
-								class="w-5 h-5"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-								/>
-							</svg>
+							<IconLogout size={20} />
 						</span>
 					</button>
 				</form>
@@ -90,22 +79,22 @@
 			<NavUl
 				{hidden}
 				divClass="w-full lg:block lg:w-auto transition-all duration-300"
-				nonActiveClass="text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] font-medium transition-colors"
+				nonActiveClass="hover:text-[#E5B167] dark:hover:text-[#E5B167] font-medium transition-colors"
 				activeClass="text-[#E5B167] dark:text-[#E5B167] font-semibold"
-				ulClass="flex flex-col items-stretch p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-gray-800 lg:flex-row lg:items-center lg:space-x-6 lg:space-y-0 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-700"
+				ulClass="flex flex-col items-stretch p-4 mt-4 space-y-2 rounded-lg bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] lg:flex-row lg:items-center lg:space-x-6 lg:space-y-0 lg:mt-0 lg:text-sm lg:font-medium border border-gray-200 dark:border-gray-800"
 				class="order-1"
 			>
 				{#each data.pages as page}
 					{#if page.children && page.children.length > 0}
 						<div class="relative group h-full flex items-center">
 							<button
+							  style={activeUrl === page.url ? `color: ${THEME_COLORS.TEXT.ACTIVE};` : 'color: var(--text-light); @media (prefers-color-scheme: dark) { color: var(--text-dark); }'}
 								class="flex items-center justify-between w-full px-3 py-2 transition-colors"
 							>
-								<span class="text-gray-600 dark:text-gray-600 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors">{page.title}</span>
+								<span class="transition-colors ">{page.title}</span>
 								<Chevron class="ml-2 transition-transform group-hover:rotate-180 text-gray-600 dark:text-gray-300" />
 							</button>
-							<Dropdown 
-								class="absolute left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-700"
+							<Dropdown  class="absolute left-0 mt-2 w-64 bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 border border-gray-200 dark:border-gray-800"
 							>
 								{#each page.children as item}
 									<DropdownItem
@@ -113,7 +102,7 @@
 											updateActiveUrl(item.url);
 											goto(item.url);
 										}}
-										class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors whitespace-normal"
+										class="px-4 py-2 hover:text-[#E5B167] dark:hover:text-[#E5B167] transition-colors whitespace-normal"
 									>
 										{item.title}
 									</DropdownItem>
@@ -128,7 +117,7 @@
 								goto(page.url + '');
 							}}
 							active={activeUrl === page.url}
-							style={activeUrl === page.url ? 'color: #E5B167;' : 'color: var(--text-light); @media (prefers-color-scheme: dark) { color: var(--text-dark); }'}
+							style={activeUrl === page.url ? `color: ${THEME_COLORS.TEXT.ACTIVE};` : 'color: var(--text-light); @media (prefers-color-scheme: dark) { color: var(--text-dark); }'}
 						>
 							{page.title}
 						</NavLi>
@@ -138,7 +127,7 @@
 		</Navbar>
 	{/if}
 
-	<main class="flex-1 bg-white dark:bg-[#1f2937] transition-colors duration-300">
+	<main class="flex-1 bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] transition-colors duration-300">
 		<slot />
 	</main>
 </div>
