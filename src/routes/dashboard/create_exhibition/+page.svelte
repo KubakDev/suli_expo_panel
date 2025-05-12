@@ -452,7 +452,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-[#222831]">
+<div class="min-h-screen bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">New exhibition has been created successfully!</span>
@@ -466,7 +466,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Image</span>
 						<div class="relative">
@@ -489,7 +489,7 @@
 							<Fileupload
 								on:change={handleFileUploadThumbnail}
 								accept=".jpg, .jpeg, .png"
-								class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !exhibitionsObject.thumbnail.trim()}
@@ -499,7 +499,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Map Image</span>
 						<div class="relative">
@@ -522,7 +522,7 @@
 							<Fileupload
 								on:change={handleFileUploadMap}
 								accept=".jpg, .jpeg, .png .svg"
-								class="dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
+								class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white"
 								lang={selectedLanguageTab}
 							/>
 						</div>
@@ -534,12 +534,12 @@
 		<!-- Date section combined in a single row -->
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-12">
-				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800">
 					<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
 						<div class="md:col-span-1">
 							<Label class="block mb-2">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Exhibition Type</span>
-								<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white" />
+								<Input bind:value={exhibitionsObject.exhibition_type} placeholder="Enter Exhibition Type" class="w-full dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white" />
 								{#if isFormSubmitted && !exhibitionsObject.exhibition_type.trim()}
 									<p class="error-message mt-2">Please enter an exhibition type</p>
 								{/if}
@@ -548,13 +548,13 @@
 						<div class="md:col-span-1">
 							<Label class="block mb-2">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Start Date</span>
-								<Input type="date" bind:value={exhibitionsObject.start_date} class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white" />
+								<Input type="date" bind:value={exhibitionsObject.start_date} class="w-full dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white" />
 							</Label>
 						</div>
 						<div class="md:col-span-1">
 							<Label class="block mb-2">
 								<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">End Date</span>
-								<Input type="date" bind:value={exhibitionsObject.end_date} class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white" />
+								<Input type="date" bind:value={exhibitionsObject.end_date} class="w-full dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white" />
 							</Label>
 						</div>
 						<div class="md:col-span-1">
@@ -566,14 +566,14 @@
 										bind:value={exhibitionsObject.country_number}
 										placeholder="Country #"
 										min="0"
-										class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
+										class="w-full dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white"
 									/>
 									<Input
 										type="number"
 										bind:value={exhibitionsObject.company_number}
 										placeholder="Company #"
 										min="0"
-										class="w-full dark:bg-[#323a45] dark:border-gray-700 dark:text-white"
+										class="w-full dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white"
 									/>
 								</div>
 								{#if isFormSubmitted && (!exhibitionsObject.country_number || !exhibitionsObject.company_number)}
@@ -588,9 +588,9 @@
 
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
 					<form>
-						<Tabs contentClass="dark:text-white bg-white dark:bg-[#2c333d]" style="pill" class="p-4">
+						<Tabs contentClass="dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]" style="pill" class="p-4">
 							{#each exhibitionsDataLang as langData}
 								<TabItem
 									open={langData.language == selectedLanguageTab}
@@ -615,7 +615,7 @@
 
 										<!-- PDF and Brochure Files -->
 										<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 												<Label class="block">
 													<div class="flex items-center justify-between mb-2">
 														<span class="font-medium text-gray-700 dark:text-gray-300">PDF File</span>
@@ -642,7 +642,7 @@
 												</Label>
 											</div>
 
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 												<Label class="block">
 													<div class="flex items-center justify-between mb-2">
 														<span class="font-medium text-gray-700 dark:text-gray-300">Brochure</span>
@@ -658,7 +658,7 @@
 												</Label>
 											</div>
 
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 												<Label class="block">
 													<div class="flex items-center justify-between mb-2">
 														<span class="font-medium text-gray-700 dark:text-gray-300">Contract PDF</span>
@@ -674,7 +674,7 @@
 
 										<!-- Video and Map Section -->
 										<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">YouTube Video Link</span>
 													<Input
@@ -688,7 +688,7 @@
 													{/if}
 												</Label>
 											</div>
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Map Title</span>
 													<Input
@@ -706,7 +706,7 @@
 
 										<!-- Location Section -->
 										<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location Title</span>
 													<Input
@@ -720,7 +720,7 @@
 													{/if}
 												</Label>
 											</div>
-											<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg md:col-span-2">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg md:col-span-2">
 												<Label class="block">
 													<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Location Address</span>
 													<Input
@@ -737,7 +737,7 @@
 										</div>
 
 										<!-- Title Section -->
-										<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Exhibition Title</span>
 												<Input
@@ -757,7 +757,7 @@
 										<!-- Accordion Sections for Story and Description -->
 										<div class="space-y-6 mb-10">
 											<!-- Story Accordion -->
-											<div class="bg-gray-50 dark:bg-[#323a45] rounded-lg border border-gray-200 dark:border-gray-800">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-lg border border-gray-200 dark:border-gray-800">
 												<button class="w-full flex justify-between items-center p-5 text-left" 
 													on:click={(e) => {
 														e.preventDefault();
@@ -784,7 +784,7 @@
 											</div>
 											
 											<!-- Description Accordion -->
-											<div class="bg-gray-50 dark:bg-[#323a45] rounded-lg border border-gray-200 dark:border-gray-800">
+											<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] rounded-lg border border-gray-200 dark:border-gray-800">
 												<button class="w-full flex justify-between items-center p-5 text-left" 
 													on:click={(e) => {
 														e.preventDefault();
@@ -817,14 +817,14 @@
 					</form>
 
 					<div class="border-t dark:border-gray-800 mt-2 pt-6 px-6">
-						<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
+						<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-5 rounded-lg mb-8">
 							<Label class="block">
 								<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Sponsor Title</span>
 								<Input
 									type="text"
 									bind:value={exhibitionsObject.sponsor_title}
 									placeholder="Enter a title for sponsor"
-									class="w-full dark:bg-[#2c333d] dark:border-gray-700 dark:text-white"
+									class="w-full dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] dark:border-gray-700 dark:text-white"
 								/>
 								{#if isFormSubmitted && !exhibitionsObject.sponsor_title.trim()}
 									<p class="error-message mt-2">Please enter a sponsor title</p>
@@ -837,7 +837,7 @@
 							<div>
 								<Label class="block mb-4">
 									<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Exhibition Images</span>
-									<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 										<FileUploadComponent on:imageFilesChanges={getAllImageFile} />
 										{#if isFormSubmitted && sliderImagesFile.length === 0}
 											<p class="error-message mt-2">
@@ -852,7 +852,7 @@
 							<div>
 								<Label class="block mb-4">
 									<span class="font-medium text-gray-700 dark:text-gray-300 block mb-3">Sponsor Images</span>
-									<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg">
+									<div class="bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] p-5 rounded-lg">
 										<FileUploadComponent on:imageFilesChanges={getAllImageFile_sponsor} />
 										{#if isFormSubmitted && sliderImagesFile_sponsor.length === 0}
 											<p class="error-message mt-2">
@@ -879,7 +879,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-800 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-800 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">

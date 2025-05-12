@@ -106,7 +106,7 @@
 					<Spinner size="h-16 w-16" color="border-gray-500" />
 				</div>
 				{:else}
-<div class="max-w-screen-2xl mx-auto py-10 bg-white dark:bg-[#222831]">
+<div class="max-w-screen-2xl mx-auto py-10 bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	<!-- insert new data -->
 	<InsertButton insertData={createExhibition} />
 
@@ -119,37 +119,37 @@
 				<table class="min-w-full border-collapse border border-gray-200 dark:border-gray-800">
 					<thead>
 						<tr>
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10">
 								<div class="flex justify-center items-center gap-2">
 									<span>#</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell w-10">
 								<div class="flex justify-center items-center gap-2">
 									<span>sort</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 								 <span>Thumbnail</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 								 <span>Title</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 								 <span>Short description</span>
 								</div>
 							</th>
 
-							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#2c333d] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
+							<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex items-center gap-2">
 									<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
 									<span>Actions</span>
@@ -165,12 +165,12 @@
 					>
 						{#each items as item, index (item.id)}
 							<tr animate:flip={{ duration: flipDurationMs }}>
-								<td class="p-3 bg-gray-10 dark:bg-[#323a45] border border-gray-200 dark:border-gray-800 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold"
 										>{index + 1}</span
 									>
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[#323a45] border border-gray-200 dark:border-gray-800 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border border-gray-200 dark:border-gray-800 table-cell">
 									<span class="flex justify-center text-gray-700 dark:text-gray-200 font-semibold">
 										<button on:click={() => swapItems(index, index - 1)} disabled={index === 0}>
 											<IconArrowUp size={20} class="text-gray-400" />
@@ -180,7 +180,7 @@
 										</button>
 									</span>
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[#323a45] border border-gray-200 dark:border-gray-800 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border border-gray-200 dark:border-gray-800 table-cell">
 									<div class="flex justify-center">
 										<img
 											class="w-20 h-20 object-cover rounded"
@@ -192,14 +192,14 @@
 									</div>
 								</td>
 								{#if item.exhibition_languages}
-									<td class="p-3 bg-gray-10 dark:bg-[#323a45] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell">
+									<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.exhibition_languages as lang}
 											<div>
 												{lang.title?.slice(0, 50)}
 											</div>
 										{/each}
 									</td>
-									<td class="p-3 bg-gray-10 dark:bg-[#323a45] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell">
+									<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-800 table-cell">
 										{#each item.exhibition_languages as lang}
 											<div>
 												{lang.description?.slice(0, 40)}
@@ -208,7 +208,7 @@
 									</td>
 								{/if}
 								<td
-									class="p-3 bg-gray-10 dark:bg-[#323a45] border border-gray-200 dark:border-gray-800 table-cell w-32"
+									class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] border border-gray-200 dark:border-gray-800 table-cell w-32"
 								>
 									<div class="flex justify-center items-center gap-2">
 										<button

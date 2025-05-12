@@ -129,7 +129,7 @@
 	}
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+<div class="min-h-screen bg-gray-50 dark:bg-[#222831]">
 	{#if showToast}
 		<div class="z-40 bg-green-500 text-white text-center py-3 fixed bottom-0 left-0 right-0 shadow-lg flex items-center justify-center">
 			<span class="font-medium">Carousel created successfully!</span>
@@ -143,7 +143,7 @@
 
 		<div class="grid lg:grid-cols-12 gap-6 mb-8">
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800 h-full">
 					<Label class="block mb-4">
 						<span class="block mb-2 text-gray-700 dark:text-gray-300 font-medium">Carousel Image</span>
 						<div class="relative">
@@ -166,7 +166,7 @@
 							<Fileupload
 								on:change={handleFileUpload}
 								accept=".jpg, .jpeg, .png, .svg"
-								class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 							/>
 						</div>
 						{#if isFormSubmitted && !carouselObject.image.trim()}
@@ -177,7 +177,7 @@
 			</div>
 			
 			<div class="lg:col-span-6">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-800 h-full">
 					<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 						<div>
 							<Label class="block mb-4">
@@ -186,7 +186,7 @@
 									bind:value={carouselObject.type}
 									id="type"
 									name="type"
-									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+									class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 								>
 									<option value="Internal">Internal</option>
 									<option value="External">External</option>
@@ -201,7 +201,7 @@
 									type="text"
 									bind:value={carouselObject.link}
 									placeholder="Enter link" 
-									class="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+									class="dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 								/>
 								{#if isFormSubmitted && !carouselObject.link}
 									<p class="error-message mt-2">Please enter a link</p>
@@ -215,9 +215,9 @@
 
 		<div class="grid lg:grid-cols-3 gap-6">
 			<div class="lg:col-span-2">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
 					<form>
-						<Tabs contentClass="dark:text-white bg-white dark:bg-gray-800" style="pill" class="p-4">
+						<Tabs contentClass="dark:text-white bg-white dark:bg-[#2c333d]" style="pill" class="p-4">
 							{#each carouselDataLang as langData}
 								<TabItem
 									open={langData.language == selectedLanguageTab}
@@ -241,7 +241,7 @@
 										</div>
 
 										<!-- Title Section -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Carousel Title</span>
 												<Input
@@ -250,7 +250,7 @@
 													bind:value={langData.title}
 													id="title"
 													name="title"
-													class="w-full"
+													class="w-full dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 												/>
 												{#if isFormSubmitted && !langData.title.trim()}
 													<p class="error-message mt-2">Please enter a title</p>
@@ -259,7 +259,7 @@
 										</div>
 										
 										<!-- Subtitle -->
-										<div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg mb-8">
+										<div class="bg-gray-50 dark:bg-[#323a45] p-5 rounded-lg mb-8">
 											<Label class="block">
 												<span class="font-medium text-gray-700 dark:text-gray-300 block mb-2">Subtitle</span>
 												<Textarea
@@ -268,7 +268,7 @@
 													bind:value={langData.subtitle}
 													id="subtitle"
 													name="subtitle"
-													class="w-full"
+													class="w-full dark:bg-[#323a45] dark:border-gray-600 dark:text-white"
 												/>
 												{#if isFormSubmitted && !langData.subtitle.trim()}
 													<p class="error-message mt-2">Please enter a subtitle</p>
@@ -281,7 +281,7 @@
 						</Tabs>
 					</form>
 
-					<div class="border-t dark:border-gray-700 mt-2 pt-6 px-6">
+					<div class="border-t dark:border-gray-800 mt-2 pt-6 px-6">
 						<!-- Submit Button -->
 						<div class="flex justify-end my-6">
 							<button
@@ -297,7 +297,7 @@
 				</div>
 			</div>
 			<div class="lg:col-span-1">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-700 overflow-hidden h-full">
+				<div class="bg-white dark:bg-[#2c333d] rounded-lg shadow-sm p-0 border border-gray-200 dark:border-gray-800 overflow-hidden h-full">
 					<Tabs style="pill" contentClass="dark:text-white p-4" class="px-4 pt-4">
 						<TabItem open title="Preview">
 							<div class="rounded-md flex justify-center items-start p-4">
