@@ -134,7 +134,7 @@
 					<thead>
 						<tr>
 							{#each ['Name', 'Status', 'Area', 'Exhibition Type', 'Detail'] as header}
-								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+								<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell text-center">
 									<div class="flex justify-center items-center gap-2">
 										<span>{header}</span>
 									</div>
@@ -145,36 +145,38 @@
 					<tbody class="text-gray-600 dark:text-gray-300">
 						{#each seatsAreaFieldsType as seat}
 							<tr>
-								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell text-center">
 									{seat.name}
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell text-center">
 									{#if seat.is_active}
-										<div class="flex items-center">
+										<div class="flex items-center justify-center">
 											<div class="h-3 w-3 bg-green-500 rounded-full mx-2"></div>
 											<span>Active</span>
 										</div>
 									{:else}
-										<div class="flex items-center">
+										<div class="flex items-center justify-center">
 											<div class="h-3 w-3 bg-red-500 rounded-full mx-2"></div>
 											<span>Inactive</span>
 										</div>
 									{/if}
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell text-center">
 									{#each getAreaDetail(seat.areas) as areaDetail}
-										<div class="my-3">
-											Area: {areaDetail.area} M <span class="mx-4">Quantity: {areaDetail.quantity}</span>
+										<div class="my-3 flex justify-center">
+											<span>Area: {areaDetail.area} M</span> <span class="mx-4">Quantity: {areaDetail.quantity}</span>
 										</div>
 									{/each}
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell">
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell text-center">
 									{seat.id && exhibitionTypeMap.get(seat.id) || 'N/A'}
 								</td>
-								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell">
-									<Button on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)} class="text-white transition-all duration-300">
-										Detail
-									</Button>
+								<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border border-gray-200 dark:border-gray-700 table-cell text-center">
+									<div class="flex justify-center">
+										<Button on:click={() => goto(`seats_ui/reservation_by_area/${seat.id}`)} class="text-white transition-all duration-300">
+											Detail
+										</Button>
+									</div>
 								</td>
 							</tr>
 						{/each}

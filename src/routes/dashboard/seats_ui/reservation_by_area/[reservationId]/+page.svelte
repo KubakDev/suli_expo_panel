@@ -39,6 +39,7 @@
 	import type { PageData } from '../$types';
 	import { goto } from '$app/navigation';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data: PageData;
 	interface areaType {
@@ -451,14 +452,18 @@
 		Back to Seats Dashboard  
 	</button>
 </div>
-<Modal title="edit Area" bind:open={isOpenEditModal} class="bg-white max-w-sm mx-auto " autoclose>
+<Modal 
+ class="bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]"
+ size="sm"
+title="Edit Area" bind:open={isOpenEditModal}  
+autoclose>
 	<div class=" w-full">
 		<div class="my-2">
 			<Label for="last_name" class="mb-2">Area By Meter</Label>
 			<Input
 				type="number"
 				id="last_name"
-				placeholder="add area"
+				placeholder="Add area"
 				bind:value={selectedEditArea.area}
 			/>
 		</div>
@@ -467,7 +472,7 @@
 			<Input
 				type="number"
 				id="company"
-				placeholder="add quantity"
+				placeholder="Add quantity"
 				bind:value={selectedEditArea.quantity}
 			/>
 		</div>
@@ -477,9 +482,9 @@
 	</div></Modal
 >
 <div class="w-full h-full flex flex-col justify-center items-center">
-	<div class="w-7/12 p-14 rounded-lg border-2 dark:border-gray-800 light:border-gray-500 my-5">
-		<Tabs>
-			<TabItem title="add Seat Area fields" open>
+	<div class="w-7/12 p-14 rounded-lg border-2 dark:border-gray-800 light:border-gray-500 my-5 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
+		<Tabs contentClass="dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
+			<TabItem title="Add Seat Area fields" open>
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
 					<ButtonGroup class="" size="sm">
 						<InputAddon>Name</InputAddon><Input
@@ -521,16 +526,17 @@
 								<DropdownItem on:click={() => (dropdownOpen = false)}>
 									<!-- svelte-ignore a11y-click-events-have-key-events -->
 									<!-- svelte-ignore a11y-no-static-element-interactions -->
-									<div
-										style="
-								text-overflow: ellipsis;
+						  <div
+							style="text-overflow: ellipsis;
 							white-space: nowrap;
 							overflow: hidden;
 							"
 										on:click={() => (seatInfoData.exhibition = exhibition)}
 									>
 										{exhibition.exhibition_languages
-											? exhibition.exhibition_languages[0].title
+											? exhibition.exhibition_languages[0].title.length > 50
+												? exhibition.exhibition_languages[0].title.slice(0, 50) + '...'
+												: exhibition.exhibition_languages[0].title
 											: ''}
 									</div>
 								</DropdownItem>
@@ -588,7 +594,7 @@
 							bind:checked={seatInfoData.is_excel_required}
 							id="default-checkbox"
 							type="checkbox"
-							class="w-4 h-4 text-[#e1b168] bg-gray-100 border-gray-300 rounded focus:ring-[#e1b168] dark:focus:ring-[#e1b168] dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+							class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
 						/>
 						<label
 							for="default-checkbox"
@@ -600,62 +606,73 @@
 					<!-- show modal  -->
 					<div class="col-span-3">
 						<Button on:click={() => (showModal = true)}>Add service</Button>
-						<Modal title="Update Services" bind:open={showModal} autoclose>
-							<ul class="list-disc pl-5 space-y-2">
-								{#each seatServices as service}
-									<li class="flex items-center space-x-2">
-										<Checkbox
-											checked={service.selected}
-											on:change={(e) => handleCheckboxChange(service.id, e.target.checked)}
-										>
-											{service.title}
-										</Checkbox>
+						<Modal
+						class="bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]"
+						size="lg"
+						title="Update Services" 
+						bind:open={showModal} 
+						autoclose>
+							<div class="max-h-96 overflow-y-auto p-4">
+								<ul class="list-none space-y-4">
+									{#each seatServices as service}
+										<li class="flex items-center space-x-2">
+											<div class="flex items-center space-x-2" style="width: 45%;">
+												<Checkbox
+													checked={service.selected}
+													on:change={(e) => {
+														if (e.target instanceof HTMLInputElement) {
+															handleCheckboxChange(service.id, e.target.checked);
+														}
+													}}
+												/>
+												<span class="truncate">{service.title}</span>
+											</div>
 
-										<Input
-											type="number"
-											placeholder="Max Quantity Per User"
-											bind:value={service.maxQuantityPerUser}
-											on:input={(e) =>
-												handleInputChange(service.id, 'maxQuantityPerUser', e.target.value)}
-											disabled={!service.selected}
-										/>
+											<div style="width: 25%;">
+												<Input
+													type="number"
+													placeholder="Max Quantity Per User"
+													bind:value={service.maxQuantityPerUser}
+													on:input={(e) => {
+														if (e.target instanceof HTMLInputElement) {
+															handleInputChange(service.id, 'maxQuantityPerUser', e.target.value);
+														}
+													}}
+													disabled={!service.selected}
+												/>
+											</div>
 
-										<ButtonGroup class="w-full" size="sm">
-											<InputAddon>
-												<div class="flex items-center">
+											<div style="width: 30%;" class="flex">
+												<div class="flex items-center space-x-1 bg-gray-200 dark:bg-gray-700 rounded-l px-2">
 													<Checkbox
 														checked={service.unlimitedFree}
-														bind:value={service.unlimitedFree}
-														class="cursor-pointer"
 														on:change={(e) => {
-															const target = e.target;
-															if (target instanceof HTMLInputElement) {
-																handleUnlimitedFreeChange(service.id, target.checked);
+															if (e.target instanceof HTMLInputElement) {
+																handleUnlimitedFreeChange(service.id, e.target.checked);
 															}
 														}}
 														disabled={!service.selected}
 													/>
-
-													<p>Unlimited</p>
+													<span class="whitespace-nowrap text-sm">Unlimited</span>
 												</div>
-											</InputAddon>
-
-											<Input
-												id="input-addon-sm"
-												placeholder="max free quantity for a user"
-												bind:value={service.maxFreeCount}
-												disabled={!service.selected || service.unlimitedFree}
-											/>
-										</ButtonGroup>
-									</li>
-								{/each}
-							</ul>
+												<Input
+													id="input-addon-sm"
+													placeholder="max free quantity"
+													bind:value={service.maxFreeCount}
+													disabled={!service.selected || service.unlimitedFree}
+													class="rounded-l-none"
+												/>
+											</div>
+										</li>
+									{/each}
+								</ul>
+							</div>
 						</Modal>
 					</div>
 
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
-							<p class="text-gray-600 dark:text-gray-300">upload image for sheet preview</p>
+							<p class="text-gray-600 dark:text-gray-300 mb-2">Upload image for sheet preview</p>
 							<Fileupload
 								accept=".jpg, .jpeg, .png"
 								class=" dark:bg-white"
@@ -663,9 +680,9 @@
 							/>
 						</div>
 					</div>
-					<div class=" col-span-3">
-						<h1 class="mt-3 text-lg font-medium text-gray-600 dark:text-gray-300">add privacy policy</h1>
-						<Tabs>
+					<div class="col-span-3 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
+						<h1 class="mt-3 text-lg font-medium text-gray-600 dark:text-gray-300">Add Privacy Policy</h1>
+						<Tabs contentClass="p-4 rounded-lg dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]" style="pill" class="p-4">
 							{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
 									<Input
@@ -677,7 +694,7 @@
 									/>
 									<Textarea
 										id="textarea-id"
-										placeholder={`add description seat for ${lang}`}
+										placeholder={`Add description seat for ${lang}`}
 										rows="8"
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
@@ -685,7 +702,7 @@
 									/>
 									<Textarea
 										id="textarea-id"
-										placeholder={`add privacy & policy for ${lang}`}
+										placeholder={`Add privacy & policy for ${lang}`}
 										rows="8"
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
@@ -693,7 +710,7 @@
 									/>
 									<Textarea
 										id="textarea-id"
-										placeholder={`add discount description for  ${lang}`}
+										placeholder={`Add discount description for  ${lang}`}
 										rows="8"
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)
@@ -702,7 +719,7 @@
 									/>
 									<Textarea
 										id="textarea-id"
-										placeholder={`add extra discount description for  ${lang}`}
+										placeholder={`Add extra discount description for  ${lang}`}
 										rows="8"
 										class="my-3 col-span-3"
 										value={privacyPolicyLang?.find((x) => x.language === lang)
@@ -717,37 +734,37 @@
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
 					<div>
 						<Label for="last_name" class="mb-2">Area By Meter</Label>
-						<Input type="number" id="last_name" placeholder="add area" bind:value={newArea.area} />
+						<Input type="number" id="last_name" placeholder="Add area" bind:value={newArea.area} />
 					</div>
 					<div>
 						<Label for="company" class="mb-2">Quantity</Label>
 						<Input
 							type="number"
 							id="company"
-							placeholder="add quantity"
+							placeholder="Add quantity"
 							bind:value={newArea.quantity}
 						/>
 					</div>
 					<div class="flex items-end">
-						<Button type="submit" on:click={addNewArea}>add new Area</Button>
+						<Button type="submit" on:click={addNewArea}>Add new Area</Button>
 					</div>
 				</div>
 
 				<div class="px-6">
 					<Table>
 						<TableHead>
-							<TableHeadCell>area</TableHeadCell>
-							<TableHeadCell>quantity</TableHeadCell>
-							<TableHeadCell />
+							<TableHeadCell class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]">Area</TableHeadCell>
+							<TableHeadCell class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]">Quantity</TableHeadCell>
+							<TableHeadCell class="dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}]" />
 						</TableHead>
 						<TableBody>
 							{#each areas as area, index}
 								<TableBodyRow>
-									<TableBodyCell>{area.area}M</TableBodyCell>
-									<TableBodyCell>{area.quantity}</TableBodyCell>
-									<TableBodyCell>
+									<TableBodyCell class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]">{area.area}M</TableBodyCell>
+									<TableBodyCell class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]">{area.quantity}</TableBodyCell>
+									<TableBodyCell class="dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]">
 										<div class="flex gap-2">
-											<PencilSquare class=" cursor-pointer" on:click={() => openEditModal(index)} />
+											<PencilSquare class="cursor-pointer text-green-500" on:click={() => openEditModal(index)} />
 											<Trash
 												class="text-danger cursor-pointer"
 												on:click={() => deleteArea(index)}
@@ -768,15 +785,19 @@
 					>
 				</div>
 			</TabItem>
-			<TabItem title="add Company Info Required Data">
-				<RequiredFieldsComponent
-					exhibitionId={seatInfoData.exhibition?.id}
-					supabase={data.supabase}
-					detail={true}
-				/>
+			<TabItem title="Add Company Info Required Data">
+				<div class="dark:bg-[{THEME_COLORS.DARK.NAVBAR}] p-4 rounded-lg">
+					<RequiredFieldsComponent
+						exhibitionId={seatInfoData.exhibition?.id}
+						supabase={data.supabase}
+						detail={true}
+					/>
+				</div>
 			</TabItem>
-			<TabItem title="upload contract file">
-				<UploadContractFile exhibitionId={seatInfoData.exhibition?.id} supabase={data.supabase} />
+			<TabItem title="Upload Contract File">
+				<div class="dark:bg-[{THEME_COLORS.DARK.NAVBAR}] p-4 rounded-lg">
+					<UploadContractFile exhibitionId={seatInfoData.exhibition?.id} supabase={data.supabase} />
+				</div>
 			</TabItem>
 		</Tabs>
 	</div>

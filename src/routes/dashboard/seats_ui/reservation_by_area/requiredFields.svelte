@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { addNewToast } from '../../../../stores/toastStore';
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let exhibitionId: number | null | undefined;
 	export let supabase: SupabaseClient;
@@ -50,11 +51,7 @@
 			status: false
 		}
 	];
-	$: {
-		if (exhibitionId) {
-			getRequiredFiledData();
-		}
-	}
+	 
 	onMount(() => {
 		if (exhibitionId) {
 			getRequiredFiledData();
@@ -111,7 +108,7 @@
 	{#if !exhibitionId}
 		<div class="mb-10 w-full">
 			<div
-				class="bg-[#cf240d8c] rounded-lg flex items-center w-full p-4 text-gray-500 bg-white shadow dark:text-gray-400 dark:bg-gray-800"
+				class="bg-red-200 dark:bg-red-800/50 rounded-lg flex items-center w-full p-4 text-gray-500 bg-white shadow dark:text-gray-400 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]"
 			>
 				<div class="pl-4 text-sm font-normal dark:text-white">
 					you have to select an exhibition from previous tab!

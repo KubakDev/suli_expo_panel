@@ -5,6 +5,7 @@
 	import { ToastTypeEnum } from '../../../../models/toastTypeEnum';
 	import { onMount } from 'svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let exhibitionId: number | null | undefined;
 
@@ -74,7 +75,7 @@
 </script>
 
 <div class="flex flex-col justify-center items-center p-10 w-full">
-	<Tabs contentClass="dark:bg-gray-900 p-6  rounded-lg shadow-md">
+	<Tabs contentClass="dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] p-6 rounded-lg shadow-md">
 		{#each languages as lang}
 			<TabItem
 				title={lang}
@@ -128,12 +129,16 @@
 
 	/* Style the container to mimic a button */
 	.file-input-container {
-		background-color: #e1b168;
+		background-color: var(--color-primary-600);
 		color: white;
 		padding: 10px 20px;
 		border-radius: 5px;
 		cursor: pointer;
 		display: inline-block;
 		transition: background-color 0.3s;
+	}
+
+	.file-input-container:hover {
+		background-color: var(--color-primary-700);
 	}
 </style>

@@ -11,6 +11,7 @@
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data: PageData;
 	let imageFile: File | undefined;
@@ -105,13 +106,13 @@
 	</button>
 </div>
 <div class="w-full h-full flex flex-col justify-center items-center">
-	<div class=" w-7/12 p-14 rounded-lg">
-		<Tabs>
-			<TabItem title="add Seat Area fields" open>
+	<div class="w-7/12 p-14 rounded-lg dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
+		<Tabs contentClass="rounded-lg dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]" style="pill" class="p-4">
+			 <TabItem title="Add Seat Area fields" open>
 				<div class="grid grid-cols-1 md:grid-cols-3 gap-2 p-6">
 					<div class="col-span-3 my-4">
 						<div class="max-w-[400px]">
-							<p class="text-gray-600 dark:text-gray-300">upload image for sheet preview</p>
+							<p class="text-gray-600 dark:text-gray-300 mb-2">Upload image for sheet preview</p>
 							<Fileupload
 								accept=".jpg, .jpeg, .png"
 								class="  "
@@ -121,15 +122,15 @@
 					</div>
 				</div>
 
-				<div class="flex justify-end mt-10">
+				<div class="flex justify-end p-5">
 					<Button type="submit" on:click={updateSeat}>Submit</Button>
 				</div>
 			</TabItem>
-			<TabItem title="add Company Info Required Data">
+			<TabItem title="Add Company Info Required Data">
 				<RequiredFieldsComponent {exhibitionId} supabase={data.supabase} detail={true} />
 			</TabItem>
-			<TabItem title="upload contract file">
-				<UploadContractFile {exhibitionId} supabase={data.supabase} />
+			<TabItem title="Upload Contract File">
+			 	<UploadContractFile {exhibitionId} supabase={data.supabase} />
 			</TabItem>
 		</Tabs>
 	</div>
