@@ -6,6 +6,7 @@
 	import LineChart from '$lib/components/LineChart.svelte';
 	import { IconListDetails, IconPhoto, IconNews } from '@tabler/icons-svelte';
 	import { Input, Label } from 'flowbite-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 	let isDataLoaded = false;
@@ -54,7 +55,7 @@
 			<div class="h-full mb-10">
 				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-4 gap-4">
 					<div
-						class="bg-[#ff6384]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#ff6384] dark:border-[#ff6384] dark:bg-[#1f2937] dark:text-white text-gray-900 font-medium group"
+						class="bg-[#ff6384]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#ff6384] dark:border-[#ff6384] dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] dark:text-white text-gray-900 font-medium group"
 					>
 						<div
 							class="flex justify-center items-center w-24 h-24 bg-[#ff6384] rounded-full transition-all duration-300 transform group-hover:rotate-12"
@@ -78,7 +79,7 @@
 						</div>
 					</div>
 					<div
-						class="bg-[#36a2eb]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#36a2eb] dark:border-[#36a2eb] dark:bg-[#1f2937] dark:text-white text-gray-900 font-medium group"
+						class="bg-[#36a2eb]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#36a2eb] dark:border-[#36a2eb] dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] dark:text-white text-gray-900 font-medium group"
 					>
 						<div
 							class="flex justify-center items-center w-24 h-24 bg-[#36a2eb] rounded-full transition-all duration-300 transform group-hover:rotate-12"
@@ -102,7 +103,7 @@
 						</div>
 					</div>
 					<div
-						class="bg-[#ffce56]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#ffce56] dark:border-[#ffce56] dark:bg-[#1f2937] dark:text-white text-gray-900 font-medium group"
+						class="bg-[#ffce56]/10 border shadow-lg rounded-md flex items-center justify-between p-3 border-b-4 border-[#ffce56] dark:border-[#ffce56] dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] dark:text-white text-gray-900 font-medium group"
 					>
 						<div
 							class="flex justify-center items-center w-24 h-24 bg-[#ffce56] rounded-full transition-all duration-300 transform group-hover:rotate-12"

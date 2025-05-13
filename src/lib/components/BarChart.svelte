@@ -11,6 +11,7 @@
 		Legend
 	} from 'chart.js';
 	import type { PageData } from '../../routes/$types.js';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	Chart.register(BarController, CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -100,6 +101,6 @@
 	}
 </script>
 
-<div class="border dark:border-gray-700 p-10 w-full rounded-lg bg-white dark:bg-[#1f2937]">
+<div class="border dark:border-gray-700 p-10 w-full rounded-lg bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	<canvas bind:this={canvas} />
 </div>

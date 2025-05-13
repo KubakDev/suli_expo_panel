@@ -4,6 +4,8 @@
  import { Chart, LineController, LineElement, PointElement, CategoryScale, LinearScale, Title, Tooltip } from 'chart.js';
  import type { PageData } from '../../routes/$types';
  import { Button, Input, Label, Select } from 'flowbite-svelte';
+ import { THEME_COLORS } from '$lib/utils/themeColors';
+	import { IconFilter, IconFilterCancel } from '@tabler/icons-svelte';
  
  Chart.register(LineController, LineElement, PointElement, CategoryScale, LinearScale, Title, Tooltip);
 
@@ -171,19 +173,31 @@
         </Select>
       </div>
       <div class="flex items-center gap-2">
-        <Button on:click={() => fetchReservationData(true)}>
-          <Icon name="filter-solid" class="w-5s h-5s ml-2" />
-        </Button>
+        <button
+        class="w-11 h-11 flex items-center justify-center 
+					bg-gray-200 hover:bg-gray-300 text-gray-900 
+					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
+					border border-gray-300 dark:border-gray-600 
+					rounded"
+        on:click={() => fetchReservationData(true)}>
+          <IconFilter size={24} class="dark:text-gray-200 text-gray-600" />
+        </button>
 
-        <Button on:click={clearFilters}>
-          <Icon name="close-solid" class="w-5s h-5s ml-2" />
-        </Button>
+        <button
+        class="w-11 h-11 flex items-center justify-center 
+					bg-gray-200 hover:bg-gray-300 text-gray-900 
+					dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-gray-100 
+					border border-gray-300 dark:border-gray-600 
+					rounded"
+        on:click={clearFilters}>
+          <IconFilterCancel size={24} class="text-red-500" />
+        </button>
       </div>
     </div>
   </div>
   
   <!-- Full Width Chart Section -->
-  <div class="border dark:border-gray-700 p-10 w-full rounded-lg bg-white dark:bg-[#1f2937]">
+  <div class="border dark:border-gray-700 p-10 w-full rounded-lg bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
     <canvas bind:this={canvas}></canvas>
   </div>
 </div>
