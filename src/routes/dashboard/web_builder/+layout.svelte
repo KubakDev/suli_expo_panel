@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { Drawer, CloseButton } from 'flowbite-svelte';
 	import { sineIn } from 'svelte/easing'; 
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	export let data;
 	let hidden2 = true;
@@ -64,7 +65,7 @@
 				>
 			</div>
 			<Drawer
-				divClass="bg-gray-100 dark:bg-gray-800 z-[100]"
+				divClass="bg-gray-100 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] z-[100]"
 				transitionType="fly"
 				{transitionParams}
 				bind:hidden={hidden2}
@@ -74,7 +75,7 @@
 					<CloseButton on:click={() => (hidden2 = true)} class="mb-4 text-gray-700 dark:text-white" />
 				</div>
 				<Sidebar>
-					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded bg-gray-100 dark:bg-gray-800">
+					<SidebarWrapper divClass="overflow-y-auto py-4 px-3 rounded bg-gray-100 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 						<SidebarGroup>
 							<h1 class="text-gray-700 dark:text-gray-200 text-xl font-semibold pb-3 flex justify-center">
 								Page Builder
@@ -103,9 +104,9 @@
 		</div>
 
 		<!-- Sidebar for desktop  -->
-		<div class="sidebar-drawer bg-gray-100 dark:bg-gray-800 min-h-screen rounded-none border-r border-gray-300 dark:border-gray-600 lg:block hidden">
+		<div class="sidebar-drawer bg-gray-100 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] min-h-screen rounded-none border-r border-gray-300 dark:border-gray-600 lg:block hidden">
 			<Sidebar>
-				<SidebarWrapper divClass="bg-gray-100 dark:bg-gray-800 min-h-screen px-4">
+				<SidebarWrapper divClass="bg-gray-100 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] min-h-screen px-4">
 					<SidebarGroup class="flex flex-col py-5">
 						<h1 class="text-gray-700 dark:text-gray-200 text-xl font-semibold pb-3 text-center">Page Builder</h1>
 						<div class="border border-gray-300 dark:border-gray-600 border-opacity-60" />

@@ -18,7 +18,8 @@
 	import { getComponentData } from '../../../stores/componentStor';
 	import { ModeTypeEnum, type ColorTheme } from '../../../models/colorTheme';
 	import type { PageData } from '../../../routes/$types';
-	import { IconCards, IconPalette, IconDeviceFloppy } from '@tabler/icons-svelte';
+	import { IconCards, IconPalette, IconDeviceFloppy, IconCircleChevronUp, IconCircleChevronDown, IconPlus } from '@tabler/icons-svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 
 	let loading = false;
 	export let data: PageData;
@@ -302,7 +303,7 @@
 		</button>
 	</div>
 
-	<Sidebar class="bg-white dark:bg-[#1f2937] border-r border-gray-200 dark:border-gray-700 w-full md:w-[400px] lg:w-[500px]">
+	<Sidebar class="bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}] border-r border-gray-200 dark:border-gray-700 w-full md:w-[400px] lg:w-[500px]">
 		<SidebarWrapper divClass="px-4 md:px-8">
 			<SidebarGroup ulClass="flex flex-col items-center gap-2 ">
 				<SidebarDropdownWrapper
@@ -313,34 +314,10 @@
 						<IconCards size={24} />
 					</svelte:fragment>
 					<svelte:fragment slot="arrowup">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-							/></svg
-						>
+						<IconCircleChevronUp size={24} />
 					</svelte:fragment>
 					<svelte:fragment slot="arrowdown">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-							><path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-							/></svg
-						>
+						<IconCircleChevronDown size={24} />
 					</svelte:fragment>
 					<div class=" text-black dark:text-gray-400">
 						<div class="grid grid-cols-2 gap-2">
@@ -362,34 +339,10 @@
 							<IconPalette size={24} />
 						</svelte:fragment>
 						<svelte:fragment slot="arrowup">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/></svg
-							>
+							<IconCircleChevronUp size={24} />
 						</svelte:fragment>
 						<svelte:fragment slot="arrowdown">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/></svg
-							>
+							<IconCircleChevronDown size={24} />
 						</svelte:fragment>
 						<div class="">
 							<div class="py-2 text-center">
@@ -434,48 +387,7 @@
 											type="submit"
 											class="shadow col-span-1 w-full flex justify-center items-center transition-all ease-in-out font-bold py-2 px-4 border border-primary-50 bg-primary-dark rounded-r"
 										>
-											<svg
-												width="20px"
-												height="20px"
-												viewBox="0 0 24 24"
-												xmlns="http://www.w3.org/2000/svg"
-												fill="#000000"
-												><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-													id="SVGRepo_tracerCarrier"
-													stroke-linecap="round"
-													stroke-linejoin="round"
-												/><g id="SVGRepo_iconCarrier">
-													<title />
-													<g id="Complete">
-														<g data-name="add" id="add-2">
-															<g>
-																<line
-																	fill="none"
-																	stroke="#ffffff"
-																	stroke-linecap="round"
-																	stroke-linejoin="round"
-																	stroke-width="2"
-																	x1="12"
-																	x2="12"
-																	y1="19"
-																	y2="5"
-																/>
-																<line
-																	fill="none"
-																	stroke="#ffffff"
-																	stroke-linecap="round"
-																	stroke-linejoin="round"
-																	stroke-width="2"
-																	x1="5"
-																	x2="19"
-																	y1="12"
-																	y2="12"
-																/>
-															</g>
-														</g>
-													</g>
-												</g></svg
-											>
+											<IconPlus size={20} stroke={2} color="#ffffff" />
 										</button>
 									{/if}
 								</div>
@@ -484,7 +396,7 @@
 										{#each colors as color}
 											<div class="rounded">
 												<div class="shadow border rounded flex flex-col justify-center items-center">
-													<div class="color-input-wrapper border bg-white dark:bg-[#1f2937]">
+													<div class="color-input-wrapper border bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 														<input
 															style="border-radius: 0.25rem;"
 															class="w-full h-20 bg-transparent"
@@ -517,34 +429,10 @@
 							<IconPalette size={24} />
 						</svelte:fragment>
 						<svelte:fragment slot="arrowup">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M15 11.25l-3-3m0 0l-3 3m3-3v7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/></svg
-							>
+							<IconCircleChevronUp size={24} />
 						</svelte:fragment>
 						<svelte:fragment slot="arrowdown">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke-width="1.5"
-								stroke="currentColor"
-								class="w-6 h-6"
-								><path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M9 12.75l3 3m0 0l3-3m-3 3v-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-								/></svg
-							>
+							<IconCircleChevronDown size={24} />
 						</svelte:fragment>
 						<div style="height: auto; width: 100%;">
 							<div class="py-2 text-center">
@@ -589,48 +477,7 @@
 											type="submit"
 											class="shadow col-span-1 w-full flex justify-center items-center transition-all ease-in-out font-bold py-2 px-4 border border-primary-50 bg-primary-dark rounded-r"
 										>
-											<svg
-												width="20px"
-												height="20px"
-												viewBox="0 0 24 24"
-												xmlns="http://www.w3.org/2000/svg"
-												fill="#000000"
-												><g id="SVGRepo_bgCarrier" stroke-width="0" /><g
-													id="SVGRepo_tracerCarrier"
-													stroke-linecap="round"
-													stroke-linejoin="round"
-												/><g id="SVGRepo_iconCarrier">
-													<title />
-													<g id="Complete">
-														<g data-name="add" id="add-2">
-															<g>
-																<line
-																	fill="none"
-																	stroke="#ffffff"
-																	stroke-linecap="round"
-																	stroke-linejoin="round"
-																	stroke-width="2"
-																	x1="12"
-																	x2="12"
-																	y1="19"
-																	y2="5"
-																/>
-																<line
-																	fill="none"
-																	stroke="#ffffff"
-																	stroke-linecap="round"
-																	stroke-linejoin="round"
-																	stroke-width="2"
-																	x1="5"
-																	x2="19"
-																	y1="12"
-																	y2="12"
-																/>
-															</g>
-														</g>
-													</g>
-												</g></svg
-											>
+											<IconPlus size={20} stroke={2} color="#ffffff" />
 										</button>
 									{/if}
 								</div>
@@ -639,7 +486,7 @@
 										{#each colors as color}
 											<div class="rounded">
 												<div class="shadow border rounded flex flex-col justify-center items-center">
-													<div class="color-input-wrapper border bg-white dark:bg-[#1f2937]">
+													<div class="color-input-wrapper border bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 														<input
 															style="border-radius: 0.25rem;"
 															class="w-full h-20 bg-transparent"

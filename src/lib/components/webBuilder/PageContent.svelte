@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { ExpoCard } from 'kubak-svelte-component';
 	import { selectedTheme, pageTheme } from '../../../stores/pageStore';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
 	const placeholderImage = '/src/lib/images/placeholder.png';  
 
 	export let toggleMode: () => void;
 	export let title: string;
 </script>
 
-<div class="min-h-screen py-5 bg-white dark:bg-[#1f2937]">
+<div class="min-h-screen py-5 bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]">
 	<!-- change page theme colors -->
 	<div class="flex justify-end items-center mr-5">
 		<label class="relative inline-flex items-center cursor-pointer">

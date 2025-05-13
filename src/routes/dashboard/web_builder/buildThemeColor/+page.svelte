@@ -15,6 +15,7 @@
 	import { ModeTypeEnum, type ColorTheme } from '../../../../models/colorTheme';
 	import { IconPlus, IconApps, IconTrash, IconGridDots } from '@tabler/icons-svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { THEME_COLORS } from '$lib/utils/themeColors';
  
 	export let data;
 	let isLoading = false;
@@ -127,63 +128,63 @@
 	<div class="py-5 px-4 lg:px-0 flex justify-end">
 		<button
 			on:click={() => (showModal = true)}
-			class="bg-[#e9ecefd2] dark:bg-[#e9ecefd2] dark:hover:bg-gray-100 flex text-black gap-2 p-2 rounded-sm shadow-md border"
-		>
+			class="bg-[#e9ecefd2] dark:bg-[#323a45] dark:hover:bg-[#2c3440] flex text-black dark:text-gray-200 gap-2 p-2 rounded-md shadow-md border border-gray-300 dark:border-gray-700 transition-colors"
+           	>
 			<IconPlus size={20} />
 		</button>
 	</div>
 
-	<div class="overflow-x-auto rounded">
+	<div class="overflow-x-auto rounded-lg shadow-lg">
 		<div class="min-w-full table-responsive">
 			<table class="min-w-full border-collapse dark:border-gray-700">
 				<thead>
 					<tr>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell w-10">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell w-10">
 							<div class="flex justify-center items-center gap-2">
 								<span>NO</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>NAME OF THEME</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>PRIMARY COLOR</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>SECONDARY COLOR</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>OVERLAY PRIMARY COLOR</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>OVERLAY SECONDARY COLOR</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>BACKGROUND COLOR</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>OVERLAY BACKGROUND COLOR</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex justify-center items-center gap-2">
 								<span>MODE TYPE</span>
 							</div>
 						</th>
-						<th class="p-3 font-semibold uppercase bg-[#e9ecefd2] dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 text-sm border border-gray-200 dark:border-gray-700 table-cell">
+						<th class="p-3 font-semibold uppercase bg-[{THEME_COLORS.LIGHT.TABLE_HEADER}] dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 text-sm border-b border-gray-200 dark:border-gray-800 table-cell">
 							<div class="flex items-center gap-2">
 								<IconGridDots size={20} class="text-gray-600 dark:text-gray-300" />
 								<span>ACTIONS</span>
@@ -194,67 +195,67 @@
 
 				<tbody>
 					{#each $theme as item, index (item.id)}
-						<tr>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] border border-gray-200 dark:border-gray-700 table-cell">
+						<tr class="hover:bg-gray-100 dark:hover:bg-[#2a3038] transition-colors">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center text-gray-700 dark:text-gray-300 font-semibold">
 									{index + 1}
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<p class="w-20 p-2 rounded dark:text-white font-sans">
 										{item.name}
 									</p>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div class="w-20 p-2 rounded text-white" style="background: {item.primaryColor};">
 										{item.primaryColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div class="w-20 p-2 rounded text-white" style="background: {item.secondaryColor};">
 										{item.secondaryColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div class="w-20 p-2 rounded text-white" style="background: {item.overlayPrimaryColor};">
 										{item.overlayPrimaryColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div class="w-20 p-2 rounded text-white" style="background: {item.overlaySecondaryColor};">
 										{item.overlaySecondaryColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div class="w-20 p-2 rounded text-white" style="background: {item.backgroundColor};">
 										{item.backgroundColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									<div class="w-20 p-2 rounded text-white" style="background: {item.overlayBackgroundColor};">
 										{item.overlayBackgroundColor}
 									</div>
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell text-gray-600 dark:text-gray-300">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-r border-gray-200 dark:border-gray-800 table-cell">
 								<div class="flex justify-center">
 									{item.mode_type}
 								</div>
 							</td>
-							<td class="p-3 bg-gray-10 dark:bg-[#1f2937] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell w-32">
+							<td class="p-3 bg-gray-50 dark:bg-[{THEME_COLORS.DARK.TABLE_HEADER}] text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 table-cell w-32">
 								<div class="flex justify-center items-center gap-2">
 									<label class="relative inline-flex items-center cursor-pointer">
 										<input
@@ -277,10 +278,10 @@
 
 	<!-- create Modal for adding data  -->
 	<div class="text-black h-full flex justify-center">
-		<Modal bind:open={showModal} size="lg" backdropClose={false}>
+		<Modal bind:open={showModal} size="lg" autoclose={false} class="bg-white dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]"> 
 			<form>
 				<div class="  px-10 py-10">
-					<h1 class="text-xl font-medium">Create a new theme color</h1>
+					<h1 class="text-xl font-medium text-gray-600 dark:text-gray-300 ">Create a new theme color</h1>
 					<div class="py-3 flex items-center gap-2">
 						<div>
 							<Input
