@@ -6,6 +6,7 @@
 	import { onMount } from 'svelte';
 	import { LanguageEnum } from '../../../../models/languageEnum';
 	import { THEME_COLORS } from '$lib/utils/themeColors';
+	import { IconUpload } from '@tabler/icons-svelte';
 
 	export let exhibitionId: number | null | undefined;
 
@@ -97,8 +98,10 @@
 				<div class="py-5">
 					<label
 						for={`file-input-${lang}`}
-						class="file-input-container hover:bg-yellow-400 transition duration-300"
+						class="file-input-container transition duration-300 flex items-center gap-2"
+						style="background-color: var(--primary)"
 					>
+						<IconUpload class="w-5 h-5" />
 						Upload File
 					</label>
 					<input
@@ -129,16 +132,23 @@
 
 	/* Style the container to mimic a button */
 	.file-input-container {
-		background-color: var(--color-primary-600);
 		color: white;
 		padding: 10px 20px;
-		border-radius: 5px;
+		border-radius: 8px;
 		cursor: pointer;
-		display: inline-block;
-		transition: background-color 0.3s;
+		display: inline-flex;
+		transition: all 0.3s ease;
+		font-weight: 500;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
 	.file-input-container:hover {
-		background-color: var(--color-primary-700);
+		transform: translateY(-1px);
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	}
+
+	.file-input-container:active {
+		transform: translateY(1px);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 	}
 </style>
