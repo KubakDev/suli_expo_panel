@@ -10,6 +10,7 @@
 	import RequiredFieldsComponent from '../../reservation_by_area/requiredFields.svelte';
 	import type { PageData } from './$types';
 	import { goto } from '$app/navigation';
+	import { IconArrowLeft } from '@tabler/icons-svelte';
 
 	export let data: PageData;
 	let imageFile: File | undefined;
@@ -98,20 +99,8 @@
 	<button
 		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
 		on:click={() => goto('/dashboard/seats_ui')}
-		><svg
-			xmlns="http://www.w3.org/2000/svg"
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke-width="1.5"
-			stroke="currentColor"
-			class="w-4 h-4"
 		>
-			<path
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-			/>
-		</svg>
+		<IconArrowLeft size={20} />
 		Back to Seats Dashboard
 	</button>
 </div>

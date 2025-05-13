@@ -7,6 +7,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { 	IconArrowBack,
+		IconArrowLeft,
 		IconBookmarkPlus,
 	} from '@tabler/icons-svelte';
 	
@@ -179,7 +180,7 @@
 		class="flex justify-start items-center gap-2 text-sm text-primary hover:transition-opacity duration-300 hover:opacity-70"
 		on:click={() => goto('/dashboard/seats_ui')}
 		> 
-		<IconArrowBack />
+		<IconArrowLeft size={20} />
 		Back to Seats Dashboard
 	</button>
 
