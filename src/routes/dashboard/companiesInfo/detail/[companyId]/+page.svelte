@@ -117,14 +117,14 @@
 	<div class="container px-5 py-5 mx-auto">
 		<!-- Title (BreadCrumb) -->
 
-		<div class="flex justify-start items-start mb-5 text-gray-600 dark:text-gray-300">
-			<Breadcrumb aria-label="Solid background breadcrumb example">
-				<BreadcrumbItem>
-					<svelte:fragment slot="icon">
-						<IconArrowLeft class="w-4 h-4 -mr-2" />
-					</svelte:fragment>
-				</BreadcrumbItem>
-				<button on:click={goBackToPreviewsPage}>List of Companies</button>
+		<div class="flex justify-start items-center mb-6 text-gray-600 dark:text-gray-300">
+				<Breadcrumb aria-label="Breadcrumb">
+					<BreadcrumbItem>
+						<svelte:fragment slot="icon">
+							<IconArrowLeft class="w-4 h-4 -mr-2" />
+						</svelte:fragment>
+					</BreadcrumbItem>
+                <button on:click={goBackToPreviewsPage}>List of Companies</button>
 				<BreadcrumbItem>
 					<svelte:fragment slot="icon">
 						<IconChevronRight class="w-4 h-4" />
