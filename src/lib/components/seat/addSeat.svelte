@@ -224,7 +224,9 @@
 					"
 						on:click={() => (seatInfoData.exhibition = exhibition)}
 					>
-						{exhibition.exhibition_languages ? exhibition.exhibition_languages[0].title : ''}
+						{exhibition.exhibition_languages ? exhibition.exhibition_languages[0].title.length > 50 ? exhibition.exhibition_languages[0].title.slice(0, 50) + '...' : exhibition.exhibition_languages[0].title : ''}
+						
+					 
 					</div>
 				</DropdownItem>
 			{/each}

@@ -577,6 +577,7 @@
 								<Tabs contentClass="p-4 rounded-lg dark:text-white bg-white dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}]" style="pill" class="p-4">
 						 	{#each languageEnumKeys as lang}
 								<TabItem title={lang} open={lang === languageEnumKeys[0]}>
+									<Label for="price_sign">Price Sign</Label>
 									<Input
 										id="textarea-id"
 										placeholder={`Add price sign for ${lang}`}
@@ -584,6 +585,7 @@
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.price_sign}
 										on:input={(e) => addPriceSign(e.target, lang)}
 									/>
+									<Label for="price_sign">Description Seat</Label>
 									<Textarea
 										id="textarea-id"
 										placeholder={`Add description seat for ${lang}`}
@@ -592,6 +594,7 @@
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description_seat}
 										on:input={(e) => addDescriptionSeat(e.target, lang)}
 									/>
+									<Label for="price_sign">Privacy & Policy</Label>
 									<Textarea
 										id="textarea-id"
 										placeholder={`Add privacy & policy for ${lang}`}
@@ -600,6 +603,7 @@
 										value={privacyPolicyLang?.find((x) => x.language === lang)?.description}
 										on:input={(e) => addPrivacyPolicyLang(e.target, lang)}
 									/>
+									<Label for="price_sign">Discount Description</Label>
 									<Textarea
 										id="textarea-id"
 										placeholder={`Add discount description for  ${lang}`}
@@ -609,6 +613,7 @@
 											?.discount_description}
 										on:input={(e) => addDiscountDetail(e.target ?? '', lang)}
 									/>
+									<Label for="price_sign">Extra Discount Description</Label>
 									<Textarea
 										id="textarea-id"
 										placeholder={`Add extra discount description for  ${lang}`}

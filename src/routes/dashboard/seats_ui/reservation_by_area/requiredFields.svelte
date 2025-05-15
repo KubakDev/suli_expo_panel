@@ -111,7 +111,7 @@
 				class="bg-red-200 dark:bg-red-800/50 rounded-lg flex items-center w-full p-4 text-gray-500 bg-white shadow dark:text-gray-400 dark:bg-[{THEME_COLORS.DARK.BACKGROUND}]"
 			>
 				<div class="pl-4 text-sm font-normal dark:text-white">
-					you have to select an exhibition from previous tab!
+					You have to select an exhibition from previous tab!
 				</div>
 			</div>
 		</div>
