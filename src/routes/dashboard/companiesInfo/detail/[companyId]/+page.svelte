@@ -28,14 +28,20 @@
 
 	let serviceTitles: ServiceTitlesType = {};
 	let serviceTitlesLoaded = false;
+	let loading = true;
 
 	onMount(async () => {
 		try {
+			loading = true;
 			await getReservationsForCompany(data.supabase, +companyId);
 
 			await loadServiceTitles();
 			serviceTitlesLoaded = true;
-		} catch (error) {}
+		} catch (error) {
+			// Handle error
+		} finally {
+			loading = false;
+		}
 	});
 
 	async function loadServiceTitles() {
@@ -113,6 +119,11 @@
 	}
 </script>
  
+{#if loading}
+<div class="flex justify-center items-center h-screen">
+	<Spinner size="h-16 w-16" color="border-gray-500" />
+</div>
+{:else}
 <div class="max-w-screen-2xl mx-auto py-10 body-font">
 	<div class="container px-5 py-5 mx-auto">
 		<!-- Title (BreadCrumb) -->
@@ -213,7 +224,7 @@
 										<td
 											class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
 										>
-											<div>{item?.exhibitions?.[0]?.exhibition_type}</div>
+											<div>{item?.exhibition?.exhibition_type}</div>
 										</td>
 										<td
 											class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell"
@@ -275,12 +286,15 @@
 				</div>
 			</div>
 		{:else}
-			<div class="flex justify-center">
-				<!-- No data found -->
-				<img {src} alt="img" />
+			<div class="flex flex-col items-center justify-center py-10">
+				<img {src} alt="No data" class="w-64 h-64 mb-4" />
+				<p class="text-lg text-gray-600 dark:text-gray-300 font-medium text-center">
+					This company hasn't made any reservations yet.
+				</p>
 			</div>
 		{/if}
 	</div>
 </div>
+{/if}
 
  

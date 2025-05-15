@@ -142,17 +142,16 @@
 </div>
 {:else}
 <div class="max-w-screen-2xl mx-auto py-10">
-	<div class="py-5 px-4 lg:px-0 flex justify-between gap-5">
+	<div class="py-5 px-4 lg:px-0 flex items-center justify-between gap-5">
 		<!-- total count -->
 		<div
-			class=" shadow-none flex justify-start items-start px-4 py-2 border dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 text-sm"
+			class="shadow-none flex justify-start items-center px-4 py-2 border dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 text-sm"
 		>
-			Showing <span class="font-bold mx-2 dark:text-gray-200"> {totalItems}</span> Company
+			Showing <span class="font-bold mx-2 dark:text-gray-200"> {totalItems}</span> Results for Companies
 		</div>
 		<!-- clear All filters  -->
-		<div class="flex gap-2">
-			
-			<!-- filtering by company -->
+		<div class="flex flex-col lg:flex-row justify-end items-center gap-2">
+			 <!-- filtering by company -->
 			<div class="w-56 flex flex-col justify-end">
 				<Button
 					class="py-2 font-medium text-center text-base 
@@ -219,8 +218,7 @@
 					<IconFilterCancel size={24} class="text-red-500" />
 				</button>
 			</div>
-
-
+  
 		</div>
 	</div>
 
