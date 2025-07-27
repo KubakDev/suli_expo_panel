@@ -564,6 +564,7 @@
 			window.history.back();
 		}
 	}
+	
 </script>
   
 <!-- Modal Component -->
