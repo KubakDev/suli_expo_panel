@@ -495,9 +495,60 @@
 	}
 
 	
-	function exportOriginalFile(reservation: reservationType) {
+	async function exportOriginalFile(reservation: reservationType) {
 		if (reservation.file_url) {
-			window.open(`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL}/${reservation.file_url}`, '_blank');
+			try {
+				// Fetch the file as blob
+				const response = await fetch(`${import.meta.env.VITE_PUBLIC_SUPABASE_STORAGE_FILE_URL}/${reservation.file_url}`);
+				
+				if (!response.ok) {
+					throw new Error('Failed to fetch file');
+				}
+
+				const blob = await response.blob();
+				
+				// Get the original file extension
+				const fileExtension = reservation.file_url.split('.').pop() || '';
+				
+				// Create filename with company name
+				const companyName = reservation.company?.company_name || 'Unknown_Company';
+				// Preserve Arabic, Kurdish, and English characters while removing only problematic file system characters
+				const sanitizedCompanyName = companyName
+					.replace(/[<>:"/\\|?*]/g, '_') 
+					.replace(/\s+/g, '_') 
+					.replace(/_{2,}/g, '_') 
+					.trim();
+				const customFilename = `${sanitizedCompanyName}.${fileExtension}`;
+				
+				// Create blob URL and download link
+				const blobUrl = window.URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = blobUrl;
+				link.download = customFilename;
+				
+				// Trigger download
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				
+				// Clean up blob URL
+				window.URL.revokeObjectURL(blobUrl);
+				
+				addNewToast({
+					type: ToastTypeEnum.SUCCESS,
+					message: `File downloaded as ${customFilename}`,
+					title: 'Download Success',
+					duration: 3000
+				});
+			} catch (error) {
+				console.error('Download error:', error);
+				addNewToast({
+					type: ToastTypeEnum.ERROR,
+					message: 'Failed to download file. Please try again.',
+					title: 'Download Error',
+					duration: 3000
+				});
+			}
 		} else {
 			addNewToast({
 				type: ToastTypeEnum.ERROR,
@@ -791,7 +842,7 @@
 													<label class="flex items-center space-x-1">
 														<input
 															type="checkbox"
-															disabled={isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.PENDING)}
+															disabled={isCheckboxDisabled(reservation, reservation.status || ReservationStatusEnum.PENDING, ReservationStatusEnum.PENDING)}
 															checked={reservation.status === ReservationStatusEnum.PENDING}
 															on:change={() => updateStatus(reservation.id, ReservationStatusEnum.PENDING, reservation)}
 															class="form-checkbox h-4 w-4 text-yellow-500 border-gray-300 rounded"
@@ -802,7 +853,7 @@
 														<input
 															type="checkbox"
 															disabled={
-																isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.ACCEPT) ||
+																isCheckboxDisabled(reservation, reservation.status || ReservationStatusEnum.PENDING, ReservationStatusEnum.ACCEPT) ||
 																disableCheckbox
 															}
 															checked={reservation.status === ReservationStatusEnum.ACCEPT}
@@ -815,7 +866,7 @@
 														<input
 															type="checkbox"
 															disabled={
-																isCheckboxDisabled(reservation, reservation.status, ReservationStatusEnum.REJECT) ||
+																isCheckboxDisabled(reservation, reservation.status || ReservationStatusEnum.PENDING, ReservationStatusEnum.REJECT) ||
 																disableCheckbox
 															}
 															checked={reservation.status === ReservationStatusEnum.REJECT}
