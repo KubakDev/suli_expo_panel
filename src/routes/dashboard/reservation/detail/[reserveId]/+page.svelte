@@ -855,7 +855,7 @@
 										<td class="p-3 bg-gray-10 dark:bg-[{THEME_COLORS.DARK.TABLE_CELL}] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 table-cell">
 											<button
 												class="text-xs px-3 py-1 hover:underline text-gray-600 dark:text-gray-300"
-												on:click={() => exportFile(reservation)}
+												on:click={() => exportOriginalFile(reservation)}
 												disabled={loading}
 											>
 												Export to Excel
