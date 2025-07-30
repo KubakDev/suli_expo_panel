@@ -1320,6 +1320,7 @@
 	}
 </script>
 
+
 <!-- {#if fabric} -->
 	
 <TopBarComponent
