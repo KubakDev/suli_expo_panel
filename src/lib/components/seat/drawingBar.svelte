@@ -5,10 +5,11 @@
 	import seatImageItemStore from '../../../stores/seatImageItemStore';
 	import { createEventDispatcher, onMount } from 'svelte';
 	import { canvasToDataUrl } from '$lib/utils/canva_to_image';
-	import { alertStore } from '../../../stores/alertStore';
 	import uploadFileStore from '../../../stores/uploadFileStore';
 	import { XMark } from 'svelte-heros-v2';
 	import { IconKey } from '@tabler/icons-svelte'; 
+	import {IconCloudUpload } from '@tabler/icons-svelte'; 
+
 
 	export let data: {
 		canvas?: fabric.Canvas;
@@ -17,13 +18,13 @@
 		selectedObjectId: number;
 		fabric: any;
 	};
- 
+	let nameError: string = '';
 	let images: SeatImageItemModel[] = [];
 	let uploadImageModal = false;
 	let itemName: string = '';
 	let submittedImage = 'no';
 	let selectedImageToUpload: any;
-
+	
 	const dispatch = createEventDispatcher();
 
 	$: {
@@ -83,23 +84,25 @@
 			{ crossOrigin: 'anonymous' }
 		);
 	}
-	async function onImageSubmit() {
-		if (itemName === '') {
-			alertStore.addAlert('error', 'Please enter item name', 'error');
-			return;
-		}
-		submittedImage = 'loading';
-		let url = undefined;
-		if (data.files) {
-			url = await uploadFileStore.uploadFile(data.files[0]!);
-		}
 
-		if (url) {
-			const image: SeatImageItemModel = {
-				image_url: url,
-				name: itemName
-			};
-
+async function onImageSubmit() {
+	if (itemName.trim() === '') {
+		nameError = 'Name is required';
+		return;
+	} else {
+		nameError = '';
+	}
+	submittedImage = 'loading';
+	let url = undefined;
+	if (data.files) {
+		url = await uploadFileStore.uploadFile(data.files[0]!);
+	}
+	if (url) {
+		const image: SeatImageItemModel = {
+			image_url: url,
+			name: itemName
+		};
+		try {
 			await seatImageItemStore.uploadSeatItem(image);
 			submittedImage = 'submitted';
 			submittedImage = 'no';
@@ -108,11 +111,27 @@
 			itemName = '';
 			uploadImageModal = false;
 			seatImageItemStore.getAllSeatItems();
-		} else {
-			alertStore.addAlert('error', 'Image Url is empty', 'error');
+		} catch (err: any) {
+			// Show duplicate error inline
+			if (
+				typeof err === 'object' &&
+				err !== null &&
+				'statusCode' in err &&
+				err.statusCode === 409
+			) {
+				nameError = 'This name already exists. Please choose another name.';
+			} else if (err?.message) {
+				nameError = err.message;
+			} else {
+				nameError = 'Image upload failed. Please try again.';
+			}
+			submittedImage = 'no';
 		}
+	} else {
+		nameError = 'Image upload failed. Please select a valid image.';
+		submittedImage = 'no';
 	}
-
+}
 	async function onFileSelected(e: any) {
 		if (data.files && data.files.length > 0) {
 			const file = data.files[0];
@@ -157,6 +176,37 @@
 			}
 		}
 	}
+
+
+	let isDragging = false;
+let fileInput: HTMLInputElement;
+
+function handleFileChange(event: Event) {
+	const target = event.target as HTMLInputElement;
+	if (target.files && target.files.length > 0) {
+		data.files = target.files;
+		onFileSelected(event);
+	}
+}
+
+function handleDrop(event: DragEvent) {
+	event.preventDefault();
+	isDragging = false;
+	if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+		data.files = event.dataTransfer.files;
+		onFileSelected({ target: { files: event.dataTransfer.files } });
+	}
+}
+
+function handleDragOver(event: DragEvent) {
+	event.preventDefault();
+	isDragging = true;
+}
+
+function handleDragLeave(event: DragEvent) {
+	event.preventDefault();
+	isDragging = false;
+}
 </script>
 
 <div class="flex flex-col p-5 bg-gray-50 text-gray-700 rounded"  style="max-height: calc(100vh - 50px);">
@@ -177,60 +227,69 @@
 	</div>
 
 	<Modal bind:open={uploadImageModal} size="xs" autoclose={false} class="w-full">
-		<Label class="space-y-2">
-			<span>Name</span>
-			<Input bind:value={itemName} type="text" name="Name" placeholder="Stairs" required />
-		</Label>
-		<h3 class="mb-4 text-xl font-medium text-gray-900 dark:">Upload Image</h3>
-		<Dropzone id="dropzone" on:change={onFileSelected} bind:files={data.files}>
-			{#if !selectedImageToUpload}
-				<svg
-					aria-hidden="true"
-					class="mb-3 w-10 h-10 text-gray-400"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					xmlns="http://www.w3.org/2000/svg"
-					><path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-					/></svg
-				>
-				<p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
-					<span class="font-semibold">Click to upload</span> or drag and drop
-				</p>
-				<p class="text-xs text-gray-500 dark:text-gray-400">
-					SVG, PNG, JPG or GIF (MAX. 800x400px)
-				</p>
-			{:else}
-				<div class="w-full h-full">
-					<img
-						src={selectedImageToUpload}
-						class="w-full h-full object-cover rounded-md"
-						alt="notFound"
-					/>
-				</div>
-			{/if}
-		</Dropzone>
-		{#if submittedImage == 'no'}
-			<Button on:click={onImageSubmit} class="w-full1">Submit</Button>
-		{:else if submittedImage == 'submitted'}
-			<Signal />
-		{:else}
-			<Spinner />
-		{/if}
+		<div class="flex flex-col gap-4 p-2">
+			<h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 text-center mb-2">Upload Image</h3>
+			<Label class="flex flex-col gap-1">
+				<span class="font-medium text-gray-700 dark:text-gray-100">Name</span>
+				<Input bind:value={itemName} type="text" name="Name" placeholder="Stairs" required class="w-full" />
+				{#if nameError}
+	            	<span class="text-red-500 text-xs mt-1">{nameError}</span>
+	               {/if}
+			</Label>
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<div
+				class={`border-2 border-dashed rounded-md transition-colors p-4 w-full max-w-xs mx-auto flex flex-col items-center justify-center
+					${isDragging ? 'border-gray-200 bg-gray-100 dark:bg-gray-800' : 'border-gray-200 bg-gray-50 dark:bg-gray-800'}`}
+				on:click={() => fileInput.click()}
+				on:drop={handleDrop}
+				on:dragover={handleDragOver}
+				on:dragleave={handleDragLeave}
+				style="cursor: pointer; min-height: 160px;"
+			>
+				{#if !selectedImageToUpload}
+					<div class="flex flex-col items-center justify-center text-center space-y-2">
+						<div class="p-2">
+							<IconCloudUpload class="w-12 h-12 text-gray-500" />
+						</div>
+						<p class="text-sm text-gray-600">
+							<span class="font-semibold">Click to upload</span> or drag and drop
+						</p>
+						<p class="text-xs text-gray-400">SVG, PNG, JPG or GIF (MAX. 800×400px)</p>
+					</div>
+				{:else}
+					<img src={selectedImageToUpload} class="w-full h-40 object-contain rounded-md border" alt="Preview" />
+				{/if}
+				<!-- Hidden file input -->
+				<input
+					bind:this={fileInput}
+					type="file"
+					class="hidden"
+					accept="image/*"
+					on:change={handleFileChange}
+				/>
+			</div>
+			<!-- Submit button at the end -->
+			<div class="mt-4 flex justify-end">
+				{#if submittedImage == 'no'}
+					<Button on:click={onImageSubmit} class="w-full">Submit</Button>
+				{:else if submittedImage == 'submitted'}
+					<div class="flex justify-center w-full"><Signal /></div>
+				{:else}
+					<div class="flex justify-center w-full"><Spinner /></div>
+				{/if}
+			</div>
+		</div>
 	</Modal>
 	<div class="mt-4">
 		<div class="text-xl my-4">Layers</div>
 		<ul id="layers" style="height: 40vh" class="overflow-y-auto">
 			{#if data && data.objects.length > 0}
 				{#each data.objects as object}
-					<li
+				 <li
 						data-id={object.id}
 						class="layer mb-2 p-1 rounded-md shadow-sm cursor-pointer flex justify-start items-center {object.isGroup
-							? 'bg-blue-50'
+							? 'bg-gray-50'
 							: 'bg-gray-50'}
 						   {data.selectedObjectId == object.id
 							? 'bg-primary-700'
