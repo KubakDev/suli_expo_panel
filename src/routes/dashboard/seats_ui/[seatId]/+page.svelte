@@ -602,6 +602,7 @@
 			}
 		});
 
+		
 		//function for paste
 		window.addEventListener('keydown', (e) => {
 			if (e.ctrlKey && e.code === 'KeyV') {
